@@ -13,10 +13,11 @@ Do not fabricate build/test/run results for a game that does not exist. The curr
 "development" work is authoring and reviewing the design/governance Markdown docs.
 
 Start reading from `README_FOR_EXTERNAL_AI.md` → `VISION.md` → `DECISIONS.md` →
-`HANDOFF.md` → `DOCS.md`. `DOCS.md` is the canonical index of which docs are active vs.
-`NOT STARTED`. `UI_SITEMAP_v0.1.md`, `GAME_STATES_v0.1.md`, and
-`DATA_MODEL_v0.1.md` exist as DRAFT documents. Other forward references such as
-`SAVE_FORMAT.md` intentionally do not exist yet.
+`HANDOFF.md` → `DOCS.md`. `DOCS.md` is the canonical index. Pre-code contracts now exist
+as DRAFT `*_v0.1.md` files (UI sitemap, game states, data model, content/rules/save,
+testing). Older names without the version suffix may still appear in prose; prefer the
+versioned DRAFT files listed in `DOCS.md`. The remaining gate is owner REVIEW, not
+missing files. Do not start Architecture Skeleton or gameplay coding until that review.
 
 ### Intended stack (owner-decided) and what is pre-installed
 - Owner-decided stack: **Godot .NET + C#**, Windows-first target, **SQLite** embedded
@@ -41,9 +42,9 @@ actual commands and project layout (they are currently placeholders/templates).
 
 ### Validating the docs (the repo's current deliverable)
 The active docs are internally consistent: every `*.md` referenced as an existing/active
-document in `DOCS.md` resolves to a real file; unresolved references are the intentional
-`NOT STARTED` future docs and older superseded versions. When editing docs, respect
-`DOCS_GOVERNANCE.md` (hierarchy of truth, statuses, no silent design drift).
+document in `DOCS.md` resolves to a real file. Older superseded names may still appear
+in architecture prose. When editing docs, respect `DOCS_GOVERNANCE.md` (hierarchy of
+truth, statuses, no silent design drift).
 
 ### Collaboration roles (owner lock)
 Default split when this repo is developed with a main Cloud Agent plus Composer 2.5

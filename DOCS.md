@@ -29,7 +29,7 @@
 | `CONTENT_FORMAT_v0.1.md` | DRAFT | JSON content packs, manifesty, IDs, dependencies, overrides i deterministic resolution |
 | `RULESETS_v0.1.md` | DRAFT | Składane moduły reguł, compatibility i effective-dated transitions |
 | `SAVE_FORMAT_v0.1.md` | DRAFT | SQLite save contract, schema versions, migrations, content identity i recovery |
-| `TESTING.md` | NOT STARTED | Tests, golden scenarios, probes |
+| `TESTING_v0.1.md` | DRAFT | Test layers, golden scenarios, probes, invariants, soak and playtest gates |
 | `AI_DEVELOPMENT_RULES_v0.1.md` | REVIEW | Reguły implementacji przez AI |
 
 ## Read order for a new AI session
@@ -59,7 +59,7 @@ relevant system design docs
 5. pełniejszy Rider Performance / Training / Development design
 6. Calendar / Recruitment / Contracts / Economy-Sponsors designs
 7. `CONTENT_FORMAT_v0.1.md`, `RULESETS_v0.1.md`, `SAVE_FORMAT_v0.1.md` - DRAFT
-8. `TESTING.md` - NOT STARTED; osobna sesja
+8. `TESTING_v0.1.md` - DRAFT; last named pre-code documentation gate before owner REVIEW
 
 Nie zamykamy dużej persistence/content infrastructure przed wczesnym race/core-loop designem.
 
