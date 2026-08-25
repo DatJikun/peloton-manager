@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Peloton Manager — Initial Dashboard Directions</title>
+  <link rel="stylesheet" href="prototype-shell.css">
+  <script src="prototype-shell.js" defer></script>
+</head>
+<body>
+<style>
+  :root { --pm-red:#e7442e; --pm-ink:#101820; --pm-cyan:#56d7d3; --pm-yellow:#f6c64a; }
+  .pm-intro { max-width: 1180px; margin: 0 auto 22px; }
+  .pm-intro h2 { margin-bottom: 6px; }
+  .pm-constant { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+  .pm-chip { border:1px solid var(--border); padding:5px 9px; border-radius:4px; color:var(--muted-foreground); font-size:12px; }
+  .pm-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; max-width:1180px; margin:0 auto; }
+  .pm-option { border:2px solid var(--border); border-radius:10px; overflow:hidden; background:var(--card); cursor:pointer; transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease; }
+  .pm-option:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(0,0,0,.12); }
+  .pm-option.selected { border-color:var(--primary); box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 18%,transparent); }
+  .pm-option:focus-visible { outline:3px solid var(--ring); outline-offset:3px; }
+  .pm-caption { padding:14px 16px 16px; border-top:1px solid var(--border); }
+  .pm-caption-row { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+  .pm-caption h3 { margin:0 0 5px; font-size:17px; }
+  .pm-caption p { margin:0; color:var(--muted-foreground); font-size:13px; line-height:1.45; }
+  .pm-source { flex:none; font-size:10px; letter-spacing:.07em; text-transform:uppercase; padding:4px 7px; border:1px solid var(--border); border-radius:3px; }
+  .dash { height:354px; overflow:hidden; position:relative; font-family:Arial,sans-serif; }
+  .tiny { font-size:8px; }
+  .mini { font-size:9px; }
+
+  /* 1 — conventional manager baseline */
+  .classic { background:#e8edf2; color:#17202a; display:grid; grid-template-columns:85px 1fr; grid-template-rows:30px 1fr; }
+  .classic .top { grid-column:1/3; background:#092947; color:#eaf4ff; display:flex; align-items:center; padding:0 10px; justify-content:space-between; font-weight:700; font-size:9px; }
+  .classic .side { background:#0d3b61; color:#bcd2e5; padding:9px 0; }
+  .classic .brand { color:#fff; font-weight:800; padding:0 8px 10px; letter-spacing:.04em; }
+  .classic .navitem { padding:6px 8px; border-left:3px solid transparent; }
+  .classic .navitem.active { background:#15517f; color:#fff; border-left-color:#56c271; }
+  .classic .work { padding:10px; }
+  .classic .head { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .classic h4 { margin:0; font-size:14px; color:#092947; }
+  .advance { border:0; background:#23874a; color:#fff; font-weight:800; padding:7px 11px; border-radius:3px; font-size:8px; }
+  .classic .columns { display:grid; grid-template-columns:1.25fr .85fr; gap:8px; }
+  .panel { background:#fff; border:1px solid #cad3dc; box-shadow:0 1px 2px rgba(0,0,0,.06); }
+  .panel-title { background:#f2f5f7; border-bottom:1px solid #cad3dc; padding:6px 7px; font-size:8px; font-weight:800; text-transform:uppercase; color:#3e5264; }
+  .task { display:flex; gap:7px; padding:7px; border-bottom:1px solid #e6ebef; align-items:center; }
+  .task:last-child { border:0; }
+  .dot { width:6px; height:6px; border-radius:50%; background:#e55642; flex:none; }
+  .task b { display:block; font-size:8px; }
+  .task span { color:#687887; font-size:7px; }
+  .racehero { padding:9px; background:linear-gradient(135deg,#0e426c,#1979a6); color:#fff; }
+  .racehero strong { display:block; font-size:12px; margin:2px 0 5px; }
+  .statrow { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; padding:7px; }
+  .stat { background:#edf2f5; padding:6px; text-align:center; }
+  .stat b { display:block; color:#123c5c; font-size:10px; }
+  .bar { height:4px; background:#dfe5e9; margin-top:4px; }
+  .bar i { display:block; height:100%; background:#2b81b4; }
+
+  /* 2 — frontend-design: race radio */
+  .radio { background:#131719; color:#f4f6f2; display:grid; grid-template-columns:72px 1fr; border-top:5px solid #f2c94c; }
+  .radio .side { background:#0b0e10; padding:12px 8px; border-right:1px solid #343a3d; }
+  .radio .mark { font-family:Impact,Arial,sans-serif; font-size:14px; line-height:.9; letter-spacing:.02em; margin-bottom:18px; }
+  .radio .mark em { color:#f2c94c; font-style:normal; }
+  .radio .rnav { padding:7px 0; color:#81898c; text-transform:uppercase; font-weight:800; font-size:7px; letter-spacing:.08em; }
+  .radio .rnav.active { color:#f2c94c; }
+  .radio .work { padding:11px 12px; position:relative; background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px); background-size:100% 24px; }
+  .radio .meta { display:flex; justify-content:space-between; font:700 7px monospace; color:#8b9599; letter-spacing:.08em; }
+  .radio h4 { font-family:Impact,'Arial Narrow',sans-serif; font-size:23px; line-height:1; margin:10px 0 4px; font-weight:400; letter-spacing:.01em; }
+  .radio .route { color:#f2c94c; font:700 8px monospace; margin-bottom:11px; }
+  .radio .rgrid { display:grid; grid-template-columns:1.15fr .85fr; gap:8px; }
+  .radio .block { border-top:2px solid #465053; padding-top:6px; }
+  .radio .block.yellow { border-color:#f2c94c; }
+  .radio .block h5 { margin:0 0 6px; font:700 7px monospace; letter-spacing:.12em; color:#8f999d; }
+  .radio .call { padding:6px 0; border-bottom:1px solid #30373a; display:grid; grid-template-columns:17px 1fr auto; align-items:center; gap:5px; }
+  .radio .call .num { color:#f2c94c; font:700 8px monospace; }
+  .radio .call b { font-size:8px; }
+  .radio .call small { color:#90999c; font-size:7px; }
+  .radio .urgency { color:#ff745f; font:700 7px monospace; }
+  .radio .profile { height:42px; margin:6px 0 10px; position:relative; border-bottom:1px solid #5a6467; }
+  .radio .profile svg { width:100%; height:100%; }
+  .radio .tape { background:#f2c94c; color:#161a1b; padding:8px; display:flex; justify-content:space-between; align-items:center; font-weight:900; font-size:8px; }
+  .radio .clock { font:700 13px monospace; }
+
+  /* 3 — hallmark: director ledger */
+  .ledger { background:#eef0f0; color:#1e2527; display:grid; grid-template-columns:92px 1fr; font-family:'Segoe UI',Arial,sans-serif; }
+  .ledger .side { background:#e4e7e7; border-right:1px solid #9da5a6; padding:11px 9px; }
+  .ledger .wordmark { font-family:Georgia,serif; font-size:13px; border-bottom:2px solid #1e2527; padding-bottom:8px; margin-bottom:10px; }
+  .ledger .lnav { padding:5px 1px; font-size:7px; color:#566063; }
+  .ledger .lnav.active { color:#a82e24; font-weight:800; }
+  .ledger .work { padding:11px 13px; }
+  .ledger .folio { display:flex; justify-content:space-between; border-bottom:1px solid #8f989a; padding-bottom:5px; font-size:7px; text-transform:uppercase; letter-spacing:.12em; }
+  .ledger .titleline { display:flex; align-items:flex-end; justify-content:space-between; margin:11px 0 9px; }
+  .ledger h4 { margin:0; font:700 20px Georgia,serif; }
+  .ledger .datebox { text-align:right; font:700 8px monospace; }
+  .ledger .cols { display:grid; grid-template-columns:1.2fr .8fr; gap:15px; }
+  .ledger h5 { margin:0 0 5px; font-size:7px; text-transform:uppercase; letter-spacing:.14em; border-bottom:2px solid #2f383a; padding-bottom:4px; }
+  .ledger table { width:100%; border-collapse:collapse; font-size:7px; }
+  .ledger td { padding:6px 2px; border-bottom:1px solid #bbc1c2; vertical-align:top; }
+  .ledger td:first-child { width:18px; color:#9d2c23; font:700 7px monospace; }
+  .ledger td:last-child { text-align:right; color:#626c6f; }
+  .ledger .note { border-left:3px solid #a82e24; padding:7px 8px; margin-bottom:10px; background:#e4e7e7; }
+  .ledger .note b { display:block; font:700 11px Georgia,serif; margin:2px 0; }
+  .ledger .evidence { font-size:7px; line-height:1.5; color:#525c5e; }
+  .ledger .pencil { color:#a82e24; font-family:'Segoe Print',cursive; transform:rotate(-2deg); font-size:9px; margin-top:9px; }
+
+  /* 4 — system-driven modern operations */
+  .system { background:#09131f; color:#eaf1f7; display:grid; grid-template-columns:78px 1fr; grid-template-rows:32px 1fr; }
+  .system .top { grid-column:1/3; background:#0d1b2a; border-bottom:1px solid #21364b; display:flex; align-items:center; justify-content:space-between; padding:0 10px; }
+  .system .top b { font-size:9px; }
+  .system .top span { font-size:7px; color:#8fa6bb; }
+  .system .side { background:#0d1b2a; border-right:1px solid #21364b; padding:10px 7px; }
+  .system .slogo { width:23px; height:23px; background:#57d3cf; color:#07131d; display:grid; place-items:center; border-radius:6px; font-weight:900; margin-bottom:13px; }
+  .system .snav { padding:6px 5px; margin-bottom:2px; border-radius:4px; font-size:7px; color:#8ca1b3; }
+  .system .snav.active { background:#183148; color:#6ce5df; }
+  .system .work { padding:10px; }
+  .system .dashhead { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .system h4 { margin:0; font-size:14px; }
+  .system .primary { background:#5addd7; color:#07141d; border:0; border-radius:5px; padding:6px 9px; font-weight:800; font-size:7px; }
+  .system .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:7px; }
+  .system .kpi { background:#101f2e; border:1px solid #20384c; border-radius:6px; padding:7px; }
+  .system .kpi span { display:block; font-size:6px; color:#86a0b5; margin-bottom:3px; }
+  .system .kpi b { font-size:11px; }
+  .system .bodygrid { display:grid; grid-template-columns:1.2fr .8fr; gap:7px; }
+  .system .module { background:#101f2e; border:1px solid #20384c; border-radius:6px; padding:8px; }
+  .system .module h5 { margin:0 0 7px; font-size:8px; }
+  .system .decision { padding:6px 0; border-bottom:1px solid #20384c; display:grid; grid-template-columns:7px 1fr auto; gap:5px; }
+  .system .decision:last-child { border:0; }
+  .system .decision i { width:5px; height:5px; border-radius:50%; background:#ffb858; margin-top:2px; }
+  .system .decision b { display:block; font-size:7px; }
+  .system .decision small { font-size:6px; color:#8099ad; }
+  .system .decision em { font:normal 6px monospace; color:#ffbd65; }
+  .system .spark { height:42px; display:flex; align-items:flex-end; gap:3px; padding-top:5px; }
+  .system .spark i { flex:1; background:#2b7c86; border-radius:2px 2px 0 0; }
+  .system .next { background:linear-gradient(135deg,#16364a,#155b62); border-radius:5px; padding:7px; margin-top:7px; }
+  .system .next span { font-size:6px; color:#9fc9cd; }
+  .system .next b { display:block; font-size:9px; margin:2px 0; }
+
+  .pm-instruction { max-width:1180px; margin:18px auto 0; padding:12px 14px; border-left:3px solid var(--primary); background:var(--muted); color:var(--muted-foreground); font-size:13px; }
+  @media (max-width:900px){ .pm-grid{grid-template-columns:1fr;} }
+  @media (max-width:540px){ .dash{height:300px; transform-origin:top left;} .classic,.radio,.ledger,.system{font-size:90%;} }
+</style>
+
+<div class="pm-intro">
+  <div class="label">Peloton Manager · Dashboard direction study</div>
+  <h2>Który język wizualny pasuje do gry?</h2>
+  <p class="subtitle">Ta sama architektura wariantu A i ta sama sytuacja w świecie gry. Różni się wyłącznie sposób podania informacji.</p>
+  <div class="pm-constant">
+    <span class="pm-chip">Klasyczne menu managerskie</span><span class="pm-chip">HQ jako pulpit dnia</span><span class="pm-chip">Decyzje i następny wyścig</span><span class="pm-chip">Advance Day</span><span class="pm-chip">Brak PlayerTeam shortcuts</span>
+  </div>
+</div>
+
+<div class="pm-grid" data-multiselect>
+  <div class="pm-option" data-choice="classic-manager" onclick="toggleSelect(this)" role="button" tabindex="0">
+    <div class="dash classic">
+      <div class="top"><span>PELOTON MANAGER</span><span>12 MAR 2032 · 08:00 &nbsp; ◇ Inbox 4 &nbsp; ⚙</span></div>
+      <div class="side">
+        <div class="brand tiny">VISTULA<br>RACING</div>
+        <div class="navitem active mini">HQ</div><div class="navitem mini">Calendar</div><div class="navitem mini">Team</div><div class="navitem mini">Staff</div><div class="navitem mini">Recruitment</div><div class="navitem mini">Finances</div><div class="navitem mini">Partners</div><div class="navitem mini">World</div><div class="navitem mini">Inbox <b>4</b></div>
+      </div>
+      <div class="work">
+        <div class="head"><div><h4>Manager HQ</h4><span class="tiny">Wednesday, 12 March · Build phase</span></div><button class="advance">ADVANCE DAY ▶</button></div>
+        <div class="columns">
+          <div>
+            <div class="panel"><div class="panel-title">Requires your attention</div>
+              <div class="task"><i class="dot"></i><div><b>Confirm Milano–Sanremo squad</b><span>Deadline today, 18:00</span></div></div>
+              <div class="task"><i class="dot" style="background:#e8a33e"></i><div><b>Contract response: M. Nowak</b><span>Agent expects an answer within 2 days</span></div></div>
+              <div class="task"><i class="dot" style="background:#4d91be"></i><div><b>Scout report completed</b><span>Confidence increased to medium</span></div></div>
+            </div>
+            <div class="panel" style="margin-top:8px"><div class="panel-title">Team overview</div><div class="statrow"><div class="stat"><b>82%</b><span class="tiny">Morale</span><div class="bar"><i style="width:82%"></i></div></div><div class="stat"><b>19/25</b><span class="tiny">Roster</span><div class="bar"><i style="width:76%"></i></div></div><div class="stat"><b>€2.8m</b><span class="tiny">Budget</span><div class="bar"><i style="width:58%"></i></div></div></div></div>
+          </div>
+          <div><div class="panel"><div class="panel-title">Next race · in 4 days</div><div class="racehero"><span class="tiny">MONUMENT · 289 KM</span><strong>Milano–Sanremo</strong><span class="tiny">Primary objective: Top 10</span></div><div class="task"><div><b>Preparation status</b><span>6 of 8 items complete</span><div class="bar"><i style="width:75%;background:#42a866"></i></div></div></div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="pm-caption"><div class="pm-caption-row"><div><h3>1. Classic Manager</h3><p>Bez dodatkowego skillu. Znajomy układ w duchu Football Manager / Motorsport Manager: dużo paneli, jednoznaczna nawigacja, niski próg wejścia.</p></div><span class="pm-source">No skill</span></div></div>
+  </div>
+
+  <div class="pm-option" data-choice="race-radio" onclick="toggleSelect(this)" role="button" tabindex="0">
+    <div class="dash radio">
+      <div class="side"><div class="mark">PELOTON<br><em>MANAGER</em></div><div class="rnav active">HQ / Radio</div><div class="rnav">Calendar</div><div class="rnav">Team</div><div class="rnav">Staff</div><div class="rnav">Recruitment</div><div class="rnav">Finances</div><div class="rnav">Partners</div><div class="rnav">World</div><div class="rnav">Inbox 04</div></div>
+      <div class="work">
+        <div class="meta"><span>MANAGER / A. KOWALSKI</span><span>12.03.32 — 08:00 CET</span></div>
+        <h4>THE ROAD AHEAD</h4><div class="route">TODAY ━━━━╸ 4 DAYS ━━━━╸ MILANO–SANREMO / 289 KM</div>
+        <div class="rgrid">
+          <div class="block yellow"><h5>DECISION RADIO · 03 OPEN CALLS</h5>
+            <div class="call"><span class="num">01</span><div><b>Lock the race squad</b><small>Sporting director recommends two changes</small></div><span class="urgency">TODAY</span></div>
+            <div class="call"><span class="num">02</span><div><b>Answer Nowak's agent</b><small>Wage expectation above current structure</small></div><span class="urgency">+2D</span></div>
+            <div class="call"><span class="num">03</span><div><b>Review scouting dossier</b><small>Signal confidence: medium</small></div><span class="urgency" style="color:#8e999d">OPEN</span></div>
+          </div>
+          <div><div class="block"><h5>RACE PROFILE / MSR</h5><div class="profile"><svg viewBox="0 0 180 42" preserveAspectRatio="none"><polyline points="0,35 35,34 55,27 72,33 102,32 125,20 135,31 154,15 162,28 180,11" fill="none" stroke="#f2c94c" stroke-width="2"/></svg></div></div><div class="block"><h5>TEAM SIGNAL</h5><div class="mini">FORM 74 &nbsp; / &nbsp; MORALE 82 &nbsp; / &nbsp; FATIGUE 21</div></div></div>
+        </div>
+        <div class="tape" style="margin-top:10px"><span>NEXT WORLD EVENT<br><small>TRAINING REPORT · 14:00</small></span><span class="clock">ADVANCE ▷</span></div>
+      </div>
+    </div>
+    <div class="pm-caption"><div class="pm-caption-row"><div><h3>2. Race Radio</h3><p>`frontend-design`: ekran czerpie z radia wyścigowego, roadbooka i profilu etapu. Wyrazisty, sportowy i unikalny, ale bardziej surowy.</p></div><span class="pm-source">Frontend design</span></div></div>
+  </div>
+
+  <div class="pm-option" data-choice="directors-ledger" onclick="toggleSelect(this)" role="button" tabindex="0">
+    <div class="dash ledger">
+      <div class="side"><div class="wordmark">Peloton<br>Manager</div><div class="lnav active">HQ — DAILY FILE</div><div class="lnav">Calendar</div><div class="lnav">Team</div><div class="lnav">Staff</div><div class="lnav">Recruitment</div><div class="lnav">Finances</div><div class="lnav">Partners</div><div class="lnav">World</div><div class="lnav">Inbox (4)</div></div>
+      <div class="work"><div class="folio"><span>Manager career / dossier 2032–03–12</span><span>Vistula Racing · confidential</span></div><div class="titleline"><h4>Daily management file</h4><div class="datebox">WED / 12 MAR<br>WORLD TIME 08:00</div></div>
+        <div class="cols"><div><h5>Decisions requiring authority</h5><table><tr><td>01</td><td><b>Milano–Sanremo selection</b><br><span>6 proposed / 2 disputed</span></td><td>Due 18:00</td></tr><tr><td>02</td><td><b>Nowak contract response</b><br><span>Agent signal: firm</span></td><td>2 days</td></tr><tr><td>03</td><td><b>Scouting dossier #7741</b><br><span>Knowledge confidence: medium</span></td><td>Review</td></tr></table><div class="pencil">Check climber workload before confirming →</div></div>
+          <div><h5>Next appointment</h5><div class="note"><span class="tiny">16 MARCH · MONUMENT</span><b>Milano–Sanremo</b><span class="tiny">289 km · objective: top 10</span></div><h5>Manager's evidence</h5><div class="evidence">Team morale is improving.<br>Budget runway: 11 months.<br>Two riders show high fatigue risk.<br><br><b>Advance Day</b> processes the next world events in stable order.</div></div></div>
+      </div>
+    </div>
+    <div class="pm-caption"><div class="pm-caption-row"><div><h3>3. Director’s Ledger</h3><p>`Hallmark`: chłodny dokument roboczy, mniej „kart”, więcej hierarchii, tabel i śladów decyzji. Ma sprawiać wrażenie narzędzia prawdziwego dyrektora sportowego.</p></div><span class="pm-source">Hallmark</span></div></div>
+  </div>
+
+  <div class="pm-option" data-choice="modern-operations" onclick="toggleSelect(this)" role="button" tabindex="0">
+    <div class="dash system">
+      <div class="top"><b>Peloton Manager</b><span>Global search ⌘K &nbsp; · &nbsp; Inbox 4 &nbsp; · &nbsp; A. Kowalski</span></div>
+      <div class="side"><div class="slogo">PM</div><div class="snav active">▦ &nbsp; HQ</div><div class="snav">◫ &nbsp; Calendar</div><div class="snav">♙ &nbsp; Team</div><div class="snav">◇ &nbsp; Staff</div><div class="snav">⌕ &nbsp; Recruitment</div><div class="snav">€ &nbsp; Finances</div><div class="snav">◎ &nbsp; Partners</div><div class="snav">◉ &nbsp; World</div><div class="snav">✉ &nbsp; Inbox</div></div>
+      <div class="work"><div class="dashhead"><div><h4>Good morning, Aleksander</h4><span class="tiny" style="color:#839db2">Three decisions can change today's plan.</span></div><button class="primary">Advance Day →</button></div>
+        <div class="kpis"><div class="kpi"><span>TEAM MORALE</span><b>82%</b></div><div class="kpi"><span>AVAILABLE BUDGET</span><b>€2.8m</b></div><div class="kpi"><span>OPEN DECISIONS</span><b style="color:#ffbf66">3</b></div><div class="kpi"><span>NEXT RACE</span><b>4 days</b></div></div>
+        <div class="bodygrid"><div class="module"><h5>Decision center</h5><div class="decision"><i></i><div><b>Confirm Milano–Sanremo squad</b><small>2 staff recommendations · deadline today</small></div><em>HIGH</em></div><div class="decision"><i style="background:#64d9d3"></i><div><b>Respond to Nowak's agent</b><small>Contract structure exceeds wage target</small></div><em style="color:#75ddd8">2 DAYS</em></div><div class="decision"><i style="background:#7890a2"></i><div><b>Review scouting dossier</b><small>3 new observation signals</small></div><em style="color:#8ea2b1">OPEN</em></div></div>
+          <div><div class="module"><h5>Team form · 14 days</h5><div class="spark"><i style="height:35%"></i><i style="height:43%"></i><i style="height:39%"></i><i style="height:55%"></i><i style="height:62%"></i><i style="height:67%"></i><i style="height:74%;background:#5addd7"></i></div></div><div class="next"><span>NEXT RACE</span><b>Milano–Sanremo</b><span>Preparation 75% · squad pending</span></div></div></div>
+      </div>
+    </div>
+    <div class="pm-caption"><div class="pm-caption-row"><div><h3>4. Modern Operations</h3><p>Kierunek systemowy inspirowany `UI/UX Pro Max`: czytelny, dostępny dashboard analityczny z konsekwentnym systemem komponentów. Najbardziej współczesny, ale najbliżej typowego SaaS.</p></div><span class="pm-source">Internet skill</span></div></div>
+  </div>
+</div>
+
+<div class="pm-instruction"><b>Możesz zaznaczyć więcej niż jeden wariant.</b> Wybierz cały kierunek albo napisz w rozmowie, które elementy warto połączyć — np. „układ 1, klimat 2, czytelność 4”.</div>
+
+<script>
+  document.querySelectorAll('.pm-option').forEach(function(el){
+    el.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggleSelect(el); } });
+  });
+</script>
+</body>
+</html>

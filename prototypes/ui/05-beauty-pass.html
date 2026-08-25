@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Peloton Manager — Dashboard Beauty Pass</title>
+  <link rel="stylesheet" href="prototype-shell.css">
+  <script src="prototype-shell.js" defer></script>
+</head>
+<body>
+<style>
+  /* Same Manager Home macro-layout in all versions.
+     A+ anchor: European cycling broadcast package; signature = cinematic race window.
+     D+ anchor: premium bicycle workshop; signature = chainring geometry and champagne metal.
+     A×D anchor: grand-tour team hospitality interior; signature = one route ribbon joining work to race. */
+  .beauty { max-width:1180px; margin:0 auto; color:var(--foreground); font-family:"Segoe UI",Arial,sans-serif; }
+  .beauty-head { border-bottom:2px solid var(--foreground); padding-bottom:12px; margin-bottom:18px; }
+  .beauty-head h2 { margin:3px 0 6px; }
+  .beauty-head p { margin:0; color:var(--muted-foreground); }
+  .beauty-list { display:grid; gap:24px; }
+  .beauty-option { border:1px solid var(--border); background:var(--card); cursor:pointer; }
+  .beauty-option.selected { outline:3px solid var(--primary); outline-offset:3px; }
+  .beauty-option:focus-visible { outline:3px solid var(--ring); outline-offset:3px; }
+  .ui { height:438px; overflow:hidden; position:relative; font-size:10px; line-height:1.4; }
+  .beauty-caption { display:grid; grid-template-columns:190px 1fr; gap:16px; padding:13px 16px 15px; border-top:1px solid var(--border); }
+  .beauty-caption h3 { margin:0; font-size:15px; }
+  .beauty-caption p { margin:0; color:var(--muted-foreground); font-size:12px; line-height:1.5; }
+  .num { font-variant-numeric:tabular-nums; }
+
+  .advance { position:absolute; inset:0; z-index:30; display:none; }
+  .ui.show-calendar .advance { display:block; }
+  .advance-shade { position:absolute; inset:0; background:rgba(19,30,27,.64); }
+  .calendar-sheet { position:absolute; inset:38px 42px 30px; background:var(--cal-surface); color:var(--cal-text); border-radius:18px; box-shadow:0 2px 5px rgba(19,30,27,.13),0 22px 50px rgba(19,30,27,.24); overflow:hidden; }
+  .calendar-top { display:flex; align-items:start; justify-content:space-between; padding:14px 16px 11px; }
+  .calendar-top h5 { margin:0 0 3px; font:650 17px/1.15 "Aptos Display","Segoe UI",sans-serif; }
+  .calendar-top p { margin:0; opacity:.65; }
+  .close-calendar { width:30px; height:30px; border:0; border-radius:50%; background:var(--cal-soft); color:inherit; font-size:17px; }
+  .calendar-week { display:grid; grid-template-columns:repeat(7,1fr); margin:0 14px; background:var(--cal-soft); border-radius:13px; overflow:hidden; }
+  .calendar-day { min-height:54px; padding:8px; border-right:1px solid var(--cal-line); }
+  .calendar-day:last-child { border-right:0; }
+  .calendar-day span,.calendar-day b { display:block; }
+  .calendar-day span { opacity:.58; }
+  .calendar-day b { margin-top:2px; font-size:13px; }
+  .calendar-day.today { background:var(--cal-accent); color:var(--cal-accent-text); }
+  .event-list { padding:9px 16px; }
+  .event-line { display:grid; grid-template-columns:50px 1fr auto; gap:10px; padding:7px 0; border-bottom:1px solid var(--cal-line); }
+  .event-line span:last-child { opacity:.62; }
+  .calendar-foot { display:flex; justify-content:space-between; align-items:center; padding:10px 16px 13px; }
+  .calendar-foot p { margin:0; max-width:58ch; opacity:.72; }
+  .next-event { border:0; border-radius:999px; background:var(--cal-accent); color:var(--cal-accent-text); height:30px; padding:0 14px; font-weight:700; }
+
+  /* A+ cinematic broadcast */
+  .cinematic { --surface:#f5f4ef; --surface-soft:#e8e9e3; --ink:#153139; --muted:#667578; --petrol:#123b45; --petrol-2:#1e5560; --yellow:#edc34b; --coral:#c45443; --line:#d0d4ce; --cal-surface:#f5f4ef; --cal-text:#153139; --cal-soft:#e4e6df; --cal-line:#cdd1cb; --cal-accent:#123b45; --cal-accent-text:#fff; background:#dfe3de; color:var(--ink); font-family:"Aptos","Segoe UI",sans-serif; padding:8px; }
+  .a-frame { height:422px; background:var(--surface); border-radius:22px; overflow:hidden; box-shadow:0 2px 4px rgba(21,49,57,.08),0 15px 34px rgba(21,49,57,.13); display:grid; grid-template-columns:112px 1fr; }
+  .a-nav { background:var(--petrol); color:#cbd8d8; padding:16px 8px 10px; position:relative; overflow:hidden; }
+  .a-nav::after { content:""; position:absolute; width:120px; height:120px; border:18px solid var(--petrol-2); border-radius:50%; left:-67px; bottom:-42px; }
+  .a-brand { color:#fff; font:700 15px/1 "Aptos Display","Segoe UI",sans-serif; margin:0 6px 18px; }
+  .a-brand i { display:block; width:30px; height:5px; background:var(--yellow); border-radius:4px; margin-top:7px; }
+  .a-nav div { padding:6px 8px; border-radius:8px; position:relative; z-index:1; }
+  .a-nav .active { background:var(--surface); color:var(--petrol); font-weight:700; }
+  .a-nav small { float:right; color:var(--yellow); }
+  .a-main { min-width:0; display:grid; grid-template-rows:48px 1fr; }
+  .a-top { display:flex; justify-content:space-between; align-items:center; padding:0 15px; border-bottom:1px solid var(--line); }
+  .a-person b { font-size:11px; }
+  .a-person span { color:var(--muted); margin-left:8px; }
+  .a-date { display:flex; align-items:center; gap:11px; color:var(--muted); }
+  .a-button { border:0; height:30px; padding:0 13px; border-radius:999px; background:var(--yellow); color:var(--ink); font-weight:750; }
+  .a-body { display:grid; grid-template-columns:minmax(0,1fr) 245px; gap:14px; padding:12px 13px 13px; min-height:0; }
+  .a-work { min-width:0; }
+  .a-title { display:flex; align-items:end; justify-content:space-between; margin-bottom:8px; }
+  .a-title h4 { margin:0; font:650 20px/1 "Aptos Display","Segoe UI",sans-serif; letter-spacing:-.02em; }
+  .a-title span { color:var(--coral); font-weight:700; }
+  .a-priority { padding:10px 12px; border-radius:13px; background:var(--surface-soft); display:grid; grid-template-columns:1fr 66px; gap:10px; }
+  .a-priority h5 { margin:0 0 3px; font-size:14px; }
+  .a-priority p { margin:0; color:var(--muted); }
+  .a-priority strong { color:var(--coral); text-align:right; }
+  .a-list { margin-top:6px; }
+  .a-row { display:grid; grid-template-columns:1fr 72px 52px; gap:6px; align-items:center; padding:7px 4px; border-bottom:1px solid var(--line); }
+  .a-row span:nth-child(2) { color:var(--muted); }
+  .a-row span:last-child { text-align:right; font-variant-numeric:tabular-nums; }
+  .a-race { border-radius:18px; overflow:hidden; background:var(--petrol); color:#fff; position:relative; min-width:0; }
+  .a-photo { height:190px; background-image:url('https://cdn.mos.cms.futurecdn.net/XJ9rAYR4pnt6fmozTiPfVV-2560-80.jpg'); background-size:cover; background-position:center; position:relative; }
+  .a-photo::after { content:"NEXT RACE · 4 DAYS"; position:absolute; left:10px; bottom:10px; background:var(--yellow); color:var(--ink); border-radius:999px; padding:4px 8px; font-weight:800; }
+  .a-racecopy { padding:11px 12px; }
+  .a-racecopy h5 { margin:0 0 2px; font:650 18px/1.1 "Aptos Display","Segoe UI",sans-serif; }
+  .a-racecopy > span { color:#b9cdcf; }
+  .a-racefacts { margin-top:8px; display:grid; grid-template-columns:1fr 1fr; gap:6px 10px; }
+  .a-racefacts div { border-top:1px solid #3c6870; padding-top:5px; }
+  .a-racefacts span { display:block; color:#b9cdcf; }
+
+  /* D+ premium workshop */
+  .atelier { --bg:#121915; --panel:#202922; --panel-soft:#29332c; --text:#e9e8df; --muted:#a5ada5; --metal:#cbbd8f; --copper:#d17a3e; --line:#465047; --cal-surface:#202922; --cal-text:#e9e8df; --cal-soft:#2b352e; --cal-line:#465047; --cal-accent:#cbbd8f; --cal-accent-text:#151b17; background:var(--bg); color:var(--text); font-family:Bahnschrift,"Segoe UI",sans-serif; padding:8px; }
+  .d-frame { height:422px; border-radius:24px; background:var(--panel); overflow:hidden; box-shadow:0 2px 5px rgba(12,22,16,.18),0 18px 38px rgba(12,22,16,.28); position:relative; }
+  .d-wheel { position:absolute; width:270px; height:270px; right:-95px; top:78px; border:22px solid #2d3830; border-radius:50%; opacity:.9; }
+  .d-wheel::before,.d-wheel::after { content:""; position:absolute; left:50%; top:-22px; width:1px; height:270px; background:#445047; transform-origin:center 135px; }
+  .d-wheel::after { transform:rotate(60deg); }
+  .d-top { height:48px; display:grid; grid-template-columns:112px 1fr auto; align-items:center; border-bottom:1px solid var(--line); position:relative; z-index:2; }
+  .d-brand { height:48px; display:grid; place-items:center; background:var(--metal); color:#171d18; font-weight:850; letter-spacing:.04em; }
+  .d-manager { padding-left:13px; }
+  .d-manager span { color:var(--muted); margin-left:8px; }
+  .d-clock { display:flex; align-items:center; gap:10px; padding-right:10px; color:var(--muted); }
+  .d-button { height:30px; padding:0 13px; border:1px solid var(--metal); border-radius:999px; background:transparent; color:var(--metal); font-weight:700; }
+  .d-shell { height:374px; display:grid; grid-template-columns:112px 1fr; position:relative; z-index:2; }
+  .d-nav { background:#171f1a; padding:13px 8px; }
+  .d-nav div { color:var(--muted); padding:6px 8px; border-radius:9px; }
+  .d-nav .active { background:var(--panel-soft); color:var(--text); }
+  .d-nav small { color:var(--metal); float:right; }
+  .d-main { padding:11px 13px; min-width:0; }
+  .d-title { display:flex; align-items:end; justify-content:space-between; border-bottom:1px solid var(--line); padding-bottom:7px; }
+  .d-title h4 { margin:0; font:600 20px/1 "Aptos Display","Segoe UI",sans-serif; }
+  .d-title span { color:var(--muted); }
+  .d-grid { display:grid; grid-template-columns:minmax(0,1fr) 232px; gap:14px; padding-top:9px; }
+  .d-work { background:var(--panel-soft); border-radius:16px; padding:8px 11px; min-width:0; }
+  .d-priority { display:grid; grid-template-columns:26px 1fr 58px; gap:8px; padding:7px 0 9px; border-bottom:1px solid var(--line); }
+  .d-code { width:24px; height:24px; border-radius:50%; display:grid; place-items:center; background:var(--metal); color:#171d18; font-weight:800; }
+  .d-priority h5 { margin:0 0 2px; font-size:13px; }
+  .d-priority p { margin:0; color:var(--muted); }
+  .d-priority strong { color:var(--copper); text-align:right; }
+  .d-row { display:grid; grid-template-columns:28px 1fr 62px; gap:7px; padding:7px 0; border-bottom:1px solid #39443c; align-items:center; }
+  .d-row:last-child { border-bottom:0; }
+  .d-row b { color:var(--metal); }
+  .d-row span:last-child { text-align:right; color:var(--muted); }
+  .d-race { padding:8px 10px 10px; border-radius:16px; background:#18201b; min-width:0; }
+  .d-race > span { color:var(--muted); }
+  .d-race h5 { margin:2px 0; color:var(--metal); font:600 17px/1.1 "Aptos Display","Segoe UI",sans-serif; }
+  .d-route { height:76px; margin:7px 0; color:var(--metal); }
+  .d-route svg { width:100%; height:100%; }
+  .d-fact { display:flex; justify-content:space-between; padding:5px 0; border-top:1px solid var(--line); }
+  .d-fact span:first-child { color:var(--muted); }
+
+  /* A×D hybrid */
+  .fusion { --ivory:#f0eee7; --paper:#faf9f5; --petrol:#173b3b; --petrol-soft:#285353; --ink:#1f302f; --muted:#687674; --red:#b84b3a; --gold:#d8ac4c; --line:#d5d5cc; --cal-surface:#faf9f5; --cal-text:#1f302f; --cal-soft:#e8e7df; --cal-line:#d1d2c9; --cal-accent:#b84b3a; --cal-accent-text:#fff; background:#cfd5d1; color:var(--ink); font-family:"Segoe UI",Arial,sans-serif; padding:8px; }
+  .f-frame { height:422px; border-radius:28px; overflow:hidden; background:var(--paper); display:grid; grid-template-columns:116px 1fr; box-shadow:0 3px 7px rgba(31,48,47,.10),0 18px 42px rgba(31,48,47,.15); }
+  .f-nav { background:var(--petrol); color:#c5d2cf; padding:16px 9px; position:relative; }
+  .f-monogram { width:50px; height:50px; border:2px solid var(--gold); border-radius:50%; display:grid; place-items:center; color:#fff; font:700 14px "Aptos Display","Segoe UI",sans-serif; margin:0 auto 14px; }
+  .f-nav div { padding:6px 9px; border-radius:999px; margin-bottom:1px; }
+  .f-nav .active { background:var(--ivory); color:var(--petrol); font-weight:700; }
+  .f-nav small { float:right; color:var(--gold); }
+  .f-main { min-width:0; display:grid; grid-template-rows:50px 1fr; }
+  .f-top { display:flex; justify-content:space-between; align-items:center; padding:0 15px; border-bottom:1px solid var(--line); }
+  .f-person b { font-size:11px; }
+  .f-person span { color:var(--muted); margin-left:8px; }
+  .f-clock { display:flex; align-items:center; gap:10px; color:var(--muted); }
+  .f-button { border:0; height:31px; padding:0 14px; border-radius:999px; background:var(--red); color:#fff; font-weight:700; }
+  .f-body { display:grid; grid-template-columns:minmax(0,1fr) 242px; gap:14px; padding:12px 13px 13px; position:relative; }
+  .f-ribbon { position:absolute; left:20px; right:18px; bottom:12px; height:30px; color:var(--gold); pointer-events:none; opacity:.8; }
+  .f-ribbon svg { width:100%; height:100%; }
+  .f-work { min-width:0; position:relative; z-index:1; }
+  .f-title { display:flex; justify-content:space-between; align-items:end; margin-bottom:8px; }
+  .f-title h4 { margin:0; font:650 20px/1 "Aptos Display","Segoe UI",sans-serif; letter-spacing:-.02em; }
+  .f-title span { color:var(--red); font-weight:700; }
+  .f-priority { border-radius:17px; background:var(--ivory); padding:10px 12px; display:grid; grid-template-columns:1fr 62px; gap:8px; }
+  .f-priority h5 { margin:0 0 3px; font-size:14px; }
+  .f-priority p { margin:0; color:var(--muted); }
+  .f-priority strong { color:var(--red); text-align:right; }
+  .f-row { display:grid; grid-template-columns:1fr 70px 54px; gap:6px; padding:7px 4px; border-bottom:1px solid var(--line); }
+  .f-row span:nth-child(2) { color:var(--muted); }
+  .f-row span:last-child { text-align:right; }
+  .f-race { min-width:0; border-radius:20px; overflow:hidden; background:var(--petrol); color:#fff; position:relative; z-index:1; }
+  .f-photo { height:166px; background-image:url('https://cdn.mos.cms.futurecdn.net/XJ9rAYR4pnt6fmozTiPfVV-2560-80.jpg'); background-size:cover; background-position:center; clip-path:ellipse(92% 93% at 54% 4%); }
+  .f-racecopy { padding:5px 11px 10px; }
+  .f-racecopy span { color:#b9cac7; }
+  .f-racecopy h5 { margin:2px 0 7px; font:650 18px/1.1 "Aptos Display","Segoe UI",sans-serif; }
+  .f-fact { display:flex; justify-content:space-between; padding:5px 0; border-top:1px solid #3d6260; }
+  .f-fact strong { color:var(--gold); }
+
+  .choose { margin-top:16px; border-top:2px solid var(--foreground); padding-top:12px; color:var(--muted-foreground); font-size:13px; }
+  @media(max-width:820px){ .beauty-caption{grid-template-columns:1fr}.ui{height:410px}.a-frame,.d-frame,.f-frame{height:394px}.a-body,.d-grid,.f-body{grid-template-columns:minmax(0,1fr) 186px}.a-frame,.f-frame{grid-template-columns:96px 1fr}.d-shell{grid-template-columns:96px 1fr}.a-nav div,.d-nav div,.f-nav div{padding-left:6px;padding-right:6px}.calendar-sheet{inset:30px 22px 24px} }
+</style>
+
+<div class="beauty"><div class="beauty-head"><div class="label">Peloton Manager · A/D beauty pass</div><h2>Mniej kanciasto, więcej kolarstwa</h2><p>Layout 1 pozostaje bez zmian. Kliknij `Advance Day`, aby sprawdzić kalendarz.</p></div><div class="beauty-list">
+
+  <section class="beauty-option" data-choice="beauty-a-plus" onclick="toggleSelect(this)" role="button" tabindex="0"><div class="ui cinematic" id="beautyA"><div class="a-frame"><nav class="a-nav"><div class="a-brand">PELOTON<br>MANAGER<i></i></div><div class="active">HQ</div><div>Calendar</div><div>Team</div><div>Staff</div><div>Recruitment</div><div>Finances</div><div>Partners</div><div>World</div><div>Inbox <small>17</small></div></nav><main class="a-main"><header class="a-top"><div class="a-person"><b>Aleksander Kowalski</b><span>Manager career · Vistula Racing</span></div><div class="a-date"><span>Wed 12 Mar 2032 · 08:00</span><button class="a-button" onclick="event.stopPropagation();openCalendar('beautyA')">Advance day</button></div></header><div class="a-body"><section class="a-work"><div class="a-title"><h4>Manager home</h4><span>4 decisions today</span></div><div class="a-priority"><div><h5>Confirm Milano–Sanremo race selection</h5><p>Sporting director and medical lead disagree about the final two places.</p></div><strong>Today<br>17:00</strong></div><div class="a-list"><div class="a-row"><b>Reply to Mateusz Nowak’s agent</b><span>Recruitment</span><span>2 days</span></div><div class="a-row"><b>Approve altitude camp passenger list</b><span>Calendar</span><span>14 Mar</span></div><div class="a-row"><b>Review medical workload recommendation</b><span>Team</span><span>Open</span></div><div class="a-row"><b>Baltic Components activation request</b><span>Partners</span><span>18 Mar</span></div></div></section><aside class="a-race"><div class="a-photo"></div><div class="a-racecopy"><h5>Milano–Sanremo</h5><span>289 km · Monument · Objective: Top 10</span><div class="a-racefacts"><div><span>Entry</span><b>Pending</b></div><div><span>Travel</span><b>Confirmed</b></div><div><span>Equipment</span><b>1 exception</b></div><div><span>Weather</span><b>Forecast</b></div></div></div></aside></div></main></div><div class="advance"><div class="advance-shade"></div><div class="calendar-sheet"><div class="calendar-top"><div><h5>Advance day</h5><p>World events scheduled for Wednesday 12 March</p></div><button class="close-calendar" onclick="event.stopPropagation();closeCalendar('beautyA')">×</button></div><div class="calendar-week"><div class="calendar-day"><span>Mon</span><b>10</b></div><div class="calendar-day"><span>Tue</span><b>11</b></div><div class="calendar-day today"><span>Today</span><b>12</b></div><div class="calendar-day"><span>Thu</span><b>13</b></div><div class="calendar-day"><span>Fri</span><b>14</b></div><div class="calendar-day"><span>Sat</span><b>15</b></div><div class="calendar-day"><span>Sun</span><b>16</b></div></div><div class="event-list"><div class="event-line"><b>10:30</b><span>Training observation report published</span><span>Automatic</span></div><div class="event-line"><b>14:00</b><span>Cash-flow forecast recalculated</span><span>Automatic</span></div><div class="event-line"><b>17:00</b><span>Milano–Sanremo entry deadline</span><span>Decision pending</span></div></div><div class="calendar-foot"><p>The world processes events in stable chronological order.</p><button class="next-event">Advance to 10:30</button></div></div></div></div><div class="beauty-caption"><h3>A+. Cinematic Broadcast</h3><p>A po wygładzeniu: jedna duża miękka rama, filmowy kadr wyścigu i spokojniejsze powierzchnie. Żółty pełni rolę klubowego podpisu, a nie ozdobnego neonu.</p></div></section>
+
+  <section class="beauty-option" data-choice="beauty-d-plus" onclick="toggleSelect(this)" role="button" tabindex="0"><div class="ui atelier" id="beautyD"><div class="d-frame"><div class="d-wheel"></div><header class="d-top"><div class="d-brand">VISTULA<br>RACING</div><div class="d-manager"><b>Aleksander Kowalski</b><span>Manager authority / HQ</span></div><div class="d-clock"><span>12 Mar 2032 / 08:00</span><button class="d-button" onclick="event.stopPropagation();openCalendar('beautyD')">Advance day</button></div></header><div class="d-shell"><nav class="d-nav"><div class="active">HQ</div><div>Calendar</div><div>Team</div><div>Staff</div><div>Recruitment</div><div>Finances</div><div>Partners</div><div>World</div><div>Inbox <small>17</small></div></nav><main class="d-main"><div class="d-title"><h4>Manager home</h4><span>Four authority calls · next event 10:30</span></div><div class="d-grid"><section class="d-work"><div class="d-priority"><span class="d-code">A1</span><div><h5>Confirm Milano–Sanremo race selection</h5><p>Two unresolved places. Staff recommendations conflict.</p></div><strong>17:00</strong></div><div class="d-row"><b>A2</b><span>Reply to Mateusz Nowak’s agent</span><span>2 days</span></div><div class="d-row"><b>A3</b><span>Approve altitude camp passenger list</span><span>14 Mar</span></div><div class="d-row"><b>A4</b><span>Review medical workload recommendation</span><span>Open</span></div><div class="d-row"><b>A5</b><span>Baltic Components activation request</span><span>18 Mar</span></div></section><aside class="d-race"><span>Next race · 4 days</span><h5>Milano–Sanremo</h5><span>289 km · Monument · Top 10</span><div class="d-route"><svg viewBox="0 0 220 75" preserveAspectRatio="none" aria-label="Milano-Sanremo route profile"><path d="M0 61 C30 59 42 58 65 49 S100 64 128 51 S148 24 160 51 S181 17 195 45 S208 28 220 13" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="220" cy="13" r="4" fill="currentColor"/></svg></div><div class="d-fact"><span>Entry</span><b>Pending</b></div><div class="d-fact"><span>Travel</span><b>Confirmed</b></div><div class="d-fact"><span>Equipment</span><b>1 exception</b></div></aside></div></main></div></div><div class="advance"><div class="advance-shade"></div><div class="calendar-sheet"><div class="calendar-top"><div><h5>Advance day</h5><p>World event queue · Wednesday 12 March</p></div><button class="close-calendar" onclick="event.stopPropagation();closeCalendar('beautyD')">×</button></div><div class="calendar-week"><div class="calendar-day"><span>Mon</span><b>10</b></div><div class="calendar-day"><span>Tue</span><b>11</b></div><div class="calendar-day today"><span>Today</span><b>12</b></div><div class="calendar-day"><span>Thu</span><b>13</b></div><div class="calendar-day"><span>Fri</span><b>14</b></div><div class="calendar-day"><span>Sat</span><b>15</b></div><div class="calendar-day"><span>Sun</span><b>16</b></div></div><div class="event-list"><div class="event-line"><b>10:30</b><span>Training observation report published</span><span>Automatic</span></div><div class="event-line"><b>14:00</b><span>Cash-flow forecast recalculated</span><span>Automatic</span></div><div class="event-line"><b>17:00</b><span>Milano–Sanremo entry deadline</span><span>Decision pending</span></div></div><div class="calendar-foot"><p>Events are processed in stable chronological order.</p><button class="next-event">Advance to 10:30</button></div></div></div></div><div class="beauty-caption"><h3>D+. Carbon Atelier</h3><p>D po odejściu od „control roomu”: miękkie powierzchnie, geometria zębatki, szampański metal i płynny profil trasy. Nadal techniczny, ale bardziej premium niż przemysłowy.</p></div></section>
+
+  <section class="beauty-option" data-choice="beauty-fusion" onclick="toggleSelect(this)" role="button" tabindex="0"><div class="ui fusion" id="beautyF"><div class="f-frame"><nav class="f-nav"><div class="f-monogram">PM</div><div class="active">HQ</div><div>Calendar</div><div>Team</div><div>Staff</div><div>Recruitment</div><div>Finances</div><div>Partners</div><div>World</div><div>Inbox <small>17</small></div></nav><main class="f-main"><header class="f-top"><div class="f-person"><b>Aleksander Kowalski</b><span>Manager career · Vistula Racing</span></div><div class="f-clock"><span>Wed 12 Mar 2032 · 08:00</span><button class="f-button" onclick="event.stopPropagation();openCalendar('beautyF')">Advance day</button></div></header><div class="f-body"><div class="f-ribbon"><svg viewBox="0 0 700 30" preserveAspectRatio="none" aria-hidden="true"><path d="M0 24 C120 21 175 8 265 17 S430 25 520 10 S630 21 700 4" fill="none" stroke="currentColor" stroke-width="3"/></svg></div><section class="f-work"><div class="f-title"><h4>Manager home</h4><span>4 decisions today</span></div><div class="f-priority"><div><h5>Confirm Milano–Sanremo race selection</h5><p>Sporting director and medical lead disagree about the final two places.</p></div><strong>Today<br>17:00</strong></div><div class="f-row"><b>Reply to Mateusz Nowak’s agent</b><span>Recruitment</span><span>2 days</span></div><div class="f-row"><b>Approve altitude camp passenger list</b><span>Calendar</span><span>14 Mar</span></div><div class="f-row"><b>Review medical workload recommendation</b><span>Team</span><span>Open</span></div><div class="f-row"><b>Baltic Components activation request</b><span>Partners</span><span>18 Mar</span></div></section><aside class="f-race"><div class="f-photo"></div><div class="f-racecopy"><span>Next race · 4 days</span><h5>Milano–Sanremo</h5><div class="f-fact"><span>Entry</span><strong>Pending</strong></div><div class="f-fact"><span>Travel</span><b>Confirmed</b></div><div class="f-fact"><span>Equipment</span><b>1 exception</b></div></div></aside></div></main></div><div class="advance"><div class="advance-shade"></div><div class="calendar-sheet"><div class="calendar-top"><div><h5>Advance day</h5><p>World events scheduled for Wednesday 12 March</p></div><button class="close-calendar" onclick="event.stopPropagation();closeCalendar('beautyF')">×</button></div><div class="calendar-week"><div class="calendar-day"><span>Mon</span><b>10</b></div><div class="calendar-day"><span>Tue</span><b>11</b></div><div class="calendar-day today"><span>Today</span><b>12</b></div><div class="calendar-day"><span>Thu</span><b>13</b></div><div class="calendar-day"><span>Fri</span><b>14</b></div><div class="calendar-day"><span>Sat</span><b>15</b></div><div class="calendar-day"><span>Sun</span><b>16</b></div></div><div class="event-list"><div class="event-line"><b>10:30</b><span>Training observation report published</span><span>Automatic</span></div><div class="event-line"><b>14:00</b><span>Cash-flow forecast recalculated</span><span>Automatic</span></div><div class="event-line"><b>17:00</b><span>Milano–Sanremo entry deadline</span><span>Decision pending</span></div></div><div class="calendar-foot"><p>The world processes events in stable chronological order.</p><button class="next-event">Advance to 10:30</button></div></div></div></div><div class="beauty-caption"><h3>A×D. Grand Tour Studio</h3><p>Moja rekomendacja: fotografia i emocje A, materiałowość D oraz jedna płynna linia trasy spinająca pracę z wyścigiem. Najmniej „tematyczna skórka”, najbardziej własny język gry.</p></div></section>
+
+  </div><div class="choose"><b>Wybierz wersję albo detale.</b> Możesz wskazać np. „A+ z kolorami D+” albo „hybryda, ale bez fotografii”.</div></div>
+
+<script>
+  function openCalendar(id){document.getElementById(id).classList.add('show-calendar');}
+  function closeCalendar(id){document.getElementById(id).classList.remove('show-calendar');}
+  document.querySelectorAll('.beauty-option').forEach(function(el){el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleSelect(el);}})});
+</script>
+</body>
+</html>

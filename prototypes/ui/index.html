@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Peloton Manager — UI Prototype Lab</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, "Segoe UI", sans-serif;
+      background: #151714;
+      color: #eceee8;
+    }
+    body {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 64px 24px;
+    }
+    h1 { margin: 0 0 12px; font-size: clamp(32px, 6vw, 58px); letter-spacing: -0.04em; }
+    p { max-width: 700px; color: #b8bdb3; line-height: 1.6; }
+    ol { margin: 44px 0 0; padding: 0; list-style: none; border-top: 1px solid #3b4038; }
+    li { border-bottom: 1px solid #3b4038; }
+    a {
+      display: grid;
+      grid-template-columns: 52px 1fr auto;
+      gap: 18px;
+      align-items: center;
+      padding: 22px 4px;
+      color: inherit;
+      text-decoration: none;
+    }
+    a:hover { color: #d8ff45; }
+    .number { color: #7f8678; font-variant-numeric: tabular-nums; }
+    .name { font-size: 20px; font-weight: 650; }
+    .note { color: #8f9689; text-align: right; }
+    footer { margin-top: 36px; color: #7f8678; font-size: 14px; }
+    @media (max-width: 640px) {
+      a { grid-template-columns: 34px 1fr; }
+      .note { grid-column: 2; text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>UI Prototype Lab</h1>
+    <p>Kolejne etapy eksploracji dashboardu Peloton Manager. To materiały robocze,
+      nie finalny design system ani specyfikacja zachowania gry.</p>
+    <ol>
+      <li><a href="01-initial-directions.html"><span class="number">01</span><span class="name">Initial directions</span><span class="note">pierwsze cztery podejścia</span></a></li>
+      <li><a href="02-anti-ai-reference-board.html"><span class="number">02</span><span class="name">Anti-AI reference board</span><span class="note">referencje i diagnoza</span></a></li>
+      <li><a href="03-layout-structures.html"><span class="number">03</span><span class="name">Layout structures</span><span class="note">wybór Manager Home</span></a></li>
+      <li><a href="04-radical-skins.html"><span class="number">04</span><span class="name">Radical skins</span><span class="note">A–D</span></a></li>
+      <li><a href="05-beauty-pass.html"><span class="number">05</span><span class="name">Beauty pass</span><span class="note">A+, D+ i A×D</span></a></li>
+    </ol>
+  </main>
+  <footer>Branch eksperymentalny — wybór wizualny nie został jeszcze zamknięty.</footer>
+</body>
+</html>

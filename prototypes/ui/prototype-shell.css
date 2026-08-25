@@ -1,0 +1,36 @@
+:root {
+  color-scheme: light;
+  --background: #e8e9e6;
+  --foreground: #202321;
+  --card: #f7f7f4;
+  --border: #c6c9c3;
+  --primary: #a13c2f;
+  --primary-dark: #7e2d24;
+  --muted-foreground: #60655f;
+  --ring: #a13c2f;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 32px 20px 64px;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+button, input, select, textarea { font: inherit; }
+img { max-width: 100%; }
+
+.label {
+  color: var(--muted-foreground);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+  body { padding: 20px 10px 40px; }
+}

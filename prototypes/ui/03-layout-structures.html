@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Peloton Manager — Dashboard Layout Structures</title>
+  <link rel="stylesheet" href="prototype-shell.css">
+  <script src="prototype-shell.js" defer></script>
+</head>
+<body>
+<style>
+  /* anchors:
+     v1 = Football Manager dense home; diverge: manager career and decision deadlines dominate.
+     v2 = desktop correspondence/workbench; diverge: Truth→Knowledge→Decision evidence stays visible.
+     v3 = Pro Cycling Manager calendar; diverge: event-driven world rendered as a weekly operating board. */
+  .reset { --background:#e8e9e6; --surface:#f7f7f4; --surface-2:#dedfdb; --foreground:#202321; --muted-foreground:#60655f; --border:#c6c9c3; --primary:#a13c2f; --primary-dark:#7e2d24; --nav:#26312d; --nav-2:#34423c; --nav-text:#e8ece8; --warn:#8b5c14; max-width:1180px; margin:0 auto; color:var(--foreground); font-family:"Segoe UI",Arial,sans-serif; }
+  .reset-head { border-bottom:2px solid var(--foreground); padding-bottom:12px; margin-bottom:16px; }
+  .reset-head h2 { margin:3px 0 6px; }
+  .reset-head p { margin:0; color:var(--muted-foreground); }
+  .versions { display:grid; gap:22px; }
+  .version { border:1px solid var(--border); background:var(--surface); cursor:pointer; }
+  .version.selected { outline:3px solid color-mix(in srgb,var(--primary) 40%,transparent); outline-offset:2px; }
+  .version:focus-visible { outline:3px solid var(--primary); outline-offset:3px; }
+  .screen { height:430px; overflow:hidden; font-size:11px; line-height:1.35; background:var(--background); }
+  .caption { display:grid; grid-template-columns:180px 1fr; gap:16px; border-top:1px solid var(--border); padding:13px 16px 15px; }
+  .caption h3 { margin:0; font-size:15px; }
+  .caption p { margin:0; color:var(--muted-foreground); font-size:12px; line-height:1.5; }
+  .tnum { font-variant-numeric:tabular-nums; }
+  .btnpm { border:1px solid var(--primary-dark); background:var(--primary); color:#fff; border-radius:4px; height:28px; padding:0 12px; font:600 11px/1 "Segoe UI",Arial,sans-serif; }
+  .btnpm:focus-visible { outline:2px solid #fff; outline-offset:-4px; }
+  .status { display:inline-block; border:1px solid currentColor; padding:1px 5px; border-radius:999px; font-size:9px; white-space:nowrap; }
+  .status.warn { color:var(--warn); }
+  .status.due { color:var(--primary); }
+  .status.muted { color:var(--muted-foreground); }
+
+  /* common classic chrome */
+  .appbar { height:34px; background:var(--nav); color:var(--nav-text); display:flex; align-items:center; justify-content:space-between; padding:0 11px; border-bottom:1px solid #53605a; }
+  .career { display:flex; align-items:center; gap:8px; min-width:0; }
+  .clubmark { width:22px; height:22px; display:grid; place-items:center; border:1px solid #9aa59f; font-weight:700; font-size:9px; }
+  .career b { font-size:11px; }
+  .career span { color:#bfc7c2; font-size:9px; margin-left:6px; }
+  .worldclock { display:flex; align-items:center; gap:12px; font-variant-numeric:tabular-nums; }
+  .worldclock span { color:#ccd2ce; }
+  .shell { display:grid; grid-template-columns:112px 1fr; height:396px; }
+  .navpm { background:var(--nav); color:#bfc7c2; border-right:1px solid #53605a; padding:7px 0; }
+  .navpm div { padding:5px 11px; border-left:3px solid transparent; }
+  .navpm .active { color:#fff; background:var(--nav-2); border-left-color:#d4b04c; }
+  .navpm .count { float:right; font-variant-numeric:tabular-nums; }
+
+  /* v1 — manager home */
+  .home { background:var(--surface); padding:12px 14px; min-width:0; }
+  .home-title { display:flex; align-items:flex-end; justify-content:space-between; border-bottom:1px solid var(--border); padding-bottom:8px; }
+  .home-title h4 { margin:0 0 2px; font-size:17px; font-weight:650; }
+  .home-title span { color:var(--muted-foreground); }
+  .home-grid { display:grid; grid-template-columns:minmax(0,1fr) 238px; gap:18px; padding-top:10px; }
+  .section-title { font-size:11px; font-weight:650; margin:0 0 6px; }
+  .protagonist { border-top:2px solid var(--primary); border-bottom:1px solid var(--border); padding:9px 0 10px; display:grid; grid-template-columns:1fr auto; gap:12px; }
+  .protagonist h5 { margin:0 0 3px; font-size:14px; font-weight:650; }
+  .protagonist p { margin:0; color:var(--muted-foreground); max-width:62ch; }
+  .protagonist .deadline { text-align:right; color:var(--primary); font-weight:600; font-variant-numeric:tabular-nums; }
+  .worktable { width:100%; border-collapse:collapse; table-layout:fixed; }
+  .worktable th { color:var(--muted-foreground); font-size:9px; font-weight:600; text-align:left; padding:6px 4px; border-bottom:1px solid var(--border); }
+  .worktable td { padding:7px 4px; border-bottom:1px solid var(--border); vertical-align:top; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .worktable th:last-child,.worktable td:last-child { text-align:right; width:68px; }
+  .worktable .sub { display:block; color:var(--muted-foreground); font-size:9px; overflow:hidden; text-overflow:ellipsis; }
+  .next-race { border-top:2px solid var(--foreground); padding-top:7px; }
+  .next-race .race-name { font-size:16px; font-weight:650; margin:4px 0 3px; }
+  .next-race .race-meta { color:var(--muted-foreground); margin-bottom:8px; }
+  .factline { display:flex; justify-content:space-between; gap:10px; border-top:1px solid var(--border); padding:6px 0; }
+  .factline span:first-child { color:var(--muted-foreground); }
+  .staff-note { margin-top:10px; border-top:1px solid var(--border); padding-top:8px; }
+  .staff-note b { display:block; margin-bottom:3px; }
+  .staff-note p { margin:0; color:var(--muted-foreground); }
+  .feedline { margin-top:9px; border-top:1px solid var(--border); padding-top:7px; display:flex; gap:10px; min-width:0; }
+  .feedline b { flex:none; }
+  .feedline span { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--muted-foreground); }
+
+  /* v2 — decision workbench */
+  .wb { height:430px; background:var(--surface); }
+  .wb-top { height:34px; background:var(--nav); color:var(--nav-text); display:flex; align-items:center; justify-content:space-between; padding:0 10px; }
+  .wb-tabs { height:30px; display:flex; align-items:end; gap:18px; padding:0 12px; border-bottom:1px solid var(--border); background:var(--surface); }
+  .wb-tabs span { padding-bottom:7px; color:var(--muted-foreground); }
+  .wb-tabs .active { color:var(--foreground); border-bottom:2px solid var(--primary); }
+  .wb-body { display:grid; grid-template-columns:180px minmax(0,1fr) 205px; height:366px; }
+  .queue { border-right:1px solid var(--border); background:#ecece8; overflow:hidden; }
+  .pane-head { padding:9px 10px 7px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; font-weight:650; }
+  .qitem { padding:8px 10px; border-bottom:1px solid var(--border); }
+  .qitem.active { background:var(--surface); box-shadow:inset 3px 0 var(--primary); }
+  .qitem b { display:block; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .qitem span { color:var(--muted-foreground); font-size:9px; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .document { padding:10px 14px; overflow:hidden; min-width:0; }
+  .doc-head { display:flex; justify-content:space-between; align-items:start; border-bottom:1px solid var(--border); padding-bottom:8px; }
+  .doc-head h4 { margin:0 0 3px; font-size:15px; }
+  .doc-head p { margin:0; color:var(--muted-foreground); }
+  .recommendations { margin-top:9px; }
+  .rec { display:grid; grid-template-columns:88px 1fr; gap:8px; padding:6px 0; border-bottom:1px solid var(--border); }
+  .rec b { font-weight:600; }
+  .rec p { margin:0; }
+  .rec small { display:block; color:var(--muted-foreground); margin-top:2px; }
+  .selection-table { width:100%; border-collapse:collapse; margin-top:8px; table-layout:fixed; }
+  .selection-table th { color:var(--muted-foreground); font-size:9px; font-weight:600; padding:4px 3px; border-bottom:1px solid var(--border); text-align:left; }
+  .selection-table td { padding:5px 3px; border-bottom:1px solid var(--border); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .selection-table td:nth-child(3),.selection-table th:nth-child(3) { text-align:right; font-variant-numeric:tabular-nums; }
+  .evidence { border-left:1px solid var(--border); background:#ecece8; padding:9px 10px; overflow:hidden; }
+  .evidence h5 { margin:0 0 6px; font-size:11px; }
+  .evidence dl { margin:0; }
+  .evidence dt { color:var(--muted-foreground); margin-top:7px; }
+  .evidence dd { margin:1px 0 0; }
+  .unknown { color:var(--muted-foreground); font-style:italic; }
+  .evidence .explain { margin-top:10px; padding-top:8px; border-top:1px solid var(--border); color:var(--muted-foreground); }
+
+  /* v3 — season board */
+  .season-work { background:var(--surface); padding:10px 12px; min-width:0; }
+  .season-head { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:7px; }
+  .season-head h4 { margin:0; font-size:16px; }
+  .season-layout { display:grid; grid-template-columns:minmax(0,1fr) 218px; gap:14px; padding-top:8px; }
+  .week { border-top:2px solid var(--foreground); }
+  .week-days { display:grid; grid-template-columns:repeat(7,1fr); border-bottom:1px solid var(--border); }
+  .day { min-width:0; min-height:158px; border-right:1px solid var(--border); padding:6px; }
+  .day:last-child { border-right:0; }
+  .day.today { background:#efe7d8; }
+  .day-head { display:flex; justify-content:space-between; color:var(--muted-foreground); border-bottom:1px solid var(--border); padding-bottom:4px; margin-bottom:5px; }
+  .day.today .day-head { color:var(--foreground); font-weight:650; }
+  .event { padding:4px 0; border-bottom:1px solid color-mix(in srgb,var(--border) 65%,transparent); }
+  .event b { display:block; font-size:9px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .event span { display:block; color:var(--muted-foreground); font-size:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .event.action b { color:var(--primary); }
+  .agenda-table { margin-top:8px; width:100%; border-collapse:collapse; table-layout:fixed; }
+  .agenda-table td { padding:5px 3px; border-bottom:1px solid var(--border); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .agenda-table td:first-child { width:42px; color:var(--muted-foreground); font-variant-numeric:tabular-nums; }
+  .agenda-table td:last-child { width:78px; text-align:right; }
+  .decisions { border-top:2px solid var(--primary); }
+  .decisions h5 { margin:0; padding:6px 0; border-bottom:1px solid var(--border); font-size:11px; }
+  .decision-row { padding:7px 0; border-bottom:1px solid var(--border); }
+  .decision-row b { display:block; }
+  .decision-row p { margin:2px 0 4px; color:var(--muted-foreground); font-size:9px; }
+  .race-context { margin-top:9px; padding-top:7px; border-top:1px solid var(--border); }
+  .race-context b { display:block; font-size:13px; margin:3px 0; }
+  .season-rail { margin-top:9px; display:grid; grid-template-columns:1fr 1.3fr 1.4fr 1.4fr 1fr; height:23px; border:1px solid var(--border); }
+  .season-rail span { display:grid; place-items:center; border-right:1px solid var(--border); color:var(--muted-foreground); font-size:8px; }
+  .season-rail span:last-child { border-right:0; }
+  .season-rail .current { background:var(--nav); color:var(--nav-text); }
+
+  .choice-note { margin-top:16px; border-top:2px solid var(--foreground); padding-top:12px; color:var(--muted-foreground); font-size:13px; }
+  @media(max-width:820px){ .caption{grid-template-columns:1fr}.screen{height:390px}.wb-body{grid-template-columns:155px minmax(0,1fr)}.evidence{display:none}.home-grid{grid-template-columns:minmax(0,1fr) 190px}.season-layout{grid-template-columns:minmax(0,1fr) 180px}.shell{grid-template-columns:94px 1fr}.navpm div{padding-left:8px;padding-right:8px} }
+</style>
+
+<div class="reset">
+  <div class="reset-head">
+    <div class="label">Peloton Manager · własne wersje po resecie</div>
+    <h2>Trzy sposoby organizacji dnia managera</h2>
+    <p>Ta sama gra, te same dane, bez zmiany wariantu A. Kliknij wersję, którą warto rozwijać.</p>
+  </div>
+
+  <div class="versions">
+    <section class="version" data-choice="v1-manager-home" onclick="toggleSelect(this)" role="button" tabindex="0">
+      <div class="screen">
+        <div class="appbar"><div class="career"><div class="clubmark">VR</div><div><b>Aleksander Kowalski</b><span>Manager career · employed by Vistula Racing</span></div></div><div class="worldclock"><span>Wed 12 Mar 2032 · 08:00</span><button class="btnpm">Advance day</button></div></div>
+        <div class="shell"><nav class="navpm"><div class="active">HQ</div><div>Calendar</div><div>Team</div><div>Staff</div><div>Recruitment</div><div>Finances</div><div>Partners</div><div>World</div><div>Inbox <span class="count">17</span></div></nav>
+          <main class="home"><div class="home-title"><div><h4>Home</h4><span>Four matters need authority before the world can move on.</span></div><span class="tnum">Next event 10:30</span></div>
+            <div class="home-grid"><div><h5 class="section-title">Requires your decision</h5><div class="protagonist"><div><h5>Confirm Milano–Sanremo race selection</h5><p>The sporting director and performance lead disagree about the final two places. The registration closes today.</p></div><div class="deadline">Today<br>17:00</div></div>
+              <table class="worktable"><thead><tr><th>Other work</th><th>Source</th><th>Due</th></tr></thead><tbody>
+                <tr><td>Reply to Mateusz Nowak’s agent<span class="sub">Proposed wage breaks the current seniority structure</span></td><td>Recruitment</td><td><span class="status warn">2 days</span></td></tr>
+                <tr><td>Approve altitude camp travel<span class="sub">Operations need passenger names before booking</span></td><td>Calendar</td><td><span class="status muted">14 Mar</span></td></tr>
+                <tr><td>Review medical workload recommendation<span class="sub">Two riders affected; rider consent status differs</span></td><td>Team</td><td><span class="status muted">Open</span></td></tr>
+                <tr><td>Partner activation request: Baltic Components<span class="sub">Uses one rest-day media slot during Catalunya</span></td><td>Partners</td><td><span class="status muted">18 Mar</span></td></tr>
+              </tbody></table>
+              <div class="feedline"><b>Latest report</b><span>Scout E. Zielińska added three observations to dossier #7741; climbing repeatability remains low-confidence.</span></div>
+            </div><aside><div class="next-race"><span>Next race · 4 days</span><div class="race-name">Milano–Sanremo</div><div class="race-meta">289 km · Monument · Objective: Top 10</div><div class="factline"><span>Entry</span><b>Pending</b></div><div class="factline"><span>Travel</span><span>Confirmed</span></div><div class="factline"><span>Equipment</span><span>1 exception</span></div><div class="factline"><span>Weather knowledge</span><span>Forecast only</span></div></div><div class="staff-note"><b>Staff attention</b><p>Performance lead reports that S. Jankowski’s recent load is compatible with selection. Medical staff disagree and rate the evidence incomplete.</p></div></aside></div>
+          </main></div>
+      </div>
+      <div class="caption"><h3>1. Manager Home</h3><p>Najbliżej klasycznego Football Managera. Najważniejsza decyzja dominuje, reszta jest roboczą tabelą, a następny wyścig pozostaje stale widoczny. Bezpieczny i łatwy do zrozumienia.</p></div>
+    </section>
+
+    <section class="version" data-choice="v2-decision-workbench" onclick="toggleSelect(this)" role="button" tabindex="0">
+      <div class="screen wb"><div class="wb-top"><div class="career"><div class="clubmark">VR</div><b>Aleksander Kowalski</b><span>Vistula Racing</span></div><div class="worldclock"><span>12 Mar 2032 · 08:00</span><button class="btnpm">Advance day</button></div></div>
+        <div class="wb-tabs"><span class="active">HQ</span><span>Calendar</span><span>Team</span><span>Staff</span><span>Recruitment</span><span>Finances</span><span>Partners</span><span>World</span><span>Inbox 17</span></div>
+        <div class="wb-body"><aside class="queue"><div class="pane-head"><span>Work queue</span><span>8</span></div><div class="qitem active"><b>Milano–Sanremo selection</b><span>Decision · due today 17:00</span></div><div class="qitem"><b>Mateusz Nowak contract</b><span>Negotiation · response in 2 days</span></div><div class="qitem"><b>Medical workload review</b><span>Recommendation · no deadline</span></div><div class="qitem"><b>Volta a Catalunya travel</b><span>Operations · due 14 Mar</span></div><div class="qitem"><b>Baltic Components request</b><span>Partner · due 18 Mar</span></div><div class="qitem"><b>Dossier #7741 updated</b><span>Scouting · informational</span></div></aside>
+          <main class="document"><div class="doc-head"><div><h4>Milano–Sanremo selection</h4><p>Race entry MSR-2032 · six places confirmed, two places unresolved</p></div><span class="status due">Due today 17:00</span></div>
+            <div class="recommendations"><div class="rec"><b>Sporting director</b><p>Select Jankowski for the final domestique place.<small>Reason: positioning and recent one-day race results. Confidence: medium.</small></p></div><div class="rec"><b>Medical lead</b><p>Leave Jankowski out and request another observation tomorrow.<small>Reason: incomplete recovery evidence after minor illness. Confidence: medium.</small></p></div><div class="rec"><b>Performance lead</b><p>Jankowski’s observed load is compatible with the planned role.<small>Does not include private medical truth unavailable to this role.</small></p></div></div>
+            <table class="selection-table"><thead><tr><th>Rider</th><th>Proposed role</th><th>Observed form</th><th>Selection</th></tr></thead><tbody><tr><td>Piotr Wysocki</td><td>Leader</td><td>Good</td><td>Confirmed</td></tr><tr><td>Łukasz Białecki</td><td>Protected</td><td>Good</td><td>Confirmed</td></tr><tr><td>Stanisław Jankowski</td><td>Road captain</td><td>Uncertain</td><td>Unresolved</td></tr><tr><td>Alejandro Fernández de la Vega</td><td>Domestique</td><td>Average</td><td>Unresolved</td></tr></tbody></table>
+          </main><aside class="evidence"><h5>What the manager knows</h5><dl><dt>Recent race observation</dt><dd>Jankowski: medium confidence</dd><dt>Medical clearance</dt><dd>Not issued</dd><dt>Private rider symptoms</dt><dd class="unknown">Not available</dd><dt>Rival selections</dt><dd class="unknown">Not published</dd><dt>Weather</dt><dd>Forecast, 61% confidence</dd></dl><div class="explain"><b>Why these options?</b><br>The recommendations use different observations and responsibilities. Opening World Spy is a debug action and does not change this manager’s knowledge.</div></aside></div>
+      </div>
+      <div class="caption"><h3>2. Decision Workbench</h3><p>Najbardziej „narzędziowy”. HQ działa jak kolejka spraw, a wybrana decyzja pokazuje rekomendacje i granice wiedzy. Najlepiej wspiera wyjaśnialność AI, lecz jest mniej widowiskowy.</p></div>
+    </section>
+
+    <section class="version" data-choice="v3-season-board" onclick="toggleSelect(this)" role="button" tabindex="0">
+      <div class="screen"><div class="appbar"><div class="career"><div class="clubmark">VR</div><div><b>Aleksander Kowalski</b><span>Manager career · Vistula Racing</span></div></div><div class="worldclock"><span>Wed 12 Mar 2032 · 08:00</span><button class="btnpm">Advance day</button></div></div>
+        <div class="shell"><nav class="navpm"><div class="active">HQ</div><div>Calendar</div><div>Team</div><div>Staff</div><div>Recruitment</div><div>Finances</div><div>Partners</div><div>World</div><div>Inbox <span class="count">17</span></div></nav>
+          <main class="season-work"><div class="season-head"><div><h4>March 2032</h4><span>Management week · 10–16 March</span></div><span>Season objective review in 19 days</span></div>
+            <div class="season-layout"><div><div class="week"><div class="week-days">
+              <div class="day"><div class="day-head"><span>Mon</span><b>10</b></div><div class="event"><b>Recovery assessment</b><span>Team · completed</span></div><div class="event"><b>Paris–Nice stage 7</b><span>World result</span></div></div>
+              <div class="day"><div class="day-head"><span>Tue</span><b>11</b></div><div class="event"><b>Scouting review</b><span>Dossier #7741</span></div><div class="event"><b>Nowak agent reply</b><span>Received 16:42</span></div></div>
+              <div class="day today"><div class="day-head"><span>Today</span><b>12</b></div><div class="event action"><b>MSR selection closes</b><span>17:00 · decision</span></div><div class="event"><b>Training report</b><span>10:30 · expected</span></div><div class="event"><b>Finance forecast</b><span>14:00 · scheduled</span></div></div>
+              <div class="day"><div class="day-head"><span>Thu</span><b>13</b></div><div class="event"><b>Equipment packing</b><span>MSR · operations</span></div><div class="event"><b>Staff workload review</b><span>13:00</span></div></div>
+              <div class="day"><div class="day-head"><span>Fri</span><b>14</b></div><div class="event action"><b>Catalunya passenger list</b><span>Deadline 12:00</span></div><div class="event"><b>MSR travel</b><span>18:20 · Milano</span></div></div>
+              <div class="day"><div class="day-head"><span>Sat</span><b>15</b></div><div class="event"><b>Course recon</b><span>Optional · weather</span></div><div class="event"><b>Team briefing</b><span>19:00</span></div></div>
+              <div class="day"><div class="day-head"><span>Sun</span><b>16</b></div><div class="event"><b>Milano–Sanremo</b><span>Race day · 289 km</span></div></div>
+            </div></div>
+              <table class="agenda-table"><tbody><tr><td>10:30</td><td>Performance department publishes training observation report</td><td>Expected</td></tr><tr><td>14:00</td><td>Monthly cash-flow forecast recalculated after equipment commitment</td><td>Automatic</td></tr><tr><td>17:00</td><td>Milano–Sanremo entry deadline</td><td><span class="status due">Blocked</span></td></tr></tbody></table>
+              <div class="season-rail"><span>Pre-season</span><span class="current">Spring</span><span>Giro block</span><span>Tour block</span><span>Late season</span></div>
+            </div><aside><div class="decisions"><h5>Open decisions</h5><div class="decision-row"><b>MSR selection</b><p>Two unresolved places. Staff disagree.</p><span class="status due">Today</span></div><div class="decision-row"><b>Nowak contract</b><p>Counter-offer exceeds wage structure.</p><span class="status warn">2 days</span></div><div class="decision-row"><b>Altitude camp travel</b><p>Passenger list is incomplete.</p><span class="status muted">14 Mar</span></div></div><div class="race-context"><span>Next race</span><b>Milano–Sanremo</b><span>Race preparation opens after selection confirmation.</span></div></aside></div>
+          </main></div>
+      </div>
+      <div class="caption"><h3>3. Season Board</h3><p>Najbardziej kolarski. Dashboard pokazuje świat w czasie: terminy, raporty, podróże i wyścigi. Dobrze komunikuje event-driven simulation, ale przy bardzo obciążonym tygodniu wymaga dobrego filtrowania.</p></div>
+    </section>
+  </div>
+
+  <div class="choice-note"><b>Możesz wybrać jedną wersję albo hybrydę.</b> Przykład: „struktura 1, warsztat decyzji z 2 i tygodniowy pasek z 3”.</div>
+</div>
+
+<script>
+  document.querySelectorAll('.version').forEach(function(el){el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleSelect(el);}})});
+</script>
+</body>
+</html>

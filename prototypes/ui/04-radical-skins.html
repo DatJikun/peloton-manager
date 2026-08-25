@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Peloton Manager — Radical Dashboard Skins</title>
+  <link rel="stylesheet" href="prototype-shell.css">
+  <script src="prototype-shell.js" defer></script>
+</head>
+<body>
+<style>
+  /* Shared macro-layout: selected Manager Home structure.
+     A anchor: European sports broadcast graphics; diverge: management work remains primary.
+     B anchor: Football Manager / desktop sports sims circa 2007–2012; diverge: modern legibility.
+     C anchor: real cycling roadbook + team logistics binder; diverge: live world state, not static print.
+     D anchor: team service-course equipment workstation; diverge: people and decisions, not telemetry fantasy. */
+  .skins { max-width:1180px; margin:0 auto; color:var(--foreground); font-family:"Segoe UI",Arial,sans-serif; }
+  .skins-head { border-bottom:2px solid var(--foreground); padding-bottom:12px; margin-bottom:18px; }
+  .skins-head h2 { margin:3px 0 6px; }
+  .skins-head p { margin:0; color:var(--muted-foreground); }
+  .skin-list { display:grid; gap:24px; }
+  .skin-option { border:1px solid var(--border); background:var(--card); cursor:pointer; }
+  .skin-option.selected { outline:3px solid var(--primary); outline-offset:3px; }
+  .skin-option:focus-visible { outline:3px solid var(--ring); outline-offset:3px; }
+  .mock { height:430px; overflow:hidden; position:relative; font-size:10px; line-height:1.35; }
+  .skin-caption { display:grid; grid-template-columns:190px 1fr; gap:16px; padding:13px 16px 15px; border-top:1px solid var(--border); }
+  .skin-caption h3 { margin:0; font-size:15px; }
+  .skin-caption p { margin:0; color:var(--muted-foreground); font-size:12px; line-height:1.5; }
+  .tn { font-variant-numeric:tabular-nums; }
+  .ellipsis { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  .adv { position:absolute; inset:0; z-index:20; display:none; }
+  .mock.is-advance .adv { display:block; }
+  .adv-scrim { position:absolute; inset:0; background:rgba(20,24,22,.62); }
+  .adv-sheet { position:absolute; inset:38px 48px 30px; overflow:hidden; }
+  .adv-head { display:flex; justify-content:space-between; align-items:start; padding:12px 14px 10px; }
+  .adv-head h5 { margin:0 0 3px; font-size:16px; }
+  .adv-head p { margin:0; opacity:.72; }
+  .adv-close { border:0; background:transparent; color:inherit; font:600 16px/1 sans-serif; width:28px; height:28px; }
+  .weekstrip { display:grid; grid-template-columns:repeat(7,1fr); border-top:1px solid currentColor; border-bottom:1px solid currentColor; }
+  .weekstrip div { padding:7px; border-right:1px solid currentColor; min-height:42px; }
+  .weekstrip div:last-child { border-right:0; }
+  .weekstrip b,.weekstrip span { display:block; }
+  .weekstrip span { opacity:.65; }
+  .advance-events { padding:8px 14px; }
+  .advance-event { display:grid; grid-template-columns:48px 1fr auto; gap:10px; padding:6px 0; border-bottom:1px solid currentColor; }
+  .advance-event span:last-child { opacity:.7; }
+  .advance-foot { display:flex; justify-content:space-between; align-items:center; padding:9px 14px; }
+  .advance-foot p { margin:0; max-width:60ch; }
+
+  /* A — broadcast */
+  .broadcast { --b-bg:#e9ece7; --b-paper:#f8f8f4; --b-ink:#17242a; --b-nav:#173641; --b-accent:#e8b927; --b-red:#b7392d; background:var(--b-bg); color:var(--b-ink); font-family:"Arial Narrow","Segoe UI",sans-serif; }
+  .b-top { height:39px; background:var(--b-nav); color:#f4f6f2; display:grid; grid-template-columns:112px 1fr auto; align-items:center; }
+  .b-logo { height:39px; display:grid; place-items:center; background:var(--b-accent); color:var(--b-ink); font:800 13px/1 "Arial Narrow",sans-serif; letter-spacing:-.02em; }
+  .b-manager { padding-left:12px; font-size:11px; }
+  .b-manager span { color:#b9c8c9; margin-left:8px; }
+  .b-clock { display:flex; align-items:center; gap:12px; padding-right:9px; }
+  .b-advance { height:27px; border:0; border-radius:0; background:var(--b-accent); color:var(--b-ink); padding:0 12px; font-weight:800; text-transform:uppercase; }
+  .b-shell { height:391px; display:grid; grid-template-columns:112px 1fr; }
+  .b-nav { background:var(--b-nav); color:#c7d2d2; padding-top:9px; }
+  .b-nav div { padding:6px 10px; border-left:4px solid transparent; }
+  .b-nav .active { background:#244955; color:#fff; border-left-color:var(--b-accent); font-weight:700; }
+  .b-nav .mail { float:right; color:var(--b-accent); }
+  .b-home { background:var(--b-paper); min-width:0; }
+  .b-lower { height:42px; display:flex; justify-content:space-between; align-items:center; padding:0 13px; border-bottom:1px solid #bfc7c2; }
+  .b-lower h4 { margin:0; font-size:19px; letter-spacing:-.02em; }
+  .b-lower b { color:var(--b-red); }
+  .b-content { display:grid; grid-template-columns:minmax(0,1fr) 232px; height:349px; }
+  .b-work { padding:10px 13px; min-width:0; }
+  .b-feature { display:grid; grid-template-columns:1fr 78px; border-top:5px solid var(--b-accent); border-bottom:1px solid #bfc7c2; padding:8px 0 9px; }
+  .b-feature h5 { margin:0 0 3px; font-size:15px; }
+  .b-feature p { margin:0; color:#5e6967; }
+  .b-deadline { color:var(--b-red); font-size:12px; font-weight:800; text-align:right; }
+  .b-table { width:100%; border-collapse:collapse; table-layout:fixed; margin-top:7px; }
+  .b-table th { text-align:left; color:#697370; font-size:9px; padding:4px; border-bottom:1px solid #aeb7b2; }
+  .b-table td { padding:6px 4px; border-bottom:1px solid #d2d7d3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .b-table td:last-child,.b-table th:last-child { width:58px; text-align:right; font-variant-numeric:tabular-nums; }
+  .b-race { background:var(--b-nav); color:#f6f7f4; position:relative; overflow:hidden; }
+  .b-photo { height:150px; background-image:url('https://cdn.mos.cms.futurecdn.net/XJ9rAYR4pnt6fmozTiPfVV-2560-80.jpg'); background-size:cover; background-position:center; border-bottom:6px solid var(--b-accent); }
+  .b-race-copy { padding:9px 11px; }
+  .b-race-copy span { color:#bcc9c9; }
+  .b-race-copy h5 { margin:2px 0 7px; font-size:18px; }
+  .b-fact { display:flex; justify-content:space-between; padding:5px 0; border-top:1px solid #486069; }
+  .b-fact strong { color:var(--b-accent); }
+  .broadcast .adv-sheet { background:var(--b-paper); color:var(--b-ink); border-top:7px solid var(--b-accent); box-shadow:0 2px 4px rgba(23,36,42,.12),0 14px 30px rgba(23,36,42,.18); }
+  .broadcast .weekstrip { color:#9ca5a0; }
+  .broadcast .weekstrip .current { background:var(--b-nav); color:#fff; }
+  .broadcast .advance-event { border-color:#c8ceca; }
+  .broadcast .adv-primary { border:0; background:var(--b-accent); color:var(--b-ink); padding:7px 11px; font-weight:800; }
+
+  /* B — classic PC manager */
+  .classicpc { --c-bg:#8d9aa2; --c-panel:#d9e0e3; --c-panel2:#c1cbd0; --c-deep:#173e5c; --c-blue:#245f8a; --c-light:#edf2f4; --c-yellow:#f0c43e; --c-text:#17242c; background:var(--c-bg); color:var(--c-text); font-family:Tahoma,"Segoe UI",sans-serif; padding:6px; }
+  .c-window { height:418px; border:2px solid var(--c-light); box-shadow:inset -2px -2px #43545e,inset 2px 2px #f7f9fa; background:var(--c-panel); }
+  .c-title { height:31px; background:var(--c-deep); color:#fff; display:flex; justify-content:space-between; align-items:center; padding:0 7px; border-bottom:2px solid #0d2c43; }
+  .c-title b { font-size:12px; }
+  .c-title span { color:#c8d8e2; }
+  .c-advance { height:23px; border:1px solid #112c40; background:var(--c-yellow); color:#15232c; box-shadow:inset 1px 1px #fff2a8,inset -2px -2px #8d7117; font:700 10px Tahoma,sans-serif; }
+  .c-shell { height:383px; display:grid; grid-template-columns:104px 1fr; gap:4px; padding:4px; }
+  .c-nav { background:var(--c-panel2); border:1px solid #647681; box-shadow:inset 1px 1px #edf2f4; padding:4px; }
+  .c-nav div { padding:5px 6px; margin-bottom:2px; border:1px solid transparent; }
+  .c-nav .active { background:var(--c-blue); color:#fff; border-color:#123e5e; box-shadow:inset 1px 1px #6f9cba; }
+  .c-nav .mail { float:right; background:#8b2e28; color:#fff; padding:0 3px; }
+  .c-main { min-width:0; }
+  .c-tabs { height:27px; display:flex; gap:2px; align-items:end; border-bottom:2px solid var(--c-deep); }
+  .c-tabs span { padding:5px 9px 4px; background:#b5c0c5; border:1px solid #6c7e87; border-bottom:0; }
+  .c-tabs .active { background:var(--c-light); font-weight:700; padding-top:7px; }
+  .c-grid { height:349px; display:grid; grid-template-columns:minmax(0,1fr) 218px; gap:4px; padding-top:4px; }
+  .c-panel { border:1px solid #5e717c; background:var(--c-light); box-shadow:inset 1px 1px #fff; overflow:hidden; }
+  .c-panel-title { background:var(--c-deep); color:#fff; padding:4px 6px; font-weight:700; }
+  .c-urgent { margin:6px; border:1px solid #a44239; background:#f2dedb; padding:7px; display:grid; grid-template-columns:1fr 64px; }
+  .c-urgent h5 { margin:0 0 3px; font-size:12px; }
+  .c-urgent p { margin:0; }
+  .c-urgent strong { color:#8d2d27; text-align:right; }
+  .c-rows { margin:0 6px; }
+  .c-row { display:grid; grid-template-columns:1fr 70px 55px; gap:4px; padding:6px 2px; border-top:1px solid #bcc6ca; }
+  .c-row span:nth-child(2) { color:#50616a; }
+  .c-row span:last-child { text-align:right; }
+  .c-racepic { height:102px; background:#9bb1bd; display:grid; place-items:center; border-bottom:1px solid #647681; color:#173e5c; }
+  .c-racepic svg { width:88%; height:70%; }
+  .c-racecopy { padding:7px; }
+  .c-racecopy h5 { margin:2px 0 6px; font-size:14px; color:var(--c-deep); }
+  .c-racecopy div { display:flex; justify-content:space-between; padding:4px 0; border-top:1px solid #c2cbcf; }
+  .classicpc .adv-sheet { background:var(--c-panel); color:var(--c-text); border:2px solid var(--c-light); box-shadow:inset -2px -2px #43545e,inset 2px 2px #f7f9fa; }
+  .classicpc .adv-head { background:var(--c-deep); color:#fff; }
+  .classicpc .weekstrip { color:#647681; }
+  .classicpc .weekstrip .current { background:var(--c-blue); color:#fff; }
+  .classicpc .advance-event { border-color:#a7b2b7; }
+  .classicpc .adv-primary { background:var(--c-yellow); border:1px solid #6e5815; box-shadow:inset 1px 1px #fff2a8,inset -1px -1px #8d7117; padding:6px 10px; font-weight:700; }
+
+  /* C — roadbook */
+  .roadbook { --r-paper:#e7e5de; --r-sheet:#f4f3ed; --r-ink:#252724; --r-faint:#b7b8b1; --r-red:#b2372c; --r-blue:#315d78; background:var(--r-paper); color:var(--r-ink); font-family:Arial,Helvetica,sans-serif; padding:7px; }
+  .r-binder { height:416px; display:grid; grid-template-columns:98px 1fr; background:var(--r-sheet); border:1px solid #9c9e97; box-shadow:0 1px 2px rgba(37,39,36,.08),0 6px 14px rgba(37,39,36,.09); }
+  .r-nav { border-right:3px double var(--r-ink); padding:43px 7px 8px; position:relative; }
+  .r-id { position:absolute; top:0; left:0; right:0; height:33px; background:var(--r-red); color:#fff; display:grid; place-items:center; font-weight:800; letter-spacing:.05em; }
+  .r-nav div { padding:5px 3px; border-bottom:1px solid var(--r-faint); }
+  .r-nav .active { color:var(--r-red); font-weight:800; border-bottom:2px solid var(--r-red); }
+  .r-nav small { float:right; color:var(--r-red); }
+  .r-page { padding:0 12px 8px; min-width:0; position:relative; }
+  .r-head { height:42px; display:flex; align-items:center; justify-content:space-between; border-bottom:3px solid var(--r-ink); }
+  .r-head b { font-size:15px; letter-spacing:-.02em; }
+  .r-head span { color:#666a64; margin-left:8px; }
+  .r-advance { background:transparent; color:var(--r-red); border:2px solid var(--r-red); border-radius:0; padding:5px 8px; font-weight:800; text-transform:uppercase; transform:rotate(-1deg); }
+  .r-grid { display:grid; grid-template-columns:minmax(0,1fr) 220px; gap:18px; height:364px; }
+  .r-work { min-width:0; padding-top:9px; }
+  .r-folio { display:flex; justify-content:space-between; color:#6a6d67; border-bottom:1px solid var(--r-faint); padding-bottom:4px; }
+  .r-maincase { margin-top:7px; border:2px solid var(--r-ink); padding:7px 8px; position:relative; }
+  .r-stamp { position:absolute; right:7px; top:7px; color:var(--r-red); border:2px solid var(--r-red); padding:2px 5px; font-weight:800; transform:rotate(2deg); }
+  .r-maincase h5 { margin:0 76px 3px 0; font-size:14px; }
+  .r-maincase p { margin:0; color:#5f635d; }
+  .r-table { width:100%; border-collapse:collapse; table-layout:fixed; margin-top:8px; }
+  .r-table th { text-align:left; border-top:2px solid var(--r-ink); border-bottom:1px solid var(--r-ink); padding:4px 3px; font-size:9px; }
+  .r-table td { padding:6px 3px; border-bottom:1px dotted #92958e; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .r-table td:last-child,.r-table th:last-child { width:58px; text-align:right; font-family:"Courier New",monospace; }
+  .r-race { border-left:1px solid var(--r-faint); padding:9px 0 0 12px; }
+  .r-race h5 { margin:2px 0 5px; font-size:18px; }
+  .r-profile { height:76px; border-top:2px solid var(--r-ink); border-bottom:1px solid var(--r-ink); margin:8px 0; }
+  .r-profile svg { width:100%; height:100%; }
+  .r-fact { display:grid; grid-template-columns:1fr auto; padding:5px 0; border-bottom:1px dotted #92958e; }
+  .r-handnote { color:var(--r-blue); margin-top:9px; font-family:"Segoe Print","Comic Sans MS",cursive; font-size:10px; transform:rotate(-1deg); }
+  .roadbook .adv-sheet { background:var(--r-sheet); color:var(--r-ink); border:1px solid #8e918a; box-shadow:0 1px 2px rgba(37,39,36,.09),0 12px 24px rgba(37,39,36,.14); }
+  .roadbook .adv-head { border-bottom:3px solid var(--r-ink); }
+  .roadbook .weekstrip { color:#8a8d86; }
+  .roadbook .weekstrip .current { color:var(--r-red); border:2px solid var(--r-red); }
+  .roadbook .advance-event { border-color:#a8aaa4; border-bottom-style:dotted; }
+  .roadbook .adv-primary { background:transparent; color:var(--r-red); border:2px solid var(--r-red); padding:6px 9px; font-weight:800; }
+
+  /* D — equipment workstation */
+  .workstation { --w-bg:#141a18; --w-surface:#202724; --w-surface2:#2b332f; --w-line:#505a54; --w-text:#e2e6df; --w-muted:#9ba49e; --w-amber:#e4a72c; --w-danger:#df6658; background:var(--w-bg); color:var(--w-text); font-family:Bahnschrift,"Arial Narrow",sans-serif; }
+  .w-top { height:42px; display:grid; grid-template-columns:112px 1fr auto; border-bottom:1px solid var(--w-line); }
+  .w-logo { display:grid; place-items:center; background:var(--w-amber); color:#171b19; font-weight:900; letter-spacing:.06em; }
+  .w-manager { display:flex; align-items:center; gap:10px; padding-left:12px; }
+  .w-manager span { color:var(--w-muted); }
+  .w-clock { display:flex; align-items:center; gap:12px; padding-right:9px; color:var(--w-muted); }
+  .w-advance { border:1px solid var(--w-amber); background:transparent; color:var(--w-amber); border-radius:0; height:27px; padding:0 10px; font-weight:700; }
+  .w-shell { height:388px; display:grid; grid-template-columns:112px 1fr; }
+  .w-nav { border-right:1px solid var(--w-line); padding-top:8px; background:#19201d; }
+  .w-nav div { padding:6px 10px; color:var(--w-muted); border-left:3px solid transparent; }
+  .w-nav .active { color:var(--w-text); border-left-color:var(--w-amber); background:var(--w-surface); }
+  .w-nav .mail { float:right; color:var(--w-amber); }
+  .w-main { min-width:0; padding:10px 12px; }
+  .w-heading { display:flex; align-items:end; justify-content:space-between; border-bottom:1px solid var(--w-line); padding-bottom:6px; }
+  .w-heading h4 { margin:0; font-size:18px; font-weight:600; }
+  .w-heading span { color:var(--w-muted); }
+  .w-grid { display:grid; grid-template-columns:minmax(0,1fr) 224px; gap:14px; padding-top:8px; }
+  .w-primary { display:grid; grid-template-columns:24px 1fr 64px; gap:8px; padding:8px 0; border-top:3px solid var(--w-amber); border-bottom:1px solid var(--w-line); }
+  .w-primary .code { color:var(--w-amber); font-weight:700; }
+  .w-primary h5 { margin:0 0 3px; font-size:13px; }
+  .w-primary p { margin:0; color:var(--w-muted); }
+  .w-primary strong { color:var(--w-danger); text-align:right; }
+  .w-table { width:100%; border-collapse:collapse; table-layout:fixed; margin-top:5px; }
+  .w-table th { color:var(--w-muted); text-align:left; padding:4px; border-bottom:1px solid var(--w-line); font-size:9px; }
+  .w-table td { padding:6px 4px; border-bottom:1px solid #343d39; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .w-table td:last-child,.w-table th:last-child { width:58px; text-align:right; font-variant-numeric:tabular-nums; }
+  .w-race { border-top:3px solid var(--w-text); }
+  .w-race-head { padding:7px 0; border-bottom:1px solid var(--w-line); }
+  .w-race h5 { margin:2px 0; color:var(--w-amber); font-size:16px; }
+  .w-route { height:67px; margin:6px 0; }
+  .w-route svg { width:100%; height:100%; }
+  .w-fact { display:flex; justify-content:space-between; padding:5px 0; border-top:1px solid var(--w-line); }
+  .w-fact span:first-child { color:var(--w-muted); }
+  .workstation .adv-sheet { background:var(--w-surface); color:var(--w-text); border:1px solid var(--w-line); box-shadow:0 2px 4px rgba(10,15,12,.24),0 14px 28px rgba(10,15,12,.34); }
+  .workstation .adv-head { border-bottom:1px solid var(--w-line); }
+  .workstation .weekstrip { color:var(--w-line); }
+  .workstation .weekstrip span,.workstation .weekstrip b { color:var(--w-muted); }
+  .workstation .weekstrip .current { background:var(--w-amber); color:#171b19; }
+  .workstation .weekstrip .current span,.workstation .weekstrip .current b { color:#171b19; }
+  .workstation .advance-event { border-color:var(--w-line); }
+  .workstation .adv-primary { border:1px solid var(--w-amber); background:var(--w-amber); color:#171b19; padding:7px 10px; font-weight:800; }
+
+  .pick-note { margin-top:16px; border-top:2px solid var(--foreground); padding-top:12px; color:var(--muted-foreground); font-size:13px; }
+  @media(max-width:820px){ .skin-caption{grid-template-columns:1fr}.mock{height:400px}.b-content,.c-grid,.r-grid,.w-grid{grid-template-columns:minmax(0,1fr) 180px}.adv-sheet{inset:30px 22px 24px}.b-top,.w-top{grid-template-columns:96px 1fr auto}.b-shell,.w-shell{grid-template-columns:96px 1fr}.r-binder{grid-template-columns:88px 1fr}.c-shell{grid-template-columns:92px 1fr}.b-nav div,.w-nav div{padding-left:7px;padding-right:7px} }
+</style>
+
+<div class="skins">
+  <div class="skins-head"><div class="label">Peloton Manager · layout 1 / radical skins</div><h2>Ten sam dashboard, cztery różne gry wizualnie</h2><p>Kliknij `Advance Day` wewnątrz dowolnej makiety, aby zobaczyć kalendarz i kolejność zdarzeń.</p></div>
+  <div class="skin-list">
+
+    <section class="skin-option" data-choice="skin-broadcast" onclick="toggleSelect(this)" role="button" tabindex="0">
+      <div class="mock broadcast" id="skinA"><header class="b-top"><div class="b-logo">PELOTON<br>MANAGER</div><div class="b-manager"><b>Aleksander Kowalski</b><span>Vistula Racing</span></div><div class="b-clock"><span>12 MAR 2032 · 08:00</span><button class="b-advance" onclick="event.stopPropagation();showAdvance('skinA')">Advance day</button></div></header><div class="b-shell"><nav class="b-nav"><div class="active">HQ</div><div>Calendar</div><div>Team</div><div>Staff</div><div>Recruitment</div><div>Finances</div><div>Partners</div><div>World</div><div>Inbox <span class="mail">17</span></div></nav><main class="b-home"><div class="b-lower"><h4>Manager home</h4><span><b>4 decisions</b> before today ends</span></div><div class="b-content"><div class="b-work"><div class="b-feature"><div><h5>Confirm Milano–Sanremo race selection</h5><p>Sporting director and medical lead disagree about the final two places.</p></div><div class="b-deadline">TODAY<br>17:00</div></div><table class="b-table"><thead><tr><th>Other work</th><th>Area</th><th>Due</th></tr></thead><tbody><tr><td>Reply to Mateusz Nowak’s agent</td><td>Recruitment</td><td>2 days</td></tr><tr><td>Approve altitude camp passenger list</td><td>Calendar</td><td>14 Mar</td></tr><tr><td>Review medical workload recommendation</td><td>Team</td><td>Open</td></tr><tr><td>Baltic Components activation request</td><td>Partners</td><td>18 Mar</td></tr></tbody></table></div><aside class="b-race"><div class="b-photo"></div><div class="b-race-copy"><span>NEXT RACE · 4 DAYS</span><h5>Milano–Sanremo</h5><div class="b-fact"><span>Entry</span><strong>Pending</strong></div><div class="b-fact"><span>Travel</span><b>Confirmed</b></div><div class="b-fact"><span>Equipment</span><b>1 exception</b></div></div></aside></div></main></div>
+        <div class="adv"><div class="adv-scrim"></div><div class="adv-sheet"><div class="adv-head"><div><h5>Advance day</h5><p>Preview of world events · Wednesday 12 March</p></div><button class="adv-close" onclick="event.stopPropagation();hideAdvance('skinA')">×</button></div><div class="weekstrip"><div><span>Mon</span><b>10</b></div><div><span>Tue</span><b>11</b></div><div class="current"><span>Today</span><b>12</b></div><div><span>Thu</span><b>13</b></div><div><span>Fri</span><b>14</b></div><div><span>Sat</span><b>15</b></div><div><span>Sun</span><b>16</b></div></div><div class="advance-events"><div class="advance-event"><b>10:30</b><span>Training observation report published</span><span>Automatic</span></div><div class="advance-event"><b>14:00</b><span>Cash-flow forecast recalculated</span><span>Automatic</span></div><div class="advance-event"><b>17:00</b><span>Milano–Sanremo entry deadline</span><span>Decision pending</span></div></div><div class="advance-foot"><p>The world processes events in stable order. The unresolved entry decision remains visible.</p><button class="adv-primary">Advance to next event</button></div></div></div>
+      </div><div class="skin-caption"><h3>A. Sports Broadcast</h3><p>Najbardziej widowiskowy: zdjęcie, klubowy kolor i grafika transmisyjna. Nadal jest to narzędzie managerskie, ale następny wyścig daje ekranowi emocjonalny ciężar.</p></div>
+    </section>
+
+    <section class="skin-option" data-choice="skin-classic-pc" onclick="toggleSelect(this)" role="button" tabindex="0">
+      <div class="mock classicpc" id="skinB"><div class="c-window"><header class="c-title"><div><b>Peloton Manager</b> — Aleksander Kowalski / Vistula Racing</div><div><span>Wed 12/03/2032 08:00</span> &nbsp; <button class="c-advance" onclick="event.stopPropagation();showAdvance('skinB')">CONTINUE ▶</button></div></header><div class="c-shell"><nav class="c-nav"><div class="active">Home</div><div>Calendar</div><div>Team</div><div>Staff</div><div>Recruitment</div><div>Finances</div><div>Partners</div><div>World</div><div>Inbox <span class="mail">17</span></div></nav><main class="c-main"><div class="c-tabs"><span class="active">Overview</span><span>Decisions</span><span>Reports</span><span>Next race</span></div><div class="c-grid"><section class="c-panel"><div class="c-panel-title">MANAGER ACTIONS — WEDNESDAY 12 MARCH</div><div class="c-urgent"><div><h5>Confirm Milano–Sanremo race selection</h5><p>Two places unresolved. Staff recommendations conflict.</p></div><strong>TODAY<br>17:00</strong></div><div class="c-rows"><div class="c-row"><span>Reply to Mateusz Nowak’s agent</span><span>Recruitment</span><span>2 days</span></div><div class="c-row"><span>Approve altitude camp passenger list</span><span>Calendar</span><span>14 Mar</span></div><div class="c-row"><span>Review medical workload recommendation</span><span>Team</span><span>Open</span></div><div class="c-row"><span>Baltic Components activation request</span><span>Partners</span><span>18 Mar</span></div></div></section><aside class="c-panel"><div class="c-panel-title">NEXT RACE — 4 DAYS</div><div class="c-racepic"><svg viewBox="0 0 220 70" aria-label="Milano-Sanremo route profile"><polyline points="0,55 40,53 70,45 92,54 125,50 148,30 159,49 183,20 194,45 220,15" fill="none" stroke="#173e5c" stroke-width="3"/><line x1="0" y1="57" x2="220" y2="57" stroke="#647681"/></svg></div><div class="c-racecopy"><span>MONUMENT · 289 KM</span><h5>Milano–Sanremo</h5><div><span>Entry</span><b>Pending</b></div><div><span>Travel</span><span>Confirmed</span></div><div><span>Equipment</span><span>1 exception</span></div></div></aside></div></main></div></div>
+        <div class="adv"><div class="adv-scrim"></div><div class="adv-sheet"><div class="adv-head"><div><h5>CONTINUE GAME</h5><p>Events scheduled for Wednesday 12 March 2032</p></div><button class="adv-close" onclick="event.stopPropagation();hideAdvance('skinB')">×</button></div><div class="weekstrip"><div><span>MON</span><b>10</b></div><div><span>TUE</span><b>11</b></div><div class="current"><span>TODAY</span><b>12</b></div><div><span>THU</span><b>13</b></div><div><span>FRI</span><b>14</b></div><div><span>SAT</span><b>15</b></div><div><span>SUN</span><b>16</b></div></div><div class="advance-events"><div class="advance-event"><b>10:30</b><span>Training observation report published</span><span>AUTO</span></div><div class="advance-event"><b>14:00</b><span>Cash-flow forecast recalculated</span><span>AUTO</span></div><div class="advance-event"><b>17:00</b><span>Milano–Sanremo entry deadline</span><span>PENDING</span></div></div><div class="advance-foot"><p>Continue processes the next scheduled event. No mid-day state is skipped.</p><button class="adv-primary">CONTINUE TO 10:30</button></div></div></div>
+      </div><div class="skin-caption"><h3>B. Classic PC Manager</h3><p>Świadomie oldschoolowy: okna, zakładki, twarde ramki i maksymalna czytelność. Wygląda jak pełnoprawna gra managerska z własnym skinem, a nie współczesny dashboard internetowy.</p></div>
+    </section>
+
+    <section class="skin-option" data-choice="skin-roadbook" onclick="toggleSelect(this)" role="button" tabindex="0">
+      <div class="mock roadbook" id="skinC"><div class="r-binder"><nav class="r-nav"><div class="r-id">PM / HQ</div><div class="active">Daily file</div><div>Calendar</div><div>Team</div><div>Staff</div><div>Recruitment</div><div>Finances</div><div>Partners</div><div>World</div><div>Inbox <small>17</small></div></nav><main class="r-page"><header class="r-head"><div><b>ALEKSANDER KOWALSKI</b><span>Vistula Racing / manager career</span></div><div><span>12.03.2032 / 08:00</span> <button class="r-advance" onclick="event.stopPropagation();showAdvance('skinC')">Advance day</button></div></header><div class="r-grid"><section class="r-work"><div class="r-folio"><span>DAILY MANAGEMENT FILE</span><span>PAGE 072 / SEASON 2032</span></div><div class="r-maincase"><span class="r-stamp">DUE 17:00</span><h5>Milano–Sanremo race selection</h5><p>Six riders confirmed. Sporting director and medical lead disagree about the final two places.</p></div><table class="r-table"><thead><tr><th>Work item</th><th>Department</th><th>Deadline</th></tr></thead><tbody><tr><td>Reply to Mateusz Nowak’s agent</td><td>Recruitment</td><td>+2 DAYS</td></tr><tr><td>Approve altitude camp passenger list</td><td>Calendar</td><td>14 MAR</td></tr><tr><td>Review medical workload recommendation</td><td>Team</td><td>OPEN</td></tr><tr><td>Baltic Components activation request</td><td>Partners</td><td>18 MAR</td></tr></tbody></table><div class="r-handnote">Medical evidence incomplete — ask Dr Nowicka before final selection.</div></section><aside class="r-race"><span>NEXT APPOINTMENT / 4 DAYS</span><h5>Milano–Sanremo</h5><span>MONUMENT · 289 KM · OBJECTIVE TOP 10</span><div class="r-profile"><svg viewBox="0 0 220 74" preserveAspectRatio="none" aria-label="Milano-Sanremo route profile"><polyline points="0,60 45,59 75,50 100,60 130,55 150,34 160,54 185,22 198,49 220,16" fill="none" stroke="#b2372c" stroke-width="3"/><line x1="0" y1="62" x2="220" y2="62" stroke="#252724"/></svg></div><div class="r-fact"><span>Entry</span><b>Pending</b></div><div class="r-fact"><span>Travel</span><span>Confirmed</span></div><div class="r-fact"><span>Equipment</span><span>1 exception</span></div></aside></div></main></div>
+        <div class="adv"><div class="adv-scrim"></div><div class="adv-sheet"><div class="adv-head"><div><h5>Advance day / event sheet</h5><p>Wednesday 12 March 2032</p></div><button class="adv-close" onclick="event.stopPropagation();hideAdvance('skinC')">×</button></div><div class="weekstrip"><div><span>Mon</span><b>10</b></div><div><span>Tue</span><b>11</b></div><div class="current"><span>Today</span><b>12</b></div><div><span>Thu</span><b>13</b></div><div><span>Fri</span><b>14</b></div><div><span>Sat</span><b>15</b></div><div><span>Sun</span><b>16</b></div></div><div class="advance-events"><div class="advance-event"><b>10:30</b><span>Training observation report published</span><span>automatic</span></div><div class="advance-event"><b>14:00</b><span>Cash-flow forecast recalculated</span><span>automatic</span></div><div class="advance-event"><b>17:00</b><span>Milano–Sanremo entry deadline</span><span>decision pending</span></div></div><div class="advance-foot"><p>Events are processed in chronological, stable order.</p><button class="adv-primary">Advance to 10:30</button></div></div></div>
+      </div><div class="skin-caption"><h3>C. Team Roadbook</h3><p>Biuro dyrektora sportowego: dokument, pieczątka terminu, profil trasy i odręczna notatka. Najbardziej kolarski i charakterystyczny, ale wymaga dyscypliny, żeby motyw papieru nie stał się dekoracją.</p></div>
+    </section>
+
+    <section class="skin-option" data-choice="skin-workstation" onclick="toggleSelect(this)" role="button" tabindex="0">
+      <div class="mock workstation" id="skinD"><header class="w-top"><div class="w-logo">VISTULA<br>RACING</div><div class="w-manager"><b>Aleksander Kowalski</b><span>Manager authority / HQ</span></div><div class="w-clock"><span>12 MAR 2032 / 08:00</span><button class="w-advance" onclick="event.stopPropagation();showAdvance('skinD')">ADVANCE DAY</button></div></header><div class="w-shell"><nav class="w-nav"><div class="active">HQ</div><div>Calendar</div><div>Team</div><div>Staff</div><div>Recruitment</div><div>Finances</div><div>Partners</div><div>World</div><div>Inbox <span class="mail">17</span></div></nav><main class="w-main"><div class="w-heading"><h4>Manager home</h4><span>4 authority calls · next event 10:30</span></div><div class="w-grid"><section><div class="w-primary"><span class="code">A1</span><div><h5>Confirm Milano–Sanremo race selection</h5><p>Two unresolved places. Sporting director and medical lead disagree.</p></div><strong>17:00</strong></div><table class="w-table"><thead><tr><th>Queue</th><th>Owner</th><th>Limit</th></tr></thead><tbody><tr><td>A2 · Reply to Mateusz Nowak’s agent</td><td>Recruitment</td><td>2 days</td></tr><tr><td>A3 · Approve altitude camp passenger list</td><td>Calendar</td><td>14 Mar</td></tr><tr><td>A4 · Review medical workload recommendation</td><td>Team</td><td>Open</td></tr><tr><td>A5 · Baltic Components activation request</td><td>Partners</td><td>18 Mar</td></tr></tbody></table></section><aside class="w-race"><div class="w-race-head"><span>NEXT RACE / 4 DAYS</span><h5>MILANO–SANREMO</h5><span>289 KM · MONUMENT · TOP 10</span></div><div class="w-route"><svg viewBox="0 0 220 65" preserveAspectRatio="none" aria-label="Milano-Sanremo route profile"><polyline points="0,53 40,52 70,45 95,53 125,49 146,29 158,48 182,18 195,44 220,12" fill="none" stroke="#e4a72c" stroke-width="3"/><line x1="0" y1="55" x2="220" y2="55" stroke="#505a54"/></svg></div><div class="w-fact"><span>ENTRY</span><b>Pending</b></div><div class="w-fact"><span>TRAVEL</span><b>Confirmed</b></div><div class="w-fact"><span>EQUIPMENT</span><b>1 exception</b></div></aside></div></main></div>
+        <div class="adv"><div class="adv-scrim"></div><div class="adv-sheet"><div class="adv-head"><div><h5>ADVANCE DAY / EVENT QUEUE</h5><p>Wednesday 12 March 2032</p></div><button class="adv-close" onclick="event.stopPropagation();hideAdvance('skinD')">×</button></div><div class="weekstrip"><div><span>MON</span><b>10</b></div><div><span>TUE</span><b>11</b></div><div class="current"><span>TODAY</span><b>12</b></div><div><span>THU</span><b>13</b></div><div><span>FRI</span><b>14</b></div><div><span>SAT</span><b>15</b></div><div><span>SUN</span><b>16</b></div></div><div class="advance-events"><div class="advance-event"><b>10:30</b><span>Training observation report published</span><span>AUTO</span></div><div class="advance-event"><b>14:00</b><span>Cash-flow forecast recalculated</span><span>AUTO</span></div><div class="advance-event"><b>17:00</b><span>Milano–Sanremo entry deadline</span><span>PENDING</span></div></div><div class="advance-foot"><p>WORLD ORDER: chronological / deterministic / query-neutral</p><button class="adv-primary">PROCESS NEXT EVENT</button></div></div></div>
+      </div><div class="skin-caption"><h3>D. Service Course Workstation</h3><p>Techniczne stanowisko pracy zespołu: ciemne materiały, żółte oznaczenia serwisowe, kody spraw i profil trasy. Najbardziej bezkompromisowy, lecz łatwo przesadzić z „centrum dowodzenia”.</p></div>
+    </section>
+
+  </div><div class="pick-note"><b>Wybierz skórkę albo składniki.</b> Na przykład: „B jako baza, zdjęcie z A, kalendarz Advance Day z C”.</div>
+</div>
+
+<script>
+  function showAdvance(id){document.getElementById(id).classList.add('is-advance');}
+  function hideAdvance(id){document.getElementById(id).classList.remove('is-advance');}
+  document.querySelectorAll('.skin-option').forEach(function(el){el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleSelect(el);}})});
+</script>
+</body>
+</html>
