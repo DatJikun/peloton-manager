@@ -36,7 +36,7 @@ When proposing a change, explain the problem it solves and which current decisio
 
 ## Current priorities
 
-Still pre-production. Race Engine Design v0.1 now exists from cycling research. Next design work: UI Sitemap, Game States and minimal Data Model; then a small headless Race Engine prototype/spike before large persistence/content infrastructure. Do not begin broad gameplay implementation yet.
+Still pre-production. `UI_SITEMAP_v0.1.md`, `GAME_STATES_v0.1.md`, and `DATA_MODEL_v0.1.md` exist as DRAFT documents. Race Engine Design v0.2 exists from cycling research. Review the draft contracts and continue the remaining pre-code documentation gate before a small headless Race Engine prototype/spike. Do not begin broad gameplay implementation yet.
 
 ## Core invariants
 

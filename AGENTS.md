@@ -14,8 +14,9 @@ Do not fabricate build/test/run results for a game that does not exist. The curr
 
 Start reading from `README_FOR_EXTERNAL_AI.md` → `VISION.md` → `DECISIONS.md` →
 `HANDOFF.md` → `DOCS.md`. `DOCS.md` is the canonical index of which docs are active vs.
-`NOT STARTED`; several docs cross-reference future files (e.g. `UI_SITEMAP.md`,
-`GAME_STATES.md`, `DATA_MODEL.md`, `SAVE_FORMAT.md`) that intentionally do not exist yet.
+`NOT STARTED`. `UI_SITEMAP_v0.1.md`, `GAME_STATES_v0.1.md`, and
+`DATA_MODEL_v0.1.md` exist as DRAFT documents. Other forward references such as
+`SAVE_FORMAT.md` intentionally do not exist yet.
 
 ### Intended stack (owner-decided) and what is pre-installed
 - Owner-decided stack: **Godot .NET + C#**, Windows-first target, **SQLite** embedded
