@@ -93,14 +93,14 @@ internal static class RaceScenarioFactory
             102,
             330.0,
             25_000.0,
-            740.0,
+            880.0,
             0.70);
         RaceRiderProfile exposedWeak = Profile(
             ExposedWeakRiderId.Value,
             104,
             330.0,
             25_000.0,
-            740.0,
+            880.0,
             0.70);
         RaceRiderProfile steady = Profile(13, 103, 350.0, 22_000.0, 860.0, 0.78);
         RaceRiderProfile[] riders = { strong, shelteredWeak, steady, exposedWeak };

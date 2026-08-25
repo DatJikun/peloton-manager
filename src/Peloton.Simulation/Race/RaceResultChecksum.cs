@@ -29,6 +29,7 @@ public static class RaceResultChecksum
                 writer.Write(rider.WPrimeRemainingJ);
                 writer.Write(rider.TimeAboveCriticalPowerSeconds);
                 writer.Write(rider.MaximumGapAheadM);
+                writer.Write(rider.MaximumGapDuringPressureM);
                 writer.Write(rider.LostShelterTransitions);
                 writer.Write(rider.FinalGroupId);
             }

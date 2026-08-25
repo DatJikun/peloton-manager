@@ -374,6 +374,8 @@ public sealed class RaceSession
             rider.PositionSlot = position.PositionSlot;
             rider.MaximumGapAheadM = Math.Max(rider.MaximumGapAheadM, position.GapAheadM);
             rider.ShelterMultiplier = position.ShelterMultiplier;
+            double previousPressureMax = rider.MaximumGapDuringPressureM;
+            RecordPressureGap(rider, position, resolution);
 
             // #region agent log
             if (IsDraftingPositionProof && rider.Profile.RiderId.Value == 12)
@@ -411,8 +413,88 @@ public sealed class RaceSession
                 }
             }
             // #endregion
+            // #region agent log
+            if (IsDraftingPositionProof &&
+                (rider.Profile.RiderId.Value == 12 || rider.Profile.RiderId.Value == 14))
+            {
+                double pressureDelta = rider.MaximumGapDuringPressureM - previousPressureMax;
+                bool crossedPressureThreshold = previousPressureMax < 5.0 &&
+                    rider.MaximumGapDuringPressureM >= 5.0;
+                if (pressureDelta > 0.05 ||
+                    crossedPressureThreshold ||
+                    justFinishedRiderIds.Length > 0 ||
+                    position.GapAheadM >= 4.9)
+                {
+                    AgentDbg(
+                        "F",
+                        "RaceSession.cs:ResolveGroups:pressureGap",
+                        "pressure-window gap vs ForcePace group",
+                        new
+                        {
+                            runId = "post-fix",
+                            simulationSecond,
+                            riderId = rider.Profile.RiderId.Value,
+                            gapAheadM = position.GapAheadM,
+                            previousPressureMax,
+                            pressureGapM = rider.MaximumGapDuringPressureM,
+                            pressureDelta,
+                            crossedPressureThreshold,
+                            groupId = rider.GroupId,
+                            unfinished = FormatUnfinishedRiders(),
+                            justFinished = justFinishedRiderIds,
+                            forcePaceIds = ForcePaceRiderIds(),
+                            finishRegroup = justFinishedRiderIds.Length > 0,
+                        });
+                }
+            }
+            // #endregion
             resolveIndex++;
         }
+    }
+
+    private void RecordPressureGap(
+        RiderRuntime rider,
+        ResolvedRaceRiderPosition position,
+        GroupResolution resolution)
+    {
+        if (rider.FinishTimeSeconds is not null)
+        {
+            return;
+        }
+
+        WorldEntityId[] paceSetterIds = riders
+            .Where(item => item.Intent == RaceCommandKind.ForcePace &&
+                           item.FinishTimeSeconds is null)
+            .Select(item => item.Profile.RiderId)
+            .ToArray();
+        if (paceSetterIds.Length == 0)
+        {
+            return;
+        }
+
+        HashSet<int> pressureGroupIds = resolution.Riders
+            .Where(item => paceSetterIds.Contains(item.RiderId))
+            .Select(item => item.GroupId)
+            .ToHashSet();
+        if (pressureGroupIds.Count == 0)
+        {
+            return;
+        }
+
+        double pressureGapM;
+        if (pressureGroupIds.Contains(position.GroupId))
+        {
+            pressureGapM = position.GapAheadM;
+        }
+        else
+        {
+            double paceGroupRearDistanceM = resolution.Riders
+                .Where(item => pressureGroupIds.Contains(item.GroupId))
+                .Min(item => riders.Single(runtime => runtime.Profile.RiderId == item.RiderId).DistanceM);
+            pressureGapM = Math.Max(0.0, paceGroupRearDistanceM - rider.DistanceM);
+        }
+
+        rider.MaximumGapDuringPressureM = Math.Max(rider.MaximumGapDuringPressureM, pressureGapM);
     }
 
     private void ExpireIntents()
@@ -438,6 +520,7 @@ public sealed class RaceSession
                 rider.Physiology.WPrimeRemainingJ,
                 rider.TimeAboveCriticalPowerSeconds,
                 rider.MaximumGapAheadM,
+                rider.MaximumGapDuringPressureM,
                 rider.LostShelterTransitions,
                 rider.GroupId))
             .OrderBy(rider => rider.FinishTimeSeconds)
@@ -479,12 +562,15 @@ public sealed class RaceSession
                     r12Energy = m12?.EnergySpentJ,
                     r12W = m12?.WPrimeRemainingJ,
                     r12Max = m12?.MaximumGapAheadM,
+                    r12PressureMax = m12?.MaximumGapDuringPressureM,
                     r12LostShelter = m12?.LostShelterTransitions,
                     r14Finish = m14?.FinishTimeSeconds,
                     r14Energy = m14?.EnergySpentJ,
                     r14W = m14?.WPrimeRemainingJ,
                     r14Max = m14?.MaximumGapAheadM,
+                    r14PressureMax = m14?.MaximumGapDuringPressureM,
                     r14LostShelter = m14?.LostShelterTransitions,
+                    runId = "post-fix",
                 });
         }
         // #endregion
@@ -625,6 +711,8 @@ public sealed class RaceSession
         public double ShelterMultiplier { get; set; } = 1.0;
 
         public double MaximumGapAheadM { get; set; }
+
+        public double MaximumGapDuringPressureM { get; set; }
 
         public int LostShelterTransitions { get; set; }
 
