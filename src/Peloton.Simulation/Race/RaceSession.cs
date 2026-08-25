@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 using Peloton.Domain;
 
 namespace Peloton.Simulation.Race;
@@ -23,7 +20,6 @@ public sealed class RaceSession
     private readonly RiderRuntime[] riders;
     private int simulationSecond;
     private int maximumGroupCount = 1;
-    private long[] justFinishedRiderIds = Array.Empty<long>();
 
     internal RaceSession(RaceScenario scenario, long seed)
     {
@@ -40,30 +36,6 @@ public sealed class RaceSession
                 scenario.InitialSpeedMps))
             .ToArray();
         ResolveGroups();
-        // #region agent log
-        if (IsDraftingPositionProof)
-        {
-            RiderRuntime? r12 = FindRider(12);
-            RiderRuntime? r14 = FindRider(14);
-            AgentDbg(
-                "D",
-                "RaceSession.cs:ctor",
-                "initial ResolveGroups after start positions",
-                new
-                {
-                    scenario.Id,
-                    simulationSecond,
-                    unfinished = FormatUnfinishedRiders(),
-                    r12Max = r12?.MaximumGapAheadM,
-                    r12Dist = r12?.DistanceM,
-                    r12Shelter = r12?.ShelterMultiplier,
-                    r14Max = r14?.MaximumGapAheadM,
-                    r14Dist = r14?.DistanceM,
-                    r14Shelter = r14?.ShelterMultiplier,
-                    totalLengthM = scenario.Definition.TotalLengthM,
-                });
-        }
-        // #endregion
     }
 
     public long Seed { get; }
@@ -142,7 +114,6 @@ public sealed class RaceSession
                 capability.NextState));
         }
 
-        List<long> newlyFinished = new();
         foreach (RiderRuntime rider in riders.OrderBy(rider => rider.Profile.RiderId.Value))
         {
             if (!solves.TryGetValue(rider.Profile.RiderId, out StepSolve? solve))
@@ -167,41 +138,11 @@ public sealed class RaceSession
                     ? StepSeconds
                     : Math.Clamp(remainingAtStartM / solve.RealizedSpeedMps, 0.0, StepSeconds);
                 rider.FinishTimeSeconds = simulationSecond + withinStepSeconds;
-                newlyFinished.Add(rider.Profile.RiderId.Value);
             }
         }
 
-        justFinishedRiderIds = newlyFinished.ToArray();
-        // #region agent log
-        if (IsDraftingPositionProof && justFinishedRiderIds.Length > 0)
-        {
-            RiderRuntime? r12 = FindRider(12);
-            RiderRuntime? r14 = FindRider(14);
-            AgentDbg(
-                "A",
-                "RaceSession.cs:Step:finish",
-                "riders finished this step before ResolveGroups",
-                new
-                {
-                    simulationSecond,
-                    justFinished = justFinishedRiderIds,
-                    unfinishedBeforeRegroup = FormatUnfinishedRiders(),
-                    r12Dist = r12?.DistanceM,
-                    r12Speed = r12?.SpeedMps,
-                    r12Max = r12?.MaximumGapAheadM,
-                    r12Finished = r12?.FinishTimeSeconds,
-                    r14Dist = r14?.DistanceM,
-                    r14Speed = r14?.SpeedMps,
-                    r14Max = r14?.MaximumGapAheadM,
-                    r14Finished = r14?.FinishTimeSeconds,
-                    forcePaceIds = ForcePaceRiderIds(),
-                    inPaceWindow = simulationSecond >= 5 && simulationSecond < 95,
-                });
-        }
-        // #endregion
         simulationSecond++;
         ResolveGroups();
-        justFinishedRiderIds = Array.Empty<long>();
         ExpireIntents();
         if (riders.All(rider => rider.FinishTimeSeconds is not null))
         {
@@ -270,21 +211,6 @@ public sealed class RaceSession
             .FirstOrDefault();
         if (leader is null)
         {
-            // #region agent log
-            if (IsDraftingPositionProof)
-            {
-                AgentDbg(
-                    "A",
-                    "RaceSession.cs:ResolveGroups:allFinished",
-                    "no unfinished riders; skip regroup",
-                    new
-                    {
-                        simulationSecond,
-                        justFinished = justFinishedRiderIds,
-                        finished = FormatFinishedRiders(),
-                    });
-            }
-            // #endregion
             return;
         }
 
@@ -302,33 +228,6 @@ public sealed class RaceSession
                     rider.Profile.Positioning))
                 .ToArray()));
         maximumGroupCount = Math.Max(maximumGroupCount, resolution.Groups.Count);
-        // #region agent log
-        if (IsDraftingPositionProof)
-        {
-            int idx12 = IndexOfRider(resolution.Riders, 12);
-            long? aheadOf12 = idx12 > 0 ? resolution.Riders[idx12 - 1].RiderId.Value : null;
-            ResolvedRaceRiderPosition? pos12 = idx12 >= 0 ? resolution.Riders[idx12] : null;
-            AgentDbg(
-                "C",
-                "RaceSession.cs:ResolveGroups:entry",
-                "unfinished set before applying positions",
-                new
-                {
-                    simulationSecond,
-                    justFinished = justFinishedRiderIds,
-                    unfinished = FormatUnfinishedRiders(),
-                    finished = FormatFinishedRiders(),
-                    gap12 = pos12?.GapAheadM,
-                    slot12 = pos12?.PositionSlot,
-                    group12 = pos12?.GroupId,
-                    shelter12 = pos12?.ShelterMultiplier,
-                    aheadOf12,
-                    inPaceWindow = simulationSecond >= 5 && simulationSecond < 95,
-                    forcePaceIds = ForcePaceRiderIds(),
-                });
-        }
-        // #endregion
-        int resolveIndex = 0;
         foreach (ResolvedRaceRiderPosition position in resolution.Riders)
         {
             RiderRuntime rider = riders.Single(item => item.Profile.RiderId == position.RiderId);
@@ -337,118 +236,13 @@ public sealed class RaceSession
             if (previouslySheltered && !nowSheltered)
             {
                 rider.LostShelterTransitions++;
-                // #region agent log
-                if (IsDraftingPositionProof && rider.Profile.RiderId.Value == 12)
-                {
-                    long? shelterAheadId = resolveIndex == 0
-                        ? null
-                        : resolution.Riders[resolveIndex - 1].RiderId.Value;
-                    AgentDbg(
-                        "E",
-                        "RaceSession.cs:ResolveGroups:lostShelter",
-                        "rider 12 lost shelter",
-                        new
-                        {
-                            simulationSecond,
-                            justFinished = justFinishedRiderIds,
-                            gapAheadM = position.GapAheadM,
-                            aheadId = shelterAheadId,
-                            unfinished = FormatUnfinishedRiders(),
-                            previousMax = rider.MaximumGapAheadM,
-                            lostShelterTransitions = rider.LostShelterTransitions,
-                            inPaceWindow = simulationSecond >= 5 && simulationSecond < 95,
-                        });
-                }
-                // #endregion
             }
-
-            double previousMax = rider.MaximumGapAheadM;
-            long? aheadRiderId = resolveIndex == 0
-                ? null
-                : resolution.Riders[resolveIndex - 1].RiderId.Value;
-            double aheadDistanceM = aheadRiderId is null
-                ? 0.0
-                : riders.Single(item => item.Profile.RiderId.Value == aheadRiderId.Value).DistanceM;
 
             rider.GroupId = position.GroupId;
             rider.PositionSlot = position.PositionSlot;
             rider.MaximumGapAheadM = Math.Max(rider.MaximumGapAheadM, position.GapAheadM);
             rider.ShelterMultiplier = position.ShelterMultiplier;
-            double previousPressureMax = rider.MaximumGapDuringPressureM;
             RecordPressureGap(rider, position, resolution);
-
-            // #region agent log
-            if (IsDraftingPositionProof && rider.Profile.RiderId.Value == 12)
-            {
-                double maxDelta = rider.MaximumGapAheadM - previousMax;
-                if (maxDelta > 0.01 || position.GapAheadM >= 4.9)
-                {
-                    AgentDbg(
-                        maxDelta > 5.0 || justFinishedRiderIds.Length > 0 ? "A" : "B",
-                        "RaceSession.cs:ResolveGroups:maxGap12",
-                        "rider 12 gap/max update",
-                        new
-                        {
-                            simulationSecond,
-                            justFinished = justFinishedRiderIds,
-                            gapAheadM = position.GapAheadM,
-                            previousMax,
-                            newMax = rider.MaximumGapAheadM,
-                            maxDelta,
-                            aheadRiderId,
-                            aheadDistanceM,
-                            riderDistanceM = rider.DistanceM,
-                            riderSpeedMps = rider.SpeedMps,
-                            shelter = rider.ShelterMultiplier,
-                            lostShelterTransitions = rider.LostShelterTransitions,
-                            groupId = rider.GroupId,
-                            slot = rider.PositionSlot,
-                            unfinished = FormatUnfinishedRiders(),
-                            finished = FormatFinishedRiders(),
-                            inPaceWindow = simulationSecond >= 5 && simulationSecond < 95,
-                            forcePaceIds = ForcePaceRiderIds(),
-                            finishRegroup = justFinishedRiderIds.Length > 0,
-                            crossedSurvivalThreshold = previousMax < 5.0 && rider.MaximumGapAheadM >= 5.0,
-                        });
-                }
-            }
-            // #endregion
-            // #region agent log
-            if (IsDraftingPositionProof &&
-                (rider.Profile.RiderId.Value == 12 || rider.Profile.RiderId.Value == 14))
-            {
-                double pressureDelta = rider.MaximumGapDuringPressureM - previousPressureMax;
-                bool crossedPressureThreshold = previousPressureMax < 5.0 &&
-                    rider.MaximumGapDuringPressureM >= 5.0;
-                if (pressureDelta > 0.05 ||
-                    crossedPressureThreshold ||
-                    justFinishedRiderIds.Length > 0 ||
-                    position.GapAheadM >= 4.9)
-                {
-                    AgentDbg(
-                        "F",
-                        "RaceSession.cs:ResolveGroups:pressureGap",
-                        "pressure-window gap vs ForcePace group",
-                        new
-                        {
-                            runId = "post-fix",
-                            simulationSecond,
-                            riderId = rider.Profile.RiderId.Value,
-                            gapAheadM = position.GapAheadM,
-                            previousPressureMax,
-                            pressureGapM = rider.MaximumGapDuringPressureM,
-                            pressureDelta,
-                            crossedPressureThreshold,
-                            groupId = rider.GroupId,
-                            unfinished = FormatUnfinishedRiders(),
-                            justFinished = justFinishedRiderIds,
-                            forcePaceIds = ForcePaceRiderIds(),
-                            finishRegroup = justFinishedRiderIds.Length > 0,
-                        });
-                }
-            }
-            // #endregion
-            resolveIndex++;
         }
     }
 
@@ -541,124 +335,10 @@ public sealed class RaceSession
             maximumGroupCount,
             DecisionCount: 0,
             Checksum: string.Empty);
-        RaceResult result = provisional with
+        return provisional with
         {
             Checksum = RaceResultChecksum.Compute(provisional),
         };
-        // #region agent log
-        if (IsDraftingPositionProof)
-        {
-            RaceRiderMetrics? m12 = metrics.FirstOrDefault(m => m.RiderId.Value == 12);
-            RaceRiderMetrics? m14 = metrics.FirstOrDefault(m => m.RiderId.Value == 14);
-            AgentDbg(
-                "B",
-                "RaceSession.cs:BuildResult",
-                "final drafting metrics",
-                new
-                {
-                    simulationSecond,
-                    finishOrder = string.Join(",", finishOrder.Select(id => id.Value)),
-                    r12Finish = m12?.FinishTimeSeconds,
-                    r12Energy = m12?.EnergySpentJ,
-                    r12W = m12?.WPrimeRemainingJ,
-                    r12Max = m12?.MaximumGapAheadM,
-                    r12PressureMax = m12?.MaximumGapDuringPressureM,
-                    r12LostShelter = m12?.LostShelterTransitions,
-                    r14Finish = m14?.FinishTimeSeconds,
-                    r14Energy = m14?.EnergySpentJ,
-                    r14W = m14?.WPrimeRemainingJ,
-                    r14Max = m14?.MaximumGapAheadM,
-                    r14PressureMax = m14?.MaximumGapDuringPressureM,
-                    r14LostShelter = m14?.LostShelterTransitions,
-                    runId = "post-fix",
-                });
-        }
-        // #endregion
-        return result;
-    }
-
-    private bool IsDraftingPositionProof =>
-        string.Equals(scenario.Id, "race.proof.drafting-position", StringComparison.Ordinal);
-
-    private RiderRuntime? FindRider(long riderId)
-    {
-        return riders.FirstOrDefault(rider => rider.Profile.RiderId.Value == riderId);
-    }
-
-    private static int IndexOfRider(IReadOnlyList<ResolvedRaceRiderPosition> positions, long riderId)
-    {
-        for (int index = 0; index < positions.Count; index++)
-        {
-            if (positions[index].RiderId.Value == riderId)
-            {
-                return index;
-            }
-        }
-
-        return -1;
-    }
-
-    private long[] ForcePaceRiderIds()
-    {
-        return riders
-            .Where(rider => rider.Intent == RaceCommandKind.ForcePace)
-            .Select(rider => rider.Profile.RiderId.Value)
-            .ToArray();
-    }
-
-    private string FormatUnfinishedRiders()
-    {
-        return string.Join(
-            ",",
-            riders
-                .Where(rider => rider.FinishTimeSeconds is null)
-                .OrderByDescending(rider => rider.DistanceM)
-                .ThenBy(rider => rider.Profile.RiderId.Value)
-                .Select(rider =>
-                    rider.Profile.RiderId.Value + "@" +
-                    rider.DistanceM.ToString("G7", CultureInfo.InvariantCulture) + "v" +
-                    rider.SpeedMps.ToString("G4", CultureInfo.InvariantCulture) + "g" +
-                    rider.GroupId + "sh" +
-                    rider.ShelterMultiplier.ToString("G3", CultureInfo.InvariantCulture)));
-    }
-
-    private string FormatFinishedRiders()
-    {
-        return string.Join(
-            ",",
-            riders
-                .Where(rider => rider.FinishTimeSeconds is not null)
-                .OrderBy(rider => rider.FinishTimeSeconds)
-                .ThenBy(rider => rider.Profile.RiderId.Value)
-                .Select(rider =>
-                    rider.Profile.RiderId.Value + "@t" +
-                    rider.FinishTimeSeconds!.Value.ToString("G6", CultureInfo.InvariantCulture) + "d" +
-                    rider.DistanceM.ToString("G7", CultureInfo.InvariantCulture)));
-    }
-
-    private static void AgentDbg(string hypothesisId, string location, string message, object data)
-    {
-        // #region agent log
-        try
-        {
-            File.AppendAllText(
-                "/opt/cursor/logs/debug.log",
-                JsonSerializer.Serialize(new
-                {
-                    hypothesisId,
-                    location,
-                    message,
-                    data,
-                    timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
-                }) + "\n");
-        }
-        catch (IOException)
-        {
-        }
-        catch (UnauthorizedAccessException)
-        {
-        }
-        // #endregion
     }
 
     private static double BasePaceMps(RaceRouteSegment segment)
