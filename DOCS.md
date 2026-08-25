@@ -16,7 +16,7 @@
 | `LONG_SAVE_AND_PERFORMANCE_v0.2.md` | REVIEW | 100-year saves, IDs, compaction, growth metrics |
 | `DOCS_GOVERNANCE.md` | REVIEW | Lifecycle i hierarchy of truth |
 | `HANDOFF.md` | ACTIVE | Żywy stan projektu |
-| `UI_SITEMAP.md` | NOT STARTED | Ekrany i nawigacja |
+| `UI_SITEMAP_v0.1.md` | DRAFT | Ekrany, nawigacja, modality, knowledge-bounded UI |
 | `GAME_STATES.md` | NOT STARTED | State machine i legalne przejścia |
 | `DATA_MODEL.md` | NOT STARTED | Byty domenowe, IDs, knowledge, access |
 | `RACE_ENGINE_DESIGN_v0.2.md` | REVIEW | Race physics, rider capability, groups, gaps, DS decisions, prototype gate |

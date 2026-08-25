@@ -46,11 +46,11 @@ Doprowadzić dokumentację do poziomu, przy którym można rozpocząć Architect
 - [x] AI Development Rules v0.1
 - [x] GitHub Workflow v0.1
 - [x] Codebase Map template
-- [ ] UI Sitemap
+- [x] UI Sitemap v0.1 (DRAFT)
 - [ ] Game States
 
 ## Next task
-`Zaprojektować UI_SITEMAP_v0.1 i GAME_STATES_v0.1, potem minimalny DATA_MODEL_v0.1. RACE_ENGINE_DESIGN_v0.1 jest gotowy do późniejszego headless spike po skeletonie.`
+`UI_SITEMAP_v0.1 jest w DRAFT (do owner review). Następnie GAME_STATES_v0.1, potem minimalny DATA_MODEL_v0.1. RACE_ENGINE_DESIGN_v0.1 jest gotowy do późniejszego headless spike po skeletonie.`
 
 ## Known blockers
 - None.
