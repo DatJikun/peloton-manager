@@ -4,6 +4,8 @@ public static class RaceTuning
 {
     public const double GravityMps2 = 9.80665;
 
+    public const double MaximumDesiredAccelerationMps2 = 0.5;
+
     public const double MaximumCriticalPowerLossFraction = 0.35;
 
     public const double MaximumPeakPowerLossFraction = 0.45;
