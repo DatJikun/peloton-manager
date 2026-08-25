@@ -37,6 +37,7 @@ Doprowadzić dokumentację do poziomu, przy którym można rozpocząć Architect
 - [x] Human player identity belongs to ManagerCareer, not a permanent organization
 - [x] Changing organizations is core-model compatible
 - [x] OrganizationKnowledge vs PersonalKnowledge split locked
+- [x] Career Hub HTML prototypes (`prototypes/career-hub/`)
 
 ## What is currently being changed
 - [x] Architecture cleanup v0.6

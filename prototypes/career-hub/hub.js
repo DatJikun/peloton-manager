@@ -248,6 +248,10 @@
           return;
         }
         if (target === "hq") return;
+        if (el.getAttribute("data-unavailable") === "unemployed") {
+          showToast("Not available while unemployed — no org AccessContext (prototype).");
+          return;
+        }
         showToast("Prototype: this screen is not built");
       });
     });

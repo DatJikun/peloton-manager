@@ -157,6 +157,13 @@ a:hover {
   margin: 0.25rem 0 0;
 }
 
+.sidebar-brand .proto-index-link {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
 .nav-list {
   list-style: none;
   padding: 0;
@@ -376,7 +383,8 @@ a:hover {
 .today-marker {
   position: absolute;
   bottom: 0;
-  left: 38%;
+  /* Spring is the 2nd of 7 equal phases: (1 + 0.5) / 7 */
+  left: calc(100% * 1.5 / 7);
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
