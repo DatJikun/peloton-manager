@@ -30,8 +30,12 @@ public sealed class SqliteWorldSaveStoreTests
 
         GameApplication loaded = CreateApplication();
         Assert.True(loaded.Execute(new LoadGameCommand(savePath)).Succeeded);
-        Assert.Equal(expectedChecksum, WorldChecksum.Compute(loaded.World!));
+        Peloton.Domain.WorldState loadedWorld = Assert.IsType<Peloton.Domain.WorldState>(loaded.World);
+        Assert.Equal(expectedChecksum, WorldChecksum.Compute(loadedWorld));
         Assert.Equal(GameState.Management, loaded.State);
+        Assert.Equal(
+            source.World!.EntityIdHighWaterMark + 1,
+            loadedWorld.AllocateEntityId().Value);
 
         using SqliteConnection connection = new($"Data Source={savePath};Mode=ReadOnly;Pooling=False");
         connection.Open();
