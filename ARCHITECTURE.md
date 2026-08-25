@@ -548,8 +548,6 @@ RacePreparationFlow
 RaceLive
 RaceResultsFlow
 RaceDebriefFlow
-SeasonReviewFlow
-Settings
 ```
 
 Każdy stan jawnie określa:
@@ -557,6 +555,10 @@ Każdy stan jawnie określa:
 - dozwolone przejścia,
 - możliwość save/load,
 - dostępność głównej nawigacji.
+
+To jest jedna kanoniczna maszyna stanów. Warstwy aplikacji, kariery, schedulera i prezentacji służą do opisu odpowiedzialności, ale nie tworzą równoległych state machines.
+
+Scheduler `idle` / processing / deterministic pause jest statusem runtime. Nie jest GameState ani World State i nie może zmieniać semantyki symulacji. Employment, Settings, Season Review, Employment Change oraz inne przepływy prezentacji działają wewnątrz właściwego stanu kanonicznego, dopóki późniejsza decyzja właściciela nie zmieni tej listy.
 
 ### RaceLive
 
@@ -1413,7 +1415,7 @@ Wszystkie główne ekrany, nawigacja, Card Flows, HQ, Race Mode, Inbox.
 Pełna state machine, przejścia, save restrictions.
 
 ### `DATA_MODEL_v0.1.md`
-Rider, Organization, Contract, Race, Staff, Sponsor, Equipment, Injury, WorldEvent.
+Minimalne kontrakty dnia 1: Person i role kariery, ManagerCareer, Employment, Organization, DecisionAuthority, AccessContext, Knowledge, RecruitmentCase, IDs oraz event-family identities. Pełne modele rider/race/contracts/economy pozostają w dokumentach systemowych.
 
 ### `CONTENT_FORMAT_v0.1.md`
 JSON schemas, IDs, manifests, dependencies, overrides.
