@@ -1,0 +1,12 @@
+{
+  "packId": "peloton.skeleton",
+  "packVersion": "1.0.0",
+  "contentSchemaVersion": 1,
+  "resources": [
+    {
+      "kind": "scenarios",
+      "path": "scenario.json"
+    }
+  ],
+  "dependencies": []
+}

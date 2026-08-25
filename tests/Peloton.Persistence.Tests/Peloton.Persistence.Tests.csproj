@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><IsTestProject>true</IsTestProject></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
+    <ProjectReference Include="../../src/Peloton.Application/Peloton.Application.csproj" />
+    <ProjectReference Include="../../src/Peloton.Content/Peloton.Content.csproj" />
+    <ProjectReference Include="../../src/Peloton.Infrastructure/Peloton.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/Peloton.Persistence/Peloton.Persistence.csproj" />
+  </ItemGroup>
+</Project>

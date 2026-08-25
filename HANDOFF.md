@@ -10,13 +10,13 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`Pre-production architecture & UX design`
+`Milestone 0 — Architecture Skeleton`
 
 ### Goal
-Doprowadzić dokumentację do poziomu, przy którym można rozpocząć Architecture Skeleton bez zgadywania fundamentalnych kontraktów.
+Bootstrap headless C# world with deterministic time, identity, content/rules identity, GameState isolation, SQLite save/load, and repeatable skeleton seasons.
 
 ### Status
-`IN PROGRESS`
+`IMPLEMENTED ON feature/architecture-skeleton — awaiting PR review`
 
 ## What works now
 - [x] High-level game design v0.7
@@ -37,6 +37,15 @@ Doprowadzić dokumentację do poziomu, przy którym można rozpocząć Architect
 - [x] Human player identity belongs to ManagerCareer, not a permanent organization
 - [x] Changing organizations is core-model compatible
 - [x] OrganizationKnowledge vs PersonalKnowledge split locked
+- [x] .NET 8 solution and authoritative project boundaries
+- [x] Headless JSON world creation with Dynamic + Advanced + Guessed recipe
+- [x] Canonical nine GameStates and command guards
+- [x] Whole-world deterministic Advance Day
+- [x] Versioned seed derivation and deterministic checksum
+- [x] SQLite SchemaVersion 1 save/load with content/rules identity
+- [x] Pre-race autosave, RaceLive save rejection, and crash recovery
+- [x] Deterministic race stub and 10-season SimRunner
+- [x] Headless domain/application/persistence/architecture tests
 
 ## What is currently being changed
 - [x] Architecture cleanup v0.6
@@ -55,13 +64,13 @@ Doprowadzić dokumentację do poziomu, przy którym można rozpocząć Architect
 - [x] Testing v0.1 (DRAFT)
 
 ## Next task
-`Owner review DRAFT-ów pre-code gate: UI_SITEMAP, GAME_STATES, DATA_MODEL, CONTENT_FORMAT, RULESETS, SAVE_FORMAT i TESTING. Otwarte pytania mogą zostać, byle były jawne. Po REVIEW — Architecture Skeleton. Bez gameplay codingu, Godota, skeletonu C# ani Race Engine spike przed owner review.`
+`Review and merge the Architecture Skeleton PR. After merge, choose one separately scoped next milestone; do not expand StubRaceEngine into the real Race Engine without its own task and playtest gate.`
 
 ## Known blockers
 - None.
 
 ## Known failing tests
-- N/A — gameplay repo jeszcze nie istnieje.
+- None at handoff. Run the commands below again after rebasing or changing packages.
 
 ## Recent owner decisions
 - `2026-08-24` — Windows jest pierwszym targetem; preferowany stack to Godot .NET + C#.
@@ -130,17 +139,29 @@ RACE_ENGINE_RESEARCH_2026-08-25.md
 ```
 
 ## Commands to run first
-N/A przed utworzeniem repo. Po bootstrapie wpisać tu realne komendy.
+From the repository root:
+
+```text
+dotnet format --verify-no-changes
+dotnet build PelotonManager.sln
+dotnet test PelotonManager.sln
+dotnet run --project tools/Peloton.SimRunner -- run --scenario scenario.peloton.skeleton --years 10 --seed 91234
+```
 
 ## Things the next AI must NOT do
-- Nie rozpoczynaj szerokiego gameplay coding przed dokumentami pre-code gate.
+- Nie traktuj `StubRaceEngine` jako implementacji `RACE_ENGINE_DESIGN_v0.2.md`; przeczytaj `KNOWN_DIFFERENCE_FROM_CODE.md`.
 - Nie przenoś logiki gameplayowej do Godot UI.
 - Nie twórz `new Random()` w systemach gameplayowych.
 - Nie zmieniaj schema save/content bez migration planu.
 - Nie traktuj starych dokumentów jako aktualnych bez sprawdzenia statusu.
 - Nie rozszerzaj scope'u taska bez wskazania PLAYER VALUE.
+- Nie zamykaj OQ-TS-001 ani OQ-DM-001 na podstawie checksumy lub allocatora szkieletowego.
 
 ## Handoff summary
+Milestone 0 now has a working headless .NET 8 skeleton. A JSON scenario creates one world with recorded content/rules identity; Application owns the nine GameStates and Commands; Advance Day advances every organization; SQLite SchemaVersion 1 preserves the minimal career checkpoint and rejects invalid/corrupt loads; RaceLive requires a pre-race autosave and blocks manual save; SimRunner completes deterministic short seasons without Godot. `StubRaceEngine` is explicitly below the accepted Race Engine contract. Full physics, Knowledge, AI managers, DecisionTrace/Spy, and gameplay systems remain unimplemented.
+
+The paragraph below preserves the pre-bootstrap design context and owner lessons; implementation status is given above and in `CODEBASE_MAP.md`.
+
 Peloton Manager jest na etapie pre-production. Celem jest modularny, deterministyczny manager kolarstwa z matematyczną symulacją i emergent history. Epoki składają się z niezależnych modułów content/rules. Race gameplay jest krytycznym ryzykiem: wcześniejszy projekt managerski właściciela okazał się nudny przez brak ciekawych decyzji w trakcie meczu, więc realizm nie może usprawiedliwiać pasywnej rozgrywki. RNG musi być izolowany per domena, aby kosmetyczne zmiany nie wpływały na gameplay. Truth należy do Simulation, natomiast Knowledge do konkretnych organizacji. Human i AI używają tych samych Application Commands oraz rynku; AI nie posiada magicznego dostępu do ukrytych atrybutów. Wyniki są evidence, a nie bezpośrednim odczytem ability. Dossier jest sprawą rekrutacyjną z kontaktem z agentem, a nie paskiem postępu. UI Godota nie może posiadać logiki świata. Advance Day jest jedyną podstawową jednostką postępu UX, ale scheduler pozostaje event-driven i symuluje cały świat niezależnie od gracza. AI managerowie korzystają z tych samych Commands co człowiek; ich różnorodność wynika z traits, skills, knowledge, staffu, identity organizacji i kontekstu rulesetu. Efektywność cech managerów jest mierzona przez batchowe i 100-letnie symulacje w wielu epokach. Stable IDs nigdy nie są ponownie używane, a stare encje są kompaktowane zamiast kasowane z historii. UI Sitemap, Game States, minimalny Data Model, Content Format, Rulesets, Save Format i Testing są w DRAFT i czekają na owner review. Content resolution zapisuje dokładną tożsamość packów, dependencies i overrides. Rules modules składają świat bez globalnego przełącznika epoki, a ich przejścia są effective-dated. Save jest kontraktem pliku SQLite z wersją schematu, obowiązkową migracją, recovery i dokładną content/rules identity; nie zawiera mid-race snapshotu ani scheduler runtime jako World State. Testing definiuje warstwy, golden families, kanoniczny przepis Dynamic+Advanced+Guessed i gate Milestone 0; nie zamyka fun gate'u automatami. Race research został przełożony na RACE_ENGINE_DESIGN_v0.2, ale gameplay coding i race spike nie należą do bieżącego gate'u.
 
 - `2026-08-25` — Race Spy jest obowiązkowym, RNG-neutral narzędziem debugowym od pierwszego headless race spike; porównuje truth z actor knowledge i generuje reprodukowalne raporty decyzji.

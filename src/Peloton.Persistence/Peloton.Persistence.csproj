@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../Peloton.Application/Peloton.Application.csproj" />
+    <ProjectReference Include="../Peloton.Domain/Peloton.Domain.csproj" />
+    <ProjectReference Include="../Peloton.Simulation/Peloton.Simulation.csproj" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+  </ItemGroup>
+</Project>

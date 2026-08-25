@@ -1,0 +1,28 @@
+{
+  "id": "scenario.peloton.skeleton",
+  "startDate": "2030-01-01",
+  "historyMode": "Dynamic",
+  "difficulty": "Advanced",
+  "attributeVisibility": "Guessed",
+  "organizations": [
+    "organization.skeleton.red",
+    "organization.skeleton.blue",
+    "organization.skeleton.green"
+  ],
+  "modules": [
+    {
+      "slot": "calendarStructure",
+      "id": "rules.peloton.calendar.skeleton",
+      "contract": "calendar-structure",
+      "contractVersion": 1,
+      "parameterIdentity": "days-per-season:12"
+    },
+    {
+      "slot": "competitionRules",
+      "id": "rules.peloton.race.stub-v1",
+      "contract": "race-stub",
+      "contractVersion": 1,
+      "parameterIdentity": "finish-order:seeded-v1"
+    }
+  ]
+}

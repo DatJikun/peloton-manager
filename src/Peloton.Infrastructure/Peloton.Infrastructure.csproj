@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../Peloton.Application/Peloton.Application.csproj" />
+    <ProjectReference Include="../Peloton.Content/Peloton.Content.csproj" />
+    <ProjectReference Include="../Peloton.Persistence/Peloton.Persistence.csproj" />
+    <ProjectReference Include="../Peloton.Simulation/Peloton.Simulation.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Peloton.Application/Peloton.Application.csproj" />
+    <ProjectReference Include="../../src/Peloton.Infrastructure/Peloton.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/Peloton.Simulation/Peloton.Simulation.csproj" />
+  </ItemGroup>
+</Project>
