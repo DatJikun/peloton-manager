@@ -16,7 +16,7 @@
 Bootstrap headless C# world with deterministic time, identity, content/rules identity, GameState isolation, SQLite save/load, and repeatable skeleton seasons.
 
 ### Status
-`IMPLEMENTED ON feature/architecture-skeleton — awaiting PR review`
+`ON MAIN` — Architecture Skeleton merged (`#9`).
 
 ## What works now
 - [x] High-level game design v0.7
@@ -64,7 +64,7 @@ Bootstrap headless C# world with deterministic time, identity, content/rules ide
 - [x] Testing v0.1 (DRAFT)
 
 ## Next task
-`Review and merge the Architecture Skeleton PR. After merge, choose one separately scoped next milestone; do not expand StubRaceEngine into the real Race Engine without its own task and playtest gate.`
+`Wybierz jedno osobno scoped następne zadanie (race prototype albo cienki core loop). Nie rozbudowuj StubRaceEngine do prawdziwego Race Engine bez osobnego taska i playtest gate.`
 
 ## Known blockers
 - None.
@@ -72,7 +72,14 @@ Bootstrap headless C# world with deterministic time, identity, content/rules ide
 ## Known failing tests
 - None at handoff. Run the commands below again after rebasing or changing packages.
 
+## Merge policy
+Właściciel nie jest programistą. Gotową pracę mergujemy bez czekania na osobne „merguj”.
+Wstrzymujemy merge tylko przy poważnej rzeczy: padające testy, złamany lock (`PlayerTeam`,
+God-eye, mid-race save, cichy dryf designu), odrzucony przez właściciela kierunek (PR #4
+Career Hub), albo stub wyścigu udający prawdziwy Race Engine.
+
 ## Recent owner decisions
+- `2026-08-25` — Mergować, gdy high-level check jest OK; nie czekać na „merguj”. Nie mergować tylko przy poważnych problemach.
 - `2026-08-24` — Windows jest pierwszym targetem; preferowany stack to Godot .NET + C#.
 - `2026-08-24` — New Game i procesy liniowe używają Card Flow / Back / Next.
 - `2026-08-24` — RaceLive blokuje normalną nawigację i mid-race save.
