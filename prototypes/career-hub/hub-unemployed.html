@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HQ — Unemployed — Peloton Manager prototype</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-variant="unemployed" data-start-date="2027-03-05">
+  <div class="app">
+    <nav class="sidebar" aria-label="Main navigation">
+      <div class="sidebar-brand">
+        <p class="game-title">Peloton Manager</p>
+        <p class="screen-title">HQ</p>
+      </div>
+      <ul class="nav-list">
+        <li class="is-current"><a href="hub-unemployed.html">HQ</a></li>
+        <li><button type="button" class="nav-link" data-nav="inbox">Inbox</button></li>
+        <li><button type="button" class="nav-link" data-nav="calendar">Calendar</button></li>
+        <li><button type="button" class="nav-link" data-nav="squad">Squad</button></li>
+        <li><button type="button" class="nav-link" data-nav="recruitment">Recruitment</button></li>
+        <li><button type="button" class="nav-link" data-nav="organization">Organization</button></li>
+        <li><button type="button" class="nav-link" data-nav="world">World</button></li>
+        <li><button type="button" class="nav-link" data-nav="manager">Manager</button></li>
+        <li><button type="button" class="nav-link" data-nav="settings">Settings</button></li>
+      </ul>
+    </nav>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="topbar-meta">
+          <div class="topbar-item">
+            <span class="label">World date</span>
+            <span class="value date" id="world-date">Wed 5 Mar 2027</span>
+          </div>
+          <div class="topbar-item">
+            <span class="label">Organization</span>
+            <span class="value">Unemployed</span>
+          </div>
+          <div class="topbar-item">
+            <span class="label">Manager</span>
+            <span class="value">Elena Varga</span>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <button type="button" class="inbox-btn" id="inbox-top-btn" aria-label="Inbox, 2 unread">
+            Inbox <span class="inbox-badge">2</span>
+          </button>
+          <button type="button" class="btn-ghost" disabled title="Save/Load not prototyped — not RaceLive">Save</button>
+          <button type="button" class="btn-ghost" disabled title="Save/Load not prototyped — not RaceLive">Load</button>
+        </div>
+      </header>
+
+      <div class="season-rail-wrap">
+        <p class="season-rail-label">Season context</p>
+        <div class="season-rail" role="img" aria-label="Season rail: TODAY in Spring before Giro">
+          <div class="season-phase">
+            <div class="phase-dot"></div>
+            <div class="phase-name">Pre-season</div>
+          </div>
+          <div class="season-phase is-active">
+            <div class="phase-dot"></div>
+            <div class="phase-name">Spring</div>
+          </div>
+          <div class="season-phase">
+            <div class="phase-dot"></div>
+            <div class="phase-name">Giro</div>
+          </div>
+          <div class="season-phase">
+            <div class="phase-dot"></div>
+            <div class="phase-name">Tour</div>
+          </div>
+          <div class="season-phase">
+            <div class="phase-dot"></div>
+            <div class="phase-name">Vuelta</div>
+          </div>
+          <div class="season-phase">
+            <div class="phase-dot"></div>
+            <div class="phase-name">Worlds</div>
+          </div>
+          <div class="season-phase">
+            <div class="phase-dot"></div>
+            <div class="phase-name">Off-season</div>
+          </div>
+          <div class="today-marker">
+            <span class="arrow" aria-hidden="true"></span>
+            <span class="today-label">TODAY</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="advance-wrap">
+        <button type="button" class="btn-advance" id="advance-day">ADVANCE DAY</button>
+      </div>
+
+      <div class="content">
+        <p class="knowledge-notice">
+          Confidential knowledge from your former employer is <strong>not shown</strong> on this hub.
+          You see only public world information and personal career state (D-009).
+        </p>
+
+        <div id="inbox-local-panel" class="inbox-panel hidden" aria-live="polite">
+          <h2>Inbox — job approaches</h2>
+          <p>Two organisations have opened initial contact — presentation only.</p>
+          <div class="inbox-item"><strong>Continental team</strong> — informal DS conversation request</div>
+          <div class="inbox-item"><strong>WorldTour staff agency</strong> — talent scout role outline</div>
+        </div>
+
+        <div class="unemployed-grid">
+          <div class="reputation-block">
+            <h2>Personal reputation</h2>
+            <div class="reputation-score">Known · 62</div>
+            <p class="reputation-note">
+              Public track record and media profile. No access to prior org internal ratings or dossiers.
+            </p>
+          </div>
+
+          <section aria-labelledby="jobs-heading">
+            <h2 class="panel-header" id="jobs-heading" style="background:transparent;border:none;padding-left:0;">Job market</h2>
+            <div class="job-cards">
+              <article class="job-card">
+                <h3>Sporting Director</h3>
+                <p class="job-meta">Team Atlas · ProTeam · vacancy posted publicly</p>
+                <p>Rebuild sprint train after sponsor change. Requires calendar planning experience.</p>
+                <button type="button" class="btn-prototype">Express interest — prototype</button>
+              </article>
+              <article class="job-card">
+                <h3>Head of Recruitment</h3>
+                <p class="job-meta">Étoile Cycles WT · WorldTour · agent introduction</p>
+                <p>Scale U23 pipeline; board wants faster market presence in spring window.</p>
+                <button type="button" class="btn-prototype">Express interest — prototype</button>
+              </article>
+              <article class="job-card">
+                <h3>Performance Manager</h3>
+                <p class="job-meta">National federation · contract · public listing</p>
+                <p>Olympic-cycle preparation role; limited race travel, staff development focus.</p>
+                <button type="button" class="btn-prototype">Express interest — prototype</button>
+              </article>
+            </div>
+          </section>
+        </div>
+
+        <section class="panel feed-panel" aria-labelledby="feed-heading">
+          <h2 class="panel-header" id="feed-heading">
+            Public world feed
+            <span class="feed-disclaimer">Public results &amp; notifications only — not system of record</span>
+          </h2>
+          <ul class="feed-list" id="feed-list">
+            <li class="feed-item">
+              <span class="feed-tag projection">Public result</span>
+              UAE Tour stage 4: VeloStar winner announced — world continues without your organisation.
+              <time>Wed 5 Mar 2027 · projection timestamp</time>
+            </li>
+            <li class="feed-item">
+              <span class="feed-tag projection">Public result</span>
+              Paris–Nice start list published — you hold no internal briefing for any team.
+              <time>Wed 5 Mar 2027 · projection timestamp</time>
+            </li>
+            <li class="feed-item">
+              <span class="feed-tag rumor">Transfer rumor</span>
+              Media rumor: veteran climber seeking new project — publicly reported, unverified.
+              <time>Tue 4 Mar 2027 · projection timestamp</time>
+            </li>
+          </ul>
+        </section>
+      </div>
+
+      <footer class="site-footer">Static HTML prototype — not simulation truth</footer>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+  <script src="hub.js"></script>
+</body>
+</html>
