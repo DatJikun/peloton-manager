@@ -69,9 +69,15 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         {
             using SqliteConnection connection = Open(sourcePath, SqliteOpenMode.ReadOnly);
             VerifySqlite(connection);
-            int schemaVersion = int.Parse(
-                ReadMetadata(connection, "schema_version"),
-                System.Globalization.CultureInfo.InvariantCulture);
+            if (!int.TryParse(
+                    ReadMetadata(connection, "schema_version"),
+                    System.Globalization.NumberStyles.None,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out int schemaVersion))
+            {
+                throw new InvalidDataException("Save schema version is malformed.");
+            }
+
             if (schemaVersion != SchemaVersion)
             {
                 throw new InvalidDataException($"Unsupported save schema version {schemaVersion}.");

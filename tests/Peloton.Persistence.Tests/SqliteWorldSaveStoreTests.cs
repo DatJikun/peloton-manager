@@ -55,6 +55,32 @@ public sealed class SqliteWorldSaveStoreTests
         Assert.Equal(GameState.Management, application.State);
     }
 
+    [Fact]
+    public void MalformedSchemaVersionDoesNotReplaceAttachedWorld()
+    {
+        using TemporaryDirectory temp = new();
+        string savePath = Path.Combine(temp.Path, "malformed-schema.peloton");
+        GameApplication application = CreateApplication();
+        Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 19)).Succeeded);
+        Assert.True(application.Execute(new SaveGameCommand(savePath)).Succeeded);
+        string checksum = WorldChecksum.Compute(application.World!);
+
+        using (SqliteConnection connection = new($"Data Source={savePath};Mode=ReadWrite;Pooling=False"))
+        {
+            connection.Open();
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = "UPDATE save_metadata SET value = 'not-a-version' WHERE key = 'schema_version'";
+            command.ExecuteNonQuery();
+        }
+
+        CommandResult result = application.Execute(new LoadGameCommand(savePath));
+
+        Assert.False(result.Succeeded);
+        Assert.Equal("LOAD_FAILED", result.ReasonCode);
+        Assert.Equal(GameState.Management, application.State);
+        Assert.Equal(checksum, WorldChecksum.Compute(application.World!));
+    }
+
     private static string ReadMetadata(SqliteConnection connection, string key)
     {
         using SqliteCommand command = connection.CreateCommand();
