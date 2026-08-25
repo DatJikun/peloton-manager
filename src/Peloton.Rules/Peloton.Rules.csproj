@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../Peloton.Domain/Peloton.Domain.csproj" />
+  </ItemGroup>
+</Project>
