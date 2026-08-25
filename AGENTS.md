@@ -43,3 +43,20 @@ The active docs are internally consistent: every `*.md` referenced as an existin
 document in `DOCS.md` resolves to a real file; unresolved references are the intentional
 `NOT STARTED` future docs and older superseded versions. When editing docs, respect
 `DOCS_GOVERNANCE.md` (hierarchy of truth, statuses, no silent design drift).
+
+### Collaboration roles (owner lock)
+Default split when this repo is developed with a main Cloud Agent plus Composer 2.5
+subagents:
+
+- **Main agent (Grok 4.6 High, not fast):** writes Markdown/docs and reviews Composer
+  output. Design contracts (VISION, DECISIONS, ARCHITECTURE, HANDOFF, UI sitemap,
+  GAME_STATES, DATA_MODEL, ADRs, and similar governance docs) are authored here, not
+  delegated.
+- **Composer 2.5:** codes. Do not assign Composer to be the primary author of those
+  design/governance documents.
+- **Exception:** Composer **may** write Markdown when it is part of the coding work
+  (for example a HANDOFF note about what just landed, a `KNOWN DIFFERENCE FROM CODE`
+  section, a test/playtest note, or a small contract clarification next to the change)
+  or when Composer **noticed something important** (contradiction, missing invariant,
+  implementation risk). The main agent still reviews that Markdown before it is treated
+  as project contract.
