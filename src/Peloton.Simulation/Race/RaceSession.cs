@@ -242,7 +242,53 @@ public sealed class RaceSession
             rider.PositionSlot = position.PositionSlot;
             rider.MaximumGapAheadM = Math.Max(rider.MaximumGapAheadM, position.GapAheadM);
             rider.ShelterMultiplier = position.ShelterMultiplier;
+            RecordPressureGap(rider, position, resolution);
         }
+    }
+
+    private void RecordPressureGap(
+        RiderRuntime rider,
+        ResolvedRaceRiderPosition position,
+        GroupResolution resolution)
+    {
+        if (rider.FinishTimeSeconds is not null)
+        {
+            return;
+        }
+
+        WorldEntityId[] paceSetterIds = riders
+            .Where(item => item.Intent == RaceCommandKind.ForcePace &&
+                           item.FinishTimeSeconds is null)
+            .Select(item => item.Profile.RiderId)
+            .ToArray();
+        if (paceSetterIds.Length == 0)
+        {
+            return;
+        }
+
+        HashSet<int> pressureGroupIds = resolution.Riders
+            .Where(item => paceSetterIds.Contains(item.RiderId))
+            .Select(item => item.GroupId)
+            .ToHashSet();
+        if (pressureGroupIds.Count == 0)
+        {
+            return;
+        }
+
+        double pressureGapM;
+        if (pressureGroupIds.Contains(position.GroupId))
+        {
+            pressureGapM = position.GapAheadM;
+        }
+        else
+        {
+            double paceGroupRearDistanceM = resolution.Riders
+                .Where(item => pressureGroupIds.Contains(item.GroupId))
+                .Min(item => riders.Single(runtime => runtime.Profile.RiderId == item.RiderId).DistanceM);
+            pressureGapM = Math.Max(0.0, paceGroupRearDistanceM - rider.DistanceM);
+        }
+
+        rider.MaximumGapDuringPressureM = Math.Max(rider.MaximumGapDuringPressureM, pressureGapM);
     }
 
     private void ExpireIntents()
@@ -268,6 +314,7 @@ public sealed class RaceSession
                 rider.Physiology.WPrimeRemainingJ,
                 rider.TimeAboveCriticalPowerSeconds,
                 rider.MaximumGapAheadM,
+                rider.MaximumGapDuringPressureM,
                 rider.LostShelterTransitions,
                 rider.GroupId))
             .OrderBy(rider => rider.FinishTimeSeconds)
@@ -344,6 +391,8 @@ public sealed class RaceSession
         public double ShelterMultiplier { get; set; } = 1.0;
 
         public double MaximumGapAheadM { get; set; }
+
+        public double MaximumGapDuringPressureM { get; set; }
 
         public int LostShelterTransitions { get; set; }
 

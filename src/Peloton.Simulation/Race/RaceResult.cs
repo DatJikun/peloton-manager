@@ -11,6 +11,7 @@ public sealed record RaceRiderMetrics(
     double WPrimeRemainingJ,
     int TimeAboveCriticalPowerSeconds,
     double MaximumGapAheadM,
+    double MaximumGapDuringPressureM,
     int LostShelterTransitions,
     int FinalGroupId);
 

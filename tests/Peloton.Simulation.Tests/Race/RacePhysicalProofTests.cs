@@ -45,10 +45,16 @@ public sealed class RacePhysicalProofTests
             shelteredWeak.EnergySpentJ < exposedWeak.EnergySpentJ,
             $"sheltered={shelteredWeak}; exposed={exposedWeak}");
         Assert.True(
-            shelteredWeak.MaximumGapAheadM < 5.0,
+            shelteredWeak.WPrimeRemainingJ > exposedWeak.WPrimeRemainingJ,
             $"sheltered={shelteredWeak}; exposed={exposedWeak}");
         Assert.True(
-            exposedWeak.MaximumGapAheadM > 5.0,
+            shelteredWeak.FinishTimeSeconds < exposedWeak.FinishTimeSeconds,
+            $"sheltered={shelteredWeak}; exposed={exposedWeak}");
+        Assert.True(
+            shelteredWeak.MaximumGapDuringPressureM < 5.0,
+            $"sheltered={shelteredWeak}; exposed={exposedWeak}");
+        Assert.True(
+            exposedWeak.MaximumGapDuringPressureM > 5.0,
             $"sheltered={shelteredWeak}; exposed={exposedWeak}");
     }
 
