@@ -12,6 +12,7 @@ kanoniczną specyfikacją gry ani kodem przeznaczonym do produkcji.
 4. `04-radical-skins.html` — Sports Broadcast, Classic PC Manager, Team Roadbook
    i Service Course Workstation na strukturze Manager Home.
 5. `05-beauty-pass.html` — Cinematic Broadcast, Carbon Atelier i Grand Tour Studio.
+6. `06-empty-dashboard.html` — pełnoekranowy, statyczny Manager Home (Opus 5; bez JS).
 
 Otwórz `index.html`, aby przejść do każdego etapu z jednego miejsca.
 
