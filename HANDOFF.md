@@ -78,7 +78,13 @@ Wstrzymujemy merge tylko przy poważnej rzeczy: padające testy, złamany lock (
 God-eye, mid-race save, cichy dryf designu), odrzucony przez właściciela kierunek (PR #4
 Career Hub), albo stub wyścigu udający prawdziwy Race Engine.
 
+## Owner communication
+Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
+`@mention`, bez proszenia o GitHub review, bez komentarzy PR tylko po to, by
+dostał powiadomienie.
+
 ## Recent owner decisions
+- `2026-08-25` — Nie wysyłać właścicielowi maili o zmianach; status tylko w czacie agenta.
 - `2026-08-25` — Mergować, gdy high-level check jest OK; nie czekać na „merguj”. Nie mergować tylko przy poważnych problemach.
 - `2026-08-24` — Windows jest pierwszym targetem; preferowany stack to Godot .NET + C#.
 - `2026-08-24` — New Game i procesy liniowe używają Card Flow / Back / Next.
