@@ -77,3 +77,14 @@ already found the work ready.
 - High-level check is the default. Deep line-by-line review only if a serious issue is
   suspected.
 - Tell the owner in plain language what landed and what was held.
+
+### Owner communication (owner lock)
+The owner does **not** want email about repo/agent changes.
+
+- Do not email the owner.
+- Do not `@mention` the owner on GitHub, request a review from them, or post extra
+  PR comments that exist only to notify.
+- Report status in the Cursor agent conversation, not by mail.
+- GitHub/Cursor account notification emails are outside the agent; the owner can
+  mute those in GitHub watching / Cursor notification settings. Agents must still
+  avoid any extra notify-the-owner action.
