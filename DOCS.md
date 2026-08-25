@@ -26,9 +26,9 @@
 | `GITHUB_WORKFLOW_v0.1.md` | REVIEW | Branch, commit, PR and merge workflow |
 | `CODEBASE_MAP.md` | TEMPLATE | Fast navigation map of code ownership and debugging entry points |
 | `RACE_ENGINE_RESEARCH_2026-08-25.md` | RESEARCH SOURCE | Research basis for physiology, physics, DS information and tactics |
-| `CONTENT_FORMAT.md` | NOT STARTED | JSON, manifesty, IDs, dependencies |
-| `RULESETS.md` | NOT STARTED | Składane moduły reguł + transitions |
-| `SAVE_FORMAT.md` | NOT STARTED | SQLite, schema, migrations, content identity |
+| `CONTENT_FORMAT_v0.1.md` | DRAFT | JSON content packs, manifesty, IDs, dependencies, overrides i deterministic resolution |
+| `RULESETS_v0.1.md` | DRAFT | Składane moduły reguł, compatibility i effective-dated transitions |
+| `SAVE_FORMAT_v0.1.md` | DRAFT | SQLite save contract, schema versions, migrations, content identity i recovery |
 | `TESTING.md` | NOT STARTED | Tests, golden scenarios, probes |
 | `AI_DEVELOPMENT_RULES_v0.1.md` | REVIEW | Reguły implementacji przez AI |
 
@@ -58,8 +58,8 @@ relevant system design docs
 4. `RACE_ENGINE_DESIGN_v0.2.md` - DONE; next: prototype contracts after minimal Data Model
 5. pełniejszy Rider Performance / Training / Development design
 6. Calendar / Recruitment / Contracts / Economy-Sponsors designs
-7. `CONTENT_FORMAT`, `RULESETS`, `SAVE_FORMAT`
-8. `TESTING`, `AI_DEVELOPMENT_RULES`
+7. `CONTENT_FORMAT_v0.1.md`, `RULESETS_v0.1.md`, `SAVE_FORMAT_v0.1.md` - DRAFT
+8. `TESTING.md` - NOT STARTED; osobna sesja
 
 Nie zamykamy dużej persistence/content infrastructure przed wczesnym race/core-loop designem.
 
