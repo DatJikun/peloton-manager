@@ -17,6 +17,7 @@
 | `DOCS_GOVERNANCE.md` | REVIEW | Lifecycle i hierarchy of truth |
 | `HANDOFF.md` | ACTIVE | Żywy stan projektu |
 | `UI_SITEMAP.md` | NOT STARTED | Ekrany i nawigacja |
+| `UI_DASHBOARD_DESIGN_EXPLORATION_v0.1.md` | EXPLORATION | Metody, warianty wizualne, użyte skille i komentarze właściciela przed UI sitemap |
 | `GAME_STATES.md` | NOT STARTED | State machine i legalne przejścia |
 | `DATA_MODEL.md` | NOT STARTED | Byty domenowe, IDs, knowledge, access |
 | `RACE_ENGINE_DESIGN_v0.2.md` | REVIEW | Race physics, rider capability, groups, gaps, DS decisions, prototype gate |
