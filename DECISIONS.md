@@ -102,3 +102,8 @@ Meaningful work uses scoped branches/tasks, descriptive commits and reviewable P
 
 ## D-030 — Regression before patch stacking
 When practical, bugs receive a reproducible failing test/scenario before root-cause fixes. One-off exceptions are disfavored when a general defect exists.
+
+## D-031 — Canonical game-state list and runtime boundary
+The canonical game-state machine contains exactly: `MainMenu`, `NewGameFlow`, `LoadingWorld`, `Management`, `PreSeasonPlanningFlow`, `RacePreparationFlow`, `RaceLive`, `RaceResultsFlow`, and `RaceDebriefFlow`.
+
+Scheduler idle/processing/deterministic-pause status is runtime, not a GameState or World State. Employment, settings, open modals, season review, employment change, and other presentation flows do not add game states. They run inside the applicable canonical state unless a later owner decision changes the list.

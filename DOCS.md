@@ -17,8 +17,8 @@
 | `DOCS_GOVERNANCE.md` | REVIEW | Lifecycle i hierarchy of truth |
 | `HANDOFF.md` | ACTIVE | Żywy stan projektu |
 | `UI_SITEMAP_v0.1.md` | DRAFT | Ekrany, nawigacja, modality, knowledge-bounded UI |
-| `GAME_STATES.md` | NOT STARTED | State machine i legalne przejścia |
-| `DATA_MODEL.md` | NOT STARTED | Byty domenowe, IDs, knowledge, access |
+| `GAME_STATES_v0.1.md` | DRAFT | Kanoniczne stany, przejścia, save/load i runtime barriers |
+| `DATA_MODEL_v0.1.md` | DRAFT | Minimalne byty, IDs, employment, authority, knowledge i event contracts |
 | `RACE_ENGINE_DESIGN_v0.2.md` | REVIEW | Race physics, rider capability, groups, gaps, DS decisions, prototype gate |
 | `RACE_SPY_DEBUGGING_v0.1.md` | REVIEW | Developer race traces, truth-vs-knowledge diagnostics, reproducible AI decision reports |
 | `WORLD_SPY_AND_DECISION_TRACING_v0.1.md` | REVIEW | Shared explainability/debug framework for AI decisions across all systems |
@@ -52,10 +52,10 @@ relevant system design docs
 
 ## Immediate design order
 
-1. `UI_SITEMAP_v0.1.md`
-2. `GAME_STATES_v0.1.md`
-3. minimalny `DATA_MODEL_v0.1.md` dla Person/ManagerCareer/Organization/AccessContext/IDs/events
-4. `RACE_ENGINE_DESIGN_v0.1.md` — DONE; next: prototype contracts after minimal Data Model
+1. `UI_SITEMAP_v0.1.md` - DRAFT
+2. `GAME_STATES_v0.1.md` - DRAFT
+3. minimalny `DATA_MODEL_v0.1.md` dla Person/ManagerCareer/Organization/AccessContext/IDs/events - DRAFT
+4. `RACE_ENGINE_DESIGN_v0.2.md` - DONE; next: prototype contracts after minimal Data Model
 5. pełniejszy Rider Performance / Training / Development design
 6. Calendar / Recruitment / Contracts / Economy-Sponsors designs
 7. `CONTENT_FORMAT`, `RULESETS`, `SAVE_FORMAT`

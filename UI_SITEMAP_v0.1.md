@@ -8,7 +8,7 @@
 **Supersedes:** none  
 **Superseded by:** none  
 **Last reviewed:** 2026-08-25  
-**Related decisions/ADRs:** D-002, D-003, D-004, D-005, D-006, D-008, D-009, D-010, D-013, D-014, D-017, D-020, D-024, D-027, D-016; OPEN — Hotseat RaceLive (DECISIONS.md)
+**Related decisions/ADRs:** D-002, D-003, D-004, D-005, D-006, D-008, D-009, D-010, D-013, D-014, D-017, D-020, D-024, D-027, D-016, D-031; OPEN — Hotseat RaceLive (DECISIONS.md)
 
 ---
 
@@ -27,19 +27,19 @@ This document defines **what screens exist**, **how the player moves between the
 
 ### Out of scope (defined elsewhere)
 
-- Full state-machine legality matrix → **pending** `GAME_STATES_v0.1.md`
-- Entity schemas, `AccessContext`, knowledge record semantics → **pending** `DATA_MODEL_v0.1.md`
+- Full state-machine legality matrix → `GAME_STATES_v0.1.md`
+- Entity contracts, `AccessContext`, knowledge record semantics → `DATA_MODEL_v0.1.md`
 - Race physics and DecisionRequest generation → `RACE_ENGINE_DESIGN_v0.2.md`
 - Command envelopes, event taxonomy, determinism → `DETERMINISM_AND_EVENT_CONTRACTS_v0.1.md`
 
-### Forward references (pending documents)
+### Downstream contract documents
 
-| Pending doc | What UI_SITEMAP defers to it |
+| Document | What UI_SITEMAP defers to it |
 |---|---|
 | `GAME_STATES_v0.1.md` | Exact game-state enum, save/load restrictions per state, illegal transition guards |
 | `DATA_MODEL_v0.1.md` | `ManagerCareer`, `DecisionAuthority`, `OrganizationKnowledgeStore`, `PersonalKnowledge`, `RecruitmentCase`, query payload shapes |
 
-Until those documents exist, this sitemap states **intent**; `GAME_STATES` will refine transitions without contradicting modality rules here.
+These documents refine the contracts without changing the screen inventory or modality rules here.
 
 ---
 
@@ -154,7 +154,7 @@ If end of day reached:
 
 ### 3.5 Decision presentation modality (OPEN)
 
-**Default intent:** Blocking overlay for time-critical race decisions; Inbox/Decision Queue entry for management deadlines. Exact routing is an **OPEN QUESTION** pending `GAME_STATES` and owner UX preference.
+**Default intent:** Blocking overlay for time-critical race decisions; Inbox/Decision Queue entry for management deadlines. Exact routing remains **OPEN** in OQ-UI-001 and OQ-GS-001.
 
 ---
 
@@ -319,9 +319,11 @@ MainMenu → NewGameFlow (card) → LoadingWorld → Management
 Management → PreSeasonPlanningFlow (card) → Management
 Management → RacePreparationFlow (card) → RaceLive (blocking)
 RaceLive → RaceResultsFlow (card) → RaceDebriefFlow (card) → Management
-Management → EmploymentChangeFlow (card) → Management (same or new org context)
-Management → UnemployedHub (persistent shell variant) ↔ EmploymentChangeFlow
+Management → [hosted Employment Change presentation] → Management (same or new org context)
+Management ↔ Unemployed Hub variant (employment data changes; GameState remains Management)
 ```
+
+Employment Change, Unemployed Hub, Settings and Season Review are presentation routes hosted by a canonical state. They are not additional GameState values (D-031, `GAME_STATES_v0.1.md`).
 
 Illegal (must be rejected by game state machine, not merely hidden buttons):
 
@@ -454,7 +456,7 @@ Hotseat (future): active `DecisionAuthority` switches viewer; UI must not leak o
 
 | # | Question | Notes / deadline |
 |---|---|---|
-| OQ-UI-001 | **DecisionRequest routing:** blocking modal vs Inbox-first for management deadlines? | Affects Hub vs Inbox primacy; decide before `GAME_STATES` implementation |
+| OQ-UI-001 | **DecisionRequest routing:** blocking modal vs Inbox-first for management deadlines? | Affects Hub vs Inbox primacy; decide before production Decision Queue routing |
 | OQ-UI-002 | **Unemployed Career Hub layout:** dedicated minimal shell vs full shell with empty org panels disabled? | D-004 requires unemployed path; layout not locked |
 | OQ-UI-003 | **Global Advance Day:** callable only from Hub or from any persistent screen? | D-006 UX detail |
 | OQ-UI-004 | **Season Review Card Flow depth:** mandatory full flow vs optional summary panel? | Seasonal loop polish |
@@ -505,7 +507,7 @@ Hotseat (future): active `DecisionAuthority` switches viewer; UI must not leak o
 ## IMPLEMENTATION NOTES
 
 - Canonical filenames: this doc is `UI_SITEMAP_v0.1.md`; future accepted version may become `UI_SITEMAP.md` per DOCS.md index.
-- `GAME_STATES_v0.1.md` must enumerate states listed in ARCHITECTURE §14 and align modality here without contradiction.
+- `GAME_STATES_v0.1.md` enumerates the canonical states from ARCHITECTURE §14 and aligns them with the modality rules here.
 - Each screen should map to one or more Queries; mutations only via Commands enumerated in `Peloton.Application` (see ARCHITECTURE §11).
 - Presentation-mode race settings must not call gameplay RNG (R-010).
 - Season context rail is orientation only; calendar content drives accuracy (ARCHITECTURE §72).

@@ -47,10 +47,11 @@ Doprowadzić dokumentację do poziomu, przy którym można rozpocząć Architect
 - [x] GitHub Workflow v0.1
 - [x] Codebase Map template
 - [x] UI Sitemap v0.1 (DRAFT)
-- [ ] Game States
+- [x] Game States v0.1 (DRAFT)
+- [x] Minimal Data Model v0.1 (DRAFT)
 
 ## Next task
-`UI_SITEMAP_v0.1 jest w DRAFT (do owner review). Następnie GAME_STATES_v0.1, potem minimalny DATA_MODEL_v0.1. RACE_ENGINE_DESIGN_v0.1 jest gotowy do późniejszego headless spike po skeletonie.`
+`Owner review pakietu UI_SITEMAP_v0.1 + GAME_STATES_v0.1 + DATA_MODEL_v0.1 i zamknięcie wybranych OPEN QUESTIONS. Potem właściciel wybiera kolejny dokument z Immediate design order w DOCS.md. RACE_ENGINE_DESIGN_v0.2 pozostaje gotowy do późniejszego headless spike po skeletonie.`
 
 ## Known blockers
 - None.
@@ -84,6 +85,8 @@ Doprowadzić dokumentację do poziomu, przy którym można rozpocząć Architect
 - `2026-08-25` — Drafting zmienia głównie aero; positioning wpływa na realny koszt energetyczny w całym wyścigu.
 - `2026-08-25` — Race briefing/AI/DS nie mogą używać hidden race truth; działają na observations/interpretations.
 - `2026-08-25` — Crosswind splits, repeated-attack selection i dropping powinny być emergentne, nie skryptowane.
+- `2026-08-25` — Kanoniczna maszyna ma dziewięć stanów z D-031; scheduler pause, employment i presentation flows nie dodają stanów gry.
+- `2026-08-25` — DATA_MODEL_v0.1 pozostaje cienkim kontraktem dnia 1; nie zawiera tabel SQLite ani kopii pełnego save/compaction designu.
 
 ## Owner feedback / project experience
 Wcześniejszy Ping-Pong Manager był rozwijany przez miesiące z AI i technicznie osiągnął sporo, ale ostatecznie główny gameplay okazał się nudny, ponieważ w trakcie meczu brakowało ciekawych decyzji. W Peloton Managerze jest to jawna lekcja projektowa: nie budować kolejnych warstw na pętli, która nie przeszła ręcznego testu fun/decision density.
@@ -95,6 +98,9 @@ DECISIONS.md
 DOCS.md
 Peloton_Manager_design_notes_v1.0.md
 ARCHITECTURE.md
+UI_SITEMAP_v0.1.md
+GAME_STATES_v0.1.md
+DATA_MODEL_v0.1.md
 DETERMINISM_AND_EVENT_CONTRACTS_v0.1.md
 DOCS_GOVERNANCE.md
 DESIGN_PRINCIPLES_AND_ANTI_PATTERNS.md
@@ -121,7 +127,7 @@ N/A przed utworzeniem repo. Po bootstrapie wpisać tu realne komendy.
 - Nie rozszerzaj scope'u taska bez wskazania PLAYER VALUE.
 
 ## Handoff summary
-Peloton Manager jest na etapie pre-production. Celem jest modularny, deterministyczny manager kolarstwa z matematyczną symulacją i emergent history. Epoki składają się z niezależnych modułów content/rules. Race gameplay jest krytycznym ryzykiem: wcześniejszy projekt managerski właściciela okazał się nudny przez brak ciekawych decyzji w trakcie meczu, więc realizm nie może usprawiedliwiać pasywnej rozgrywki. RNG musi być izolowany per domena, aby kosmetyczne zmiany nie wpływały na gameplay. Truth należy do Simulation, natomiast Knowledge do konkretnych organizacji. Human i AI używają tych samych Application Commands oraz rynku; AI nie posiada magicznego dostępu do ukrytych atrybutów. Wyniki są evidence, a nie bezpośrednim odczytem ability. Dossier jest sprawą rekrutacyjną z kontaktem z agentem, a nie paskiem postępu. UI Godota nie może posiadać logiki świata. Advance Day jest jedyną podstawową jednostką postępu UX, ale scheduler pozostaje event-driven i symuluje cały świat niezależnie od gracza. AI managerowie korzystają z tych samych Commands co człowiek; ich różnorodność wynika z traits, skills, knowledge, staffu, identity organizacji i kontekstu rulesetu. Efektywność cech managerów jest mierzona przez batchowe i 100-letnie symulacje w wielu epokach. Stable IDs nigdy nie są ponownie używane, a stare encje są kompaktowane zamiast kasowane z historii. Następny krok to UI Sitemap i Game States, potem minimalny Data Model. Race research został dostarczony i przełożony na RACE_ENGINE_DESIGN_v0.1. Wczesny headless race/core-loop spike ma nastąpić po minimalnym Data Modelu i przed zamknięciem dużej persistence/content infrastruktury.
+Peloton Manager jest na etapie pre-production. Celem jest modularny, deterministyczny manager kolarstwa z matematyczną symulacją i emergent history. Epoki składają się z niezależnych modułów content/rules. Race gameplay jest krytycznym ryzykiem: wcześniejszy projekt managerski właściciela okazał się nudny przez brak ciekawych decyzji w trakcie meczu, więc realizm nie może usprawiedliwiać pasywnej rozgrywki. RNG musi być izolowany per domena, aby kosmetyczne zmiany nie wpływały na gameplay. Truth należy do Simulation, natomiast Knowledge do konkretnych organizacji. Human i AI używają tych samych Application Commands oraz rynku; AI nie posiada magicznego dostępu do ukrytych atrybutów. Wyniki są evidence, a nie bezpośrednim odczytem ability. Dossier jest sprawą rekrutacyjną z kontaktem z agentem, a nie paskiem postępu. UI Godota nie może posiadać logiki świata. Advance Day jest jedyną podstawową jednostką postępu UX, ale scheduler pozostaje event-driven i symuluje cały świat niezależnie od gracza. AI managerowie korzystają z tych samych Commands co człowiek; ich różnorodność wynika z traits, skills, knowledge, staffu, identity organizacji i kontekstu rulesetu. Efektywność cech managerów jest mierzona przez batchowe i 100-letnie symulacje w wielu epokach. Stable IDs nigdy nie są ponownie używane, a stare encje są kompaktowane zamiast kasowane z historii. UI Sitemap, Game States i minimalny Data Model są w DRAFT i czekają na owner review. Race research został przełożony na RACE_ENGINE_DESIGN_v0.2. Wczesny headless race/core-loop spike ma nastąpić po architecture skeletonie i przed zamknięciem dużej persistence/content infrastruktury.
 
 - `2026-08-25` — Race Spy jest obowiązkowym, RNG-neutral narzędziem debugowym od pierwszego headless race spike; porównuje truth z actor knowledge i generuje reprodukowalne raporty decyzji.
 
