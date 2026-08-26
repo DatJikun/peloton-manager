@@ -156,7 +156,30 @@ uses `"requires": ("hairline_receded",)`.
 
 **A head** (`HEAD_RECIPES`): multipliers around 1.0 on `cranium_w`, `temple_w`, `cheek_w`,
 `jaw_w`, `chin_w`, `crown_w`, plus `crown` and `chin_len` in px. Tag it `jaw_narrow` /
-`jaw_medium` / `jaw_wide` so beards and hair can react.
+`jaw_medium` / `jaw_wide` so beards and hair can react. Extreme values (chin_w below
+~0.75, jaw_w above ~1.16, chin_len beyond ±12) read as caricature; soften in place
+(pack version bump), do not add a more extreme head.
+
+**Eyes** (`EYE_RECIPES`): keep a **neutral-open** cluster and a **wide/full** cluster as
+the common weights. Slit defaults (`th` ~6, `bh` ~5) flatten the whole peloton. A few
+narrower options may stay as a minority, still readable. Defaults live around
+`hw=25, th=11, bh=8.6, iris_r=11.2`.
+
+**Mouths** (`MOUTH_RECIPES`): same pattern — neutral and full/wide as the common look,
+thin-line mouths as a minority. Still a slight smile; do not add gaping/open-mouth
+expressions. Defaults live around `hw=46, upper=8.4, lower=11.2`.
+
+**Brows** (`BROW_RECIPES`): recipes must differ in **inner gap, length, thickness taper,
+arch and peak**, not just `th`/`arch` on the same polygon. `bake_brow` takes `inner` /
+`outer` (fractions of `HEAD_HW`), `inner_th` / `outer_th`, `peak_t`, `drop`, `angle`.
+
+**Noses** (`NOSE_RECIPES`): bake a **skin silhouette** (`nose_contour`) plus keyline and
+nostril ticks. Multiply-only ticks all look identical at portrait size. Vary `bridge`,
+`tip`, `flare`, `len`, `hook`, `upturn`, `bulb`.
+
+**Necks** (`NECK_RECIPES`): five discrete widths, picked on stream `identity.neck` so
+other identity draws do not shift. Keep `neck_01` as the medium recipe. Continuous
+`shape.neck_thickness` is a tiny affine on top (~0.97–1.03), not the source of variety.
 
 **Facial hair** (`FACIAL_RECIPES`): `cov` = `full`/`short`/`chin`/`strap`/`moustache`,
 `alpha`, `soft`, `min_age`, and `tags: ("beard_dense",)` for anything that should suppress
@@ -202,7 +225,7 @@ The approved `poster` values: `tone_steps=2`, `tone_floor=0.78`, `form_strength=
 
 The owner locked this look on 2026-08-26 (*"tamten styl graficzny był idealny"*). Do not
 offer restyles. Variety comes from **more face recipes** (heads, hair, mouths, noses,
-ears), never from a new `StyleProfile`.
+ears, brows, necks), never from a new `StyleProfile`.
 
 To add a look the owner asked for, append recipes in `pack.py`. Do not silently change
 `poster`. Unused neighbour profiles (`poster_thin` / `poster_cut` / `poster_comic` /
@@ -224,6 +247,12 @@ To add a look the owner asked for, append recipes in `pack.py`. Do not silently 
   than tall and sit clear of the lip line.
 - **Downscaling wastes pixels.** For icons under ~120 px crop with `render.crop_head()`
   first, then resize.
+- **Slit eyes and thread mouths flatten the peloton.** If a pass looks "all the same",
+  check `th`/`bh` and lip `upper`/`lower` before adding more hair.
+- **A nose without a silhouette is invisible.** Multiply ticks at the nostrils do not
+  carry width, length or hook. Give the nose a skin mask and a keyline.
+- **Same-polygon brows stay identical.** Changing only `th` by 2 px does not read; move
+  inner gap, outer length, taper and arch peak.
 
 ## Cache and versioning
 

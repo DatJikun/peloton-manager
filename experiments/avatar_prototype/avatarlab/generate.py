@@ -4,7 +4,7 @@ appearance = f(rider row in DB, manifest version constants)
 
 Split into three blocks that have different lifetimes:
 
-* identity  - permanent for the rider's whole career (skull, eyes, nose, ...)
+* identity  - permanent for the rider's whole career (skull, eyes, nose, mouth, neck, ...)
 * mutable   - recomputed from age / world state (hair, gray, wrinkles, beard)
 * equipment - recomputed from team + result state (jersey, helmet, glasses)
 
@@ -222,7 +222,7 @@ def _identity(rng: RiderRng, rider: Rider, m: Manifest) -> tuple[dict[str, Any],
     tags |= set(head.tags)
 
     ident: dict[str, Any] = {"head": head.asset_id}
-    for cat in ("ears", "eyes", "eyebrows", "nose", "mouth"):
+    for cat in ("ears", "eyes", "eyebrows", "nose", "mouth", "neck"):
         pick = weighted_pick(rng, f"identity.{cat}", m.by_category(cat), rider, tags)
         if pick is not None:
             ident[cat] = pick.asset_id
@@ -357,6 +357,7 @@ def core_fingerprint(app: Appearance) -> tuple:
         i.get("nose"),
         i.get("mouth"),
         i.get("eyebrows"),
+        i.get("neck"),
         _bucket(i["skin_tone"], 8),
         _bucket(s["face_width"], 4),
         _bucket(s["nose_width"], 4),

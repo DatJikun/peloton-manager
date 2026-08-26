@@ -147,7 +147,7 @@ def _local_xform(category: str, shape: dict[str, float], mirrored: bool = False)
         )
     if category == "eyebrows":
         return Xform(
-            scale_x=_c(shape["eye_size"], 0.90, 1.10),
+            scale_x=_c(shape["eye_size"], 0.94, 1.10),
             dx=_c(shape["eye_spacing"], -8.0, 8.0),
             dy=_c(shape["eye_height"], -6.0, 6.0)
             + _c(shape["brow_height"], -9.0, 5.0)
@@ -155,14 +155,14 @@ def _local_xform(category: str, shape: dict[str, float], mirrored: bool = False)
         )
     if category == "nose":
         return Xform(
-            scale_x=_c(shape["nose_width"], 0.84, 1.18),
-            scale_y=_c(shape["nose_length"], 0.84, 1.18),
+            scale_x=_c(shape["nose_width"], 0.88, 1.20),
+            scale_y=_c(shape["nose_length"], 0.88, 1.16),
             dx=asym * 1.0,
         )
     if category == "mouth":
         return Xform(
-            scale_x=_c(shape["mouth_width"], 0.84, 1.18),
-            scale_y=_c(shape["mouth_height"], 0.86, 1.14),
+            scale_x=_c(shape["mouth_width"], 0.92, 1.12),
+            scale_y=_c(shape["mouth_height"], 0.94, 1.12),
             dx=asym * 1.6,
             dy=_c(shape.get("mouth_y", 0.5), -6.0, 6.0),
         )
@@ -172,7 +172,7 @@ def _local_xform(category: str, shape: dict[str, float], mirrored: bool = False)
             scale_y=_c(shape["ear_size"], 0.86, 1.14),
         )
     if category == "neck":
-        return Xform(scale_x=_c(shape["neck_thickness"], 0.86, 1.16))
+        return Xform(scale_x=_c(shape["neck_thickness"], 0.97, 1.03))
     if category == "jersey":
         return Xform(scale_x=_c(shape["shoulder_width"], 0.93, 1.09))
     return Xform()
@@ -374,7 +374,7 @@ def _layer_plan(app: Appearance, pack: Pack) -> list[tuple[Asset, Part, bool]]:
 
     put("jersey", eq.get("jersey_template"))
     put("jersey_overlay", BAND_OVERLAYS.get(normalise_override(eq.get("jersey_override")) or ""))
-    put("neck", "neck_01")
+    put("neck", app.identity.get("neck") or "neck_01")
     put("ears", app.identity.get("ears"))
     put("head", app.identity["head"])
     for cat in ("nose", "mouth", "eyes", "eyebrows"):

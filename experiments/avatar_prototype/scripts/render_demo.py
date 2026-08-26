@@ -254,6 +254,7 @@ def trait_variants_sheet(pack: render.Pack) -> Image.Image:
     base = generate(base_rider, pack.manifest)
     rows: list[tuple[str, str, list[str]]] = [
         ("head", "identity", [a.asset_id for a in pack.manifest.by_category("head")]),
+        ("neck", "identity", [a.asset_id for a in pack.manifest.by_category("neck")]),
         ("eyes", "identity", [a.asset_id for a in pack.manifest.by_category("eyes")]),
         ("nose", "identity", [a.asset_id for a in pack.manifest.by_category("nose")]),
         ("mouth", "identity", [a.asset_id for a in pack.manifest.by_category("mouth")]),
@@ -461,7 +462,15 @@ def report(pack: render.Pack, pool_size: int = 20_000) -> str:
 
     lines.append("")
     lines.append("=== distribution sanity (weighted, not uniform) ===")
-    for cat, key, block in (("head", "head", "identity"), ("hair", "hair", "mutable"), ("facial_hair", "facial_hair", "mutable")):
+    for cat, key, block in (
+        ("head", "head", "identity"),
+        ("eyes", "eyes", "identity"),
+        ("nose", "nose", "identity"),
+        ("mouth", "mouth", "identity"),
+        ("neck", "neck", "identity"),
+        ("hair", "hair", "mutable"),
+        ("facial_hair", "facial_hair", "mutable"),
+    ):
         counts: dict[str, int] = {}
         for app in apps:
             v = (app.identity if block == "identity" else app.mutable).get(key)

@@ -272,23 +272,23 @@ class PackBuilder:
 
 HEAD_RECIPES: list[tuple[str, float, dict[str, float], tuple[str, ...]]] = [
     ("head_01_oval", 0.15, {}, ("jaw_medium",)),
-    ("head_02_long", 0.11, {"cranium_w": 0.93, "temple_w": 0.95, "cheek_w": 0.93, "jaw_w": 0.88, "chin_len": 14.0}, ("jaw_narrow",)),
-    ("head_03_square", 0.12, {"jaw_w": 1.14, "chin_w": 1.26, "cheek_w": 1.04, "temple_w": 1.04, "chin_len": -8.0}, ("jaw_wide",)),
-    ("head_04_round", 0.11, {"cheek_w": 1.10, "jaw_w": 1.07, "chin_w": 1.10, "cranium_w": 1.04, "chin_len": -16.0}, ("jaw_medium",)),
-    ("head_05_angular", 0.11, {"temple_w": 1.07, "cheek_w": 1.02, "jaw_w": 0.92, "chin_w": 0.76, "chin_len": 8.0}, ("jaw_narrow",)),
-    ("head_06_broad", 0.10, {"cranium_w": 1.08, "temple_w": 1.08, "cheek_w": 1.11, "jaw_w": 1.08, "chin_w": 1.06, "chin_len": -6.0}, ("jaw_wide",)),
-    ("head_07_tapered", 0.09, {"cranium_w": 1.05, "temple_w": 1.02, "jaw_w": 0.84, "chin_w": 0.70, "chin_len": 6.0}, ("jaw_narrow",)),
-    ("head_08_heavy_jaw", 0.09, {"jaw_w": 1.16, "chin_w": 1.20, "crown_w": 0.94, "cheek_w": 1.02, "chin_len": 2.0}, ("jaw_wide",)),
-    ("head_09_high_crown", 0.07, {"crown": 12.0, "crown_w": 1.08, "cheek_w": 0.97, "jaw_w": 0.94, "chin_w": 0.88}, ("jaw_medium",)),
-    ("head_10_wide_short", 0.05, {"cranium_w": 1.07, "temple_w": 1.06, "cheek_w": 1.08, "jaw_w": 1.02, "chin_w": 1.00, "chin_len": -20.0}, ("jaw_medium",)),
-    ("head_11_heart", 0.06, {"crown_w": 1.10, "cranium_w": 1.08, "temple_w": 1.06, "cheek_w": 0.96, "jaw_w": 0.78, "chin_w": 0.62, "chin_len": 10.0}, ("jaw_narrow",)),
-    ("head_12_diamond", 0.05, {"crown_w": 0.88, "cranium_w": 0.90, "temple_w": 0.92, "cheek_w": 1.12, "jaw_w": 0.86, "chin_w": 0.72, "chin_len": 8.0}, ("jaw_narrow",)),
-    ("head_13_lantern", 0.06, {"crown_w": 0.92, "cranium_w": 0.96, "temple_w": 1.00, "cheek_w": 1.06, "jaw_w": 1.22, "chin_w": 1.28, "chin_len": -4.0}, ("jaw_wide",)),
-    ("head_14_pear", 0.05, {"crown_w": 0.86, "cranium_w": 0.90, "temple_w": 0.92, "cheek_w": 1.04, "jaw_w": 1.18, "chin_w": 1.16, "chin_len": 2.0}, ("jaw_wide",)),
-    ("head_15_compact", 0.05, {"crown": -8.0, "cranium_w": 0.96, "temple_w": 0.97, "cheek_w": 0.98, "jaw_w": 0.96, "chin_w": 0.94, "chin_len": -14.0}, ("jaw_medium",)),
-    ("head_16_oblong", 0.05, {"crown": 16.0, "cranium_w": 0.90, "temple_w": 0.92, "cheek_w": 0.90, "jaw_w": 0.86, "chin_w": 0.80, "chin_len": 16.0}, ("jaw_narrow",)),
-    ("head_17_block", 0.05, {"crown_w": 1.04, "cranium_w": 1.06, "temple_w": 1.08, "cheek_w": 1.10, "jaw_w": 1.18, "chin_w": 1.22, "chin_len": -10.0}, ("jaw_wide",)),
-    ("head_18_pointed_chin", 0.05, {"cranium_w": 1.00, "temple_w": 1.00, "cheek_w": 0.94, "jaw_w": 0.80, "chin_w": 0.58, "chin_len": 14.0}, ("jaw_narrow",)),
+    ("head_02_long", 0.11, {"cranium_w": 0.95, "temple_w": 0.96, "cheek_w": 0.95, "jaw_w": 0.92, "chin_len": 10.0}, ("jaw_narrow",)),
+    ("head_03_square", 0.12, {"jaw_w": 1.12, "chin_w": 1.18, "cheek_w": 1.04, "temple_w": 1.04, "chin_len": -6.0}, ("jaw_wide",)),
+    ("head_04_round", 0.11, {"cheek_w": 1.08, "jaw_w": 1.06, "chin_w": 1.08, "cranium_w": 1.04, "chin_len": -10.0}, ("jaw_medium",)),
+    ("head_05_angular", 0.11, {"temple_w": 1.05, "cheek_w": 1.02, "jaw_w": 0.94, "chin_w": 0.84, "chin_len": 6.0}, ("jaw_narrow",)),
+    ("head_06_broad", 0.10, {"cranium_w": 1.07, "temple_w": 1.07, "cheek_w": 1.09, "jaw_w": 1.07, "chin_w": 1.05, "chin_len": -4.0}, ("jaw_wide",)),
+    ("head_07_tapered", 0.09, {"cranium_w": 1.04, "temple_w": 1.02, "jaw_w": 0.90, "chin_w": 0.80, "chin_len": 5.0}, ("jaw_narrow",)),
+    ("head_08_heavy_jaw", 0.09, {"jaw_w": 1.12, "chin_w": 1.14, "crown_w": 0.96, "cheek_w": 1.02, "chin_len": 2.0}, ("jaw_wide",)),
+    ("head_09_high_crown", 0.07, {"crown": 8.0, "crown_w": 1.06, "cheek_w": 0.98, "jaw_w": 0.96, "chin_w": 0.92}, ("jaw_medium",)),
+    ("head_10_wide_short", 0.05, {"cranium_w": 1.06, "temple_w": 1.05, "cheek_w": 1.06, "jaw_w": 1.02, "chin_w": 1.00, "chin_len": -12.0}, ("jaw_medium",)),
+    ("head_11_heart", 0.06, {"crown_w": 1.08, "cranium_w": 1.06, "temple_w": 1.04, "cheek_w": 0.98, "jaw_w": 0.88, "chin_w": 0.78, "chin_len": 6.0}, ("jaw_narrow",)),
+    ("head_12_diamond", 0.05, {"crown_w": 0.92, "cranium_w": 0.94, "temple_w": 0.94, "cheek_w": 1.08, "jaw_w": 0.90, "chin_w": 0.82, "chin_len": 6.0}, ("jaw_narrow",)),
+    ("head_13_lantern", 0.06, {"crown_w": 0.94, "cranium_w": 0.98, "temple_w": 1.00, "cheek_w": 1.04, "jaw_w": 1.12, "chin_w": 1.14, "chin_len": -2.0}, ("jaw_wide",)),
+    ("head_14_pear", 0.05, {"crown_w": 0.92, "cranium_w": 0.94, "temple_w": 0.95, "cheek_w": 1.04, "jaw_w": 1.12, "chin_w": 1.10, "chin_len": 2.0}, ("jaw_wide",)),
+    ("head_15_compact", 0.05, {"crown": -4.0, "cranium_w": 0.97, "temple_w": 0.98, "cheek_w": 0.98, "jaw_w": 0.97, "chin_w": 0.96, "chin_len": -8.0}, ("jaw_medium",)),
+    ("head_16_oblong", 0.05, {"crown": 10.0, "cranium_w": 0.94, "temple_w": 0.95, "cheek_w": 0.94, "jaw_w": 0.90, "chin_w": 0.88, "chin_len": 10.0}, ("jaw_narrow",)),
+    ("head_17_block", 0.05, {"crown_w": 1.04, "cranium_w": 1.05, "temple_w": 1.06, "cheek_w": 1.08, "jaw_w": 1.12, "chin_w": 1.14, "chin_len": -6.0}, ("jaw_wide",)),
+    ("head_18_pointed_chin", 0.05, {"cranium_w": 1.00, "temple_w": 1.00, "cheek_w": 0.96, "jaw_w": 0.88, "chin_w": 0.78, "chin_len": 8.0}, ("jaw_narrow",)),
 ]
 
 
@@ -336,20 +336,35 @@ def bake_head(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any
 # --------------------------------------------------------------------------- #
 
 
-def bake_neck() -> tuple[Image.Image, Image.Image, Image.Image]:
+# Five discrete widths. Differences are small on purpose: a neck should not
+# become a caricature. neck_01 keeps the original medium geometry.
+NECK_RECIPES: list[tuple[str, float, dict[str, float]]] = [
+    ("neck_01", 0.24, {"top": 44.0, "mid": 47.0, "base": 70.0}),
+    ("neck_02_slim", 0.19, {"top": 38.0, "mid": 40.0, "base": 61.0}),
+    ("neck_03_narrow", 0.19, {"top": 41.0, "mid": 43.5, "base": 65.5}),
+    ("neck_04_thick", 0.19, {"top": 48.0, "mid": 51.5, "base": 76.0}),
+    ("neck_05_broad", 0.19, {"top": 52.0, "mid": 56.0, "base": 82.0}),
+]
+
+
+def bake_neck(p: dict[str, float] | None = None) -> tuple[Image.Image, Image.Image, Image.Image]:
+    p = p or {}
+    top = p.get("top", 44.0)
+    mid = p.get("mid", 47.0)
+    base = p.get("base", 70.0)
     pts = [
-        (CX - 44, NECK_TOP - 40),
-        (CX - 47, NECK_TOP + 18),
-        (CX - 70, SHOULDER_Y - 6),
-        (CX + 70, SHOULDER_Y - 6),
-        (CX + 47, NECK_TOP + 18),
-        (CX + 44, NECK_TOP - 40),
+        (CX - top, NECK_TOP - 40),
+        (CX - mid, NECK_TOP + 18),
+        (CX - base, SHOULDER_Y - 6),
+        (CX + base, SHOULDER_Y - 6),
+        (CX + mid, NECK_TOP + 18),
+        (CX + top, NECK_TOP - 40),
     ]
     mask = poly_mask(pts, iters=2)
     shade = mul(flat(1.0), grad_h(1.02, 0.86), grad_v(1.02, 0.88))
-    shade = darken(shade, blur(ellipse_mask(CX, NECK_TOP + 4, 76, 40), 18), 0.34 if st().line_art <= 0 else 0.62)
+    shade = darken(shade, blur(ellipse_mask(CX, NECK_TOP + 4, base + 6, 40), 18), 0.34 if st().line_art <= 0 else 0.62)
     shade = darken(shade, rim(mask, 12.0, 8.0), 0.30)
-    jaw_shadow = solid_layer(SHADOW_RGB, scale_l(blur(ellipse_mask(CX, NECK_TOP - 6, 80, 26), 16), 0.26))
+    jaw_shadow = solid_layer(SHADOW_RGB, scale_l(blur(ellipse_mask(CX, NECK_TOP - 6, top + 36, 26), 16), 0.26))
     return gray_layer(shade, mask), jaw_shadow, mask
 
 
@@ -647,31 +662,35 @@ def bake_ear(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]
 # --------------------------------------------------------------------------- #
 
 EYE_RECIPES = [
-    ("eyes_01_almond", 0.16, {}),
-    ("eyes_02_wide", 0.13, {"hw": 25.0, "th": 10.4, "bh": 8.0}),
-    ("eyes_03_narrow", 0.13, {"hw": 24.0, "th": 7.0, "bh": 5.2}),
-    ("eyes_04_hooded", 0.12, {"th": 7.6, "hood": 4.5, "lash": 1.3}),
-    ("eyes_05_downturned", 0.10, {"tilt": 3.0}),
-    ("eyes_06_upturned", 0.10, {"tilt": -3.5}),
-    ("eyes_07_deepset", 0.09, {"hood": 6.0, "th": 8.0, "crease": 11.0}),
-    ("eyes_08_round", 0.09, {"hw": 21.0, "th": 10.8, "bh": 9.0}),
-    ("eyes_09_monolid", 0.08, {"hood": 3.5, "crease": 14.0, "crease_a": 0.10, "th": 7.8}),
-    ("eyes_10_close_small", 0.07, {"hw": 18.0, "th": 7.6, "bh": 5.8, "iris_r": 8.4}),
-    ("eyes_11_huge_round", 0.06, {"hw": 26.0, "th": 11.6, "bh": 10.0, "iris_r": 12.2}),
-    ("eyes_12_sleepy", 0.06, {"hw": 24.0, "th": 5.8, "bh": 7.4, "tilt": 2.4, "lash": 0.7}),
-    ("eyes_13_wide_open", 0.06, {"hw": 27.0, "th": 8.4, "bh": 7.0, "iris_r": 10.4}),
-    ("eyes_14_small_iris", 0.05, {"hw": 22.0, "th": 8.2, "bh": 6.4, "iris_r": 7.2}),
-    ("eyes_15_sharp", 0.05, {"hw": 24.5, "th": 6.4, "bh": 5.4, "tilt": -2.8, "lash": 1.45}),
-    ("eyes_16_heavy_lid", 0.05, {"hood": 7.2, "th": 7.0, "bh": 6.8, "crease": 8.0, "lash": 1.2}),
+    ("eyes_01_almond", 0.12, {"hw": 25.0, "th": 11.0, "bh": 8.6, "iris_r": 11.2}),
+    ("eyes_02_wide", 0.10, {"hw": 27.5, "th": 12.6, "bh": 10.0, "iris_r": 12.0}),
+    ("eyes_03_narrow", 0.05, {"hw": 25.0, "th": 8.6, "bh": 7.0, "iris_r": 10.2}),
+    ("eyes_04_hooded", 0.07, {"hw": 25.5, "th": 10.0, "bh": 8.2, "hood": 4.5, "lash": 1.3, "iris_r": 11.0}),
+    ("eyes_05_downturned", 0.06, {"hw": 25.0, "th": 10.8, "bh": 8.4, "tilt": 3.0, "iris_r": 11.0}),
+    ("eyes_06_upturned", 0.06, {"hw": 25.0, "th": 10.8, "bh": 8.4, "tilt": -3.5, "iris_r": 11.0}),
+    ("eyes_07_deepset", 0.05, {"hw": 24.5, "th": 10.2, "bh": 8.0, "hood": 6.0, "crease": 11.0, "iris_r": 10.8}),
+    ("eyes_08_round", 0.08, {"hw": 23.5, "th": 12.8, "bh": 11.0, "iris_r": 12.0}),
+    ("eyes_09_monolid", 0.06, {"hw": 25.0, "th": 10.0, "bh": 8.0, "hood": 3.5, "crease": 14.0, "crease_a": 0.10, "iris_r": 11.0}),
+    ("eyes_10_close_small", 0.04, {"hw": 20.5, "th": 9.2, "bh": 7.4, "iris_r": 9.6}),
+    ("eyes_11_huge_round", 0.07, {"hw": 27.0, "th": 13.4, "bh": 11.6, "iris_r": 13.0}),
+    ("eyes_12_sleepy", 0.03, {"hw": 25.5, "th": 8.2, "bh": 8.0, "tilt": 2.4, "lash": 0.7, "iris_r": 10.4}),
+    ("eyes_13_wide_open", 0.08, {"hw": 28.0, "th": 12.2, "bh": 9.6, "iris_r": 12.2}),
+    ("eyes_14_small_iris", 0.04, {"hw": 24.5, "th": 10.6, "bh": 8.4, "iris_r": 8.4}),
+    ("eyes_15_sharp", 0.04, {"hw": 26.0, "th": 9.4, "bh": 7.2, "tilt": -2.8, "lash": 1.45, "iris_r": 10.8}),
+    ("eyes_16_heavy_lid", 0.04, {"hw": 25.0, "th": 9.6, "bh": 8.2, "hood": 7.2, "crease": 8.0, "lash": 1.2, "iris_r": 11.0}),
+    ("eyes_17_neutral", 0.10, {"hw": 26.0, "th": 11.6, "bh": 9.2, "iris_r": 11.6}),
+    ("eyes_18_full", 0.09, {"hw": 27.0, "th": 13.0, "bh": 10.8, "iris_r": 12.4}),
+    ("eyes_19_round_open", 0.07, {"hw": 24.5, "th": 13.2, "bh": 11.4, "iris_r": 12.2}),
+    ("eyes_20_large_iris", 0.06, {"hw": 26.5, "th": 11.8, "bh": 9.4, "iris_r": 13.4}),
 ]
 
 
 def eye_shape(p: dict[str, float]) -> list[tuple[float, float]]:
     cx, cy = CX + EYE_DX, EYE_Y
     k = st().feature_boost
-    hw = p.get("hw", 23.0) * k
-    th = p.get("th", 8.8) * k
-    bh = p.get("bh", 6.6) * k
+    hw = p.get("hw", 25.0) * k
+    th = p.get("th", 11.0) * k
+    bh = p.get("bh", 8.6) * k
     tilt = p.get("tilt", 0.0)
     return [
         (cx - hw, cy + 1.5 + tilt * 0.4),
@@ -693,11 +712,11 @@ def bake_eye(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]
     # --- under: sclera, with the shadow the upper lid casts on it -----------
     sc_shade = mul(flat(0.92), grad_v(1.06, 0.92))
     sc_shade = darken(sc_shade, rim(sclera, 4.0, 3.0), 0.34)
-    sc_shade = darken(sc_shade, ImageChops.multiply(sclera, blur(ellipse_mask(cx, cy - p.get("th", 8.8) * 0.62, 22, 7), 5)), 0.22)
+    sc_shade = darken(sc_shade, ImageChops.multiply(sclera, blur(ellipse_mask(cx, cy - p.get("th", 11.0) * 0.62, 22, 7), 5)), 0.22)
     under = shaded_color_layer((242, 238, 232), sc_shade, sclera)
 
     # --- iris + pupil (iris is tinted at runtime) --------------------------
-    r = p.get("iris_r", 9.9) * st().feature_boost
+    r = p.get("iris_r", 11.2) * st().feature_boost
     ix = cx + p.get("iris_dx", 0.0)
     iris_mask = ImageChops.multiply(sclera, ellipse_mask(ix, cy - 0.5, r, r))
     iris_shade = mul(flat(1.0), grad_v(1.16, 0.74))
@@ -712,7 +731,7 @@ def bake_eye(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]
     lid_line = ImageChops.lighter(lid_line, scale_l(blur(stroke_mask(upper, 5.6 * lash), 2.6), 0.42))
     lower_line = scale_l(blur(stroke_mask([shape[4], shape[5], shape[6], shape[7]], 2.0), 1.1), 0.30)
     crease_y = cy - p.get("crease", 9.0) - p.get("hood", 0.0)
-    hw = p.get("hw", 23.0)
+    hw = p.get("hw", 25.0)
     crease = scale_l(
         blur(stroke_mask([(cx - hw * 0.9, crease_y + 5), (cx, crease_y - 1.5), (cx + hw * 0.95, crease_y + 4)], 2.6), 2.2),
         p.get("crease_a", 0.28),
@@ -740,44 +759,52 @@ def bake_eye(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]
 # --------------------------------------------------------------------------- #
 
 BROW_RECIPES = [
-    ("brows_01_straight", 0.18, {}),
-    ("brows_02_arched", 0.15, {"arch": 6.5}),
-    ("brows_03_thick", 0.15, {"th": 8.0, "arch": 3.0}),
-    ("brows_04_bushy", 0.12, {"th": 9.8, "len": 5.0, "rough": 1.0}),
-    ("brows_05_thin", 0.12, {"th": 4.4}),
-    ("brows_06_angled", 0.11, {"angle": 4.5, "th": 6.6}),
-    ("brows_07_short", 0.09, {"len": -9.0, "th": 6.2}),
-    ("brows_08_low", 0.08, {"drop": 4.5, "th": 7.6}),
-    ("brows_09_high_arch", 0.07, {"arch": 10.0, "drop": -3.0, "th": 6.0}),
-    ("brows_10_flat_heavy", 0.07, {"arch": 0.2, "th": 9.2, "drop": 2.0}),
-    ("brows_11_tapered", 0.06, {"th": 4.8, "len": 3.0, "arch": 4.2}),
-    ("brows_12_peak", 0.06, {"arch": 9.0, "angle": -2.2, "th": 6.8}),
-    ("brows_13_soft_low", 0.05, {"th": 7.2, "drop": 3.5, "arch": 1.2}),
-    ("brows_14_wide", 0.05, {"len": 10.0, "th": 6.4, "arch": 3.0}),
+    ("brows_01_straight", 0.12, {"arch": 0.6, "th": 6.4, "inner": 0.16, "outer": 0.70, "peak_t": 0.45}),
+    ("brows_02_arched", 0.11, {"arch": 11.0, "th": 6.2, "inner": 0.14, "outer": 0.74, "peak_t": 0.38}),
+    ("brows_03_thick", 0.11, {"th": 11.5, "arch": 3.5, "inner": 0.12, "outer": 0.68, "inner_th": 1.15, "outer_th": 0.85}),
+    ("brows_04_bushy", 0.09, {"th": 12.5, "len": 4.0, "rough": 1.0, "arch": 4.0, "inner": 0.10, "inner_th": 1.35, "outer_th": 0.70}),
+    ("brows_05_thin", 0.08, {"th": 3.6, "arch": 5.0, "inner": 0.15, "outer": 0.76, "outer_th": 0.22}),
+    ("brows_06_angled", 0.09, {"angle": 8.5, "th": 7.2, "arch": 2.0, "inner": 0.13, "outer": 0.73, "peak_t": 0.55}),
+    ("brows_07_short", 0.07, {"outer": 0.58, "th": 7.4, "arch": 3.0, "inner": 0.18}),
+    ("brows_08_low", 0.07, {"drop": 7.0, "th": 8.2, "arch": 1.5, "inner": 0.14, "outer": 0.72}),
+    ("brows_09_high_arch", 0.07, {"arch": 13.5, "drop": -4.5, "th": 5.6, "peak_t": 0.34, "outer": 0.75}),
+    ("brows_10_flat_heavy", 0.07, {"arch": 0.0, "th": 10.8, "drop": 2.5, "inner": 0.11, "outer": 0.71, "outer_th": 0.95}),
+    ("brows_11_tapered", 0.06, {"th": 7.0, "inner_th": 1.40, "outer_th": 0.25, "arch": 6.0, "outer": 0.76, "len": 2.0}),
+    ("brows_12_peak", 0.06, {"arch": 12.0, "angle": -3.0, "th": 6.8, "peak_t": 0.52, "outer": 0.74}),
+    ("brows_13_soft_low", 0.05, {"th": 8.0, "drop": 5.0, "arch": 2.2, "inner": 0.15, "outer_th": 0.60}),
+    ("brows_14_wide", 0.05, {"inner": 0.08, "outer": 0.80, "th": 6.6, "arch": 4.0}),
+    ("brows_15_close", 0.05, {"inner": 0.05, "outer": 0.68, "th": 7.8, "arch": 2.5}),
+    ("brows_16_outer_heavy", 0.05, {"inner_th": 0.45, "outer_th": 1.35, "th": 8.0, "arch": 5.5, "outer": 0.76, "angle": 3.0}),
+    ("brows_17_high_thin", 0.04, {"drop": -5.0, "th": 4.0, "arch": 8.0, "inner": 0.17, "outer": 0.74, "outer_th": 0.28}),
+    ("brows_18_broken", 0.04, {"arch": 7.0, "th": 6.0, "peak_t": 0.28, "angle": 5.0, "inner": 0.20, "outer": 0.72}),
 ]
 
 
 def bake_brow(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]]]:
-    inner_x = CX + 0.14 * HEAD_HW
-    outer_x = CX + 0.72 * HEAD_HW + p.get("len", 0.0)
+    inner_x = CX + p.get("inner", 0.14) * HEAD_HW
+    outer_x = CX + p.get("outer", 0.72) * HEAD_HW + p.get("len", 0.0)
     y = BROW_Y + p.get("drop", 0.0)
     th = p.get("th", 6.2) * (st().feature_boost + (0.18 if st().line_art > 0 else 0.0))
     arch = p.get("arch", 2.0)
     ang = p.get("angle", 0.0)
-    span = outer_x - inner_x
+    peak_t = p.get("peak_t", 0.34)
+    inner_th = th * p.get("inner_th", 1.0)
+    outer_th = th * p.get("outer_th", 0.38)
+    span = max(18.0, outer_x - inner_x)
     top = [
-        (inner_x, y - th * 0.45 + ang),
-        (inner_x + span * 0.3, y - th * 0.72 - arch),
-        (inner_x + span * 0.62, y - th * 0.62 - arch * 0.9),
-        (outer_x, y - th * 0.08 - arch * 0.2),
+        (inner_x, y - inner_th * 0.42 + ang),
+        (inner_x + span * peak_t * 0.55, y - inner_th * 0.55 - arch * 0.45 + ang * 0.4),
+        (inner_x + span * peak_t, y - th * 0.78 - arch),
+        (inner_x + span * min(0.92, peak_t + 0.28), y - outer_th * 0.55 - arch * 0.55),
+        (outer_x, y - outer_th * 0.12 - arch * 0.12),
     ]
     bottom = [
-        (outer_x, y + th * 0.14 - arch * 0.2),
-        (inner_x + span * 0.62, y + th * 0.42 - arch * 0.6),
-        (inner_x + span * 0.3, y + th * 0.55 - arch * 0.3),
-        (inner_x, y + th * 0.55 + ang),
+        (outer_x, y + outer_th * 0.55 - arch * 0.12),
+        (inner_x + span * 0.62, y + th * 0.42 - arch * 0.25),
+        (inner_x + span * 0.28, y + inner_th * 0.50),
+        (inner_x, y + inner_th * 0.48 + ang),
     ]
-    body = poly_mask(top + bottom, iters=3)
+    body = poly_mask(top + bottom, iters=2)
     mask = blur(body, 1.5)
     if p.get("rough"):
         rnd = random.Random(7)
@@ -785,7 +812,7 @@ def bake_brow(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any
         for _ in range(30):
             t = rnd.random()
             bx = inner_x + span * t
-            by = y - arch * (1 - abs(t - 0.4)) + rnd.uniform(-th * 0.4, th * 0.4)
+            by = y - arch * (1 - abs(t - peak_t)) + rnd.uniform(-th * 0.4, th * 0.4)
             strands = ImageChops.lighter(strands, stroke_mask([(bx, by + 3), (bx + rnd.uniform(2, 7), by - 5)], 1.6))
         mask = ImageChops.lighter(mask, ImageChops.multiply(blur(strands, 1.0), blur(body, 5)))
     shade = mul(flat(1.0), grad_h(1.0, 0.86))
@@ -797,33 +824,73 @@ def bake_brow(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any
 # --------------------------------------------------------------------------- #
 
 NOSE_RECIPES = [
-    ("nose_01_straight", 0.14, {}),
-    ("nose_02_long_narrow", 0.12, {"len": 8.0, "bridge": 0.85, "tip": 0.84}),
-    ("nose_03_wide", 0.12, {"tip": 1.22, "bridge": 1.16, "flare": 1.2}),
-    ("nose_04_short", 0.11, {"len": -10.0, "tip": 1.02}),
-    ("nose_05_aquiline", 0.11, {"hook": 3.0, "len": 5.0, "bridge": 0.94}),
-    ("nose_06_upturned", 0.10, {"upturn": 4.0, "len": -6.0}),
-    ("nose_07_broad_flat", 0.09, {"tip": 1.30, "bridge": 1.24, "flare": 1.35, "depth": 0.85}),
-    ("nose_08_narrow", 0.09, {"tip": 0.82, "bridge": 0.80, "flare": 0.86}),
-    ("nose_09_bulbous", 0.07, {"tip": 1.14, "bulb": 1.0, "len": 3.0}),
-    ("nose_10_thin_bridge", 0.05, {"bridge": 0.72, "tip": 0.94, "len": 5.0}),
-    ("nose_11_snub", 0.07, {"len": -14.0, "tip": 1.18, "upturn": 6.0, "flare": 1.12}),
-    ("nose_12_hawk", 0.06, {"hook": 5.5, "len": 8.0, "bridge": 0.88, "tip": 0.96}),
-    ("nose_13_roman", 0.06, {"hook": 2.2, "len": 6.0, "bridge": 1.06, "tip": 1.08}),
-    ("nose_14_button", 0.06, {"len": -12.0, "tip": 0.96, "bulb": 0.85, "upturn": 3.0}),
-    ("nose_15_long_straight", 0.05, {"len": 12.0, "bridge": 0.90, "tip": 0.90}),
-    ("nose_16_flared", 0.05, {"flare": 1.50, "tip": 1.28, "bridge": 1.12}),
-    ("nose_17_droop", 0.05, {"len": 7.0, "upturn": -3.5, "tip": 1.10, "hook": 1.5}),
-    ("nose_18_pinched", 0.05, {"bridge": 0.64, "tip": 0.76, "flare": 0.72, "len": 4.0}),
+    ("nose_01_straight", 0.10, {"bridge": 1.0, "tip": 1.0, "flare": 1.0}),
+    ("nose_02_long_narrow", 0.08, {"len": 12.0, "bridge": 0.72, "tip": 0.78, "flare": 0.82}),
+    ("nose_03_wide", 0.09, {"tip": 1.38, "bridge": 1.28, "flare": 1.36, "len": -2.0}),
+    ("nose_04_short", 0.07, {"len": -12.0, "tip": 1.10, "flare": 1.12}),
+    ("nose_05_aquiline", 0.08, {"hook": 7.0, "len": 8.0, "bridge": 0.90, "tip": 0.94}),
+    ("nose_06_upturned", 0.07, {"upturn": 8.0, "len": -8.0, "tip": 1.08, "flare": 1.10}),
+    ("nose_07_broad_flat", 0.07, {"tip": 1.42, "bridge": 1.36, "flare": 1.48, "depth": 0.85, "len": -4.0}),
+    ("nose_08_narrow", 0.06, {"tip": 0.70, "bridge": 0.68, "flare": 0.74, "len": 4.0}),
+    ("nose_09_bulbous", 0.06, {"tip": 1.22, "bulb": 1.4, "len": 2.0, "flare": 1.18}),
+    ("nose_10_thin_bridge", 0.05, {"bridge": 0.58, "tip": 0.96, "len": 6.0, "flare": 0.92}),
+    ("nose_11_snub", 0.06, {"len": -16.0, "tip": 1.24, "upturn": 8.0, "flare": 1.20, "bulb": 0.6}),
+    ("nose_12_hawk", 0.06, {"hook": 9.0, "len": 10.0, "bridge": 0.80, "tip": 0.88, "flare": 0.90}),
+    ("nose_13_roman", 0.06, {"hook": 4.5, "len": 8.0, "bridge": 1.12, "tip": 1.14, "flare": 1.08}),
+    ("nose_14_button", 0.05, {"len": -14.0, "tip": 1.02, "bulb": 1.1, "upturn": 5.0, "flare": 1.06}),
+    ("nose_15_long_straight", 0.05, {"len": 16.0, "bridge": 0.86, "tip": 0.86, "flare": 0.88}),
+    ("nose_16_flared", 0.05, {"flare": 1.58, "tip": 1.34, "bridge": 1.16}),
+    ("nose_17_droop", 0.05, {"len": 9.0, "upturn": -6.0, "tip": 1.16, "hook": 2.5, "flare": 1.10}),
+    ("nose_18_pinched", 0.04, {"bridge": 0.52, "tip": 0.64, "flare": 0.62, "len": 5.0}),
+    ("nose_19_wide_short", 0.06, {"len": -10.0, "tip": 1.36, "bridge": 1.30, "flare": 1.32, "bulb": 0.7}),
+    ("nose_20_long_hook", 0.05, {"len": 14.0, "hook": 8.0, "bridge": 0.84, "tip": 1.02, "flare": 0.96}),
+    ("nose_21_soft_round", 0.06, {"len": -4.0, "tip": 1.18, "bulb": 1.2, "bridge": 1.10, "flare": 1.14}),
 ]
 
 
+def nose_contour(p: dict[str, float]) -> list[tuple[float, float]]:
+    """Skin silhouette so width / length / hook actually read at portrait size.
+
+    Earlier recipes only painted multiply ticks, so every nose looked the same.
+    """
+    tip_y = NOSE_TIP_Y + p.get("len", 0.0) * 0.55
+    up = p.get("upturn", 0.0)
+    hook = p.get("hook", 0.0)
+    bw = 7.6 * p.get("bridge", 1.0)
+    tw = 15.5 * p.get("tip", 1.0)
+    ala = tw * 0.92 * p.get("flare", 1.0)
+    bulb = p.get("bulb", 0.0)
+    root_w = 5.4 * p.get("root", p.get("bridge", 1.0))
+    bridge_top = BROW_Y + 20.0
+    mid_y = (bridge_top + tip_y) * 0.5
+    tip = tip_y - up * 0.35
+    return [
+        (CX - root_w, bridge_top),
+        (CX - bw * 0.72, mid_y - 10),
+        (CX - bw - hook * 0.12, mid_y + hook * 0.55),
+        (CX - tw * 0.52, tip - 12),
+        (CX - ala, tip - 3),
+        (CX - tw * 0.20, tip + 5.0 + bulb * 3.0),
+        (CX, tip + 6.5 + bulb * 4.0),
+        (CX + tw * 0.20, tip + 5.0 + bulb * 3.0),
+        (CX + ala, tip - 3),
+        (CX + tw * 0.52, tip - 12),
+        (CX + bw + hook * 0.55, mid_y + hook * 0.85),
+        (CX + bw * 0.72, mid_y - 10),
+        (CX + root_w, bridge_top),
+    ]
+
+
 def bake_nose(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]]]:
-    tip_y = NOSE_TIP_Y + p.get("len", 0.0) * 0.5
+    tip_y = NOSE_TIP_Y + p.get("len", 0.0) * 0.55
     bw = 8.5 * p.get("bridge", 1.0)
     tw = 19.0 * p.get("tip", 1.0)
     depth = p.get("depth", 1.0)
     bridge_top = BROW_Y + 16.0
+    mask = poly_mask(nose_contour(p), iters=2)
+    skin_shade = mul(flat(1.0), grad_h(1.03, 0.90), grad_v(1.04, 0.93))
+    skin_shade = darken(skin_shade, rim(mask, 8.0, 5.0), 0.16)
+    skin_shade = darken(skin_shade, blur(ellipse_mask(CX + tw * 0.18, tip_y - 4, tw * 0.55, 10), 6), 0.10)
 
     shadow = new_l()
     # bridge shadow on the shaded (right) side
@@ -871,7 +938,11 @@ def bake_nose(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any
     style = st()
     shadow = scale_l(shadow, style.form_strength)
     light = scale_l(light, style.highlight_strength)
-    parts = [
+    parts: list[tuple[str, Image.Image, dict[str, Any]]] = [
+        ("skin", gray_layer(skin_shade, mask, outline_of(mask)), {"blend": "normal", "color_slot": "skin"}),
+    ]
+    parts += keyline(mask, 0.55)
+    parts += [
         ("shade", solid_layer(SHADOW_RGB, shadow), {"blend": "multiply"}),
         ("light", solid_layer(LIGHT_RGB, light), {"blend": "screen"}),
     ]
@@ -924,31 +995,34 @@ def bake_nose(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any
 # --------------------------------------------------------------------------- #
 
 MOUTH_RECIPES = [
-    ("mouth_01_medium", 0.18, {}),
-    ("mouth_02_wide_thin", 0.15, {"hw": 47.0, "upper": 4.6, "lower": 6.2}),
-    ("mouth_03_full", 0.14, {"upper": 7.6, "lower": 10.2}),
-    ("mouth_04_narrow", 0.13, {"hw": 35.0}),
-    ("mouth_05_downturned", 0.12, {"droop": 3.5}),
-    ("mouth_06_thin_upper", 0.12, {"upper": 3.8, "lower": 8.2}),
-    ("mouth_07_bow", 0.09, {"bow": 2.6, "upper": 6.8}),
-    ("mouth_08_flat", 0.07, {"bow": 0.4, "upper": 5.0, "lower": 6.4}),
-    ("mouth_09_smiling", 0.10, {"smile": 5.0, "lower": 8.4}),
-    ("mouth_10_wide_smile", 0.07, {"hw": 45.0, "smile": 6.0, "upper": 5.0, "lower": 7.4}),
-    ("mouth_11_very_wide", 0.06, {"hw": 52.0, "smile": 3.2, "upper": 5.2, "lower": 7.0}),
-    ("mouth_12_tiny", 0.06, {"hw": 30.0, "upper": 4.4, "lower": 5.4, "smile": 2.0}),
-    ("mouth_13_heart", 0.06, {"hw": 38.0, "bow": 3.8, "upper": 7.2, "lower": 8.0}),
-    ("mouth_14_wide_full", 0.05, {"hw": 48.0, "upper": 7.4, "lower": 9.6, "smile": 3.0}),
-    ("mouth_15_thin_line", 0.05, {"upper": 3.2, "lower": 4.6, "smile": 3.2, "bow": 0.6}),
-    ("mouth_16_soft_smile", 0.05, {"hw": 42.0, "smile": 4.4, "lower": 7.2, "upper": 5.4}),
-    ("mouth_17_cupid", 0.05, {"hw": 36.0, "bow": 3.2, "upper": 6.4, "lower": 7.0}),
-    ("mouth_18_broad_thin", 0.05, {"hw": 50.0, "upper": 4.0, "lower": 5.6, "smile": 2.6}),
+    ("mouth_01_medium", 0.12, {"hw": 46.0, "upper": 8.2, "lower": 11.0, "smile": 3.0}),
+    ("mouth_02_wide_thin", 0.05, {"hw": 52.0, "upper": 6.4, "lower": 8.4, "smile": 2.8}),
+    ("mouth_03_full", 0.11, {"hw": 46.0, "upper": 10.2, "lower": 13.6, "smile": 3.2}),
+    ("mouth_04_narrow", 0.05, {"hw": 38.0, "upper": 7.6, "lower": 10.2, "smile": 2.6}),
+    ("mouth_05_downturned", 0.05, {"hw": 45.0, "upper": 8.0, "lower": 10.8, "droop": 3.0, "smile": 0.8}),
+    ("mouth_06_thin_upper", 0.05, {"hw": 46.0, "upper": 5.6, "lower": 11.4, "smile": 3.0}),
+    ("mouth_07_bow", 0.07, {"hw": 44.0, "bow": 3.2, "upper": 9.4, "lower": 11.0, "smile": 3.0}),
+    ("mouth_08_flat", 0.04, {"hw": 46.0, "bow": 0.6, "upper": 7.2, "lower": 9.4, "smile": 2.2}),
+    ("mouth_09_smiling", 0.08, {"hw": 48.0, "smile": 5.4, "upper": 8.0, "lower": 11.2}),
+    ("mouth_10_wide_smile", 0.07, {"hw": 52.0, "smile": 6.2, "upper": 8.4, "lower": 11.0}),
+    ("mouth_11_very_wide", 0.06, {"hw": 56.0, "smile": 3.6, "upper": 8.6, "lower": 11.4}),
+    ("mouth_12_tiny", 0.03, {"hw": 34.0, "upper": 6.8, "lower": 8.8, "smile": 2.4}),
+    ("mouth_13_heart", 0.05, {"hw": 42.0, "bow": 4.2, "upper": 9.6, "lower": 10.6, "smile": 3.0}),
+    ("mouth_14_wide_full", 0.08, {"hw": 52.0, "upper": 10.0, "lower": 13.2, "smile": 3.4}),
+    ("mouth_15_thin_line", 0.03, {"hw": 46.0, "upper": 5.2, "lower": 7.0, "smile": 3.2, "bow": 0.6}),
+    ("mouth_16_soft_smile", 0.07, {"hw": 47.0, "smile": 4.6, "upper": 8.4, "lower": 11.0}),
+    ("mouth_17_cupid", 0.05, {"hw": 40.0, "bow": 3.6, "upper": 9.0, "lower": 10.4, "smile": 2.8}),
+    ("mouth_18_broad_thin", 0.04, {"hw": 54.0, "upper": 6.6, "lower": 8.6, "smile": 2.8}),
+    ("mouth_19_neutral", 0.10, {"hw": 47.0, "upper": 8.8, "lower": 11.6, "smile": 2.8, "bow": 1.8}),
+    ("mouth_20_full_wide", 0.09, {"hw": 54.0, "upper": 11.0, "lower": 14.2, "smile": 3.6, "bow": 2.0}),
+    ("mouth_21_open_full", 0.08, {"hw": 49.0, "upper": 11.4, "lower": 14.6, "smile": 3.8, "bow": 2.4}),
 ]
 
 
 def bake_mouth(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]]]:
-    hw = p.get("hw", 41.0)
-    up = p.get("upper", 5.8)
-    lo = p.get("lower", 7.8)
+    hw = p.get("hw", 46.0)
+    up = p.get("upper", 8.4)
+    lo = p.get("lower", 11.2)
     bow = p.get("bow", 1.6)
     # every mouth carries a slight smile: a neutral straight line reads as sullen
     # at portrait size. `droop` still lets a variant pull the corners back down.
@@ -1708,7 +1782,7 @@ TEAMS: dict[str, dict[str, Any]] = {
 # --------------------------------------------------------------------------- #
 
 
-def bake(root: str | Path, style: str = "flat", pack_version: str = "0.2.0-placeholder") -> Path:
+def bake(root: str | Path, style: str = "flat", pack_version: str = "0.3.0-placeholder") -> Path:
     """Bake one placeholder pack in one style. The recipes are shared; only the
     StyleProfile changes, which is how the same peloton can be shown in several
     art directions without touching game code."""
@@ -1725,15 +1799,17 @@ def bake(root: str | Path, style: str = "flat", pack_version: str = "0.2.0-place
     for asset_id, weight, params, tags in HEAD_RECIPES:
         b.asset("head", asset_id, bake_head(params), weight=weight, tags=tags, anchor=(CX, EYE_Y))
 
-    neck, jaw_shadow, neck_mask = bake_neck()
-    b.asset(
-        "neck",
-        "neck_01",
-        [("skin", neck, {"blend": "normal", "color_slot": "skin"})]
-        + keyline(neck_mask, 0.9)
-        + [("jaw_shadow", jaw_shadow, {"blend": "multiply"})],
-        anchor=(CX, NECK_TOP),
-    )
+    for asset_id, weight, params in NECK_RECIPES:
+        neck, jaw_shadow, neck_mask = bake_neck(params)
+        b.asset(
+            "neck",
+            asset_id,
+            [("skin", neck, {"blend": "normal", "color_slot": "skin"})]
+            + keyline(neck_mask, 0.9)
+            + [("jaw_shadow", jaw_shadow, {"blend": "multiply"})],
+            weight=weight,
+            anchor=(CX, NECK_TOP),
+        )
 
     for asset_id, weight, params in EAR_RECIPES:
         b.asset(
