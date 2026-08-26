@@ -1316,6 +1316,9 @@ Target categories for the first playable important races:
 
 3. **Objective switch**
    - abandon sprint plan, protect GC, back breakaway rider, switch leader.
+   - later multi-stage: if the designated leader no longer has a realistic
+     knowledge-bounded chance at the team objective, redirect that rider to
+     support the teammate with the best remaining chance (`D-032`).
 
 4. **Two-card strategy**
    - preserve second leader / use as satellite / call back.
@@ -1789,9 +1792,13 @@ Explicitly deferred from Race Engine v0 prototype:
 - advanced TT optimizer,
 - sprint train micro-positioning,
 - race-neutral-service detail,
-- historical era-specific communication implementations.
+- historical era-specific communication implementations,
+- multi-stage GC leadership transfer: a failing designated leader becoming
+  support for the teammate with the best remaining chance (`D-032`).
 
-Their future place in the architecture is reserved.
+Their future place in the architecture is reserved. The current prototype does
+not evaluate virtual GC, remaining-stage probability, or teamwork/loyalty
+policy for that switch.
 
 ---
 
