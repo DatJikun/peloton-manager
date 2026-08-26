@@ -200,22 +200,13 @@ The approved `poster` values: `tone_steps=2`, `tone_floor=0.78`, `form_strength=
 `highlight_strength=0.0`, `edge_hardness=1.0`, `gradient_scale=0.16`, `detail_alpha=0.22`,
 `line_art=5.0`, `feature_boost=1.10`, `line_features=True`.
 
-To offer the owner a variant, add a new profile and bake it next to `poster`, then show
-both on `07_styles.png` (history of rejected/kept looks) or `10_look_proposals.png`
-(neighbours of poster). Do not silently change `poster`.
+The owner locked this look on 2026-08-26 (*"tamten styl graficzny był idealny"*). Do not
+offer restyles. Variety comes from **more face recipes** (heads, hair, mouths, noses,
+ears), never from a new `StyleProfile`.
 
-Four review-only neighbours already exist. They share recipes with poster and only
-change `StyleProfile` numbers:
-
-| id | intent |
-|---|---|
-| `poster_thin` | 3 px ink, quieter eyes, matches the 3 px UI panel borders |
-| `poster_cut` | 8 px woodcut / sport-poster ink, stronger shadow shapes |
-| `poster_comic` | bigger eyes/brows, inner outline + ink, sports-comic read at 48 px |
-| `poster_stencil` | almost no shading (`tone_floor=0.88`), silhouette-first constructivist |
-
-Bake them with `python3 scripts/bake_pack.py poster poster_thin poster_cut poster_comic poster_stencil`
-then `python3 scripts/render_demo.py poster`. The owner picks; until then `poster` stays default.
+To add a look the owner asked for, append recipes in `pack.py`. Do not silently change
+`poster`. Unused neighbour profiles (`poster_thin` / `poster_cut` / `poster_comic` /
+`poster_stencil`) may stay in `STYLES` for history; they are not the default.
 
 ## Art traps already paid for — do not rediscover them
 

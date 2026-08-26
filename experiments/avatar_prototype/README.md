@@ -35,7 +35,7 @@ pakietu assetów, nie od tego kodu — kod zostaje ten sam.
 | Rozmiar w UI | karta zawodnika, max ~1/6 strony laptopa | master 512×512; `head_crop` z manifestu dla ikon 48–96 px |
 | Styl | płaski wektor; „za realistyczny jak na awatar" | domyślny profil `poster`: kontur tuszem, dwa płaskie tony, palety z UI |
 | Uśmiech | minimalnie bardziej uśmiechnięci | każde usta mają lekki uśmiech + 2 warianty szerszego |
-| Fryzury | większa różnorodność | 25 fryzur (grzywka, quiff, undercut, fade, przedziałek, kolce, loki…) |
+| Fryzury | większa różnorodność | 40 fryzur (grzywka, quiff, undercut, fade, przedziałek, kolce, loki, bowl, zasłony, mullet, caesar, pompadour…) |
 | Koszulki | zespoły + lider GC Tour/Giro/Vuelta | `jersey_override`: `tour`, `giro`, `vuelta`, `world`, `national` |
 
 ## Spójność z UI (PR #18)

@@ -281,6 +281,14 @@ HEAD_RECIPES: list[tuple[str, float, dict[str, float], tuple[str, ...]]] = [
     ("head_08_heavy_jaw", 0.09, {"jaw_w": 1.16, "chin_w": 1.20, "crown_w": 0.94, "cheek_w": 1.02, "chin_len": 2.0}, ("jaw_wide",)),
     ("head_09_high_crown", 0.07, {"crown": 12.0, "crown_w": 1.08, "cheek_w": 0.97, "jaw_w": 0.94, "chin_w": 0.88}, ("jaw_medium",)),
     ("head_10_wide_short", 0.05, {"cranium_w": 1.07, "temple_w": 1.06, "cheek_w": 1.08, "jaw_w": 1.02, "chin_w": 1.00, "chin_len": -20.0}, ("jaw_medium",)),
+    ("head_11_heart", 0.06, {"crown_w": 1.10, "cranium_w": 1.08, "temple_w": 1.06, "cheek_w": 0.96, "jaw_w": 0.78, "chin_w": 0.62, "chin_len": 10.0}, ("jaw_narrow",)),
+    ("head_12_diamond", 0.05, {"crown_w": 0.88, "cranium_w": 0.90, "temple_w": 0.92, "cheek_w": 1.12, "jaw_w": 0.86, "chin_w": 0.72, "chin_len": 8.0}, ("jaw_narrow",)),
+    ("head_13_lantern", 0.06, {"crown_w": 0.92, "cranium_w": 0.96, "temple_w": 1.00, "cheek_w": 1.06, "jaw_w": 1.22, "chin_w": 1.28, "chin_len": -4.0}, ("jaw_wide",)),
+    ("head_14_pear", 0.05, {"crown_w": 0.86, "cranium_w": 0.90, "temple_w": 0.92, "cheek_w": 1.04, "jaw_w": 1.18, "chin_w": 1.16, "chin_len": 2.0}, ("jaw_wide",)),
+    ("head_15_compact", 0.05, {"crown": -8.0, "cranium_w": 0.96, "temple_w": 0.97, "cheek_w": 0.98, "jaw_w": 0.96, "chin_w": 0.94, "chin_len": -14.0}, ("jaw_medium",)),
+    ("head_16_oblong", 0.05, {"crown": 16.0, "cranium_w": 0.90, "temple_w": 0.92, "cheek_w": 0.90, "jaw_w": 0.86, "chin_w": 0.80, "chin_len": 16.0}, ("jaw_narrow",)),
+    ("head_17_block", 0.05, {"crown_w": 1.04, "cranium_w": 1.06, "temple_w": 1.08, "cheek_w": 1.10, "jaw_w": 1.18, "chin_w": 1.22, "chin_len": -10.0}, ("jaw_wide",)),
+    ("head_18_pointed_chin", 0.05, {"cranium_w": 1.00, "temple_w": 1.00, "cheek_w": 0.94, "jaw_w": 0.80, "chin_w": 0.58, "chin_len": 14.0}, ("jaw_narrow",)),
 ]
 
 
@@ -565,6 +573,12 @@ EAR_RECIPES = [
     ("ears_02_small_flat", 0.30, {"w": 20.0, "out": -2.0, "h": -5.0}),
     ("ears_03_large", 0.18, {"w": 26.0, "out": 3.0, "h": 6.0}),
     ("ears_04_protruding", 0.08, {"w": 25.0, "out": 8.0}),
+    ("ears_05_tiny", 0.08, {"w": 17.0, "out": -3.0, "h": -8.0}),
+    ("ears_06_pointed", 0.07, {"w": 22.0, "out": 1.0, "h": 2.0, "shape": "pointed"}),
+    ("ears_07_round", 0.07, {"w": 24.0, "out": 1.0, "shape": "round"}),
+    ("ears_08_lobe", 0.06, {"w": 23.0, "out": 2.0, "h": 4.0, "shape": "lobe"}),
+    ("ears_09_high", 0.05, {"w": 21.0, "out": 0.0, "h": -7.0}),
+    ("ears_10_wide_set", 0.05, {"w": 24.0, "out": 10.0, "h": 2.0}),
 ]
 
 
@@ -573,15 +587,47 @@ def bake_ear(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]
     top = EAR_TOP - p.get("h", 0.0)
     bot = EAR_BOTTOM + p.get("h", 0.0)
     w = p["w"]
-    pts = [
-        (x - 8, top + 4),
-        (x + w * 0.55, top - 2),
-        (x + w, top + 18),
-        (x + w * 0.94, (top + bot) / 2 + 4),
-        (x + w * 0.52, bot - 4),
-        (x + 2, bot),
-        (x - 10, bot - 14),
-    ]
+    shape = p.get("shape", "default")
+    if shape == "pointed":
+        pts = [
+            (x - 6, top + 10),
+            (x + w * 0.28, top - 8),
+            (x + w * 0.58, top + 8),
+            (x + w * 0.90, (top + bot) / 2),
+            (x + w * 0.50, bot - 6),
+            (x + 2, bot),
+            (x - 10, bot - 14),
+        ]
+    elif shape == "round":
+        pts = [
+            (x - 4, top + 10),
+            (x + w * 0.45, top - 2),
+            (x + w * 0.95, top + 22),
+            (x + w * 0.98, (top + bot) / 2),
+            (x + w * 0.55, bot - 2),
+            (x + 4, bot + 2),
+            (x - 8, bot - 12),
+        ]
+    elif shape == "lobe":
+        pts = [
+            (x - 8, top + 6),
+            (x + w * 0.50, top),
+            (x + w, top + 20),
+            (x + w * 0.88, (top + bot) / 2 + 6),
+            (x + w * 0.62, bot + 6),
+            (x + 6, bot + 8),
+            (x - 8, bot - 8),
+        ]
+    else:
+        pts = [
+            (x - 8, top + 4),
+            (x + w * 0.55, top - 2),
+            (x + w, top + 18),
+            (x + w * 0.94, (top + bot) / 2 + 4),
+            (x + w * 0.52, bot - 4),
+            (x + 2, bot),
+            (x - 10, bot - 14),
+        ]
     mask = poly_mask(pts)
     shade = mul(flat(1.0), grad_h(1.04, 0.82))
     shade = darken(shade, rim(mask, 5.0, 4.0), 0.24)
@@ -610,6 +656,13 @@ EYE_RECIPES = [
     ("eyes_07_deepset", 0.09, {"hood": 6.0, "th": 8.0, "crease": 11.0}),
     ("eyes_08_round", 0.09, {"hw": 21.0, "th": 10.8, "bh": 9.0}),
     ("eyes_09_monolid", 0.08, {"hood": 3.5, "crease": 14.0, "crease_a": 0.10, "th": 7.8}),
+    ("eyes_10_close_small", 0.07, {"hw": 18.0, "th": 7.6, "bh": 5.8, "iris_r": 8.4}),
+    ("eyes_11_huge_round", 0.06, {"hw": 26.0, "th": 11.6, "bh": 10.0, "iris_r": 12.2}),
+    ("eyes_12_sleepy", 0.06, {"hw": 24.0, "th": 5.8, "bh": 7.4, "tilt": 2.4, "lash": 0.7}),
+    ("eyes_13_wide_open", 0.06, {"hw": 27.0, "th": 8.4, "bh": 7.0, "iris_r": 10.4}),
+    ("eyes_14_small_iris", 0.05, {"hw": 22.0, "th": 8.2, "bh": 6.4, "iris_r": 7.2}),
+    ("eyes_15_sharp", 0.05, {"hw": 24.5, "th": 6.4, "bh": 5.4, "tilt": -2.8, "lash": 1.45}),
+    ("eyes_16_heavy_lid", 0.05, {"hood": 7.2, "th": 7.0, "bh": 6.8, "crease": 8.0, "lash": 1.2}),
 ]
 
 
@@ -695,6 +748,12 @@ BROW_RECIPES = [
     ("brows_06_angled", 0.11, {"angle": 4.5, "th": 6.6}),
     ("brows_07_short", 0.09, {"len": -9.0, "th": 6.2}),
     ("brows_08_low", 0.08, {"drop": 4.5, "th": 7.6}),
+    ("brows_09_high_arch", 0.07, {"arch": 10.0, "drop": -3.0, "th": 6.0}),
+    ("brows_10_flat_heavy", 0.07, {"arch": 0.2, "th": 9.2, "drop": 2.0}),
+    ("brows_11_tapered", 0.06, {"th": 4.8, "len": 3.0, "arch": 4.2}),
+    ("brows_12_peak", 0.06, {"arch": 9.0, "angle": -2.2, "th": 6.8}),
+    ("brows_13_soft_low", 0.05, {"th": 7.2, "drop": 3.5, "arch": 1.2}),
+    ("brows_14_wide", 0.05, {"len": 10.0, "th": 6.4, "arch": 3.0}),
 ]
 
 
@@ -748,6 +807,14 @@ NOSE_RECIPES = [
     ("nose_08_narrow", 0.09, {"tip": 0.82, "bridge": 0.80, "flare": 0.86}),
     ("nose_09_bulbous", 0.07, {"tip": 1.14, "bulb": 1.0, "len": 3.0}),
     ("nose_10_thin_bridge", 0.05, {"bridge": 0.72, "tip": 0.94, "len": 5.0}),
+    ("nose_11_snub", 0.07, {"len": -14.0, "tip": 1.18, "upturn": 6.0, "flare": 1.12}),
+    ("nose_12_hawk", 0.06, {"hook": 5.5, "len": 8.0, "bridge": 0.88, "tip": 0.96}),
+    ("nose_13_roman", 0.06, {"hook": 2.2, "len": 6.0, "bridge": 1.06, "tip": 1.08}),
+    ("nose_14_button", 0.06, {"len": -12.0, "tip": 0.96, "bulb": 0.85, "upturn": 3.0}),
+    ("nose_15_long_straight", 0.05, {"len": 12.0, "bridge": 0.90, "tip": 0.90}),
+    ("nose_16_flared", 0.05, {"flare": 1.50, "tip": 1.28, "bridge": 1.12}),
+    ("nose_17_droop", 0.05, {"len": 7.0, "upturn": -3.5, "tip": 1.10, "hook": 1.5}),
+    ("nose_18_pinched", 0.05, {"bridge": 0.64, "tip": 0.76, "flare": 0.72, "len": 4.0}),
 ]
 
 
@@ -867,6 +934,14 @@ MOUTH_RECIPES = [
     ("mouth_08_flat", 0.07, {"bow": 0.4, "upper": 5.0, "lower": 6.4}),
     ("mouth_09_smiling", 0.10, {"smile": 5.0, "lower": 8.4}),
     ("mouth_10_wide_smile", 0.07, {"hw": 45.0, "smile": 6.0, "upper": 5.0, "lower": 7.4}),
+    ("mouth_11_very_wide", 0.06, {"hw": 52.0, "smile": 3.2, "upper": 5.2, "lower": 7.0}),
+    ("mouth_12_tiny", 0.06, {"hw": 30.0, "upper": 4.4, "lower": 5.4, "smile": 2.0}),
+    ("mouth_13_heart", 0.06, {"hw": 38.0, "bow": 3.8, "upper": 7.2, "lower": 8.0}),
+    ("mouth_14_wide_full", 0.05, {"hw": 48.0, "upper": 7.4, "lower": 9.6, "smile": 3.0}),
+    ("mouth_15_thin_line", 0.05, {"upper": 3.2, "lower": 4.6, "smile": 3.2, "bow": 0.6}),
+    ("mouth_16_soft_smile", 0.05, {"hw": 42.0, "smile": 4.4, "lower": 7.2, "upper": 5.4}),
+    ("mouth_17_cupid", 0.05, {"hw": 36.0, "bow": 3.2, "upper": 6.4, "lower": 7.0}),
+    ("mouth_18_broad_thin", 0.05, {"hw": 50.0, "upper": 4.0, "lower": 5.6, "smile": 2.6}),
 ]
 
 
@@ -1060,6 +1135,12 @@ def bake_skin_details() -> list[tuple[str, float, list[tuple[str, Image.Image, d
     out.append(("detail_06_brow_scar", 0.07, [("scar", detail((255, 240, 232), scar, 0.32), {"blend": "screen"})], {}))
     rash = ImageChops.multiply(face, blur(ellipse_mask(CX + 66, hy(0.58), 13, 9), 5))
     out.append(("detail_07_road_rash", 0.05, [("rash", detail((178, 108, 96), rash, 0.13), {"blend": "multiply"})], {}))
+    dimple = ImageChops.multiply(face, blur(ellipse_mask(CX + 40, MOUTH_Y + 6, 4.5, 3.4), 1.2))
+    out.append(("detail_08_dimple", 0.08, [("dimple", detail(SHADOW_RGB, dimple, 0.28), {"blend": "multiply"})], {}))
+    mole_l = ImageChops.multiply(face, blur(ellipse_mask(CX - 36, hy(0.62), 2.3, 2.0), 0.7))
+    out.append(("detail_09_mole_left", 0.08, [("mole", detail((92, 62, 46), mole_l, 0.72), {"blend": "multiply"})], {}))
+    cleft = ImageChops.multiply(face, blur(stroke_mask([(CX, CHIN_Y - 18), (CX, CHIN_Y - 2)], 2.2), 1.1))
+    out.append(("detail_10_cleft_chin", 0.07, [("cleft", detail(SHADOW_RGB, cleft, 0.34), {"blend": "multiply"})], {}))
     return out
 
 
@@ -1131,6 +1212,43 @@ def hair_polygon(t: float, hl_f: float, side_f: float, style: str) -> list[tuple
         inner_right[3] = (CX + 0.50 * hw, hl_y - 6.0)
         inner_right[4] = (CX + 0.10 * hw, hl_y - 10.0)
         inner_right[5] = (CX - 0.20 * hw, hl_y - 4.0)
+    elif style == "bowl":
+        outer_right[0] = (CX, SKULL_TOP - t * 0.7)
+        outer_right[1] = (CX + 0.40 * hw, SKULL_TOP - t * 0.75)
+        inner_right[2] = (CX + 0.70 * hw, hl_y + 28.0)
+        inner_right[3] = (CX + 0.42 * hw, hl_y + 36.0)
+        inner_right[4] = (CX + 0.18 * hw, hl_y + 38.0)
+        inner_right[5] = (CX, hl_y + 40.0)
+    elif style == "curtain":
+        outer_right[2] = (CX + 0.55 * hw, SKULL_TOP - t * 1.1)
+        inner_right[3] = (CX + 0.50 * hw, hl_y + 18.0)
+        inner_right[4] = (CX + 0.22 * hw, hl_y + 8.0)
+        inner_right[5] = (CX + 0.06 * hw, hl_y + 28.0)
+    elif style == "mullet":
+        outer_right[0] = (CX, SKULL_TOP - t * 0.6)
+        outer_right[5] = (CX + 1.02 * hw + t * 0.2, hy(0.58))
+        inner_right[0] = (CX + 0.90 * hw, side_y - 8.0)
+        inner_right[5] = (CX, hl_y + 6.0)
+    elif style == "caesar":
+        outer_right[0] = (CX, SKULL_TOP - t * 0.55)
+        inner_right[2] = (CX + 0.70 * hw, hl_y + 10.0)
+        inner_right[3] = (CX + 0.40 * hw, hl_y + 12.0)
+        inner_right[4] = (CX + 0.16 * hw, hl_y + 12.0)
+        inner_right[5] = (CX, hl_y + 12.0)
+    elif style == "pompadour":
+        outer_right[0] = (CX, SKULL_TOP - t * 2.4)
+        outer_right[1] = (CX + 0.22 * hw, SKULL_TOP - t * 2.2)
+        outer_right[2] = (CX + 0.55 * hw, SKULL_TOP - t * 0.7)
+        inner_right[4] = (CX + 0.14 * hw, hl_y - 20.0)
+        inner_right[5] = (CX, hl_y - 18.0)
+    elif style == "widow":
+        inner_right[3] = (CX + 0.42 * hw, hl_y - 2.0)
+        inner_right[4] = (CX + 0.18 * hw, hl_y + 8.0)
+        inner_right[5] = (CX, hl_y + 22.0)
+    elif style == "flat_top":
+        outer_right[0] = (CX, SKULL_TOP - t)
+        outer_right[1] = (CX + 0.50 * hw, SKULL_TOP - t)
+        outer_right[2] = (CX + 0.92 * hw, SKULL_TOP - t * 0.15 + 8)
     left_outer = list(reversed(mirror_x(outer_right)))
     left_inner = list(reversed(mirror_x(inner_right)))[1:]
     return left_outer + outer_right[1:] + inner_right + left_inner
@@ -1215,6 +1333,31 @@ HAIR_RECIPES: list[dict[str, Any]] = [
         "region_weights": {"*": 1.0, "west_africa": 2.2, "east_africa": 2.0, "latin_america": 1.3, "east_asia": 0.3, "scandinavia": 0.4},
     },
     {"id": "hair_25_shaved", "w": 0.05, "t": 3.0, "hl": 0.26, "side": 0.52, "style": "round"},
+    {"id": "hair_26_short_wave", "w": 0.06, "t": 13.0, "hl": 0.22, "side": 0.50, "style": "swept", "wob": ("curl", 5.0), "excludes": ("hairline_receded",)},
+    {"id": "hair_27_bowl", "w": 0.05, "t": 16.0, "hl": 0.20, "side": 0.50, "style": "bowl", "excludes": ("hairline_receded",)},
+    {"id": "hair_28_curtains", "w": 0.05, "t": 18.0, "hl": 0.19, "side": 0.54, "style": "curtain", "excludes": ("hairline_receded",)},
+    {"id": "hair_29_mullet", "w": 0.03, "t": 12.0, "hl": 0.23, "side": 0.74, "style": "mullet", "max_age": 34, "excludes": ("hairline_receded",)},
+    {"id": "hair_30_caesar", "w": 0.06, "t": 8.0, "hl": 0.22, "side": 0.48, "style": "caesar"},
+    {"id": "hair_31_pompadour", "w": 0.04, "t": 16.0, "hl": 0.19, "side": 0.47, "style": "pompadour", "max_age": 34, "excludes": ("hairline_receded",)},
+    {"id": "hair_32_combover", "w": 0.05, "t": 9.0, "hl": 0.12, "side": 0.52, "style": "swept", "part": True, "requires": ("hairline_receded",)},
+    {"id": "hair_33_side_fringe", "w": 0.05, "t": 15.0, "hl": 0.20, "side": 0.51, "style": "fringe", "part": True},
+    {
+        "id": "hair_34_coils",
+        "w": 0.04,
+        "t": 20.0,
+        "hl": 0.27,
+        "side": 0.52,
+        "style": "round",
+        "wob": ("curl", 16.0),
+        "excludes": ("hairline_receded",),
+        "region_weights": {"*": 1.0, "west_africa": 2.4, "east_africa": 2.1, "latin_america": 1.2, "east_asia": 0.3, "scandinavia": 0.35},
+    },
+    {"id": "hair_35_taper", "w": 0.06, "t": 11.0, "hl": 0.23, "side": 0.40, "style": "undercut"},
+    {"id": "hair_36_wavy_crop", "w": 0.06, "t": 11.0, "hl": 0.24, "side": 0.50, "style": "round", "wob": ("curl", 4.5)},
+    {"id": "hair_37_long_swept", "w": 0.03, "t": 20.0, "hl": 0.21, "side": 0.68, "style": "swept", "excludes": ("hairline_receded",)},
+    {"id": "hair_38_widow_peak", "w": 0.05, "t": 14.0, "hl": 0.21, "side": 0.50, "style": "widow", "excludes": ("hairline_receded",)},
+    {"id": "hair_39_flat_top", "w": 0.04, "t": 18.0, "hl": 0.24, "side": 0.46, "style": "flat_top", "max_age": 36, "excludes": ("hairline_receded",)},
+    {"id": "hair_40_perm_short", "w": 0.04, "t": 16.0, "hl": 0.25, "side": 0.52, "style": "round", "wob": ("curl", 11.0), "excludes": ("hairline_receded",)},
 ]
 
 
@@ -1365,6 +1508,10 @@ FACIAL_RECIPES: list[dict[str, Any]] = [
     {"id": "fh_05_goatee", "w": 0.10, "cov": "chin", "alpha": 0.80, "soft": 2.4, "min_age": 20, "tags": ("beard_dense",), "moustache": True},
     {"id": "fh_06_chinstrap", "w": 0.09, "cov": "strap", "alpha": 0.76, "soft": 2.6, "min_age": 20, "tags": ("beard_dense",)},
     {"id": "fh_07_moustache", "w": 0.06, "cov": "moustache", "alpha": 0.60, "soft": 2.8, "min_age": 22, "tags": ("beard_dense",)},
+    {"id": "fh_08_soul_patch", "w": 0.07, "cov": "chin", "alpha": 0.78, "soft": 2.2, "min_age": 20, "tags": ("beard_dense",)},
+    {"id": "fh_09_walrus", "w": 0.05, "cov": "moustache", "alpha": 0.82, "soft": 2.2, "min_age": 24, "tags": ("beard_dense",)},
+    {"id": "fh_10_stubble_chin", "w": 0.07, "cov": "chin", "alpha": 0.32, "soft": 4.8, "min_age": 18},
+    {"id": "fh_11_full_no_stache", "w": 0.06, "cov": "full", "alpha": 0.78, "soft": 2.8, "min_age": 23, "tags": ("beard_dense",)},
 ]
 
 
@@ -1561,7 +1708,7 @@ TEAMS: dict[str, dict[str, Any]] = {
 # --------------------------------------------------------------------------- #
 
 
-def bake(root: str | Path, style: str = "flat", pack_version: str = "0.1.0-placeholder") -> Path:
+def bake(root: str | Path, style: str = "flat", pack_version: str = "0.2.0-placeholder") -> Path:
     """Bake one placeholder pack in one style. The recipes are shared; only the
     StyleProfile changes, which is how the same peloton can be shown in several
     art directions without touching game code."""

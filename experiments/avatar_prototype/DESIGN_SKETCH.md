@@ -528,9 +528,9 @@ resolution, order independence, transparent background, cache-key movement).
    layers file by file. Both fit the same manifest.
 3. **Do we ship the pack or bake it on first run?** ~245 small PNGs is ~2-3 MB shipped, or
    ~25 s of one-off work on first launch.
-4. **Asset counts for v1.** The placeholder pack (10 heads, 9 eyes, 10 noses, 8 mouths,
-   8 brows, 4 ears, 15 hair, 7 facial hair, 4 helmets, 5 glasses, 5 torsos) already yields
-   20 000 riders with 38 detected look-alikes. Doubling hair and heads is the cheapest way
-   to raise perceived variety if the owner finds the contact sheet too uniform.
+4. **Asset counts for v1.** The placeholder pack now has 18 heads, 16 eyes, 18 noses,
+   18 mouths, 14 brows, 10 ears, 40 hair, 11 facial hair (plus kits / helmets / glasses).
+   Doubling heads and hair was the cheapest way to raise perceived variety after the
+   owner kept `poster` and asked for more face combinations, not a restyle.
 5. **Does the rider card need an expression or a neutral face only?** Everything here is
    neutral; a second expression would double the eye/mouth categories.
