@@ -19,7 +19,8 @@ from avatarlab.generate import Rider, _eligible, generate, generate_pool, simila
 from avatarlab.rng import RiderRng
 
 ROOT = Path(__file__).resolve().parents[1]
-PACK = ROOT / "out" / "pack"
+STYLE = sys.argv[1] if len(sys.argv) > 1 else "flat"
+PACK = ROOT / "out" / f"pack_{STYLE}"
 
 checks = 0
 
@@ -40,8 +41,9 @@ def main() -> int:
     m = pack.manifest
 
     print("pack validation")
-    report = validate.validate(PACK)
-    check(report.ok, f"asset pack passes validation ({report.checked_files} files)")
+    for path in sorted((ROOT / "out").glob("pack_*")):
+        rep = validate.validate(path)
+        check(rep.ok, f"{path.name} passes validation ({rep.checked_files} files)")
 
     print("determinism")
     rider = Rider(rider_id=99, age=26, region="east_europe", discipline="climber", team_id="team_01_azure")
@@ -142,6 +144,8 @@ def main() -> int:
     check(img.getchannel("A").getextrema()[0] == 0, "background stays transparent")
     alpha = img.getchannel("A")
     check(alpha.getbbox()[1] > 0, "nothing touches the top edge of the canvas")
+    cropped = render.crop_head(img, pack)
+    check(cropped.size[0] == cropped.size[1] and cropped.size[0] < 512, "head_crop is a smaller square")
     kit = copy.deepcopy(a)
     kit.equipment["helmet_worn"] = True
     check(render.cache_key(kit) != render.cache_key(a), "putting a helmet on changes the cache key")

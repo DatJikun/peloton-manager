@@ -37,12 +37,14 @@ class Asset:
     max_age: int | None = None
     requires_tags: tuple[str, ...] = ()  # asset needs these tags on already-chosen assets
     excludes_tags: tuple[str, ...] = ()  # asset is invalid if any of these tags is present
+    roles: tuple[str, ...] = ()  # empty = any role; otherwise rider / manager / ...
     region_weights: dict[str, float] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
 class Manifest:
     pack_id: str
+    style: str
     asset_pack_version: str
     avatar_schema_version: int
     seed_version: int
@@ -85,6 +87,7 @@ def _asset_from_json(d: dict[str, Any]) -> Asset:
         max_age=d.get("max_age"),
         requires_tags=tuple(d.get("requires_tags", ())),
         excludes_tags=tuple(d.get("excludes_tags", ())),
+        roles=tuple(d.get("roles", ())),
         region_weights={k: float(v) for k, v in d.get("region_weights", {}).items()},
     )
 
@@ -93,6 +96,7 @@ def load(path: str | Path) -> Manifest:
     data = json.loads(Path(path).read_text(encoding="utf-8"))
     return Manifest(
         pack_id=data["pack_id"],
+        style=data.get("style", "unspecified"),
         asset_pack_version=data["asset_pack_version"],
         avatar_schema_version=int(data["avatar_schema_version"]),
         seed_version=int(data["seed_version"]),

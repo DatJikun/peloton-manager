@@ -49,13 +49,19 @@ from .draw import (
     grad_h,
     grad_radial,
     grad_v,
+    harden_edges,
     head_contour,
     hy,
     mirror_x,
     mul,
     new_l,
+    erode,
     poly_mask,
+    quantize_tones,
     rim,
+    set_style,
+    st,
+    STYLES,
     scale_l,
     stroke_mask,
 )
@@ -88,9 +94,30 @@ LAYER_ORDER = (
 # --------------------------------------------------------------------------- #
 
 
-def gray_layer(shade: Image.Image, alpha: Image.Image) -> Image.Image:
-    sh, al = down(shade), down(alpha)
-    return Image.merge("RGBA", (sh, sh, sh, al))
+def _styled(shade: Image.Image, outline: Image.Image | None) -> Image.Image:
+    """Apply the style's tone quantisation, then the outline on top of it."""
+    out = quantize_tones(shade)
+    if outline is not None:
+        out = ImageChops.subtract(out, scale_l(outline, st().outline_darkness))
+    return out
+
+
+def outline_of(mask: Image.Image) -> Image.Image | None:
+    """Inner outline: darker version of the fill, drawn inside the silhouette so
+    it can never break alignment with the neighbouring layers."""
+    w = st().outline
+    if w <= 0.0:
+        return None
+    return rim(mask, w, 0.7)
+
+
+def gray_layer(
+    shade: Image.Image, alpha: Image.Image, outline: Image.Image | None = None, crisp: bool = True
+) -> Image.Image:
+    """`crisp=False` for layers whose soft falloff is the point (brows, stubble):
+    hardening those turns a gradient into an amoeba."""
+    sh = down(_styled(shade, outline))
+    return Image.merge("RGBA", (sh, sh, sh, down(harden_edges(alpha) if crisp else alpha)))
 
 
 def solid_layer(rgb: tuple[int, int, int], alpha: Image.Image) -> Image.Image:
@@ -99,14 +126,25 @@ def solid_layer(rgb: tuple[int, int, int], alpha: Image.Image) -> Image.Image:
     return Image.merge("RGBA", (r, g, b, al))
 
 
-def shaded_color_layer(rgb: tuple[int, int, int], shade: Image.Image, alpha: Image.Image) -> Image.Image:
-    sh = down(shade)
+def shaded_color_layer(
+    rgb: tuple[int, int, int], shade: Image.Image, alpha: Image.Image, outline: Image.Image | None = None
+) -> Image.Image:
+    sh = down(_styled(shade, outline))
     chans = tuple(sh.point(lambda v, c=c: int(min(255, v * c / 255.0))) for c in rgb)  # type: ignore[misc]
-    return Image.merge("RGBA", (*chans, down(alpha)))
+    return Image.merge("RGBA", (*chans, down(harden_edges(alpha))))
 
 
 def darken(shade: Image.Image, mask: Image.Image, strength: float) -> Image.Image:
-    return ImageChops.subtract(shade, scale_l(mask, strength))
+    return ImageChops.subtract(shade, scale_l(mask, strength * st().form_strength))
+
+
+def lighten(shade: Image.Image, mask: Image.Image, strength: float) -> Image.Image:
+    return brighten(shade, mask, strength * st().highlight_strength)
+
+
+def detail(rgb: tuple[int, int, int], alpha: Image.Image, strength: float) -> Image.Image:
+    """Skin/wrinkle overlay whose intensity follows the style."""
+    return solid_layer(rgb, scale_l(alpha, strength * st().detail_alpha))
 
 
 # --------------------------------------------------------------------------- #
@@ -115,10 +153,11 @@ def darken(shade: Image.Image, mask: Image.Image, strength: float) -> Image.Imag
 
 
 class PackBuilder:
-    def __init__(self, root: Path, pack_id: str, pack_version: str) -> None:
+    def __init__(self, root: Path, pack_id: str, pack_version: str, style: str) -> None:
         self.root = root
         self.pack_id = pack_id
         self.pack_version = pack_version
+        self.style = style
         self.assets: list[dict[str, Any]] = []
         self.palettes: dict[str, dict[str, list[int]]] = {}
         self.teams: dict[str, dict[str, Any]] = {}
@@ -144,6 +183,7 @@ class PackBuilder:
         max_age: int | None = None,
         requires_tags: Iterable[str] = (),
         excludes_tags: Iterable[str] = (),
+        roles: Iterable[str] = (),
         region_weights: dict[str, float] | None = None,
     ) -> None:
         part_defs = []
@@ -171,6 +211,8 @@ class PackBuilder:
             entry["requires_tags"] = list(requires_tags)
         if excludes_tags:
             entry["excludes_tags"] = list(excludes_tags)
+        if roles:
+            entry["roles"] = list(roles)
         if region_weights:
             entry["region_weights"] = region_weights
         self.assets.append(entry)
@@ -194,6 +236,7 @@ class PackBuilder:
         manifest_mod.dump(
             {
                 "pack_id": self.pack_id,
+                "style": self.style,
                 "asset_pack_version": self.pack_version,
                 "avatar_schema_version": 1,
                 "seed_version": 1,
@@ -230,30 +273,38 @@ def bake_head(p: dict[str, float]) -> Image.Image:
     chin_y = CHIN_Y + p.get("chin_len", 0.0)
     cw = p.get("cheek_w", 1.0)
 
-    # main form: sphere-ish falloff from the upper-left key light
+    painterly = st().tone_steps < 2
     shade = mul(flat(1.0), grad_radial(CX - 0.34 * HEAD_HW, hy(0.42), 2.35 * HEAD_HW, 1.0, 0.70), grad_v(1.03, 0.94))
-    shade = brighten(shade, ImageChops.multiply(mask, blur(ellipse_mask(CX - 0.2 * HEAD_HW, hy(0.26), 0.58 * HEAD_HW, 0.15 * HEAD_H), 26)), 0.10)
+    if painterly:
+        # many soft terms: cheekbones, temples, hollows. Posterising these would
+        # turn every one of them into a hard-edged patch, so a flat style gets a
+        # small number of deliberate shapes instead.
+        shade = lighten(shade, ImageChops.multiply(mask, blur(ellipse_mask(CX - 0.2 * HEAD_HW, hy(0.26), 0.58 * HEAD_HW, 0.15 * HEAD_H), 26)), 0.10)
+        for sx in (-1, 1):
+            shade = lighten(
+                shade,
+                ImageChops.multiply(mask, blur(ellipse_mask(CX + sx * 0.62 * HEAD_HW * cw, hy(0.60), 0.32 * HEAD_HW, 0.085 * HEAD_H), 22)),
+                0.075,
+            )
+            shade = darken(
+                shade,
+                ImageChops.multiply(mask, blur(ellipse_mask(CX + sx * 0.70 * HEAD_HW * cw, hy(0.79), 0.27 * HEAD_HW, 0.095 * HEAD_H), 18)),
+                0.12,
+            )
+            shade = darken(shade, ImageChops.multiply(mask, blur(ellipse_mask(CX + sx * 0.88 * HEAD_HW, hy(0.37), 0.20 * HEAD_HW, 0.13 * HEAD_H), 16)), 0.09)
+        shade = lighten(shade, ImageChops.multiply(mask, blur(ellipse_mask(CX, chin_y - 0.075 * HEAD_H, 32, 15), 14)), 0.05)
+    else:
+        # one clean crescent on the shaded side of the face
+        side = ImageChops.subtract(mask, erode(poly_mask(head_contour({**p, "cheek_w": 0.86, "jaw_w": 0.84, "cranium_w": 0.88, "temple_w": 0.88})), 0.0))
+        shade = darken(shade, ImageChops.multiply(mask, blur(ImageChops.multiply(side, grad_h(0.0, 1.6)), 9)), 0.20)
     for sx in (-1, 1):
-        # cheekbone highlight, then the hollow underneath it
-        shade = brighten(
-            shade,
-            ImageChops.multiply(mask, blur(ellipse_mask(CX + sx * 0.62 * HEAD_HW * cw, hy(0.60), 0.32 * HEAD_HW, 0.085 * HEAD_H), 22)),
-            0.075,
-        )
-        shade = darken(
-            shade,
-            ImageChops.multiply(mask, blur(ellipse_mask(CX + sx * 0.70 * HEAD_HW * cw, hy(0.79), 0.27 * HEAD_HW, 0.095 * HEAD_H), 18)),
-            0.12,
-        )
         shade = darken(shade, ImageChops.multiply(mask, blur(ellipse_mask(CX + sx * EYE_DX, EYE_Y - 4, 38, 22), 14)), 0.13)
         shade = darken(shade, ImageChops.multiply(mask, blur(ellipse_mask(CX + sx * EYE_DX, BROW_Y + 11, 40, 10), 10)), 0.09)
-        shade = darken(shade, ImageChops.multiply(mask, blur(ellipse_mask(CX + sx * 0.88 * HEAD_HW, hy(0.37), 0.20 * HEAD_HW, 0.13 * HEAD_H), 16)), 0.09)
     shade = darken(shade, rim(mask, 13.0, 7.0), 0.32)
     shade = darken(shade, blur(ellipse_mask(CX, NOSE_TIP_Y + 11, 32, 9), 9), 0.10)
     shade = darken(shade, blur(ellipse_mask(CX, MOUTH_Y + 22, 28, 11), 10), 0.10)
-    shade = brighten(shade, ImageChops.multiply(mask, blur(ellipse_mask(CX, chin_y - 0.075 * HEAD_H, 32, 15), 14)), 0.05)
     shade = darken(shade, ImageChops.multiply(blur(ellipse_mask(CX, chin_y + 0.03 * HEAD_H, 0.92 * HEAD_HW, 0.10 * HEAD_H), 16), mask), 0.16)
-    return gray_layer(shade, mask)
+    return gray_layer(shade, mask, outline_of(mask))
 
 
 # --------------------------------------------------------------------------- #
@@ -341,7 +392,7 @@ def bake_jersey(template: str) -> list[tuple[str, Image.Image, dict[str, Any]]]:
         shade = darken(shade, ImageChops.multiply(blur(ellipse_mask(CX + sx * 168, 500, 34, 46), 20), body), 0.16)
         shade = darken(shade, ImageChops.multiply(blur(ellipse_mask(CX + sx * 108, SHOULDER_Y + 6, 26, 30), 18), body), 0.08)
     shade = darken(shade, ImageChops.multiply(blur(ellipse_mask(CX, COLLAR_TOP + 40, 66, 24), 16), body), 0.16)
-    shade = brighten(shade, ImageChops.multiply(blur(ellipse_mask(CX - 118, SHOULDER_Y - 4, 54, 26), 24), body), 0.08)
+    shade = lighten(shade, ImageChops.multiply(blur(ellipse_mask(CX - 118, SHOULDER_Y - 4, 54, 26), 24), body), 0.08)
 
     if template == "jersey_01_raglan":
         panel = new_l()
@@ -378,12 +429,82 @@ def bake_jersey(template: str) -> list[tuple[str, Image.Image, dict[str, Any]]]:
     piping = ImageChops.multiply(collar, blur(stroke_mask(COLLAR_EDGE, 2.2), 0.8))
     zip_line = ImageChops.multiply(body, stroke_mask([(CX, COLLAR_TOP + 30), (CX + 2, SIZE + 10)], 3.4))
     return [
-        ("base", shaded_color_layer((255, 255, 255), shade, body), {"blend": "normal", "color_slot": "team_primary"}),
+        ("base", shaded_color_layer((255, 255, 255), shade, body, outline_of(body)), {"blend": "normal", "color_slot": "team_primary"}),
         ("panel", shaded_color_layer((255, 255, 255), shade, panel), {"blend": "normal", "color_slot": "team_secondary"}),
         ("collar", shaded_color_layer((255, 255, 255), shade, collar), {"blend": "normal", "color_slot": "team_primary"}),
         ("piping", shaded_color_layer((255, 255, 255), shade, piping), {"blend": "normal", "color_slot": "team_accent"}),
         ("seam", solid_layer(SHADOW_RGB, scale_l(blur(zip_line, 1.4), 0.32)), {"blend": "multiply"}),
         ("sheen", solid_layer(LIGHT_RGB, scale_l(ImageChops.multiply(blur(ellipse_mask(CX - 130, 496, 52, 30), 24), body), 0.14)), {"blend": "screen"}),
+    ]
+
+
+def bake_outfit(kind: str) -> list[tuple[str, Image.Image, dict[str, Any]]]:
+    """Manager torsos: same canvas and shoulder line as a jersey, civilian cut."""
+    body = torso_mask()
+    shade = mul(flat(1.0), grad_h(1.05, 0.90))
+    shade = darken(shade, rim(body, 11.0, 8.0), 0.20)
+    for sx in (-1, 1):
+        shade = darken(shade, ImageChops.multiply(blur(ellipse_mask(CX + sx * 168, 500, 34, 46), 20), body), 0.16)
+    shade = darken(shade, ImageChops.multiply(blur(ellipse_mask(CX, COLLAR_TOP + 40, 66, 24), 16), body), 0.16)
+
+    if kind == "outfit_03_suit":
+        shirt = ImageChops.multiply(
+            body,
+            poly_mask([(CX - 34, COLLAR_TOP + 6), (CX + 34, COLLAR_TOP + 6), (CX + 46, SIZE + 10), (CX - 46, SIZE + 10)]),
+        )
+        lapel = new_l()
+        for sx in (-1, 1):
+            lapel = ImageChops.lighter(
+                lapel,
+                ImageChops.multiply(
+                    body,
+                    poly_mask(
+                        [
+                            (CX + sx * 30, COLLAR_TOP + 4),
+                            (CX + sx * 76, COLLAR_TOP + 16),
+                            (CX + sx * 62, SIZE + 10),
+                            (CX + sx * 18, SIZE + 10),
+                        ]
+                    ),
+                ),
+            )
+        tie = ImageChops.multiply(
+            body, poly_mask([(CX - 9, COLLAR_TOP + 26), (CX + 9, COLLAR_TOP + 26), (CX + 15, SIZE + 10), (CX - 15, SIZE + 10)])
+        )
+        return [
+            ("base", shaded_color_layer((58, 60, 68), shade, body, outline_of(body)), {"blend": "normal"}),
+            ("shirt", shaded_color_layer((240, 242, 246), shade, shirt), {"blend": "normal"}),
+            ("lapel", shaded_color_layer((44, 46, 54), shade, lapel), {"blend": "normal"}),
+            ("tie", shaded_color_layer((255, 255, 255), shade, tie), {"blend": "normal", "color_slot": "team_primary"}),
+        ]
+
+    collar = ImageChops.multiply(collar_mask(), body)
+    if kind == "outfit_01_polo":
+        placket = ImageChops.multiply(
+            body, poly_mask([(CX - 13, COLLAR_TOP + 30), (CX + 13, COLLAR_TOP + 30), (CX + 15, SHOULDER_Y + 40), (CX - 15, SHOULDER_Y + 40)])
+        )
+        buttons = new_l()
+        for y in (SHOULDER_Y + 2, SHOULDER_Y + 24):
+            buttons = ImageChops.lighter(buttons, ImageChops.multiply(body, blur(ellipse_mask(CX + 1, y, 3.0, 3.0), 0.8)))
+        return [
+            ("base", shaded_color_layer((255, 255, 255), shade, body, outline_of(body)), {"blend": "normal", "color_slot": "team_primary"}),
+            ("collar", shaded_color_layer((255, 255, 255), shade, collar), {"blend": "normal", "color_slot": "team_primary"}),
+            ("piping", shaded_color_layer((255, 255, 255), shade, ImageChops.multiply(collar, blur(stroke_mask(COLLAR_EDGE, 2.2), 0.8))), {"blend": "normal", "color_slot": "team_secondary"}),
+            ("placket", shaded_color_layer((255, 255, 255), shade, placket), {"blend": "normal", "color_slot": "team_secondary"}),
+            ("buttons", solid_layer((246, 246, 248), scale_l(buttons, 0.85)), {"blend": "normal"}),
+        ]
+
+    # outfit_02_softshell: zipped team jacket
+    zip_line = ImageChops.multiply(body, stroke_mask([(CX, COLLAR_TOP + 26), (CX + 2, SIZE + 10)], 3.6))
+    yoke = ImageChops.multiply(
+        body, poly_mask([(CX - TORSO_HW, SHOULDER_Y + 30), (CX + TORSO_HW, SHOULDER_Y + 24), (CX + TORSO_HW, SIZE + 30), (CX - TORSO_HW, SIZE + 30)], iters=1)
+    )
+    return [
+        ("base", shaded_color_layer((255, 255, 255), shade, body, outline_of(body)), {"blend": "normal", "color_slot": "team_primary"}),
+        ("yoke", shaded_color_layer((255, 255, 255), shade, yoke), {"blend": "normal", "color_slot": "team_accent"}),
+        ("collar", shaded_color_layer((255, 255, 255), shade, collar), {"blend": "normal", "color_slot": "team_primary"}),
+        ("piping", shaded_color_layer((255, 255, 255), shade, ImageChops.multiply(collar, blur(stroke_mask(COLLAR_EDGE, 2.2), 0.8))), {"blend": "normal", "color_slot": "team_secondary"}),
+        ("zip", solid_layer(SHADOW_RGB, scale_l(blur(zip_line, 1.2), 0.42)), {"blend": "multiply"}),
     ]
 
 
@@ -451,7 +572,7 @@ def bake_ear(p: dict[str, float]) -> Image.Image:
     # contact shadow where the head overlaps the ear, otherwise the ear
     # disappears into the cheek once the head layer is drawn on top
     shade = darken(shade, ImageChops.multiply(mask, blur(ellipse_mask(x - 4, (top + bot) / 2, 10, (bot - top) * 0.7), 6)), 0.34)
-    return gray_layer(shade, mask)
+    return gray_layer(shade, mask, outline_of(mask))
 
 
 # --------------------------------------------------------------------------- #
@@ -584,7 +705,7 @@ def bake_brow(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any
             strands = ImageChops.lighter(strands, stroke_mask([(bx, by + 3), (bx + rnd.uniform(2, 7), by - 5)], 1.6))
         mask = ImageChops.lighter(mask, ImageChops.multiply(blur(strands, 1.0), blur(body, 5)))
     shade = mul(flat(1.0), grad_h(1.0, 0.86))
-    return [("hair", gray_layer(shade, scale_l(mask, 0.94)), {"blend": "normal", "color_slot": "facial_hair"})]
+    return [("hair", gray_layer(shade, scale_l(mask, 0.94), crisp=False), {"blend": "normal", "color_slot": "facial_hair"})]
 
 
 # --------------------------------------------------------------------------- #
@@ -654,10 +775,38 @@ def bake_nose(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any
         ),
     )
     light = ImageChops.lighter(light, scale_l(blur(ellipse_mask(CX - 2, tip_y - 7, tw * 0.42, 5.5), 3.0), 0.22))
-    return [
+
+    style = st()
+    shadow = scale_l(shadow, style.form_strength)
+    light = scale_l(light, style.highlight_strength)
+    parts = [
         ("shade", solid_layer(SHADOW_RGB, shadow), {"blend": "multiply"}),
         ("light", solid_layer(LIGHT_RGB, light), {"blend": "screen"}),
     ]
+    if style.line_features:
+        # a flat-vector nose reads as line work, not as a soft gradient
+        line = new_l()
+        for sx in (-1, 1):
+            line = ImageChops.lighter(
+                line,
+                scale_l(
+                    blur(
+                        stroke_mask(
+                            [
+                                (CX + sx * tw * 0.86, tip_y - 5),
+                                (CX + sx * tw * 0.78, tip_y + 3),
+                                (CX + sx * tw * 0.34, tip_y + 4.5),
+                            ],
+                            2.4,
+                        ),
+                        0.9,
+                    ),
+                    0.42,
+                ),
+            )
+            line = ImageChops.lighter(line, scale_l(blur(ellipse_mask(CX + sx * tw * 0.52, tip_y + 1.0, 3.6, 2.4), 0.9), 0.52))
+        parts.append(("line", solid_layer(SHADOW_RGB, line), {"blend": "multiply"}))
+    return parts
 
 
 # --------------------------------------------------------------------------- #
@@ -736,7 +885,7 @@ def bake_mouth(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, An
 
 def bake_wrinkles() -> list[tuple[str, Image.Image, dict[str, Any]]]:
     def dark(mask: Image.Image, k: float) -> Image.Image:
-        return solid_layer(SHADOW_RGB, scale_l(mask, k))
+        return detail(SHADOW_RGB, mask, k)
 
     forehead = new_l()
     for i, f in enumerate((0.21, 0.27, 0.33)):
@@ -813,7 +962,7 @@ def bake_skin_details() -> list[tuple[str, float, list[tuple[str, Image.Image, d
         (
             "detail_01_helmet_tan",
             0.72,
-            [("band", solid_layer((255, 248, 236), scale_l(band, 0.12)), {"blend": "screen", "opacity_from": "tan_strength"})],
+            [("band", detail((255, 248, 236), band, 0.12), {"blend": "screen", "opacity_from": "tan_strength"})],
             {},
         )
     )
@@ -825,7 +974,7 @@ def bake_skin_details() -> list[tuple[str, float, list[tuple[str, Image.Image, d
         (
             "detail_02_glasses_tan",
             0.46,
-            [("patch", solid_layer((255, 246, 232), scale_l(ImageChops.multiply(face, goggles), 0.13)), {"blend": "screen", "opacity_from": "tan_strength"})],
+            [("patch", detail((255, 246, 232), ImageChops.multiply(face, goggles), 0.13), {"blend": "screen", "opacity_from": "tan_strength"})],
             {},
         )
     )
@@ -842,7 +991,7 @@ def bake_skin_details() -> list[tuple[str, float, list[tuple[str, Image.Image, d
         (
             "detail_03_freckles",
             0.13,
-            [("dots", solid_layer((132, 88, 62), scale_l(ImageChops.multiply(face, freckles), 0.26)), {"blend": "multiply"})],
+            [("dots", detail((132, 88, 62), ImageChops.multiply(face, freckles), 0.26), {"blend": "multiply"})],
             {},
         )
     )
@@ -851,16 +1000,16 @@ def bake_skin_details() -> list[tuple[str, float, list[tuple[str, Image.Image, d
         (
             "detail_04_stubble_shadow",
             0.34,
-            [("shadow", solid_layer(COOL_SHADOW_RGB, scale_l(beard_area_mask("short"), 0.15)), {"blend": "multiply"})],
+            [("shadow", detail(COOL_SHADOW_RGB, beard_area_mask("short"), 0.15), {"blend": "multiply"})],
             {"excludes_tags": ["beard_dense"]},
         )
     )
     mole = ImageChops.multiply(face, blur(ellipse_mask(CX + 33, hy(0.66), 2.4, 2.1), 0.7))
-    out.append(("detail_05_mole", 0.10, [("mole", solid_layer((92, 62, 46), scale_l(mole, 0.72)), {"blend": "multiply"})], {}))
+    out.append(("detail_05_mole", 0.10, [("mole", detail((92, 62, 46), mole, 0.72), {"blend": "multiply"})], {}))
     scar = ImageChops.multiply(face, blur(stroke_mask([(CX - 60, BROW_Y - 8), (CX - 46, BROW_Y - 18)], 2.4), 1.0))
-    out.append(("detail_06_brow_scar", 0.07, [("scar", solid_layer((255, 240, 232), scale_l(scar, 0.32)), {"blend": "screen"})], {}))
+    out.append(("detail_06_brow_scar", 0.07, [("scar", detail((255, 240, 232), scar, 0.32), {"blend": "screen"})], {}))
     rash = ImageChops.multiply(face, blur(ellipse_mask(CX + 66, hy(0.58), 13, 9), 5))
-    out.append(("detail_07_road_rash", 0.05, [("rash", solid_layer((178, 108, 96), scale_l(rash, 0.13)), {"blend": "multiply"})], {}))
+    out.append(("detail_07_road_rash", 0.05, [("rash", detail((178, 108, 96), rash, 0.13), {"blend": "multiply"})], {}))
     return out
 
 
@@ -991,13 +1140,15 @@ def bake_hair(r: dict[str, Any]) -> list[tuple[str, Image.Image, dict[str, Any]]
     )
     if r.get("part"):
         shade = darken(shade, ImageChops.multiply(mask, blur(stroke_mask([(CX - 24, hl_y - 4), (CX - 32, SKULL_TOP + 18)], 5.0), 3.0)), 0.32)
-    strands = new_l()
-    rnd = random.Random(abs(hash(r["id"])) % 9999)
-    for _ in range(36):
-        x0 = rnd.uniform(CX - HEAD_HW, CX + HEAD_HW)
-        y0 = rnd.uniform(SKULL_TOP - 6, hl_y + 18)
-        strands = ImageChops.lighter(strands, stroke_mask([(x0, y0), (x0 + rnd.uniform(-16, 16), y0 + rnd.uniform(14, 40))], 2.0))
-    shade = darken(shade, ImageChops.multiply(mask, blur(strands, 1.6)), 0.10)
+    if st().tone_steps < 2:
+        strands = new_l()
+        rnd = random.Random(abs(hash(r["id"])) % 9999)
+        for _ in range(36):
+            x0 = rnd.uniform(CX - HEAD_HW, CX + HEAD_HW)
+            y0 = rnd.uniform(SKULL_TOP - 6, hl_y + 18)
+            strands = ImageChops.lighter(strands, stroke_mask([(x0, y0), (x0 + rnd.uniform(-16, 16), y0 + rnd.uniform(14, 40))], 2.0))
+        shade = darken(shade, ImageChops.multiply(mask, blur(strands, 1.6)), 0.10)
+    # flat styles keep only the rim + hairline shading already applied above
 
     sheen = solid_layer(
         LIGHT_RGB, scale_l(ImageChops.multiply(mask, blur(ellipse_mask(CX - 44, hy(0.16), 46, 28), 22)), 0.16)
@@ -1010,7 +1161,7 @@ def bake_hair(r: dict[str, Any]) -> list[tuple[str, Image.Image, dict[str, Any]]
     )
     return [
         ("cast_shadow", solid_layer(SHADOW_RGB, scale_l(cast, 0.16)), {"blend": "multiply"}),
-        ("main", gray_layer(shade, mask), {"blend": "normal", "color_slot": "hair"}),
+        ("main", gray_layer(shade, mask, outline_of(mask)), {"blend": "normal", "color_slot": "hair"}),
         ("sheen", sheen, {"blend": "screen"}),
     ]
 
@@ -1025,23 +1176,23 @@ def beard_area_mask(coverage: str) -> Image.Image:
     hw = HEAD_HW
     if coverage == "full":
         pts = [
-            (CX - 0.90 * hw, hy(0.55)),
+            (CX - 0.90 * hw, hy(0.645)),
             (CX - 0.86 * hw, JAW_Y - 6),
             (CX - 0.48 * hw, CHIN_Y + 2),
             (CX + 0.48 * hw, CHIN_Y + 2),
             (CX + 0.86 * hw, JAW_Y - 6),
-            (CX + 0.90 * hw, hy(0.55)),
-            (CX + 0.52 * hw, hy(0.70)),
-            (CX - 0.52 * hw, hy(0.70)),
+            (CX + 0.90 * hw, hy(0.645)),
+            (CX + 0.52 * hw, hy(0.74)),
+            (CX - 0.52 * hw, hy(0.74)),
         ]
     elif coverage == "short":
         pts = [
-            (CX - 0.84 * hw, hy(0.63)),
+            (CX - 0.84 * hw, hy(0.67)),
             (CX - 0.80 * hw, JAW_Y - 2),
             (CX - 0.45 * hw, CHIN_Y),
             (CX + 0.45 * hw, CHIN_Y),
             (CX + 0.80 * hw, JAW_Y - 2),
-            (CX + 0.84 * hw, hy(0.63)),
+            (CX + 0.84 * hw, hy(0.67)),
             (CX + 0.50 * hw, hy(0.76)),
             (CX - 0.50 * hw, hy(0.76)),
         ]
@@ -1066,14 +1217,18 @@ def beard_area_mask(coverage: str) -> Image.Image:
             (CX - 0.38 * hw, CHIN_Y - 15),
             (CX - 0.68 * hw, hy(0.70)),
         ]
-    else:  # moustache
+    else:  # moustache: wider than tall, dipping in the middle above the lip
         pts = [
-            (CX - 30, MOUTH_Y - 16),
-            (CX - 26, MOUTH_Y - 3),
+            (CX - 36, MOUTH_Y - 15),
+            (CX - 26, MOUTH_Y - 5),
+            (CX - 9, MOUTH_Y - 8),
             (CX, MOUTH_Y - 6),
-            (CX + 26, MOUTH_Y - 3),
-            (CX + 30, MOUTH_Y - 16),
-            (CX, MOUTH_Y - 22),
+            (CX + 9, MOUTH_Y - 8),
+            (CX + 26, MOUTH_Y - 5),
+            (CX + 36, MOUTH_Y - 15),
+            (CX + 17, MOUTH_Y - 21),
+            (CX, MOUTH_Y - 18),
+            (CX - 17, MOUTH_Y - 21),
         ]
     mask = ImageChops.multiply(face, poly_mask(pts))
     if coverage in ("full", "short", "strap"):
@@ -1083,13 +1238,13 @@ def beard_area_mask(coverage: str) -> Image.Image:
 
 
 FACIAL_RECIPES: list[dict[str, Any]] = [
-    {"id": "fh_01_stubble_light", "w": 0.26, "cov": "short", "alpha": 0.30, "soft": 5.0, "min_age": 17},
-    {"id": "fh_02_stubble_heavy", "w": 0.20, "cov": "full", "alpha": 0.40, "soft": 4.5, "min_age": 19},
+    {"id": "fh_01_stubble_light", "w": 0.26, "cov": "short", "alpha": 0.24, "soft": 5.0, "min_age": 17},
+    {"id": "fh_02_stubble_heavy", "w": 0.20, "cov": "full", "alpha": 0.34, "soft": 4.5, "min_age": 19},
     {"id": "fh_03_beard_short", "w": 0.16, "cov": "short", "alpha": 0.70, "soft": 3.2, "min_age": 21, "tags": ("beard_dense",), "moustache": True},
     {"id": "fh_04_beard_full", "w": 0.11, "cov": "full", "alpha": 0.80, "soft": 2.8, "min_age": 23, "tags": ("beard_dense",), "moustache": True},
     {"id": "fh_05_goatee", "w": 0.10, "cov": "chin", "alpha": 0.80, "soft": 2.4, "min_age": 20, "tags": ("beard_dense",), "moustache": True},
     {"id": "fh_06_chinstrap", "w": 0.09, "cov": "strap", "alpha": 0.76, "soft": 2.6, "min_age": 20, "tags": ("beard_dense",)},
-    {"id": "fh_07_moustache", "w": 0.08, "cov": "moustache", "alpha": 0.82, "soft": 2.2, "min_age": 22, "tags": ("beard_dense",)},
+    {"id": "fh_07_moustache", "w": 0.06, "cov": "moustache", "alpha": 0.60, "soft": 2.8, "min_age": 22, "tags": ("beard_dense",)},
 ]
 
 
@@ -1097,9 +1252,13 @@ def bake_facial_hair(r: dict[str, Any]) -> list[tuple[str, Image.Image, dict[str
     mask = beard_area_mask(r["cov"])
     if r.get("moustache"):
         mask = ImageChops.lighter(mask, beard_area_mask("moustache"))
-    mask = scale_l(blur(mask, r["soft"]), r["alpha"])
+    # a flat-vector beard is a defined shape, a painted one is a soft shadow
+    dense = r["alpha"] > 0.6 and r["cov"] in ("full", "short", "strap")
+    softness = r["soft"] * (0.34 if (st().tone_steps >= 2 and dense) else 1.0)
+    mask = scale_l(blur(mask, softness), r["alpha"])
     shade = mul(flat(1.0), grad_v(1.06, 0.86), grad_h(1.04, 0.90))
-    return [("hair", gray_layer(shade, mask), {"blend": "normal", "color_slot": "facial_hair"})]
+    crisp = st().tone_steps >= 2 and dense
+    return [("hair", gray_layer(shade, mask, crisp=crisp), {"blend": "normal", "color_slot": "facial_hair"})]
 
 
 # --------------------------------------------------------------------------- #
@@ -1212,7 +1371,7 @@ def bake_helmet(r: dict[str, Any]) -> list[tuple[str, Image.Image, dict[str, Any
     )
     return [
         ("cast_shadow", solid_layer(SHADOW_RGB, scale_l(cast, 0.24)), {"blend": "multiply"}),
-        ("shell", shaded_color_layer((255, 255, 255), shade, shell), {"blend": "normal", "color_slot": "team_primary"}),
+        ("shell", shaded_color_layer((255, 255, 255), shade, shell, outline_of(shell)), {"blend": "normal", "color_slot": "team_primary"}),
         ("stripe", shaded_color_layer((255, 255, 255), shade, stripe), {"blend": "normal", "color_slot": "team_accent"}),
         ("vents", solid_layer((34, 34, 40), scale_l(vents, 0.62)), {"blend": "normal"}),
         ("strap", solid_layer((44, 44, 50), scale_l(straps, 0.66)), {"blend": "normal"}),
@@ -1223,6 +1382,30 @@ def bake_helmet(r: dict[str, Any]) -> list[tuple[str, Image.Image, dict[str, Any
 # --------------------------------------------------------------------------- #
 # palettes and teams
 # --------------------------------------------------------------------------- #
+
+# the pack owns its palette; the renderer only interpolates what it is given
+SKIN_RAMP: list[tuple[float, tuple[int, int, int]]] = [
+    (0.00, (252, 226, 205)),
+    (0.15, (243, 208, 180)),
+    (0.30, (231, 187, 152)),
+    (0.45, (208, 158, 120)),
+    (0.60, (177, 126, 90)),
+    (0.75, (137, 92, 62)),
+    (0.88, (98, 63, 43)),
+    (1.00, (68, 44, 32)),
+]
+
+# flat vector art carries a little more chroma; same lightness curve
+SKIN_RAMP_FLAT: list[tuple[float, tuple[int, int, int]]] = [
+    (0.00, (253, 224, 199)),
+    (0.15, (246, 206, 172)),
+    (0.30, (236, 186, 144)),
+    (0.45, (214, 156, 112)),
+    (0.60, (183, 124, 84)),
+    (0.75, (142, 90, 57)),
+    (0.88, (101, 61, 39)),
+    (1.00, (70, 42, 29)),
+]
 
 HAIR_COLORS = [
     ("hc_01_black", [34, 29, 27], 0.30, {"*": 1.0, "scandinavia": 0.5, "east_asia": 2.4, "west_africa": 2.6, "east_africa": 2.4, "south_asia": 2.2}),
@@ -1258,11 +1441,19 @@ TEAMS: dict[str, dict[str, Any]] = {
 # --------------------------------------------------------------------------- #
 
 
-def bake(root: str | Path, pack_version: str = "0.1.0-placeholder") -> Path:
+def bake(root: str | Path, style: str = "flat", pack_version: str = "0.1.0-placeholder") -> Path:
+    """Bake one placeholder pack in one style. The recipes are shared; only the
+    StyleProfile changes, which is how the same peloton can be shown in several
+    art directions without touching game code."""
+    if style not in STYLES:
+        raise ValueError(f"unknown style {style!r}, expected one of {sorted(STYLES)}")
+    set_style(STYLES[style])
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
-    b = PackBuilder(root, "peloton_placeholder", pack_version)
+    b = PackBuilder(root, "peloton_placeholder", pack_version, style)
     b.teams = TEAMS
+    ramp = SKIN_RAMP_FLAT if STYLES[style].tone_steps >= 2 else SKIN_RAMP
+    b.palettes["skin_ramp"] = {f"stop_{i:02d}": [int(t * 1000), *rgb] for i, (t, rgb) in enumerate(ramp)}
 
     for asset_id, weight, params, tags in HEAD_RECIPES:
         b.asset("head", asset_id, [("skin", bake_head(params), {"blend": "normal", "color_slot": "skin"})], weight=weight, tags=tags, anchor=(CX, EYE_Y))
@@ -1320,13 +1511,16 @@ def bake(root: str | Path, pack_version: str = "0.1.0-placeholder") -> Path:
         b.asset("facial_hair", r["id"], bake_facial_hair(r), weight=r["w"], anchor=(CX, MOUTH_Y), min_age=r.get("min_age"), tags=r.get("tags", ()))
 
     for r in GLASSES_RECIPES:
-        b.asset("glasses", r["id"], bake_glasses(r), weight=r["w"], anchor=(CX, EYE_Y))
+        b.asset("glasses", r["id"], bake_glasses(r), weight=r["w"], anchor=(CX, EYE_Y), roles=("rider",))
 
     for r in HELMET_RECIPES:
-        b.asset("helmet", r["id"], bake_helmet(r), weight=r["w"], anchor=(CX, hy(0.20)))
+        b.asset("helmet", r["id"], bake_helmet(r), weight=r["w"], anchor=(CX, hy(0.20)), roles=("rider",))
 
     for tid, weight in (("jersey_01_raglan", 0.6), ("jersey_02_band", 0.4)):
-        b.asset("jersey", tid, bake_jersey(tid), weight=weight, anchor=(CX, SHOULDER_Y))
+        b.asset("jersey", tid, bake_jersey(tid), weight=weight, anchor=(CX, SHOULDER_Y), roles=("rider",))
+
+    for tid, weight in (("outfit_01_polo", 0.45), ("outfit_02_softshell", 0.35), ("outfit_03_suit", 0.20)):
+        b.asset("jersey", tid, bake_outfit(tid), weight=weight, anchor=(CX, SHOULDER_Y), roles=("manager",))
 
     b.asset("jersey_overlay", "overlay_bands_rainbow", bake_overlay_rainbow(), anchor=(CX, SHOULDER_Y))
     b.asset("jersey_overlay", "overlay_bands_champion", bake_overlay_champion(), anchor=(CX, SHOULDER_Y))

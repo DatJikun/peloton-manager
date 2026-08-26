@@ -37,6 +37,7 @@ class Rider:
     weight_kg: int = 68
     discipline: str = "allrounder"  # sprinter | climber | classics | tt | allrounder
     team_id: str | None = None
+    role: str = "rider"  # rider | manager (male peloton only for now)
     jersey_override: str | None = None  # world_champion | national_champion | leader_* | None
     visual_seed: int = 0  # optional manual override knob for editors
 
@@ -54,6 +55,8 @@ def _eligible(asset: Asset, rider: Rider, chosen_tags: set[str]) -> bool:
     if asset.requires_tags and not all(t in chosen_tags for t in asset.requires_tags):
         return False
     if asset.excludes_tags and any(t in chosen_tags for t in asset.excludes_tags):
+        return False
+    if asset.roles and rider.role not in asset.roles:
         return False
     return True
 

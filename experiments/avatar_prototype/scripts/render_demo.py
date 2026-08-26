@@ -8,6 +8,9 @@ Outputs to out/demo/:
   04_equipment.png       helmet / glasses on the same face
   05_trait_variants.png  asset explorer: one base rider, one trait swapped
   06_skin_and_hair.png   colour-slot sweep (skin tone x hair colour)
+  07_styles.png          the same riders baked in every style profile
+  08_display_sizes.png   how much detail survives at real UI sizes
+  09_managers.png        role = manager: civilian torsos, no helmet, no glasses
   report.txt             determinism, duplicate and performance numbers
 """
 
@@ -29,6 +32,8 @@ from avatarlab.generate import Rider, core_fingerprint, generate, generate_pool,
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "out" / "demo"
+DEFAULT_STYLE = "flat"
+STYLE_ORDER = ["flat", "flat_outline", "painted", "soft"]
 
 BG = (30, 33, 38)
 CARD = (48, 52, 59)
@@ -268,6 +273,87 @@ def skin_hair_sheet(pack: render.Pack) -> Image.Image:
     )
 
 
+def styles_sheet() -> Image.Image:
+    """The same five riders through every StyleProfile in the baker."""
+    riders = [
+        Rider(rider_id=11, age=24, region="west_europe", discipline="sprinter", team_id="team_01_azure"),
+        Rider(rider_id=4207, age=31, region="east_africa", discipline="climber", team_id="team_03_rosso"),
+        Rider(rider_id=9, age=27, region="scandinavia", discipline="tt", team_id="team_05_arctic"),
+        Rider(rider_id=5001, age=36, region="iberia", discipline="classics", team_id="team_02_verde"),
+        Rider(rider_id=812, age=20, region="east_asia", discipline="allrounder", team_id="team_04_noir"),
+    ]
+    tiles = []
+    for style in STYLE_ORDER:
+        pack = render.Pack(ROOT / "out" / f"pack_{style}")
+        for i, rider in enumerate(riders):
+            img = render.render(generate(rider, pack.manifest), pack)
+            tiles.append(tile(img, 200, style if i == 0 else "", f"#{rider.rider_id}", alt=i % 2 == 1))
+    return grid(
+        tiles,
+        len(riders),
+        header="7. Style profiles - identical riders, identical recipes, different art direction",
+        sub="rows: flat / flat outline / painted / soft. Style is a property of the asset pack, the game code is unchanged",
+    )
+
+
+def display_sizes_sheet(pack: render.Pack) -> Image.Image:
+    """How much of the portrait survives at the sizes the UI actually uses."""
+    riders = [
+        Rider(rider_id=11, age=24, region="west_europe", discipline="sprinter", team_id="team_01_azure"),
+        Rider(rider_id=4207, age=31, region="east_africa", discipline="climber", team_id="team_03_rosso"),
+    ]
+    sizes = [(380, "rider card", False), (180, "medium panel", False), (96, "roster row, head crop", True), (48, "list icon, head crop", True)]
+    pad = 10
+    width = pad + sum(max(s, 150) + pad for s, _, _ in sizes)
+    sheet = Image.new("RGBA", (max(width, 900), 92 + len(riders) * (380 + 34 + pad)), (*BG, 255))
+    d = ImageDraw.Draw(sheet)
+    d.text((14, 16), "8. The same portrait at real display sizes", fill=TEXT, font=font(26, bold=True))
+    d.text((14, 50), "512x512 masters downscaled; small sizes use the manifest head_crop so the pixels go on the face", fill=SUBTEXT, font=font(15))
+    for r, rider in enumerate(riders):
+        img = render.render(generate(rider, pack.manifest), pack)
+        y = 92 + r * (380 + 34 + pad)
+        x = pad
+        for size, label, crop in sizes:
+            cell = max(size, 150)
+            card = Image.new("RGBA", (cell, 380), (*(CARD if r % 2 == 0 else CARD_ALT), 255))
+            src = render.crop_head(img, pack) if crop else img
+            card.alpha_composite(src.resize((size, size), Image.LANCZOS), ((cell - size) // 2, (380 - size) // 2))
+            sheet.alpha_composite(card, (x, y))
+            dd = ImageDraw.Draw(sheet)
+            dd.text((x + 6, y + 384), f"{size} px", fill=TEXT, font=font(14, bold=True))
+            dd.text((x + 6, y + 402), label, fill=SUBTEXT, font=font(12))
+            x += cell + pad
+    return sheet
+
+
+def managers_sheet(pack: render.Pack) -> Image.Image:
+    tiles = []
+    for i in range(6):
+        rider = Rider(
+            rider_id=600_100 + i * 7,
+            age=[38, 44, 51, 57, 42, 63][i],
+            region=REGIONS[(i * 3) % len(REGIONS)],
+            role="manager",
+            team_id=TEAM_IDS[i],
+        )
+        app = generate(rider, pack.manifest)
+        tiles.append(
+            tile(
+                render.render(app, pack),
+                200,
+                f"{rider.age}y  {app.equipment['jersey_template'].split('_', 1)[1]}",
+                f"{pack.manifest.teams[rider.team_id]['name']}",
+                alt=i % 2 == 1,
+            )
+        )
+    return grid(
+        tiles,
+        6,
+        header="9. Managers - same faces, civilian torsos",
+        sub="role=manager filters the asset pool: polo / softshell / suit instead of a jersey, and no helmet or glasses",
+    )
+
+
 def report(pack: render.Pack, pool_size: int = 20_000) -> str:
     lines: list[str] = []
     m = pack.manifest
@@ -344,9 +430,10 @@ def report(pack: render.Pack, pool_size: int = 20_000) -> str:
     return "\n".join(lines) + "\n"
 
 
-def main() -> int:
+def main(argv: list[str]) -> int:
+    style = argv[1] if len(argv) > 1 else DEFAULT_STYLE
     OUT.mkdir(parents=True, exist_ok=True)
-    pack = render.Pack(ROOT / "out" / "pack")
+    pack = render.Pack(ROOT / "out" / f"pack_{style}")
     sheets = {
         "01_contact_sheet.png": contact_sheet,
         "02_aging.png": aging_sheet,
@@ -354,12 +441,20 @@ def main() -> int:
         "04_equipment.png": equipment_sheet,
         "05_trait_variants.png": trait_variants_sheet,
         "06_skin_and_hair.png": skin_hair_sheet,
+        "08_display_sizes.png": display_sizes_sheet,
+        "09_managers.png": managers_sheet,
     }
+    print(f"rendering demo sheets from pack_{style}")
     for name, fn in sheets.items():
         t0 = time.perf_counter()
         img = fn(pack)
         img.convert("RGB").save(OUT / name, quality=95)
         print(f"{name}: {img.size[0]}x{img.size[1]} in {time.perf_counter() - t0:.1f}s")
+    if all((ROOT / "out" / f"pack_{s}").exists() for s in STYLE_ORDER):
+        t0 = time.perf_counter()
+        img = styles_sheet()
+        img.convert("RGB").save(OUT / "07_styles.png", quality=95)
+        print(f"07_styles.png: {img.size[0]}x{img.size[1]} in {time.perf_counter() - t0:.1f}s")
     text = report(pack)
     (OUT / "report.txt").write_text(text, encoding="utf-8")
     print()
@@ -368,4 +463,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(main(sys.argv))

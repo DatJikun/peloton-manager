@@ -34,7 +34,7 @@ CENTER_X = 256.0
 # color helpers
 # --------------------------------------------------------------------------- #
 
-# perceptual-ish skin ramp: pale -> deep, with the hue shifting warm then dark
+# fallback ramp; a pack normally ships its own in palettes["skin_ramp"]
 _SKIN_RAMP: tuple[tuple[float, tuple[int, int, int]], ...] = (
     (0.00, (252, 226, 205)),
     (0.15, (243, 208, 180)),
@@ -47,6 +47,17 @@ _SKIN_RAMP: tuple[tuple[float, tuple[int, int, int]], ...] = (
 )
 
 
+def ramp_from_palette(palette: dict[str, list[int]] | None):
+    """`palettes["skin_ramp"] = {"stop_00": [t*1000, r, g, b], ...}` -> ramp."""
+    if not palette:
+        return _SKIN_RAMP
+    stops = []
+    for key in sorted(palette):
+        t, r, g, b = palette[key]
+        stops.append((t / 1000.0, (r, g, b)))
+    return tuple(stops) or _SKIN_RAMP
+
+
 def _ramp(ramp: Iterable[tuple[float, tuple[int, int, int]]], t: float) -> tuple[int, int, int]:
     pts = list(ramp)
     t = min(1.0, max(0.0, t))
@@ -57,8 +68,8 @@ def _ramp(ramp: Iterable[tuple[float, tuple[int, int, int]]], t: float) -> tuple
     return pts[-1][1]
 
 
-def skin_rgb(skin_tone: float, tan: float = 0.0) -> tuple[int, int, int]:
-    r, g, b = _ramp(_SKIN_RAMP, skin_tone)
+def skin_rgb(skin_tone: float, tan: float = 0.0, ramp=_SKIN_RAMP) -> tuple[int, int, int]:
+    r, g, b = _ramp(ramp, skin_tone)
     # cyclists are tanned: push warmth/darkness slightly, never change ancestry
     k = 0.16 * tan
     return (
@@ -225,6 +236,7 @@ class Pack:
 
         self.root = Path(root)
         self.manifest: Manifest = manifest_mod.load(self.root / "manifest.json")
+        self.skin_ramp = ramp_from_palette(self.manifest.palettes.get("skin_ramp"))
         self._images: dict[tuple[str, bool], tuple[Image.Image, tuple[int, int, int, int]]] = {}
 
     def layer(self, file: str, mirrored: bool = False) -> tuple[Image.Image, tuple[int, int, int, int]]:
@@ -276,8 +288,8 @@ def _tint_for(slot: str | None, app: Appearance, pack: Pack) -> tuple[float, flo
     if slot is None:
         return None
     pal = pack.manifest.palettes
-    ident, mut, eq = app.identity, app.mutable, app.equipment
-    skin = skin_rgb(ident["skin_tone"], mut.get("tan_strength", 0.0))
+    ident, mut = app.identity, app.mutable
+    skin = skin_rgb(ident["skin_tone"], mut.get("tan_strength", 0.0), pack.skin_ramp)
     if slot == "skin":
         rgb = skin
     elif slot == "lip":
@@ -290,7 +302,7 @@ def _tint_for(slot: str | None, app: Appearance, pack: Pack) -> tuple[float, flo
         rgb = gray_hair_rgb(tuple(base), min(1.0, mut.get("gray", 0.0) * 1.25))  # type: ignore[arg-type]
         # lift towards a warm grey: pure hair colour reads as a solid black
         # balaclava at portrait size
-        rgb = tuple(int(rgb[i] + (LIFT[i] - rgb[i]) * 0.20) for i in range(3))  # type: ignore[assignment]
+        rgb = tuple(int(rgb[i] + (LIFT[i] - rgb[i]) * 0.12) for i in range(3))  # type: ignore[assignment]
     elif slot == "iris":
         rgb = tuple(pal["iris_color"].get(ident.get("iris_color") or "", [92, 76, 58]))  # type: ignore[assignment]
     elif slot.startswith("team_"):
@@ -423,6 +435,18 @@ def render(app: Appearance, pack: Pack) -> Image.Image:
 # --------------------------------------------------------------------------- #
 # cache identity
 # --------------------------------------------------------------------------- #
+
+
+def crop_head(img: Image.Image, pack: "Pack") -> Image.Image:
+    """Tighter square crop for small UI sizes.
+
+    A head-and-shoulders master downscaled to a 48 px list icon wastes most of
+    its pixels on jersey and empty margin, so the UI should crop first.
+    """
+    box = pack.manifest.canvas.get("head_crop")
+    if not box:
+        return img
+    return img.crop(tuple(int(v) for v in box))
 
 
 def cache_key(app: Appearance) -> str:

@@ -9,6 +9,19 @@ piece of logic below is deliberately portable to C#: integer hashing, no floatin
 accumulation across frames, no library-specific randomness, no data hidden in code that
 should live in the manifest.
 
+## 0. Owner answers locked on 2026-08-26
+
+| Question | Answer | Consequence |
+|---|---|---|
+| view | front-facing | eye / brow / ear assets are single-sided and mirrored: half the files |
+| helmet in the portrait | off by default | `helmet_worn = false`; helmet stays an optional layer |
+| peloton | male riders + manager outfits | `role` field on riders and assets; no women's pack |
+| size in the UI | rider card, up to ~1/6 of a laptop page | 512x512 master, `head_crop` for 48-96 px icons |
+| art direction | flat vector is the front runner, all options to be compared | four `StyleProfile`s bakeable from the same recipes |
+
+Open: which of the four styles wins, and whether the pack is authored procedurally or by
+an artist. Both are answered by looking at `demo/07_styles.png`, not by writing more code.
+
 ---
 
 ## 1. Master reference (immutable)
@@ -33,6 +46,30 @@ One canonical framing that every asset in a pack must match. It lives in
 | light | key from upper-left, ~35 degrees elevation |
 
 Changing any of these invalidates the whole pack: it is an art-direction reset, not a tweak.
+
+## 1b. Style profiles
+
+Art direction is a property of the pack, not of the game code. One `StyleProfile`
+(`avatarlab/bake/draw.py`) drives every recipe:
+
+| field | what it controls |
+|---|---|
+| `tone_steps` | 0 = smooth gradients, 3 = cel shading |
+| `tone_floor` | darkest tone the quantiser keeps |
+| `form_strength`, `highlight_strength` | global multipliers on every shading term |
+| `gradient_scale` | full-canvas gradients band when posterised, so flat styles compress them |
+| `edge_hardness` | soft painted falloff vs crisp vector edge |
+| `outline`, `outline_darkness` | inner outline, drawn *inside* the silhouette so it cannot break alignment |
+| `detail_alpha` | wrinkles / tan lines / freckles intensity |
+| `line_features` | nose and lips get line work instead of pure shading |
+
+Shipped profiles: `flat`, `flat_outline`, `painted`, `soft`. Two lessons the prototype
+learned the hard way, both encoded above:
+
+- **Never harden every alpha.** Stubble and eyebrows are soft on purpose; posterising and
+  hardening them turns a gradient into an amoeba. `gray_layer(..., crisp=False)` opts out.
+- **Never posterise a full-canvas gradient.** It bands across the whole face. A flat style
+  gets a small number of deliberate shading shapes instead of many soft ones.
 
 ## 2. Layer architecture
 
@@ -206,6 +243,7 @@ Four mechanisms, all data-driven, no code per asset:
 | `min_age` / `max_age` | `fh_04_beard_full` needs 23+; `hair_09_spiky` stops at 32 |
 | `requires_tags` | `hair_12_receded` only for a rider whose hairline actually receded |
 | `excludes_tags` | `detail_04_stubble_shadow` is skipped when a dense beard is present |
+| `roles` | jerseys, helmets and glasses are `rider` only; polo / softshell / suit are `manager` only |
 | anchors + affine limits | glasses/helmet are placed from the eye line, so they cannot drift off the face |
 
 Tags are produced by assets (`head_03_square` → `jaw_wide`) and by derived state
@@ -277,6 +315,31 @@ Measured: 54 portraits/s single-threaded in Python (~370 s for 20 000 cold). A C
 with GPU or `System.Drawing`/SkiaSharp compositing should be one to two orders faster, and it
 only ever runs on cache misses.
 
+## 10b. Where the renderer should live (recommendation)
+
+The owner is not a programmer, so this is a decision, not a menu.
+
+**Recommendation: composite in C#, cache PNGs, let Godot display a texture.**
+
+- One code path for every size. The big rider card uses the 512 master, list icons use the
+  `head_crop` from the manifest; both come from the same file.
+- Testable headless. The compositor is ordinary C# with no Godot dependency, so it is
+  covered by `dotnet test` exactly like the rest of the skeleton, and `HANDOFF.md`'s rule
+  that Godot holds no world logic keeps holding.
+- Cheap. A portrait is only composited on a cache miss. Flat vector art at 512x512 is
+  roughly 15-30 KB per PNG; an LRU cap of a few thousand entries is tens of megabytes,
+  and the cache can be deleted at any time because it is derived data.
+- Boring. No shader work, no GPU state, no Godot-version risk.
+
+The alternative — stacking `Sprite2D` layers in Godot and letting the GPU composite —
+avoids the cache but moves art assembly into the UI layer, cannot be tested without a
+display, and would need the tint/blend logic reimplemented in shaders. Not worth it for a
+still portrait.
+
+Practical sizing: a `SkiaSharp` or `ImageSharp` compositor should land in the low
+milliseconds per portrait (Python does 20 ms including PNG decode), so a 20 000 rider
+world never needs a bulk pre-render; portraits appear as screens are opened.
+
 ## 11. Cache strategy
 
 ```text
@@ -323,9 +386,19 @@ pack/
 ├── wrinkles/  skin_details/  glasses/  helmet/  jersey/  jersey_overlay/  neck/
 ```
 
-## 14. AI asset-pack workflow
+## 14. Asset-pack workflow (AI and non-AI)
 
-AI is a **content tool**, never a runtime dependency. Suggested loop per new asset:
+AI is a **content tool**, never a runtime dependency. With flat vector as the front runner
+there are two viable pipelines, and the manifest is identical for both:
+
+**A. Procedural / vector authoring (recommended for flat vector).** The placeholder baker in
+`avatarlab/bake/` is already this pipeline: recipes are parameter dictionaries, alignment is
+exact by construction, a new head shape is six numbers, and the whole pack rebuilds in ~25 s.
+Ported to C# (or kept as an offline tool that ships PNGs), it needs no AI at all. A vector
+artist can replace individual layers file by file because the contract is per-part PNGs.
+
+**B. AI-generated assets (needed for painted or photoreal).** Requires masked inpainting;
+plain text-to-image will not hold the framing. Loop per asset:
 
 1. Start from the approved master avatar PNG plus a layer-specific mask (only the region the
    asset owns is unlocked). Inpainting with a locked mask is what keeps the rest of the face
@@ -347,6 +420,12 @@ AI is a **content tool**, never a runtime dependency. Suggested loop per new ass
 Practical notes: generate in families (one prompt seed, 6-8 hairstyle variants) so a whole
 category shares a look; keep every prompt and seed next to the asset id for reproducibility;
 budget roughly 2-3x the target asset count for rejections.
+
+With only a short window of image-model access, spend it on a **style bible** (4-6 reference
+portraits in the exact master framing) rather than on assets: the references pin the art
+direction, and pipeline A can then match them. `README.md` carries ready-to-paste prompts,
+including the decisive test - ask the model to change only the hairstyle on an existing face
+and see whether the face survives.
 
 ## 15. Validation script
 
@@ -372,12 +451,15 @@ resolution, order independence, transparent background, cache-key movement).
 
 ## Open questions before this becomes a real system
 
-1. **Art direction.** Semi-realistic painted, flat vector, or photoreal? Everything above is
-   style-agnostic; the answer decides the asset pipeline and the rejection criteria.
-2. **Where does the renderer live?** Godot `Sprite2D`/`CanvasItem` stack (composited on the
-   GPU, no PNG cache needed) versus a C# offline compositor writing PNGs to a cache folder.
-   Recommendation: Godot layers for the detail view, cached PNGs for lists.
-3. **Do we ship the pack or generate on first run?** Shipping ~250 small PNGs is ~2-3 MB.
-4. **Scope of the pack.** Women's peloton, historical eras (1990s kit), staff portraits?
-5. **How visible are avatars in the UI?** If they are 48 px list icons, half the detail work
-   above is wasted; if there is a full-screen rider profile, the pack needs more assets.
+1. **Which style profile wins?** `demo/07_styles.png` is the decision sheet. Everything else
+   is already style-agnostic.
+2. **Who authors the final pack?** Procedural/vector (pipeline A) or an artist replacing
+   layers file by file. Both fit the same manifest.
+3. **Do we ship the pack or bake it on first run?** ~245 small PNGs is ~2-3 MB shipped, or
+   ~25 s of one-off work on first launch.
+4. **Asset counts for v1.** The placeholder pack (10 heads, 9 eyes, 10 noses, 8 mouths,
+   8 brows, 4 ears, 15 hair, 7 facial hair, 4 helmets, 5 glasses, 5 torsos) already yields
+   20 000 riders with 38 detected look-alikes. Doubling hair and heads is the cheapest way
+   to raise perceived variety if the owner finds the contact sheet too uniform.
+5. **Does the rider card need an expression or a neutral face only?** Everything here is
+   neutral; a second expression would double the eye/mouth categories.
