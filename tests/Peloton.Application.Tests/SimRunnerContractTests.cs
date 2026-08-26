@@ -245,6 +245,8 @@ public sealed class SimRunnerContractTests
         string stdout = output.ToString();
         Assert.Equal(0, exitCode);
         Assert.Contains("stopped=RACE_DAY_PENDING", stdout, StringComparison.Ordinal);
+        Assert.Contains("primaryAction=race-next", stdout, StringComparison.Ordinal);
+        Assert.Contains("primaryLabel=Race next", stdout, StringComparison.Ordinal);
         Assert.Contains("day=12", stdout, StringComparison.Ordinal);
         Assert.Contains("raceDue=true", stdout, StringComparison.Ordinal);
         Assert.Contains("note=A race is due today.", stdout, StringComparison.Ordinal);
@@ -253,6 +255,37 @@ public sealed class SimRunnerContractTests
         Assert.Contains("inboxCount=1", stdout, StringComparison.Ordinal);
         Assert.Contains("inbox=identity=calendar:", stdout, StringComparison.Ordinal);
         Assert.Contains("category=race-due", stdout, StringComparison.Ordinal);
+        Assert.True(string.IsNullOrWhiteSpace(error.ToString()));
+    }
+
+    [Fact]
+    public void DayCommandFollowHubEntersRacePreparationOnRaceDay()
+    {
+        using StringWriter output = new();
+        using StringWriter error = new();
+        int exitCode = Program.Run(
+            [
+                "day",
+                "--scenario",
+                "scenario.peloton.skeleton",
+                "--seed",
+                "91234",
+                "--days",
+                "13",
+                "--follow-hub",
+                "--content-root",
+                TestApplication.ContentRoot,
+            ],
+            output,
+            error);
+
+        string stdout = output.ToString();
+        Assert.Equal(0, exitCode);
+        Assert.Contains("stopped=RACE_DAY_PENDING", stdout, StringComparison.Ordinal);
+        Assert.Contains("state=RacePreparationFlow", stdout, StringComparison.Ordinal);
+        Assert.Contains("primaryAction=race-next", stdout, StringComparison.Ordinal);
+        Assert.Contains("primaryLabel=Race next", stdout, StringComparison.Ordinal);
+        Assert.DoesNotContain("winner=", stdout, StringComparison.Ordinal);
         Assert.True(string.IsNullOrWhiteSpace(error.ToString()));
     }
 

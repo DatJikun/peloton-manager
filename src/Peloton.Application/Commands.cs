@@ -12,6 +12,8 @@ public sealed record LoadGameCommand(string Path);
 
 public sealed record PrepareRaceCommand;
 
+public sealed record FollowHubPrimaryActionCommand;
+
 public sealed record StartRaceCommand(
     string PreRaceAutosavePath,
     string RaceScenarioId);

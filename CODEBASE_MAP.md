@@ -43,7 +43,7 @@ Static content lives in `content/peloton.skeleton` and `content/peloton.race-pro
 | World Spy | `Peloton.Domain/DecisionTracing.cs` | `WORLD_SPY_AND_DECISION_TRACING_v0.1.md` | Race Spy tests (first specialization) |
 | Race content | `Peloton.Content/JsonRacePrototypeCatalog.cs`, `content/peloton.race-prototype` | `CONTENT_FORMAT_v0.1.md` | `RaceContentTests` |
 | SimRunner race gate | `tools/Peloton.SimRunner/RacePrototypeCommand.cs` | prototype design §11 | `SimRunnerContractTests` |
-| Career Hub query | `Peloton.Application/CareerDay.cs` | `GAME_STATES_v0.1.md` Advance Day; not a UI dashboard | Application tests, `day` SimRunner |
+| Career Hub query | `Peloton.Application/CareerDay.cs` | `GAME_STATES_v0.1.md` Advance Day; Hub primary action (`advance-day` / `race-next`); not a UI dashboard | Application tests, `day` SimRunner |
 | Career calendar | `Peloton.Domain/CalendarEntry.cs`, `Peloton.Application/CareerCalendarInbox.cs` | stored entries + derived status | Application tests |
 | Career inbox query | `Peloton.Application/CareerCalendarInbox.cs`, `ArchiveInboxItemCommand` | rebuilt race-due + race-result items; dismiss lock on race-due | Application tests |
 | AI managers | Not implemented | `AI_MANAGER_SYSTEM_v0.2.md` | Not implemented |

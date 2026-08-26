@@ -216,6 +216,50 @@ public sealed class GameApplicationTests
         Assert.False(hub.RaceDueToday);
         Assert.Contains(hub.TodayNotes, note => note.Contains("worked the day", StringComparison.Ordinal));
         Assert.Contains(hub.TodayNotes, note => note.Contains("rest of the world", StringComparison.Ordinal));
+        Assert.Equal(HubPrimaryActionIds.AdvanceDay, hub.PrimaryAction);
+        Assert.Equal(HubPrimaryActionLabels.AdvanceDay, hub.PrimaryLabel);
+    }
+
+    [Fact]
+    public void FollowHubPrimaryActionAdvancesDayWhenRaceIsNotDue()
+    {
+        GameApplication application = TestApplication.Create();
+        Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 42)).Succeeded);
+        Assert.True(application.Execute(new AdvanceDayCommand()).Succeeded);
+
+        CareerDayProjection hub = Assert.IsType<CareerDayProjection>(application.CareerDay);
+        Assert.Equal(HubPrimaryActionIds.AdvanceDay, hub.PrimaryAction);
+        Assert.Equal(1, hub.DayNumber);
+
+        Assert.True(application.Execute(new FollowHubPrimaryActionCommand()).Succeeded);
+        Assert.Equal(2, application.World!.CurrentDate.DayNumber);
+        Assert.Equal(GameState.Management, application.State);
+    }
+
+    [Fact]
+    public void RaceDueDayShowsRaceNextPrimaryActionAndFollowHubEntersPreparation()
+    {
+        GameApplication application = TestApplication.Create();
+        Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 42)).Succeeded);
+        for (int day = 0; day < 12; day++)
+        {
+            Assert.True(application.Execute(new AdvanceDayCommand()).Succeeded, $"day {day + 1}");
+        }
+
+        CareerDayProjection hub = Assert.IsType<CareerDayProjection>(application.CareerDay);
+        Assert.Equal(12, hub.DayNumber);
+        Assert.True(hub.RaceDueToday);
+        Assert.Equal(HubPrimaryActionIds.RaceNext, hub.PrimaryAction);
+        Assert.Equal(HubPrimaryActionLabels.RaceNext, hub.PrimaryLabel);
+
+        CommandResult blocked = application.Execute(new AdvanceDayCommand());
+        Assert.False(blocked.Succeeded);
+        Assert.Equal("RACE_DAY_PENDING", blocked.ReasonCode);
+        Assert.Equal(12, application.World!.CurrentDate.DayNumber);
+
+        Assert.True(application.Execute(new FollowHubPrimaryActionCommand()).Succeeded);
+        Assert.Equal(GameState.RacePreparationFlow, application.State);
+        Assert.Equal(12, application.World.CurrentDate.DayNumber);
     }
 
     [Fact]

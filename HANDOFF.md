@@ -46,6 +46,7 @@ On branch `cursor/race-next-hub-action-babe`, stacked on race-result inbox. §49
 - [x] Pre-race autosave, RaceLive save rejection, and crash recovery
 - [x] Prototype race engine (physics, groups, chase decisions, Race Spy) and 10-season SimRunner
 - [x] Thin career day loop: Hub projection, race-due Advance Day block, SimRunner `day`
+- [x] Hub primary action: Advance Day on normal days, Race next on race-due days; `FollowHubPrimaryActionCommand` enters preparation
 - [x] Career calendar entries (domain system of record) and inbox query (race-due + race-result); archive cannot dismiss race deadlines
 - [x] Headless domain/application/persistence/architecture tests
 
@@ -66,7 +67,7 @@ On branch `cursor/race-next-hub-action-babe`, stacked on race-result inbox. §49
 - [x] Testing v0.1 (DRAFT)
 
 ## Next task
-`Implement Hub Race next (D-034) in code. Inbox does not launch races. Watch Race stays on Godot. Do not close §49 with automations. Do not implement D-032.`
+`Watch Race on Godot (D-033). Do not close §49 with automations. Do not implement D-032.`
 
 ## Known blockers
 - None.
@@ -163,6 +164,7 @@ dotnet run --project tools/Peloton.SimRunner -- run --scenario scenario.peloton.
 dotnet run --project tools/Peloton.SimRunner -- race --scenario race-scenario.peloton.prototype-v0 --seed 91234
 dotnet run --project tools/Peloton.SimRunner -- watch --scenario race-scenario.peloton.prototype-v0 --seed 91234
 dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13
+dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --follow-hub
 dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --through-races
 ```
 

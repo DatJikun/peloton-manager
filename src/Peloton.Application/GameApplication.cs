@@ -65,6 +65,19 @@ public sealed class GameApplication
             Organization? employer = access.CurrentOrganizationId is WorldEntityId organizationId
                 ? World.Organizations.FirstOrDefault(organization => organization.Id == organizationId)
                 : null;
+            string primaryAction;
+            string primaryLabel;
+            if (State == GameState.Management && World.IsRaceDue)
+            {
+                primaryAction = HubPrimaryActionIds.RaceNext;
+                primaryLabel = HubPrimaryActionLabels.RaceNext;
+            }
+            else
+            {
+                primaryAction = HubPrimaryActionIds.AdvanceDay;
+                primaryLabel = HubPrimaryActionLabels.AdvanceDay;
+            }
+
             return new CareerDayProjection(
                 World.CurrentDate.DayNumber,
                 manager?.Name ?? string.Empty,
@@ -73,7 +86,9 @@ public sealed class GameApplication
                 World.NextRaceDayNumber,
                 World.IsRaceDue,
                 World.LastDayNotes,
-                World.RaceCount);
+                World.RaceCount,
+                primaryAction,
+                primaryLabel);
         }
     }
 
@@ -186,6 +201,22 @@ public sealed class GameApplication
 
         State = GameState.RacePreparationFlow;
         return CommandResult.Success;
+    }
+
+    public CommandResult Execute(FollowHubPrimaryActionCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.Management || World is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        if (World.IsRaceDue)
+        {
+            return Execute(new PrepareRaceCommand());
+        }
+
+        return Execute(new AdvanceDayCommand());
     }
 
     public CommandResult Execute(StartRaceCommand command)

@@ -12,12 +12,14 @@ public sealed record CareerDayOptions(
     long Seed,
     int Days,
     string ContentRoot,
-    bool ThroughRaces)
+    bool ThroughRaces,
+    bool FollowHub)
 {
     public static CareerDayOptions Parse(string[] args)
     {
         Dictionary<string, string> values = new(StringComparer.Ordinal);
         bool throughRaces = false;
+        bool followHub = false;
         for (int index = 1; index < args.Length; index++)
         {
             string option = args[index];
@@ -39,6 +41,24 @@ public sealed record CareerDayOptions(
                 else
                 {
                     throughRaces = true;
+                }
+
+                continue;
+            }
+
+            if (string.Equals(option, "--follow-hub", StringComparison.Ordinal))
+            {
+                if (index + 1 < args.Length &&
+                    !args[index + 1].StartsWith("--", StringComparison.Ordinal) &&
+                    (string.Equals(args[index + 1], "true", StringComparison.OrdinalIgnoreCase) ||
+                     string.Equals(args[index + 1], "false", StringComparison.OrdinalIgnoreCase)))
+                {
+                    followHub = string.Equals(args[index + 1], "true", StringComparison.OrdinalIgnoreCase);
+                    index++;
+                }
+                else
+                {
+                    followHub = true;
                 }
 
                 continue;
@@ -84,7 +104,7 @@ public sealed record CareerDayOptions(
         string contentRoot = values.TryGetValue("--content-root", out string? configuredRoot)
             ? configuredRoot
             : Path.Combine(Environment.CurrentDirectory, "content");
-        return new CareerDayOptions(scenario, seed, days, Path.GetFullPath(contentRoot), throughRaces);
+        return new CareerDayOptions(scenario, seed, days, Path.GetFullPath(contentRoot), throughRaces, followHub);
     }
 
     private static string Required(Dictionary<string, string> values, string key)
@@ -144,7 +164,24 @@ public static class CareerDayCommand
                 {
                     output.WriteLine($"stopped={advanced.ReasonCode}");
                     WriteHub(output, application);
-                    return string.Equals(advanced.ReasonCode, "RACE_DAY_PENDING", StringComparison.Ordinal) ? 0 : 1;
+                    if (string.Equals(advanced.ReasonCode, "RACE_DAY_PENDING", StringComparison.Ordinal))
+                    {
+                        if (options.FollowHub && !options.ThroughRaces)
+                        {
+                            CommandResult follow = application.Execute(new FollowHubPrimaryActionCommand());
+                            if (!follow.Succeeded)
+                            {
+                                return 1;
+                            }
+
+                            output.WriteLine($"state={application.State}");
+                            WriteHub(output, application);
+                        }
+
+                        return 0;
+                    }
+
+                    return 1;
                 }
 
                 WriteHub(output, application);
@@ -165,7 +202,7 @@ public static class CareerDayCommand
     private static CommandResult RunSkeletonRace(GameApplication application, string autosaveDirectory)
     {
         Directory.CreateDirectory(autosaveDirectory);
-        CommandResult prepare = application.Execute(new PrepareRaceCommand());
+        CommandResult prepare = application.Execute(new FollowHubPrimaryActionCommand());
         if (!prepare.Succeeded)
         {
             return prepare;
@@ -223,6 +260,8 @@ public static class CareerDayCommand
         output.WriteLine($"nextRaceDay={hub.NextRaceDayNumber.ToString(CultureInfo.InvariantCulture)}");
         output.WriteLine($"daysUntilRace={hub.DaysUntilNextRace.ToString(CultureInfo.InvariantCulture)}");
         output.WriteLine($"raceDue={hub.RaceDueToday.ToString().ToLowerInvariant()}");
+        output.WriteLine($"primaryAction={hub.PrimaryAction}");
+        output.WriteLine($"primaryLabel={hub.PrimaryLabel}");
         output.WriteLine($"raceCount={hub.RaceCount.ToString(CultureInfo.InvariantCulture)}");
         foreach (string note in hub.TodayNotes)
         {

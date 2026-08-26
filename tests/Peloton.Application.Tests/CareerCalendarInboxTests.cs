@@ -51,6 +51,7 @@ public sealed class CareerCalendarInboxTests
         Assert.False(archive.Succeeded);
         Assert.Equal("INBOX_SOURCE_CANNOT_BE_DISMISSED", archive.ReasonCode);
         Assert.True(application.World!.IsRaceDue);
+        Assert.Equal(GameState.Management, application.State);
         Assert.Equal("RACE_DAY_PENDING", application.Execute(new AdvanceDayCommand()).ReasonCode);
     }
 
