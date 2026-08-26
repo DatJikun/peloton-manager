@@ -102,6 +102,9 @@ def validate(pack_root: str | Path) -> Report:
             if alpha.min() == 255:
                 rep.errors.append(f"{part.file}: fully opaque - no transparent background")
             ys, xs = np.nonzero(alpha > 2)
+            if ys.size == 0:
+                rep.errors.append(f"{part.file}: fully transparent (empty layer)")
+                continue
             box = (int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1)
             allowed = REGIONS.get(asset.category)
             if allowed and not (

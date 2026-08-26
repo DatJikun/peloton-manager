@@ -202,10 +202,12 @@ class PackBuilder:
     ) -> None:
         part_defs = []
         for name, img, meta in parts:
-            if img.getchannel("A").getextrema()[1] == 0:
-                continue  # empty layer (e.g. a helmet recipe with no vents)
+            if img.getchannel("A").getextrema()[1] <= 2:
+                continue  # empty or below the validator's visible-alpha floor
             rel = self.save(category, asset_id, name, img)
             part_defs.append({"file": rel, **meta})
+        if not part_defs:
+            return  # style suppressed every part (e.g. road rash at very low detail_alpha)
         entry: dict[str, Any] = {
             "id": asset_id,
             "category": category,
