@@ -7,6 +7,9 @@ using Peloton.Domain;
 
 namespace Peloton.Simulation.Race;
 
+// Decision digest for headless playtest. This is not Watch Race playback (D-033):
+// playback is a supervising clock with continuous, speed-based rider motion.
+
 public sealed record RaceWatchBeat(
     int WatchSecond,
     int SimulationSecond,
@@ -77,13 +80,13 @@ public static class RaceWatchProjector
     {
         ArgumentNullException.ThrowIfNull(report);
         StringBuilder markdown = new();
-        markdown.AppendLine("# Scaled race watch");
+        markdown.AppendLine("# Race decision digest");
         markdown.AppendLine();
         markdown.AppendLine(
             CultureInfo.InvariantCulture,
             $"Official winner {report.Result.WinnerId.Value}; checksum `{report.Result.Checksum}`.");
         markdown.AppendLine(
-            "Watch seconds skip quiet physics. Simulation seconds remain the canonical race clock.");
+            "This listing is an index of pauses, not Watch Race playback. Playback is a supervising clock with continuous speed-based motion.");
         markdown.AppendLine();
         foreach (RaceWatchBeat beat in report.Beats)
         {

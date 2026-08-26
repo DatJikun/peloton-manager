@@ -65,7 +65,7 @@ On branch `feature/race-engine-prototype`. Tasks 1–8 implemented. Owner §49 f
 - [x] Testing v0.1 (DRAFT)
 
 ## Next task
-`Owner playtest §49 nadal otwarty do oglądania na ekranie. Wstępny werdykt 2026-08-26: decyzje OK, jeśli sekundy oglądania są przeskalowane (D-033), nie wall-clock. Nie zamykaj gate'u automatami. Nie implementuj D-032 w jednodniowym prototypie.`
+`Owner playtest §49 nadal otwarty. D-033 = nadzorujący zegar oglądania + płynna symulacja (mapa/ikony według prędkości), nie skok 1s=100s. Headless watch to tylko spis decyzji. Nie zamykaj gate'u automatami. Nie implementuj D-032 w jednodniowym prototypie.`
 
 ## Known blockers
 - None.
@@ -115,12 +115,12 @@ Career Hub), albo stub wyścigu udający prawdziwy Race Engine.
 - `2026-08-25` — TESTING_v0.1.md jest kontraktem warstw, goldenów i gate'ów; nie implementuje testów.
 - `2026-08-25` — Kanoniczna ścieżka developmentu/testów to Dynamic + Advanced + Guessed. Trzy osie New Game zostają niezależnymi polami scenariusza, nie 27 osobnymi grami.
 - `2026-08-26` — W wieloetapowym wyścigu słaby wyznaczony lider, który nie ma już realistycznych szans, powinien wspierać kolegę z najlepszymi pozostałymi szansami. Ocena knowledge-bounded; AI też podejmuje tę decyzję, czasem dobrze, czasem źle, zależnie od cech (np. teamwork / `formSensitivity` / `leaderLoyalty`). `D-032`, deferred poza obecnym race prototype.
-- `2026-08-26` — Wstępny playtest §49: decyzje prototypu „póki co chyba tak”, **jeśli** sekundy decyzji są przeskalowanym czasem oglądania, nie rzeczywistym czasem etapu. `D-033`. Gate niezamknięty (brak UI).
+- `2026-08-26` — Wstępny playtest §49: decyzje prototypu „póki co chyba tak”, jeśli oglądanie nie jest godzinami 1:1. Doprecyzowanie: zegar oglądania nadzoruje, symulacja jest płynna (mapa/ikony z prędkości), nie skok 1s=100s. `D-033`. Gate niezamknięty (brak UI).
 
 ## Owner feedback / project experience
 Wcześniejszy Ping-Pong Manager był rozwijany przez miesiące z AI i technicznie osiągnął sporo, ale ostatecznie główny gameplay okazał się nudny, ponieważ w trakcie meczu brakowało ciekawych decyzji. W Peloton Managerze jest to jawna lekcja projektowa: nie budować kolejnych warstw na pętli, która nie przeszła ręcznego testu fun/decision density.
 
-2026-08-26: właściciel uznał dwie decyzje prototypu (pościg vs czekanie na rywali) za wstępnie ciekawe, pod warunkiem że czas oglądania jest przeskalowany. Nie zamyka to §49.
+2026-08-26: właściciel uznał dwie decyzje prototypu (pościg vs czekanie na rywali) za wstępnie ciekawe. Oglądanie ma być płynnym filmem z nadzorującym zegarem i ikonami według prędkości, nie highlightem ze skokami czasu. Nie zamyka to §49.
 
 ## Relevant docs
 ```text
@@ -176,7 +176,7 @@ dotnet run --project tools/Peloton.SimRunner -- watch --scenario race-scenario.p
 - Nie zamykaj OQ-TS-001 ani OQ-DM-001 na podstawie checksumy lub allocatora szkieletowego.
 
 ## Handoff summary
-Milestone 0 still supplies the headless .NET 8 spine. The race prototype on this branch is now the official result path: `PrototypeRaceEngine` plus `content/peloton.race-prototype`, Application commands `StartRaceCommand` / `AdvanceRaceCommand` / `RespondToRaceDecisionCommand`, and SimRunner `race`. A pending DecisionRequest stays in `RaceLive`. Spy OFF/ON must match checksum and finish order. `StubRaceEngine` is gone from production assemblies. SQLite `SchemaVersion` remains 1. Owner §49 remains `NOT VERIFIED` as a closed gate. 2026-08-26 owner note: prototype decisions are provisionally interesting if watch time is scaled (`D-033`). `D-032` (failed GC leader becoming support) is deferred.
+Milestone 0 still supplies the headless .NET 8 spine. The race prototype on this branch is now the official result path: `PrototypeRaceEngine` plus `content/peloton.race-prototype`, Application commands `StartRaceCommand` / `AdvanceRaceCommand` / `RespondToRaceDecisionCommand`, and SimRunner `race`. A pending DecisionRequest stays in `RaceLive`. Spy OFF/ON must match checksum and finish order. `StubRaceEngine` is gone from production assemblies. SQLite `SchemaVersion` remains 1. Owner §49 remains `NOT VERIFIED` as a closed gate. 2026-08-26 owner note: prototype decisions are provisionally interesting; Watch Race must be a supervising clock with smooth speed-based motion (`D-033`), not skipped beats. `D-032` (failed GC leader becoming support) is deferred.
 
 The paragraph below preserves the pre-bootstrap design context and owner lessons; implementation status is given above and in `CODEBASE_MAP.md`.
 

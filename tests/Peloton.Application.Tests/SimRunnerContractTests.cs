@@ -217,8 +217,8 @@ public sealed class SimRunnerContractTests
         Assert.Equal(0, exitCode);
         Assert.True(File.Exists(markdownPath));
         string markdown = File.ReadAllText(markdownPath);
-        Assert.Contains("Scaled race watch", markdown, StringComparison.Ordinal);
-        Assert.Contains("Watch seconds skip quiet physics", markdown, StringComparison.Ordinal);
+        Assert.Contains("Race decision digest", markdown, StringComparison.Ordinal);
+        Assert.Contains("index of pauses", markdown, StringComparison.Ordinal);
         Assert.DoesNotContain("WPrime", markdown, StringComparison.OrdinalIgnoreCase);
     }
 

@@ -115,9 +115,11 @@ Ocena szans jest knowledge-bounded: wynika z obserwacji, klasyfikacji, formy i p
 
 Implementacja jest deferred do wieloetapowego/virtual GC. Obecny jednodniowy race prototype tego nie buduje.
 
-## D-033 — Watched race time is presentation, not wall-clock physics
-Gracz nie siedzi przez rzeczywiste godziny etapu. Czas oglądania jest przeskalowany: spokojne odcinki przyspieszają albo się ściskają, a `DecisionRequest` pauzuje oglądanie w dramatycznie ważnym momencie.
+## D-033 — Supervising watch clock, smooth simulation
+Oglądanie nie jest 1:1 z godzinami etapu, ale też nie jest skokiem „1s oglądania = 100s fizyki”.
 
-Sekundy w silniku (`RaceSession`, Race Spy, `dt = 1s`) zostają kanonicznym czasem fizyki. Renderer/Watch Race ich nie udaje jako 1:1. Przyspieszenie i późniejsza kompresja ciszy nie zmieniają fizyki ani oficjalnego wyniku (`R-001`).
+Zegar oglądania (Watch Race) jest nadzorujący: gracz wybiera tempo (np. ×1 / ×2 / ×5 / ×20). Symulacja dostosowuje się do tego zegara i pozostaje płynna. Gdyby na mapie trasy stały ikony kluczowych zawodników, ich pozycja ma wynikać z aktualnej prędkości, gapu, shelteru i terenu w danej chwili — bez teleportów.
 
-Owner playtest §49 z 2026-08-26: decyzje prototypu są wstępnie OK pod tym warunkiem. Gate nie jest zamknięty, bo nie było jeszcze oglądania na ekranie.
+Fizyka zostaje kanoniczna (`R-001`). Prototype `dt = 1s` to krok referencyjny silnika, nie klatka filmu. Renderer może interpolować pozycje między krokami. `DecisionRequest` pauzuje zegar oglądania. Renderer nie steruje fizyką.
+
+Headless komenda `watch` jest na razie skrótem decyzji (start / pauza / meta), nie modelem Watch Race.

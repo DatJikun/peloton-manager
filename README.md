@@ -28,7 +28,7 @@ dotnet run --project tools/Peloton.SimRunner -- watch --scenario race-scenario.p
 
 `race --scenario race.prototype.gate` is an alias for the same prototype fixture.
 
-The skeleton calendar is deliberately short: one season is 12 calls to `AdvanceDay` followed by one prototype race. The season runner reports crash status, final world day, deterministic checksum, and race count. The `race` command reports winner, checksum, decision count, Spy neutrality, and crash status. Optional `--trace-json` and `--trace-markdown` write Race Spy artifacts. The `watch` command prints the same official result plus a scaled presentation timeline: quiet simulation seconds are skipped, and beats fire at start, decisions, and finish (`D-033`).
+The skeleton calendar is deliberately short: one season is 12 calls to `AdvanceDay` followed by one prototype race. The season runner reports crash status, final world day, deterministic checksum, and race count. The `race` command reports winner, checksum, decision count, Spy neutrality, and crash status. Optional `--trace-json` and `--trace-markdown` write Race Spy artifacts. The `watch` command is a decision digest (start, pauses, finish), not the Watch Race film: playback will be a supervising clock with smooth speed-based motion (`D-033`).
 
 ## Godot boundary
 

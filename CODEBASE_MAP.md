@@ -43,7 +43,7 @@ Static content lives in `content/peloton.skeleton` and `content/peloton.race-pro
 | World Spy | `Peloton.Domain/DecisionTracing.cs` | `WORLD_SPY_AND_DECISION_TRACING_v0.1.md` | Race Spy tests (first specialization) |
 | Race content | `Peloton.Content/JsonRacePrototypeCatalog.cs`, `content/peloton.race-prototype` | `CONTENT_FORMAT_v0.1.md` | `RaceContentTests` |
 | SimRunner race gate | `tools/Peloton.SimRunner/RacePrototypeCommand.cs` | prototype design §11 | `SimRunnerContractTests` |
-| Scaled race watch | `Peloton.Simulation/Race/RaceWatch.cs` | `D-033`; Watch Race is later Godot | `RaceWatchTests`, `SimRunnerContractTests` |
+| Race decision digest | `Peloton.Simulation/Race/RaceWatch.cs` | Not Watch Race; `D-033` is smooth playback | `RaceWatchTests`, `SimRunnerContractTests` |
 | AI managers | Not implemented | `AI_MANAGER_SYSTEM_v0.2.md` | Not implemented |
 | Save / SQLite | `Peloton.Persistence` | `SAVE_FORMAT_v0.1.md` | Persistence + Application tests |
 | Career scenarios | `content/peloton.skeleton`, `JsonScenarioCatalog.cs` | `CONTENT_FORMAT_v0.1.md` | Application tests |

@@ -1421,12 +1421,12 @@ There is one canonical race engine.
 
 ### Watch Race
 
-- renderer receives race ViewState,
+- renderer receives race ViewState (route, rider positions, speeds, observed gaps),
 - simulation can pause on human DecisionRequest,
-- speeds may include ×1 / ×2 / ×5 / ×20,
-- uneventful stretches may later skip/compress; the player does not watch
-  wall-clock stage hours (`D-033`),
-- renderer does not drive physics.
+- speeds may include ×1 / ×2 / ×5 / ×20 (`D-033`): the watch clock is supervisory
+  and simulation stays continuous so map icons follow actual speed,
+- renderer may interpolate between physics steps for smoothness,
+- renderer does not drive physics and must not teleport riders across quiet time.
 
 ### Fast / background simulation
 
