@@ -98,7 +98,7 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
         }
     }
 
-    private static string ResolveInsidePack(string packRoot, string relativePath)
+    internal static string ResolveInsidePack(string packRoot, string relativePath)
     {
         if (Path.IsPathRooted(relativePath))
         {

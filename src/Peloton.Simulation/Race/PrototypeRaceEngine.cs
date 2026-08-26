@@ -19,13 +19,15 @@ public sealed class RaceScenario
         IEnumerable<RaceCommand> commands,
         double initialSpeedMps,
         int maximumDurationSeconds,
-        IEnumerable<RaceTacticalPlan>? tacticalPlans = null)
+        IEnumerable<RaceTacticalPlan>? tacticalPlans = null,
+        string tuningIdentity = "race-tuning.peloton.prototype-v0")
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(definition);
         ArgumentNullException.ThrowIfNull(riders);
         ArgumentNullException.ThrowIfNull(startingPositions);
         ArgumentNullException.ThrowIfNull(commands);
+        ArgumentException.ThrowIfNullOrWhiteSpace(tuningIdentity);
         if (!double.IsFinite(initialSpeedMps) || initialSpeedMps <= 0.0)
         {
             throw new ArgumentOutOfRangeException(nameof(initialSpeedMps));
@@ -73,6 +75,7 @@ public sealed class RaceScenario
         Definition = definition;
         InitialSpeedMps = initialSpeedMps;
         MaximumDurationSeconds = maximumDurationSeconds;
+        TuningIdentity = tuningIdentity;
     }
 
     public string Id { get; }
@@ -90,6 +93,8 @@ public sealed class RaceScenario
     public double InitialSpeedMps { get; }
 
     public int MaximumDurationSeconds { get; }
+
+    public string TuningIdentity { get; }
 }
 
 public interface IRaceEngine

@@ -1,6 +1,6 @@
 # Race Engine Prototype v0 — Implementation Handoff
 
-**Status:** PARTIAL — Tasks 1–4 green. Do not merge; official results still come from `StubRaceEngine`.
+**Status:** PARTIAL — Tasks 1–5 green. Do not merge; official results still come from `StubRaceEngine`.
 
 **Branch:** `feature/race-engine-prototype`
 
@@ -29,6 +29,9 @@ Also preserve D-002, D-017 through D-025: one human/AI physics model, no direct 
 - Task 4 — knowledge-bounded chase tactics, five DecisionRequest gates, a
   RaceLive-compatible pause/resolution lifecycle, common World Spy traces, and
   Race Spy JSON/Markdown projections.
+- Task 5 — data-only `racePrototypeScenarios` JSON pack, strict untrusted-input
+  validation, deterministic definition-to-runtime mapping, and a headless
+  `IRaceScenarioCatalog` that leaves the existing `scenarios` loader intact.
 - Task 3 drafting/position survival: `MaximumGapDuringPressureM` measures gap to the active ForcePace group while those riders are still racing. `MaximumGapAheadM` is neighbor gap and can invert survival (dropped rider 12 sitting just ahead of 14).
 
 Task 4 keeps tactical evaluation behind `TeamRaceObservation`. The DTO contains
@@ -42,6 +45,15 @@ pending/resolved lifecycle.
 already-computed `DecisionTrace`; gameplay never queries them and they own no
 RNG. Trace structure keeps actor-known inputs and interpretations separate from
 the developer-only `TruthDebugRef`.
+
+Task 5 validates every definition in a pack before constructing a
+`RaceScenario`. Stable issue codes cover invalid ranges, duplicate IDs, missing
+or wrong-owner references, unsupported fields, oversized/missing resources, and
+paths outside the pack. JSON property order, filesystem enumeration order, and
+definition-array order do not choose runtime identity. Content IDs are
+namespaced strings; only after validation are they mapped in ordinal order to
+the transient IDs required by the current prototype contracts. The loader has
+no RNG input and allocates no World State.
 
 ## Root cause of the Task 3 red test
 
@@ -59,12 +71,12 @@ The survival assertion was not relaxed. It now uses `MaximumGapDuringPressureM` 
 dotnet test PelotonManager.sln
 ```
 
-37 passed, 0 failed (including `RacePhysicalProofTests` 7/7,
-`RaceDecisionAndSpyTests` 6/6, and Simulation 24/24).
+55 passed, 0 failed (including `RaceContentTests` 18/18,
+`RacePhysicalProofTests` 7/7, `RaceDecisionAndSpyTests` 6/6, Application 25/25,
+and Simulation 24/24).
 
 ## Remaining plan
 
-- Task 5: validated JSON prototype pack.
 - Task 6: make the real engine authoritative in GameApplication without changing SQLite SchemaVersion 1. Then `StubRaceEngine` stops producing official results.
 - Task 7: SimRunner `race` command and trace export.
 - Task 8: docs, full gate, owner fun §49 still `NOT VERIFIED`.

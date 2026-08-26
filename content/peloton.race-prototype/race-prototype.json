@@ -1,0 +1,331 @@
+{
+  "definitions": [
+    {
+      "id": "race-scenario.peloton.prototype-v0",
+      "kind": "racePrototypeScenario",
+      "tuningIdentity": "race-tuning.peloton.prototype-v0",
+      "airDensityKgPerM3": 1.225,
+      "initialSpeedMps": 11.0,
+      "maximumDurationSeconds": 2400,
+      "route": {
+        "id": "race-route.peloton.synthetic-proof-v0",
+        "segments": [
+          {
+            "id": "race-segment.peloton.flat-open",
+            "lengthM": 1800.0,
+            "gradient": 0.0,
+            "roadWidthM": 6.0,
+            "windSpeedMps": 2.0,
+            "windYawDegrees": 0.0
+          },
+          {
+            "id": "race-segment.peloton.sustained-climb",
+            "lengthM": 1800.0,
+            "gradient": 0.05,
+            "roadWidthM": 5.0,
+            "windSpeedMps": 1.0,
+            "windYawDegrees": 20.0
+          },
+          {
+            "id": "race-segment.peloton.exposed-crosswind",
+            "lengthM": 1800.0,
+            "gradient": 0.0,
+            "roadWidthM": 3.2,
+            "windSpeedMps": 10.0,
+            "windYawDegrees": 90.0
+          }
+        ]
+      },
+      "teams": [
+        {
+          "id": "organization.race-prototype.alpha",
+          "objective": "StageWin",
+          "briefing": {
+            "kind": "Chase",
+            "consultManager": true
+          }
+        },
+        {
+          "id": "organization.race-prototype.beta",
+          "objective": "GeneralClassification",
+          "briefing": {
+            "kind": "Protect",
+            "consultManager": true
+          }
+        },
+        {
+          "id": "organization.race-prototype.gamma",
+          "objective": "StageWin",
+          "briefing": {
+            "kind": "Protect",
+            "consultManager": false
+          }
+        }
+      ],
+      "riders": [
+        {
+          "id": "rider.race-prototype.alpha-leader",
+          "teamId": "organization.race-prototype.alpha",
+          "criticalPowerW": 405.0,
+          "wPrimeCapacityJ": 30000.0,
+          "peakPowerW": 980.0,
+          "wPrimeRecoveryJPerSecond": 42.0,
+          "lowIntensityDurability": 0.88,
+          "highIntensityDurability": 0.86,
+          "bodyMassKg": 68.0,
+          "systemMassKg": 8.0,
+          "cdAM2": 0.29,
+          "baseCrr": 0.004,
+          "positioning": 0.86,
+          "handling": 0.80,
+          "tacticalAwareness": 0.84
+        },
+        {
+          "id": "rider.race-prototype.alpha-support-1",
+          "teamId": "organization.race-prototype.alpha",
+          "criticalPowerW": 375.0,
+          "wPrimeCapacityJ": 26000.0,
+          "peakPowerW": 900.0,
+          "wPrimeRecoveryJPerSecond": 40.0,
+          "lowIntensityDurability": 0.82,
+          "highIntensityDurability": 0.80,
+          "bodyMassKg": 72.0,
+          "systemMassKg": 8.0,
+          "cdAM2": 0.31,
+          "baseCrr": 0.004,
+          "positioning": 0.78,
+          "handling": 0.76,
+          "tacticalAwareness": 0.75
+        },
+        {
+          "id": "rider.race-prototype.alpha-support-2",
+          "teamId": "organization.race-prototype.alpha",
+          "criticalPowerW": 360.0,
+          "wPrimeCapacityJ": 23000.0,
+          "peakPowerW": 870.0,
+          "wPrimeRecoveryJPerSecond": 38.0,
+          "lowIntensityDurability": 0.79,
+          "highIntensityDurability": 0.76,
+          "bodyMassKg": 74.0,
+          "systemMassKg": 8.0,
+          "cdAM2": 0.32,
+          "baseCrr": 0.0042,
+          "positioning": 0.72,
+          "handling": 0.72,
+          "tacticalAwareness": 0.70
+        },
+        {
+          "id": "rider.race-prototype.alpha-card",
+          "teamId": "organization.race-prototype.alpha",
+          "criticalPowerW": 385.0,
+          "wPrimeCapacityJ": 28000.0,
+          "peakPowerW": 940.0,
+          "wPrimeRecoveryJPerSecond": 41.0,
+          "lowIntensityDurability": 0.84,
+          "highIntensityDurability": 0.83,
+          "bodyMassKg": 66.0,
+          "systemMassKg": 8.0,
+          "cdAM2": 0.28,
+          "baseCrr": 0.0039,
+          "positioning": 0.82,
+          "handling": 0.81,
+          "tacticalAwareness": 0.86
+        },
+        {
+          "id": "rider.race-prototype.beta-leader",
+          "teamId": "organization.race-prototype.beta",
+          "criticalPowerW": 415.0,
+          "wPrimeCapacityJ": 29000.0,
+          "peakPowerW": 930.0,
+          "wPrimeRecoveryJPerSecond": 43.0,
+          "lowIntensityDurability": 0.92,
+          "highIntensityDurability": 0.90,
+          "bodyMassKg": 61.0,
+          "systemMassKg": 8.0,
+          "cdAM2": 0.27,
+          "baseCrr": 0.0038,
+          "positioning": 0.88,
+          "handling": 0.83,
+          "tacticalAwareness": 0.89
+        },
+        {
+          "id": "rider.race-prototype.beta-support-1",
+          "teamId": "organization.race-prototype.beta",
+          "criticalPowerW": 370.0,
+          "wPrimeCapacityJ": 24000.0,
+          "peakPowerW": 880.0,
+          "wPrimeRecoveryJPerSecond": 39.0,
+          "lowIntensityDurability": 0.84,
+          "highIntensityDurability": 0.81,
+          "bodyMassKg": 69.0,
+          "systemMassKg": 8.0,
+          "cdAM2": 0.30,
+          "baseCrr": 0.004,
+          "positioning": 0.79,
+          "handling": 0.78,
+          "tacticalAwareness": 0.80
+        },
+        {
+          "id": "rider.race-prototype.beta-support-2",
+          "teamId": "organization.race-prototype.beta",
+          "criticalPowerW": 355.0,
+          "wPrimeCapacityJ": 22000.0,
+          "peakPowerW": 850.0,
+          "wPrimeRecoveryJPerSecond": 37.0,
+          "lowIntensityDurability": 0.80,
+          "highIntensityDurability": 0.78,
+          "bodyMassKg": 71.0,
+          "systemMassKg": 8.0,
+          "cdAM2": 0.31,
+          "baseCrr": 0.0041,
+          "positioning": 0.74,
+          "handling": 0.74,
+          "tacticalAwareness": 0.76
+        },
+        {
+          "id": "rider.race-prototype.beta-card",
+          "teamId": "organization.race-prototype.beta",
+          "criticalPowerW": 395.0,
+          "wPrimeCapacityJ": 27000.0,
+          "peakPowerW": 910.0,
+          "wPrimeRecoveryJPerSecond": 40.0,
+          "lowIntensityDurability": 0.87,
+          "highIntensityDurability": 0.85,
+          "bodyMassKg": 64.0,
+          "systemMassKg": 8.0,
+          "cdAM2": 0.28,
+          "baseCrr": 0.0039,
+          "positioning": 0.84,
+          "handling": 0.82,
+          "tacticalAwareness": 0.87
+        },
+        {
+          "id": "rider.race-prototype.gamma-leader",
+          "teamId": "organization.race-prototype.gamma",
+          "criticalPowerW": 395.0,
+          "wPrimeCapacityJ": 32000.0,
+          "peakPowerW": 1030.0,
+          "wPrimeRecoveryJPerSecond": 41.0,
+          "lowIntensityDurability": 0.82,
+          "highIntensityDurability": 0.84,
+          "bodyMassKg": 76.0,
+          "systemMassKg": 8.0,
+          "cdAM2": 0.32,
+          "baseCrr": 0.0041,
+          "positioning": 0.83,
+          "handling": 0.79,
+          "tacticalAwareness": 0.82
+        },
+        {
+          "id": "rider.race-prototype.gamma-support-1",
+          "teamId": "organization.race-prototype.gamma",
+          "criticalPowerW": 365.0,
+          "wPrimeCapacityJ": 25000.0,
+          "peakPowerW": 900.0,
+          "wPrimeRecoveryJPerSecond": 39.0,
+          "lowIntensityDurability": 0.81,
+          "highIntensityDurability": 0.79,
+          "bodyMassKg": 75.0,
+          "systemMassKg": 8.0,
+          "cdAM2": 0.32,
+          "baseCrr": 0.0042,
+          "positioning": 0.76,
+          "handling": 0.75,
+          "tacticalAwareness": 0.74
+        },
+        {
+          "id": "rider.race-prototype.gamma-support-2",
+          "teamId": "organization.race-prototype.gamma",
+          "criticalPowerW": 350.0,
+          "wPrimeCapacityJ": 21000.0,
+          "peakPowerW": 850.0,
+          "wPrimeRecoveryJPerSecond": 36.0,
+          "lowIntensityDurability": 0.77,
+          "highIntensityDurability": 0.74,
+          "bodyMassKg": 77.0,
+          "systemMassKg": 8.0,
+          "cdAM2": 0.33,
+          "baseCrr": 0.0043,
+          "positioning": 0.68,
+          "handling": 0.70,
+          "tacticalAwareness": 0.69
+        },
+        {
+          "id": "rider.race-prototype.gamma-card",
+          "teamId": "organization.race-prototype.gamma",
+          "criticalPowerW": 380.0,
+          "wPrimeCapacityJ": 30000.0,
+          "peakPowerW": 990.0,
+          "wPrimeRecoveryJPerSecond": 40.0,
+          "lowIntensityDurability": 0.83,
+          "highIntensityDurability": 0.82,
+          "bodyMassKg": 70.0,
+          "systemMassKg": 8.0,
+          "cdAM2": 0.30,
+          "baseCrr": 0.004,
+          "positioning": 0.81,
+          "handling": 0.80,
+          "tacticalAwareness": 0.85
+        }
+      ],
+      "startingOrder": [
+        "rider.race-prototype.gamma-leader",
+        "rider.race-prototype.alpha-leader",
+        "rider.race-prototype.beta-leader",
+        "rider.race-prototype.alpha-card",
+        "rider.race-prototype.beta-card",
+        "rider.race-prototype.gamma-card",
+        "rider.race-prototype.alpha-support-1",
+        "rider.race-prototype.beta-support-1",
+        "rider.race-prototype.gamma-support-1",
+        "rider.race-prototype.alpha-support-2",
+        "rider.race-prototype.beta-support-2",
+        "rider.race-prototype.gamma-support-2"
+      ],
+      "commands": [
+        {
+          "simulationSecond": 20,
+          "teamId": "organization.race-prototype.alpha",
+          "riderId": "rider.race-prototype.alpha-support-1",
+          "intent": "ForcePace"
+        },
+        {
+          "simulationSecond": 90,
+          "teamId": "organization.race-prototype.gamma",
+          "riderId": "rider.race-prototype.gamma-card",
+          "intent": "Attack"
+        },
+        {
+          "simulationSecond": 200,
+          "teamId": "organization.race-prototype.beta",
+          "riderId": "rider.race-prototype.beta-support-2",
+          "intent": "Conserve"
+        }
+      ],
+      "tacticalPlans": [
+        {
+          "triggerSecond": 30,
+          "teamId": "organization.race-prototype.alpha",
+          "supportRiderId": "rider.race-prototype.alpha-support-1",
+          "officialGapSeconds": 42,
+          "visibleSplit": true,
+          "leaderPositionBand": "Front",
+          "resourceEstimate": "Strong",
+          "threatEstimate": "High",
+          "confidence": "High"
+        },
+        {
+          "triggerSecond": 120,
+          "teamId": "organization.race-prototype.beta",
+          "supportRiderId": "rider.race-prototype.beta-support-1",
+          "officialGapSeconds": 58,
+          "visibleSplit": true,
+          "leaderPositionBand": "Middle",
+          "resourceEstimate": "Limited",
+          "threatEstimate": "High",
+          "confidence": "Medium"
+        }
+      ]
+    }
+  ]
+}
