@@ -62,6 +62,7 @@ Bootstrap headless C# world with deterministic time, identity, content/rules ide
 - [x] Rulesets v0.1 (DRAFT)
 - [x] Save Format v0.1 (DRAFT)
 - [x] Testing v0.1 (DRAFT)
+- [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task
 `Wybierz jedno osobno scoped następne zadanie (race prototype albo cienki core loop). Nie rozbudowuj StubRaceEngine do prawdziwego Race Engine bez osobnego taska i playtest gate.`
@@ -182,3 +183,5 @@ Peloton Manager jest na etapie pre-production. Celem jest modularny, determinist
 - `2026-08-25` — Spy do całego świata: Race Spy jest specjalizacją wspólnego World Spy / Decision Trace Framework dla kontraktów, sponsorów, staffu, managerów, kalendarza, treningu, finansów, scoutingu, equipmentu i organization strategy.
 
 - `2026-08-25` — AI coding workflow: docs explain contracts/WHY, not every line; coding uses small tasks, Git history, tests, World Spy and concise handoff for the owner.
+
+- `2026-08-26` — Avatar prototype (EXPERIMENT): deterministyczny, warstwowy system portretów kolarzy w `experiments/avatar_prototype/`. Prawdziwy jest cały pipeline (generacja cech z `rider_id`, wagi rzadkości, reguły kompatybilności, starzenie z zachowaniem tożsamości, wykrywanie klonów z solą, kompozytor warstw, cache, wersjonowanie, walidator pakietu). Grafika jest **placeholderem** rysowanym proceduralnie w Pythonie — nie jest docelowym stylem i nie zastępuje pakietu assetów. Eksperyment nie jest wpisany do `DOCS.md`, nie jest kontraktem, nie dotyka `PelotonManager.sln` i czeka na wizualną ocenę właściciela oraz decyzję o kierunku artystycznym i miejscu renderera (Godot layers vs cache PNG).

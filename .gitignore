@@ -6,3 +6,6 @@ TestResults/
 *.suo
 *.peloton
 *.peloton.candidate
+experiments/avatar_prototype/out/
+__pycache__/
+*.pyc
