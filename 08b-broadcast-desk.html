@@ -360,7 +360,7 @@ var reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
 function after(ms,fn){ if(reduce){fn();}else{setTimeout(fn,ms);} }
 
 /* ── split-flap: mechanika tablicy (zdarzeniowa, bez pętli) ── */
-var POOL=" AĄBCĆDEĘFGHIJKLŁMNŃOÓPRSŚTUWYZŹŻ0123456789·";
+var POOL=" AĄBCĆDEĘFGHIJKLŁMNŃOÓPQRSŚTUVWXYZŹŻ0123456789·";
 function FlapStrip(el,len){
   this.flaps=[];this.raf=0;this.step=0;this.done=null;
   for(var i=0;i<len;i++){
@@ -448,7 +448,7 @@ var openMails={},filedMails={};
 function syncUrl(){
   var q="?day="+state.day;
   if(state.view==="prep")q+="&view=prep";
-  history.replaceState(null,"",q);
+  try{history.replaceState(null,"",q);}catch(e){/* file:// fallback */}
 }
 
 /* ── render ────────────────────────────────────────────────── */
@@ -514,8 +514,9 @@ function render(opts){
   $("mainBtn").setAttribute("aria-label",
     state.day==="work"?"Advance Day — przejdź do dnia wyścigu":"Race next — otwórz przygotowanie");
 
+  dateFlapPrep.set("CZ 12 MAR"); // data w prep jest zawsze 12 MAR
   if(opts.instant){
-    dateFlap.set(t.date);dateFlapPrep.set("CZ 12 MAR");btnFlap.set(t.btn);
+    dateFlap.set(t.date);btnFlap.set(t.btn);
   }else{
     dateFlap.spinTo(t.date);btnFlap.spinTo(t.btn);
   }

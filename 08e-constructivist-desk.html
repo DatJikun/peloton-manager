@@ -438,7 +438,7 @@ var openMails={},filedMails={};
 function syncUrl(){
   var q="?day="+state.day;
   if(state.view==="prep")q+="&view=prep";
-  history.replaceState(null,"",q);
+  try{history.replaceState(null,"",q);}catch(e){/* file:// fallback */}
 }
 
 /* ── render ────────────────────────────────────────────────── */

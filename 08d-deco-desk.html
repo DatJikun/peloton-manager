@@ -90,10 +90,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 @keyframes frame-draw{to{stroke-dashoffset:0}}
 
 /* ── wachlarz: tło nagłówka, otwiera się raz ───────────────── */
-.sunburst{position:absolute;left:50%;top:0;transform:translateX(-50%);width:min(760px,92vw);height:100%;pointer-events:none;overflow:visible}
+.sunburst{position:absolute;left:50%;top:0;transform:translateX(-50%);width:min(860px,94vw);height:100%;pointer-events:none;overflow:visible}
 .blade{
   transform-box:fill-box;transform-origin:50% 100%;
-  transform:rotate(var(--c)) scaleY(.42);
+  transform:rotate(var(--c)) scaleY(.5);
   transition:transform 1.15s var(--ease-deco);
 }
 body[data-day="race"] .blade{transform:rotate(var(--o)) scaleY(1)}
@@ -125,7 +125,7 @@ body[data-day="race"] .cartouche{max-height:44px}
 
 /* nagłówek: medalion + wachlarz */
 .hero{position:relative;text-align:center;padding-top:118px}
-.hero .sunburst{top:-8px;height:150px;z-index:-1}
+.hero .sunburst{top:-20px;height:230px;z-index:-1}
 .medal{
   position:absolute;left:50%;top:34px;transform:translateX(-50%);
   width:104px;height:104px;border-radius:50%;
@@ -413,9 +413,9 @@ function after(ms,fn){ if(reduce){fn();}else{setTimeout(fn,ms);} }
   var g=document.getElementById("fanG");
   var N=13,mid=(N-1)/2,spread=84,step=spread/(N-1);
   var ns="http://www.w3.org/2000/svg";
-  var d="M50 58 L47.6 20 Q50 14 52.4 20 Z";
+  var d="M50 58 L47.4 8 Q50 2 52.6 8 Z";
   for(var i=0;i<N;i++){
-    var open=(i-mid)*step,closed=open*0.07;
+    var open=(i-mid)*step,closed=open*0.25;
     var b=document.createElementNS(ns,"path");
     b.setAttribute("d",d);b.setAttribute("class","blade");
     b.setAttribute("fill",i%2?"#c9a227":"url(#bladeG)");
@@ -426,7 +426,7 @@ function after(ms,fn){ if(reduce){fn();}else{setTimeout(fn,ms);} }
     g.appendChild(b);
     var s=document.createElementNS(ns,"line");
     s.setAttribute("x1","50");s.setAttribute("y1","58");
-    s.setAttribute("x2","50");s.setAttribute("y2","16");
+    s.setAttribute("x2","50");s.setAttribute("y2","6");
     s.setAttribute("class","spark");s.setAttribute("stroke","#f1d98a");s.setAttribute("stroke-width",".25");
     s.style.setProperty("--o",open.toFixed(2)+"deg");
     s.style.setProperty("--c",closed.toFixed(2)+"deg");
@@ -491,7 +491,7 @@ var openMails={},filedMails={};
 function syncUrl(){
   var q="?day="+state.day;
   if(state.view==="prep")q+="&view=prep";
-  history.replaceState(null,"",q);
+  try{history.replaceState(null,"",q);}catch(e){/* file:// fallback */}
 }
 
 /* ── render ────────────────────────────────────────────────── */
