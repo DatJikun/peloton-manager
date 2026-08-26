@@ -14,7 +14,8 @@ kanoniczną specyfikacją gry ani kodem przeznaczonym do produkcji.
 5. `05-beauty-pass.html` — Cinematic Broadcast, Carbon Atelier i Grand Tour Studio.
 6. `06-empty-dashboard.html` — pełnoekranowy, statyczny Manager Home (Opus 5; bez JS).
 7. `07-forever-impeccable.html` — źródła: Forever Infinite (składanki) i Impeccable slop (zakaz AI-looku).
-8. `CODEX_BRIEF.md` — zadanie na `08-desk-race-next.html` (biurko + Race next; skrzynka nie odpala wyścigu).
+8. `08-desk-race-next.html` — pełnoekranowe biurko z kalendarzem i skrzynką; `Advance Day` zmienia się w `Race next`, które otwiera osobne przygotowanie składu i celu bez uruchamiania wyścigu.
+9. `CODEX_BRIEF.md` — brief laboratorium 08 (biurko + Race next; skrzynka nie odpala wyścigu).
 
 Otwórz `index.html`, aby przejść do każdego etapu z jednego miejsca.
 
@@ -25,6 +26,7 @@ Otwórz `index.html`, aby przejść do każdego etapu z jednego miejsca.
 - Skrzynka jest kolejką spraw i nie otwiera wyścigu.
 - Nowe kafelki UI biorą się z Forever Infinite; Impeccable slop jest checklistą odrzuceń.
 - A+, D+ i A×D z etapu 05 pozostają kandydatami palety; żaden nie jest finalny.
+- Codex złożył etap 08 z czterech lekkich wzorców Forever Infinite, po czym usunął ich pętle demonstracyjne, neonowe kolory i inne elementy wskazane przez checklistę Impeccable.
 
 ## Zasady brancha
 
