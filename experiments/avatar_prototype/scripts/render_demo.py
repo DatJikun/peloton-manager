@@ -255,6 +255,7 @@ def trait_variants_sheet(pack: render.Pack) -> Image.Image:
     rows: list[tuple[str, str, list[str]]] = [
         ("head", "identity", [a.asset_id for a in pack.manifest.by_category("head") if a.weight > 0]),
         ("neck", "identity", [a.asset_id for a in pack.manifest.by_category("neck") if a.weight > 0]),
+        ("ears", "identity", [a.asset_id for a in pack.manifest.by_category("ears") if a.weight > 0]),
         ("eyes", "identity", [a.asset_id for a in pack.manifest.by_category("eyes") if a.weight > 0]),
         ("nose", "identity", [a.asset_id for a in pack.manifest.by_category("nose") if a.weight > 0]),
         ("mouth", "identity", [a.asset_id for a in pack.manifest.by_category("mouth") if a.weight > 0]),

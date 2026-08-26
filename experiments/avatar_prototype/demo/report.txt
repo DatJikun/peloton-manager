@@ -1,7 +1,7 @@
 === pack ===
-pack_id=peloton_placeholder asset_pack_version=0.4.0-placeholder schema=1 seed_version=1
-assets=218 png_parts=682
-assets per category: ears=10, eyebrows=18, eyes=20, facial_hair=11, glasses=5, hair=40, hair_color=7, head=18, helmet=4, iris_color=6, jersey=5, jersey_overlay=2, mouth=35, neck=5, nose=21, skin_details=10, wrinkles=1
+pack_id=peloton_placeholder asset_pack_version=0.5.0-placeholder schema=1 seed_version=1
+assets=283 png_parts=917
+assets per category: ears=18, eyebrows=27, eyes=32, facial_hair=11, glasses=5, hair=40, hair_color=7, head=18, helmet=4, iris_color=6, jersey=5, jersey_overlay=2, mouth=58, neck=5, nose=34, skin_details=10, wrinkles=1
 
 === determinism ===
 same rider generated twice -> identical appearance: True
@@ -9,10 +9,10 @@ same appearance rendered twice -> identical pixels: True
 after transfer + 6 birthdays -> identity block unchanged: True
                              -> shape block unchanged:    True
                              -> mutable block changed:    True
-cache key before/after: 9b97205db19e57e9 -> 02d7b74ef3573c8e
+cache key before/after: 5ec589287b1388e9 -> 26f8b29f0132b8ae
 
 === duplicate prevention on a 20000 rider pool ===
-generate_pool: 22.84s total, 1.142 ms per rider
+generate_pool: 28.03s total, 1.401 ms per rider
 riders=20000 rerolled=0 unresolved_clones=0
 distinct similarity keys=20000 distinct identity cores=20000
 identity-core collisions remaining: 0 (0.00%)
@@ -20,14 +20,14 @@ same pool WITHOUT salt re-rolls would ship 0 look-alike pairs
 
 === distribution sanity (weighted, not uniform) ===
 head: 01_oval 10.3%, 02_long 8.4%, 03_square 8.3%, 05_angular 7.8%, 06_broad 7.3%, 04_round 7.3%
-eyes: 01_almond 8.9%, 17_neutral 7.7%, 02_wide 7.6%, 18_full 6.9%, 08_round 6.2%, 13_wide_open 5.9%
-nose: 01_straight 7.7%, 03_wide 6.6%, 02_long_narrow 6.1%, 05_aquiline 6.1%, 06_upturned 5.4%, 07_broad_flat 5.1%
-mouth: 01_medium 4.9%, 21_open_full 4.3%, 03_full 4.2%, 22_laugh 3.9%, 31_toothy 3.6%, 10_wide_smile 3.6%
+eyes: 01_almond 5.2%, 21_classic 4.8%, 17_neutral 4.7%, 22_classic_open 4.2%, 25_mild_almond 4.1%, 18_full 4.1%
+nose: 01_straight 5.1%, 22_even 4.7%, 03_wide 4.0%, 06_upturned 3.6%, 05_aquiline 3.6%, 23_even_short 3.5%
+mouth: 36_even 2.8%, 01_medium 2.7%, 19_neutral 2.6%, 50_open_smile 2.3%, 03_full 2.3%, 42_half_smile 2.3%
 neck: 01 24.1%, 05_broad 19.3%, 04_thick 19.1%, 02_slim 18.7%, 03_narrow 18.7%
 hair: 02_crop 6.7%, 17_fringe 6.5%, 03_side_part 5.5%, 04_messy_short 5.3%, 01_buzz 4.8%, 19_textured_spikes 4.4%
 facial_hair: None 70.7%, 01_stubble_light 6.7%, 02_stubble_heavy 5.0%, 03_beard_short 3.7%, 05_goatee 2.5%, 06_chinstrap 2.3%
 
 === render performance (single thread, Pillow + numpy) ===
-200 portraits in 5.61s -> 28.1 ms each, 36 portraits/s
-extrapolated cold render of 20000 portraits: 561s single threaded
-cache hit read: 2.60 ms each
+200 portraits in 5.50s -> 27.5 ms each, 36 portraits/s
+extrapolated cold render of 20000 portraits: 550s single threaded
+cache hit read: 2.55 ms each
