@@ -70,6 +70,8 @@ INK_RGB = (12, 12, 13)  # UI lab --black, so the portrait line weight matches th
 SHADOW_RGB = (74, 50, 42)
 LIGHT_RGB = (255, 250, 242)
 COOL_SHADOW_RGB = (70, 70, 86)
+TEETH_RGB = (248, 244, 232)
+MOUTH_DARK_RGB = (32, 18, 16)
 
 LAYER_ORDER = (
     "neck",
@@ -995,28 +997,72 @@ def bake_nose(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any
 # --------------------------------------------------------------------------- #
 
 MOUTH_RECIPES = [
-    ("mouth_01_medium", 0.12, {"hw": 46.0, "upper": 8.2, "lower": 11.0, "smile": 3.0}),
-    ("mouth_02_wide_thin", 0.05, {"hw": 52.0, "upper": 6.4, "lower": 8.4, "smile": 2.8}),
-    ("mouth_03_full", 0.11, {"hw": 46.0, "upper": 10.2, "lower": 13.6, "smile": 3.2}),
-    ("mouth_04_narrow", 0.05, {"hw": 38.0, "upper": 7.6, "lower": 10.2, "smile": 2.6}),
-    ("mouth_05_downturned", 0.05, {"hw": 45.0, "upper": 8.0, "lower": 10.8, "droop": 3.0, "smile": 0.8}),
-    ("mouth_06_thin_upper", 0.05, {"hw": 46.0, "upper": 5.6, "lower": 11.4, "smile": 3.0}),
-    ("mouth_07_bow", 0.07, {"hw": 44.0, "bow": 3.2, "upper": 9.4, "lower": 11.0, "smile": 3.0}),
-    ("mouth_08_flat", 0.04, {"hw": 46.0, "bow": 0.6, "upper": 7.2, "lower": 9.4, "smile": 2.2}),
-    ("mouth_09_smiling", 0.08, {"hw": 48.0, "smile": 5.4, "upper": 8.0, "lower": 11.2}),
-    ("mouth_10_wide_smile", 0.07, {"hw": 52.0, "smile": 6.2, "upper": 8.4, "lower": 11.0}),
-    ("mouth_11_very_wide", 0.06, {"hw": 56.0, "smile": 3.6, "upper": 8.6, "lower": 11.4}),
-    ("mouth_12_tiny", 0.03, {"hw": 34.0, "upper": 6.8, "lower": 8.8, "smile": 2.4}),
-    ("mouth_13_heart", 0.05, {"hw": 42.0, "bow": 4.2, "upper": 9.6, "lower": 10.6, "smile": 3.0}),
-    ("mouth_14_wide_full", 0.08, {"hw": 52.0, "upper": 10.0, "lower": 13.2, "smile": 3.4}),
-    ("mouth_15_thin_line", 0.03, {"hw": 46.0, "upper": 5.2, "lower": 7.0, "smile": 3.2, "bow": 0.6}),
-    ("mouth_16_soft_smile", 0.07, {"hw": 47.0, "smile": 4.6, "upper": 8.4, "lower": 11.0}),
-    ("mouth_17_cupid", 0.05, {"hw": 40.0, "bow": 3.6, "upper": 9.0, "lower": 10.4, "smile": 2.8}),
-    ("mouth_18_broad_thin", 0.04, {"hw": 54.0, "upper": 6.6, "lower": 8.6, "smile": 2.8}),
-    ("mouth_19_neutral", 0.10, {"hw": 47.0, "upper": 8.8, "lower": 11.6, "smile": 2.8, "bow": 1.8}),
-    ("mouth_20_full_wide", 0.09, {"hw": 54.0, "upper": 11.0, "lower": 14.2, "smile": 3.6, "bow": 2.0}),
-    ("mouth_21_open_full", 0.08, {"hw": 49.0, "upper": 11.4, "lower": 14.6, "smile": 3.8, "bow": 2.4}),
+    # closed — width / thickness / height / smile actually move
+    ("mouth_01_medium", 0.07, {"hw": 46.0, "upper": 8.2, "lower": 11.0, "smile": 3.0}),
+    ("mouth_02_wide_thin", 0.04, {"hw": 58.0, "upper": 4.2, "lower": 5.4, "smile": 2.4}),
+    ("mouth_03_full", 0.06, {"hw": 48.0, "upper": 13.5, "lower": 16.5, "smile": 3.0}),
+    ("mouth_04_narrow", 0.04, {"hw": 32.0, "upper": 8.0, "lower": 10.0, "smile": 2.2}),
+    ("mouth_05_downturned", 0.03, {"hw": 44.0, "upper": 8.0, "lower": 10.5, "droop": 5.5, "smile": 0.0}),
+    ("mouth_06_thin_upper", 0.03, {"hw": 48.0, "upper": 4.0, "lower": 13.5, "smile": 2.8}),
+    ("mouth_07_bow", 0.04, {"hw": 42.0, "bow": 4.4, "upper": 11.0, "lower": 10.5, "smile": 2.6}),
+    ("mouth_08_flat", 0.03, {"hw": 50.0, "bow": 0.2, "upper": 6.0, "lower": 7.2, "smile": 1.2}),
+    ("mouth_09_smiling", 0.05, {"hw": 50.0, "smile": 8.5, "upper": 8.5, "lower": 11.5}),
+    ("mouth_10_wide_smile", 0.05, {"hw": 58.0, "smile": 9.0, "upper": 7.5, "lower": 10.5}),
+    ("mouth_11_very_wide", 0.04, {"hw": 62.0, "smile": 4.0, "upper": 7.0, "lower": 9.5}),
+    ("mouth_12_tiny", 0.03, {"hw": 28.0, "upper": 6.5, "lower": 8.0, "smile": 2.0}),
+    ("mouth_13_heart", 0.03, {"hw": 38.0, "bow": 5.0, "upper": 12.0, "lower": 10.0, "smile": 2.4}),
+    ("mouth_14_wide_full", 0.05, {"hw": 56.0, "upper": 12.5, "lower": 16.0, "smile": 3.2}),
+    ("mouth_15_thin_line", 0.03, {"hw": 48.0, "upper": 3.6, "lower": 4.8, "smile": 2.8, "bow": 0.4}),
+    ("mouth_16_soft_smile", 0.04, {"hw": 46.0, "smile": 6.0, "upper": 8.0, "lower": 10.5}),
+    ("mouth_17_cupid", 0.03, {"hw": 36.0, "bow": 4.6, "upper": 10.5, "lower": 9.5, "smile": 2.2}),
+    ("mouth_18_broad_thin", 0.03, {"hw": 60.0, "upper": 4.4, "lower": 5.8, "smile": 2.0}),
+    ("mouth_19_neutral", 0.05, {"hw": 46.0, "upper": 9.0, "lower": 11.5, "smile": 2.4, "bow": 1.6}),
+    ("mouth_20_full_wide", 0.05, {"hw": 56.0, "upper": 14.0, "lower": 17.0, "smile": 3.4, "bow": 2.0}),
+    # open / laugh — these used to be closed lips with a slightly bigger smile
+    ("mouth_21_open_full", 0.06, {"hw": 50.0, "upper": 8.5, "lower": 10.5, "smile": 5.5, "open": 9.0, "teeth": 1.0}),
+    ("mouth_22_laugh", 0.06, {"hw": 56.0, "upper": 7.5, "lower": 9.5, "smile": 10.0, "open": 13.0, "teeth": 1.0}),
+    ("mouth_23_grin", 0.05, {"hw": 52.0, "upper": 7.0, "lower": 8.5, "smile": 8.0, "open": 11.0, "teeth": 1.0}),
+    ("mouth_24_open_narrow", 0.04, {"hw": 34.0, "upper": 7.5, "lower": 9.0, "smile": 3.5, "open": 7.5, "teeth": 1.0}),
+    ("mouth_25_high", 0.04, {"hw": 44.0, "upper": 8.0, "lower": 10.0, "smile": 3.0, "lift": -12.0}),
+    ("mouth_26_low", 0.04, {"hw": 48.0, "upper": 8.5, "lower": 11.0, "smile": 2.6, "lift": 12.0}),
+    ("mouth_27_thick", 0.05, {"hw": 44.0, "upper": 15.0, "lower": 18.0, "smile": 2.8, "bow": 1.2}),
+    ("mouth_28_thin_high", 0.03, {"hw": 50.0, "upper": 4.0, "lower": 5.2, "smile": 3.2, "lift": -11.0}),
+    ("mouth_29_laugh_wide", 0.05, {"hw": 60.0, "upper": 7.0, "lower": 8.5, "smile": 11.0, "open": 12.0, "teeth": 1.0}),
+    ("mouth_30_open_low", 0.04, {"hw": 48.0, "upper": 7.5, "lower": 9.5, "smile": 4.5, "open": 8.5, "teeth": 1.0, "lift": 9.0}),
+    ("mouth_31_toothy", 0.05, {"hw": 50.0, "upper": 6.5, "lower": 8.0, "smile": 6.5, "open": 14.0, "teeth": 1.0}),
+    ("mouth_32_high_full", 0.03, {"hw": 46.0, "upper": 12.5, "lower": 15.0, "smile": 3.0, "lift": -10.0}),
+    ("mouth_33_low_wide", 0.03, {"hw": 58.0, "upper": 8.0, "lower": 11.0, "smile": 2.4, "lift": 11.0}),
+    ("mouth_34_smirk", 0.03, {"hw": 46.0, "upper": 7.5, "lower": 10.0, "smile": 3.5, "skew": 6.5}),
+    ("mouth_35_small_open", 0.04, {"hw": 40.0, "upper": 7.0, "lower": 8.5, "smile": 4.0, "open": 6.0, "teeth": 1.0}),
 ]
+
+
+def _mouth_poly(
+    hw: float,
+    y: float,
+    ldroop: float,
+    rdroop: float,
+    bow: float,
+    gap: float,
+    pad_up: float,
+    pad_lo: float,
+) -> list[tuple[float, float]]:
+    """Banana mouth: corners follow smile, centre opens by `gap`, pads add lip meat."""
+    g = max(gap, 1.6)
+    return [
+        (CX - hw, y + ldroop - pad_up * 0.18),
+        (CX - hw * 0.62, y - g * 0.12 - bow * 0.2 - pad_up * 0.78),
+        (CX - hw * 0.18, y - g * 0.50 - bow - pad_up),
+        (CX, y - g * 0.36 - pad_up * 0.72),
+        (CX + hw * 0.18, y - g * 0.50 - bow - pad_up),
+        (CX + hw * 0.62, y - g * 0.12 - bow * 0.2 - pad_up * 0.78),
+        (CX + hw, y + rdroop - pad_up * 0.18),
+        (CX + hw, y + rdroop + pad_lo * 0.12),
+        (CX + hw * 0.60, y + g * 0.70 + pad_lo * 0.88),
+        (CX, y + g + pad_lo),
+        (CX - hw * 0.60, y + g * 0.70 + pad_lo * 0.88),
+        (CX - hw, y + ldroop + pad_lo * 0.12),
+    ]
 
 
 def bake_mouth(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]]]:
@@ -1024,57 +1070,83 @@ def bake_mouth(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, An
     up = p.get("upper", 8.4)
     lo = p.get("lower", 11.2)
     bow = p.get("bow", 1.6)
-    # every mouth carries a slight smile: a neutral straight line reads as sullen
-    # at portrait size. `droop` still lets a variant pull the corners back down.
-    droop = p.get("droop", 0.0) - p.get("smile", 2.4)
-    y = MOUTH_Y
+    # a fully straight closed mouth still reads sullen; open/laugh are identity
+    # variants the owner asked for, not a second emotion system.
+    smile = p.get("smile", 2.4)
+    ldroop = p.get("droop", 0.0) - smile
+    rdroop = ldroop + p.get("skew", 0.0)
+    y = MOUTH_Y + p.get("lift", 0.0)
+    gap = max(0.0, p.get("open", 0.0))
+    show_teeth = p.get("teeth", 1.0 if gap >= 5.0 else 0.0) > 0.5
 
-    upper_pts = [
-        (CX - hw, y + droop),
-        (CX - hw * 0.55, y - up * 0.72),
-        (CX - hw * 0.16, y - up * 0.5 - bow),
-        (CX, y - up * 0.22),
-        (CX + hw * 0.16, y - up * 0.5 - bow),
-        (CX + hw * 0.55, y - up * 0.72),
-        (CX + hw, y + droop),
-        (CX + hw * 0.5, y + 0.6),
-        (CX, y + 1.4),
-        (CX - hw * 0.5, y + 0.6),
-    ]
-    lower_pts = [
-        (CX - hw, y + droop),
-        (CX - hw * 0.5, y + 1.4),
-        (CX, y + 2.0),
-        (CX + hw * 0.5, y + 1.4),
-        (CX + hw, y + droop),
-        (CX + hw * 0.58, y + lo * 0.86),
-        (CX, y + lo),
-        (CX - hw * 0.58, y + lo * 0.86),
-    ]
-    upper = poly_mask(upper_pts)
-    lower = poly_mask(lower_pts)
-    lips = ImageChops.lighter(upper, lower)
-
-    shade = mul(flat(1.0), grad_h(1.02, 0.92))
-    shade = darken(shade, blur(upper, 3.0), 0.20)
-    shade = darken(shade, rim(lips, 4.0, 3.0), 0.16)
-    lips_layer = shaded_color_layer((255, 255, 255), shade, scale_l(blur(lips, 0.9), 0.97))
-
-    line = scale_l(
-        blur(stroke_mask([(CX - hw, y + droop), (CX - hw * 0.4, y + 0.4), (CX, y + 1.0), (CX + hw * 0.4, y + 0.4), (CX + hw, y + droop)], 2.4), 1.0),
-        0.48 if st().line_art <= 0 else 0.78,
-    )
-    for sx in (-1, 1):
-        line = ImageChops.lighter(line, scale_l(blur(ellipse_mask(CX + sx * (hw + 2.0), y + droop + 0.5, 4.5, 3.4), 2.2), 0.38))
-    light = solid_layer(LIGHT_RGB, scale_l(blur(ellipse_mask(CX - 4, y + lo * 0.52, hw * 0.44, lo * 0.24), 3.0), 0.30))
-    return (
-        [("lips", lips_layer, {"blend": "normal", "color_slot": "lip"})]
-        + keyline(lips, 0.7)
-        + [
-            ("line", solid_layer(SHADOW_RGB, line), {"blend": "multiply"}),
-            ("light", light, {"blend": "screen"}),
+    if gap < 2.0:
+        upper_pts = [
+            (CX - hw, y + ldroop),
+            (CX - hw * 0.55, y - up * 0.72),
+            (CX - hw * 0.16, y - up * 0.5 - bow),
+            (CX, y - up * 0.22),
+            (CX + hw * 0.16, y - up * 0.5 - bow),
+            (CX + hw * 0.55, y - up * 0.72),
+            (CX + hw, y + rdroop),
+            (CX + hw * 0.5, y + 0.6),
+            (CX, y + 1.4),
+            (CX - hw * 0.5, y + 0.6),
         ]
-    )
+        lower_pts = [
+            (CX - hw, y + ldroop),
+            (CX - hw * 0.5, y + 1.4),
+            (CX, y + 2.0),
+            (CX + hw * 0.5, y + 1.4),
+            (CX + hw, y + rdroop),
+            (CX + hw * 0.58, y + lo * 0.86),
+            (CX, y + lo),
+            (CX - hw * 0.58, y + lo * 0.86),
+        ]
+        upper = poly_mask(upper_pts)
+        lower = poly_mask(lower_pts)
+        lips = ImageChops.lighter(upper, lower)
+        shade = mul(flat(1.0), grad_h(1.02, 0.92))
+        shade = darken(shade, blur(upper, 3.0), 0.20)
+        shade = darken(shade, rim(lips, 4.0, 3.0), 0.16)
+        lips_layer = shaded_color_layer((255, 255, 255), shade, scale_l(blur(lips, 0.9), 0.97))
+        line = scale_l(
+            blur(
+                stroke_mask(
+                    [(CX - hw, y + ldroop), (CX - hw * 0.4, y + 0.4), (CX, y + 1.0), (CX + hw * 0.4, y + 0.4), (CX + hw, y + rdroop)],
+                    2.4,
+                ),
+                1.0,
+            ),
+            0.48 if st().line_art <= 0 else 0.78,
+        )
+        for sx, corner in ((-1, ldroop), (1, rdroop)):
+            line = ImageChops.lighter(line, scale_l(blur(ellipse_mask(CX + sx * (hw + 2.0), y + corner + 0.5, 4.5, 3.4), 2.2), 0.38))
+        light = solid_layer(LIGHT_RGB, scale_l(blur(ellipse_mask(CX - 4, y + lo * 0.52, hw * 0.44, lo * 0.24), 3.0), 0.30))
+        return (
+            [("lips", lips_layer, {"blend": "normal", "color_slot": "lip"})]
+            + keyline(lips, 0.7)
+            + [
+                ("line", solid_layer(SHADOW_RGB, line), {"blend": "multiply"}),
+                ("light", light, {"blend": "screen"}),
+            ]
+        )
+
+    envelope = poly_mask(_mouth_poly(hw, y, ldroop, rdroop, bow, gap, up, lo), iters=2)
+    opening = poly_mask(_mouth_poly(hw * 0.90, y, ldroop, rdroop, bow * 0.4, gap, 0.0, 0.0), iters=2)
+    opening = ImageChops.multiply(opening, envelope)
+    lips = ImageChops.subtract(envelope, opening)
+    shade = mul(flat(1.0), grad_h(1.02, 0.90))
+    shade = darken(shade, rim(lips, 4.0, 3.0), 0.18)
+    lips_layer = shaded_color_layer((255, 255, 255), shade, scale_l(blur(lips, 0.7), 0.97))
+    interior = solid_layer(MOUTH_DARK_RGB, scale_l(opening, 0.96))
+    parts: list[tuple[str, Image.Image, dict[str, Any]]] = [("interior", interior, {"blend": "normal"})]
+    if show_teeth:
+        teeth_mask = ImageChops.multiply(opening, ellipse_mask(CX, y - gap * 0.02, hw * 0.70, max(3.2, gap * 0.42)))
+        parts.append(("teeth", solid_layer(TEETH_RGB, scale_l(teeth_mask, 0.95)), {"blend": "normal"}))
+    parts.append(("lips", lips_layer, {"blend": "normal", "color_slot": "lip"}))
+    parts += keyline(envelope, 0.7)
+    parts += keyline(opening, 0.42)
+    return parts
 
 
 # --------------------------------------------------------------------------- #
@@ -1782,7 +1854,7 @@ TEAMS: dict[str, dict[str, Any]] = {
 # --------------------------------------------------------------------------- #
 
 
-def bake(root: str | Path, style: str = "flat", pack_version: str = "0.3.0-placeholder") -> Path:
+def bake(root: str | Path, style: str = "flat", pack_version: str = "0.4.0-placeholder") -> Path:
     """Bake one placeholder pack in one style. The recipes are shared; only the
     StyleProfile changes, which is how the same peloton can be shown in several
     art directions without touching game code."""

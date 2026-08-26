@@ -32,7 +32,7 @@ Locked answers you do not need to ask again:
 | helmet in the portrait | off by default; helmet and glasses are optional layers |
 | peloton | male riders + manager outfits; no women's pack, no historical eras |
 | size in the UI | rider card up to ~1/6 of a laptop page; list icons use `head_crop` |
-| expression | slightly smiling; a neutral straight mouth reads as sullen |
+| expression | closed mouths keep a hint of smile (a straight line reads sullen); **open / laugh / high / low / thick / thin are identity variants** the owner asked for, not a second emotion system |
 | kits | team kits + Tour (yellow) / Giro (pink) / Vuelta (red) GC leader, world, national |
 
 ## Master reference — immutable
@@ -165,9 +165,12 @@ the common weights. Slit defaults (`th` ~6, `bh` ~5) flatten the whole peloton. 
 narrower options may stay as a minority, still readable. Defaults live around
 `hw=25, th=11, bh=8.6, iris_r=11.2`.
 
-**Mouths** (`MOUTH_RECIPES`): same pattern — neutral and full/wide as the common look,
-thin-line mouths as a minority. Still a slight smile; do not add gaping/open-mouth
-expressions. Defaults live around `hw=46, upper=8.4, lower=11.2`.
+**Mouths** (`MOUTH_RECIPES`): mouths must look different at portrait size — **open, laugh,
+wide, narrow, high, low, thick, thin**. Closed mouths still carry a hint of smile so they
+do not read sullen. Open mouths are a banana opening with a cream teeth band (`open`,
+`teeth`, `lift`, `skew`), not a bigger closed smile. Defaults live around
+`hw=46, upper=8.4, lower=11.2`. The mouth validator box is tight (under the nose, above
+the chin); keep geometry inside it.
 
 **Brows** (`BROW_RECIPES`): recipes must differ in **inner gap, length, thickness taper,
 arch and peak**, not just `th`/`arch` on the same polygon. `bake_brow` takes `inner` /
@@ -288,7 +291,8 @@ belongs in the manifest.
 - Add an AI image call to any runtime path.
 - Introduce `random`, `DateTime.Now` or unseeded RNG into generation.
 - Let nationality pick a trait outright.
-- Make the portraits more photographic, add expressions beyond a slight smile, or drop
-  facial features entirely (both extremes were rejected).
+- Make the portraits more photographic, or drop facial features entirely (both
+  extremes were rejected). Mouth assets may be open or laughing — that is identity
+  variety the owner asked for, not a runtime emotion system.
 - Promote this experiment into a canonical design doc, add it to `DOCS.md`, or wire it
   into `PelotonManager.sln` without a separately scoped task from the owner.
