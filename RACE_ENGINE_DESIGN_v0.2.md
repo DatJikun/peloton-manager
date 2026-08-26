@@ -1424,6 +1424,8 @@ There is one canonical race engine.
 - renderer receives race ViewState,
 - simulation can pause on human DecisionRequest,
 - speeds may include ×1 / ×2 / ×5 / ×20,
+- uneventful stretches may later skip/compress; the player does not watch
+  wall-clock stage hours (`D-033`),
 - renderer does not drive physics.
 
 ### Fast / background simulation

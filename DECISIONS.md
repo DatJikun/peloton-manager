@@ -114,3 +114,10 @@ W wieloetapowym wyścigu, gdy wyznaczony lider nie ma już realistycznych szans 
 Ocena szans jest knowledge-bounded: wynika z obserwacji, klasyfikacji, formy i pewności sztabu, nie z ukrytego truth fizjologii. Human i AI używają tej samej decyzji. Jakość oceny i gotowość do porzucenia pierwotnego planu leadership zależą od cech i staffu (np. `formSensitivity`, `leaderLoyalty`, analog rider/teamwork). Dobre i złe decyzje są legalnym gameplayem, nie bugiem.
 
 Implementacja jest deferred do wieloetapowego/virtual GC. Obecny jednodniowy race prototype tego nie buduje.
+
+## D-033 — Watched race time is presentation, not wall-clock physics
+Gracz nie siedzi przez rzeczywiste godziny etapu. Czas oglądania jest przeskalowany: spokojne odcinki przyspieszają albo się ściskają, a `DecisionRequest` pauzuje oglądanie w dramatycznie ważnym momencie.
+
+Sekundy w silniku (`RaceSession`, Race Spy, `dt = 1s`) zostają kanonicznym czasem fizyki. Renderer/Watch Race ich nie udaje jako 1:1. Przyspieszenie i późniejsza kompresja ciszy nie zmieniają fizyki ani oficjalnego wyniku (`R-001`).
+
+Owner playtest §49 z 2026-08-26: decyzje prototypu są wstępnie OK pod tym warunkiem. Gate nie jest zamknięty, bo nie było jeszcze oglądania na ekranie.
