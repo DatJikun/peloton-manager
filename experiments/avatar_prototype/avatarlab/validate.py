@@ -26,7 +26,7 @@ REGIONS: dict[str, tuple[int, int, int, int]] = {
     "eyes": (260, 160, 345, 245),  # single (right) eye
     "eyebrows": (255, 150, 355, 215),
     "nose": (200, 165, 312, 310),
-    "mouth": (186, 266, 326, 348),
+    "mouth": (178, 264, 334, 350),
     "wrinkles": (140, 110, 372, 368),
     "skin_details": (128, 85, 384, 380),
     "hair": (90, 20, 422, 300),
