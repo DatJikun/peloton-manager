@@ -1,0 +1,211 @@
+<!doctype html>
+<!--
+  08C — SWISS DESK · statyczny prototyp biurka managera (Peloton Manager)
+  Sam dashboard, zero funkcjonalności — do oceny wyglądu.
+  Kafelki Forever Infinite (github.com/isas1/forever-ai-components), przerobione
+  na paletę i fonty koncepcji, bez pętli demo / glow / losowych danych:
+  - infinite/swiss/06-rule-lines.html      — poziome linie jako kręgosłup strony;
+                                             jednorazowy przeciąg przy wejściu (CSS, forwards)
+  - infinite/swiss/09-accent-shift.html    — czerwony blok „dziś" na siatce kalendarza
+  - infinite/cards/06-expanding-accordion.html — numerowany wiersz skrzynki z treścią
+  Paleta: papier #f4f2ec, tusz #111, przygas #6c6c70, czerwień #e8482b.
+  Fonty: Archivo (display) + Newsreader (serif).
+-->
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>08C — Swiss Desk · Peloton Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800;900&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f4f2ec; --ink:#111; --dim:#6c6c70; --red:#e8482b; --hair:#d8d4c8;
+  --disp:"Archivo","Helvetica Neue",system-ui,sans-serif;
+  --serif:"Newsreader",Georgia,serif;
+  --swiss:cubic-bezier(.16,.84,.3,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--paper); color:var(--ink); font-family:var(--serif); font-size:15px; overflow:hidden}
+
+/* linie — jednorazowy przeciąg przy wejściu */
+.rules{display:grid; gap:5px}
+.rule{border-top:2px solid var(--ink); animation:sweep .8s var(--swiss) both}
+.rule.from-right{transform-origin:right center}
+.rule:nth-child(2){animation-delay:.1s}
+.rule:nth-child(3){animation-delay:.2s}
+@keyframes sweep{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+.desk{
+  height:100dvh; padding:20px 3.5vw 18px;
+  display:grid; grid-template-rows:auto auto auto 1fr auto; gap:14px;
+}
+
+/* masthead */
+.mast{display:flex; align-items:baseline; gap:20px}
+.mast-id{font:900 13px/1 var(--disp); letter-spacing:.34em; text-transform:uppercase}
+.mast-id b{color:var(--red)}
+.mast-note{font:italic 400 12px/1 var(--serif); color:var(--dim)}
+.employer{margin-left:auto; display:flex; align-items:baseline; gap:10px}
+.emp-label{font:700 9px/1 var(--disp); letter-spacing:.3em; text-transform:uppercase; color:var(--dim)}
+.emp-name{font:800 14px/1 var(--disp); letter-spacing:.06em; text-transform:uppercase; color:var(--red)}
+
+/* data */
+.dateline{display:grid; grid-template-columns:auto 1fr auto; align-items:end; gap:2.2vw}
+.date-num{font:900 clamp(64px,9vw,120px)/.8 var(--disp); letter-spacing:-.04em}
+.date-num .dot{color:var(--red)}
+.date-dow{font:italic 400 clamp(16px,2vw,22px)/1.1 var(--serif)}
+.date-full{font:700 10.5px/1.6 var(--disp); letter-spacing:.28em; text-transform:uppercase; color:var(--dim)}
+.day-kind{justify-self:end; max-width:34ch; text-align:right; font:italic 400 13px/1.5 var(--serif); color:var(--dim); margin:0}
+
+/* plansza */
+.board{display:grid; grid-template-columns:minmax(320px,5fr) 1px minmax(320px,6fr); gap:2vw; min-height:0}
+.axis{background:var(--dim); opacity:.32; transform-origin:top; animation:axis .9s var(--swiss) both}
+@keyframes axis{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.panel{display:flex; flex-direction:column; min-height:0}
+.panel-h{
+  margin:0; padding-bottom:8px; border-bottom:3px solid var(--ink);
+  font:800 12px/1 var(--disp); letter-spacing:.3em; text-transform:uppercase;
+  display:flex; justify-content:space-between; align-items:baseline;
+}
+.panel-h .count{font:italic 400 12px/1 var(--serif); letter-spacing:.02em; text-transform:none; color:var(--dim)}
+
+/* kalendarz */
+.cal-wrap{overflow:auto; min-height:0}
+.cal-row{
+  display:grid; grid-template-columns:1.2em 3.4em 3em 1fr; gap:10px; align-items:baseline;
+  padding:9px 0; border-bottom:1px solid var(--hair); font-size:13.5px;
+}
+.cal-mark{width:12px; height:12px; background:var(--red); align-self:center}
+.cal-row:not(.is-today) .cal-mark{visibility:hidden}
+.cal-dow{font:800 11px/1 var(--disp); letter-spacing:.2em; color:var(--dim); text-transform:uppercase}
+.cal-d{font:700 12px/1 var(--disp); color:var(--dim)}
+.is-today .cal-dow,.is-today .cal-d{color:var(--ink)}
+.is-today .cal-txt{font-weight:500}
+.is-raceday .cal-txt{color:var(--red)}
+
+/* skrzynka */
+.mails{overflow:auto; min-height:0}
+.mail{border-bottom:1px solid var(--hair)}
+.mail-head{display:flex; align-items:baseline; gap:14px; padding:11px 4px}
+.mail-idx{font:800 11px/1 var(--disp); color:var(--dim)}
+.mail-subj{flex:1; font:700 14.5px/1.35 var(--disp); letter-spacing:-.01em}
+.mail-state{font:italic 400 11px/1 var(--serif); color:var(--dim)}
+.mail-body{display:none}
+.mail.open .mail-body{display:block}
+.mail-from{margin:0; padding:0 4px; font:700 9.5px/1.5 var(--disp); letter-spacing:.26em; text-transform:uppercase; color:var(--dim)}
+.mail-text{margin:0; padding:6px 4px 10px; font:400 13.5px/1.6 var(--serif); max-width:56ch}
+.mail.filed .mail-subj{text-decoration:line-through; color:var(--dim)}
+.mail.filed .mail-state{color:var(--red)}
+
+/* guzik */
+.action{display:flex; align-items:center; gap:20px; justify-content:flex-end}
+.action-note{margin-right:auto; font:italic 400 12px/1.5 var(--serif); color:var(--dim)}
+.main-btn{
+  position:relative; overflow:hidden; isolation:isolate; user-select:none;
+  font:800 clamp(14px,1.5vw,17px)/1 var(--disp); letter-spacing:.22em; text-transform:uppercase;
+  color:var(--paper); background:var(--ink); padding:20px 46px;
+}
+.main-btn .lbl{position:relative; z-index:1}
+.main-btn::before{
+  content:""; position:absolute; inset:0; z-index:0; background:var(--red);
+  transform:translateX(-101%); transition:transform .5s var(--swiss);
+}
+.main-btn:hover::before{transform:translateX(0)}
+.main-btn:active{transform:translateY(3px)}
+
+@media (max-width:900px){
+  body{overflow:auto}
+  .desk{height:auto; min-height:100dvh}
+  .board{grid-template-columns:1fr}
+  .axis{display:none}
+  .day-kind{justify-self:start; text-align:left}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important; transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<main class="desk">
+  <header class="mast">
+    <span class="mast-id">Peloton<b>·</b>Manager</span>
+    <span class="mast-note">biurko dnia</span>
+    <div class="employer">
+      <span class="emp-label">Zespół</span>
+      <strong class="emp-name">Beskid–Vetter ProTeam</strong>
+    </div>
+  </header>
+
+  <div class="rules" aria-hidden="true">
+    <div class="rule"></div>
+    <div class="rule from-right"></div>
+    <div class="rule"></div>
+  </div>
+
+  <section class="dateline">
+    <span class="date-num">11<span class="dot">.</span>03</span>
+    <span>
+      <span class="date-dow">Środa</span><br>
+      <span class="date-full">11 marca 2026 · tydzień 11</span>
+    </span>
+    <p class="day-kind">Dzień roboczy — świat czeka na Advance Day.</p>
+  </section>
+
+  <div class="board">
+    <section class="panel" aria-labelledby="calH">
+      <h2 class="panel-h" id="calH">calendar <span class="count">9 – 15 marca</span></h2>
+      <div class="cal-wrap">
+        <div class="cal-row"><span class="cal-mark"></span><span class="cal-dow">PON</span><span class="cal-d">09</span><span class="cal-txt">Trening — regeneracja, 90 min</span></div>
+        <div class="cal-row"><span class="cal-mark"></span><span class="cal-dow">WT</span><span class="cal-d">10</span><span class="cal-txt">Transfer: Kraków → Turyn</span></div>
+        <div class="cal-row is-today"><span class="cal-mark"></span><span class="cal-dow">ŚR</span><span class="cal-d">11</span><span class="cal-txt">Odprawa sztabu, 16:00</span></div>
+        <div class="cal-row is-raceday"><span class="cal-mark"></span><span class="cal-dow">CZW</span><span class="cal-d">12</span><span class="cal-txt">Milano–Torino · 1.Pro · 177 km</span></div>
+        <div class="cal-row"><span class="cal-mark"></span><span class="cal-dow">PT</span><span class="cal-d">13</span><span class="cal-txt">Rozruch — 60 min</span></div>
+        <div class="cal-row"><span class="cal-mark"></span><span class="cal-dow">SOB</span><span class="cal-d">14</span><span class="cal-txt">Trening siłowy — siłownia</span></div>
+        <div class="cal-row"><span class="cal-mark"></span><span class="cal-dow">NIE</span><span class="cal-d">15</span><span class="cal-txt">Dzień wolny</span></div>
+      </div>
+    </section>
+    <div class="axis" aria-hidden="true"></div>
+    <section class="panel" aria-labelledby="inboxH">
+      <h2 class="panel-h" id="inboxH">inbox <span class="count">3 sprawy</span></h2>
+      <div class="mails">
+        <article class="mail open">
+          <div class="mail-head">
+            <span class="mail-idx">01</span>
+            <span class="mail-subj">Odprawa sztabu — dziś 16:00</span>
+            <span class="mail-state">otwarte</span>
+          </div>
+          <div class="mail-body">
+            <p class="mail-from">Od: DS Marek Sowa</p>
+            <p class="mail-text">Agenda: skład na Milano–Torino, plan na finał pod Supergą, podział zadań w peletonie. Proszę o punktualność.</p>
+          </div>
+        </article>
+        <article class="mail filed">
+          <div class="mail-head">
+            <span class="mail-idx">02</span>
+            <span class="mail-subj">Wynik do odłożenia: GP Primavera — Rutka 12.</span>
+            <span class="mail-state">odłożone do akt</span>
+          </div>
+        </article>
+        <article class="mail">
+          <div class="mail-head">
+            <span class="mail-idx">03</span>
+            <span class="mail-subj">Media: prośba o krótki komentarz</span>
+            <span class="mail-state">czytaj</span>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <footer class="action">
+    <span class="action-note">Jedna decyzja dziennie: przesuń świat o dzień.</span>
+    <div class="main-btn" role="button" aria-label="Advance Day"><span class="lbl">Advance Day</span></div>
+  </footer>
+</main>
+
+</body>
+</html>

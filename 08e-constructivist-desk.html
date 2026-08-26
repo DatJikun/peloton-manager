@@ -1,0 +1,236 @@
+<!doctype html>
+<!--
+  08E — CONSTRUCTIVIST DESK · statyczny prototyp biurka managera (Peloton Manager)
+  Sam dashboard, zero funkcjonalności — do oceny wyglądu.
+  Kafelki Forever Infinite (github.com/isas1/forever-ai-components), przerobione
+  na paletę i fonty koncepcji, bez pętli demo / glow / losowych danych:
+  - infinite/constructivism/08-type-stack.html — data jako plakatowy stack slabów
+                                             na ukośnej osi; tu statyczny (CSS, pop-in raz)
+  - infinite/constructivism/04-black-square.html — tło: statyczne formy
+                                             suprematystyczne (czerwony pas, czarny kwadrat,
+                                             papierowy klin), bez dryfu i bez poświaty
+  - infinite/cards/06-expanding-accordion.html   — karton skrzynki z treścią pod spodem
+  Paleta: papier #f3ede1, czerwień #d11f1f, czerń #0c0c0d, szary #6f6f72.
+  Fonty: Anton (display) + PT Sans (body).
+-->
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>08E — Constructivist Desk · Peloton Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=PT+Sans:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f3ede1; --red:#d11f1f; --black:#0c0c0d; --gray:#6f6f72;
+  --disp:"Anton","Arial Narrow",Impact,system-ui,sans-serif;
+  --body:"PT Sans",system-ui,sans-serif;
+  --hard:cubic-bezier(.7,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  background:var(--paper); color:var(--black);
+  background-image:repeating-linear-gradient(115deg,transparent 0 38px,rgba(12,12,13,.025) 38px 39px);
+  font-family:var(--body); font-size:14.5px; overflow:hidden;
+}
+
+/* tło: statyczne formy */
+.bg-forms{position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden}
+.bg-bar{position:absolute; left:-12%; top:58%; width:124%; height:9%; background:var(--red); opacity:.92; transform:rotate(-8deg)}
+.bg-square{position:absolute; right:6%; top:12%; width:20vmin; height:20vmin; background:var(--black); transform:rotate(12deg); opacity:.06}
+.bg-wedge{position:absolute; left:0; bottom:0; width:0; height:0; border-left:34vmin solid transparent; border-bottom:22vmin solid var(--black); opacity:.05}
+
+.desk{
+  position:relative; z-index:2; height:100dvh;
+  display:grid; grid-template-columns:minmax(280px,4fr) minmax(420px,7fr);
+  gap:2.5vw; padding:24px 3vw 20px;
+}
+
+/* lewa: plakat */
+.poster{position:relative; display:flex; flex-direction:column; justify-content:center}
+.axis-line{position:absolute; left:-6%; top:50%; width:112%; height:2px; background:var(--black); transform:rotate(-8deg)}
+.tick{
+  position:absolute; left:8%; top:34%; width:3.2vmin; height:3.2vmin; min-width:22px; min-height:22px;
+  background:var(--black); transform:rotate(-8deg); box-shadow:0 0 0 3px var(--paper);
+}
+.stack{
+  position:relative; transform:rotate(-8deg);
+  display:flex; flex-direction:column; gap:1.2vmin; align-items:flex-start; padding-left:4%;
+}
+.row{display:flex; gap:.5vmin}
+.row:nth-child(2){transform:translateX(-7%)}
+.row:nth-child(3){transform:translateX(5%)}
+.slab{
+  font:400 clamp(30px,4.6vw,58px)/1 var(--disp); letter-spacing:.01em; text-transform:uppercase;
+  padding:.06em .18em 0; display:inline-block;
+  animation:pop .5s var(--hard) both;
+}
+.row:nth-child(2) .slab{animation-delay:.1s}
+.row:nth-child(3) .slab{animation-delay:.2s}
+@keyframes pop{from{opacity:0; transform:translateY(45%)}to{opacity:1; transform:translateY(0)}}
+.slab.red{background:var(--red); color:var(--paper)}
+.slab.blk{background:var(--black); color:var(--paper)}
+.slab.pap{background:var(--paper); color:var(--black); box-shadow:inset 0 0 0 2px var(--black)}
+.employer{
+  position:relative; margin-top:9%; margin-left:6%; width:max-content; max-width:100%;
+  transform:rotate(-2deg); background:var(--black); padding:10px 16px; box-shadow:6px 6px 0 var(--red);
+}
+.emp-label{display:block; font:700 9.5px/1 var(--body); letter-spacing:.3em; text-transform:uppercase; color:var(--paper); opacity:.6}
+.emp-name{font:400 17px/1.2 var(--disp); letter-spacing:.05em; text-transform:uppercase; color:var(--red)}
+
+/* prawa: panele */
+.side{display:flex; flex-direction:column; gap:14px; min-height:0}
+.panel{
+  background:var(--paper); border:3px solid var(--black); box-shadow:8px 8px 0 var(--black);
+  display:flex; flex-direction:column; min-height:0; overflow:hidden;
+}
+.panel-grow{flex:1}
+.panel-h{
+  margin:0; padding:8px 14px; background:var(--black); color:var(--paper);
+  font:400 13px/1 var(--disp); letter-spacing:.3em; text-transform:uppercase;
+  display:flex; justify-content:space-between; align-items:baseline;
+}
+.panel-h .count{color:var(--red); letter-spacing:.08em}
+.cal-table{width:100%; border-collapse:collapse}
+.cal-table td{padding:7px 14px; border-bottom:2px solid var(--black); vertical-align:baseline}
+.cal-row:last-child td{border-bottom:0}
+.cal-dow{font:400 12px/1 var(--disp); letter-spacing:.16em; width:3.4em; color:var(--gray); text-transform:uppercase}
+.cal-d{font:700 12px/1 var(--body); color:var(--gray); width:3em}
+.cal-txt{font-size:13.5px}
+.is-today{background:var(--black)}
+.is-today .cal-dow,.is-today .cal-d{color:var(--paper)}
+.is-today .cal-txt{color:var(--paper); font-weight:700}
+.is-raceday .cal-txt{color:var(--red); font-weight:700}
+.cal-mark{
+  display:inline-block; margin-left:10px; background:var(--red); color:var(--paper);
+  font:700 9px/1 var(--body); letter-spacing:.18em; text-transform:uppercase; padding:3px 7px;
+  transform:rotate(-2deg);
+}
+
+/* skrzynka */
+.mails{overflow:auto; min-height:0; padding:10px; display:flex; flex-direction:column; gap:10px}
+.mail{position:relative; border:2.5px solid var(--black); background:var(--paper); box-shadow:5px 5px 0 var(--black)}
+.mail-head{display:flex; align-items:baseline; gap:12px; padding:10px 12px}
+.mail-idx{font:400 13px/1 var(--disp); color:var(--red)}
+.mail-subj{flex:1; font:700 13.5px/1.35 var(--body)}
+.mail-plus{
+  font:400 16px/1 var(--disp); color:var(--paper); background:var(--black);
+  width:24px; height:24px; display:grid; place-items:center; flex:0 0 auto;
+}
+.mail.open .mail-plus{transform:rotate(45deg); background:var(--red)}
+.mail-body{display:none}
+.mail.open .mail-body{display:block}
+.mail-from{margin:0; padding:0 12px; font:700 10px/1.5 var(--body); letter-spacing:.22em; text-transform:uppercase; color:var(--gray)}
+.mail-text{margin:0; padding:5px 12px 10px; font-size:13.5px; line-height:1.55}
+.mail-stamp{
+  position:absolute; right:10px; top:50%; transform:translateY(-50%) rotate(-7deg);
+  border:3px solid var(--red); color:var(--red); background:#f3ede1e6;
+  font:400 13px/1 var(--disp); letter-spacing:.2em; text-transform:uppercase; padding:6px 10px;
+}
+.mail.filed{opacity:.6}
+
+/* guzik */
+.action{display:flex; align-items:center; gap:16px; justify-content:flex-end}
+.action-note{margin-right:auto; font:700 10.5px/1.5 var(--body); letter-spacing:.14em; color:var(--gray); text-transform:uppercase}
+.main-btn{
+  font:400 clamp(17px,2vw,22px)/1 var(--disp); letter-spacing:.1em; text-transform:uppercase;
+  color:var(--paper); background:var(--red); border:3px solid var(--black);
+  box-shadow:9px 9px 0 var(--black); padding:19px 44px; user-select:none;
+  transition:background .2s;
+}
+.main-btn:hover{background:var(--black)}
+.main-btn:hover .lbl{color:var(--red)}
+.main-btn:active{transform:translate(9px,9px); box-shadow:0 0 0 var(--black)}
+
+@media (max-width:900px){
+  body{overflow:auto}
+  .desk{grid-template-columns:1fr; height:auto; min-height:100dvh}
+  .poster{min-height:40vh}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important; transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-forms" aria-hidden="true">
+  <span class="bg-bar"></span>
+  <span class="bg-square"></span>
+  <span class="bg-wedge"></span>
+</div>
+
+<main class="desk">
+  <section class="poster" aria-label="Data i pracodawca">
+    <span class="axis-line" aria-hidden="true"></span>
+    <span class="tick" aria-hidden="true"></span>
+    <div class="stack">
+      <div class="row"><span class="slab red">11 MAR</span></div>
+      <div class="row"><span class="slab blk">Środa</span></div>
+      <div class="row"><span class="slab pap">2026</span><span class="slab red">Tyg 11</span></div>
+    </div>
+    <div class="employer">
+      <span class="emp-label">Zespół</span>
+      <strong class="emp-name">Beskid–Vetter ProTeam</strong>
+    </div>
+  </section>
+
+  <div class="side">
+    <section class="panel" aria-labelledby="calH">
+      <h2 class="panel-h" id="calH">calendar <span class="count">tydzień 11</span></h2>
+      <table class="cal-table">
+        <tbody>
+          <tr class="cal-row"><td class="cal-dow">PON</td><td class="cal-d">09</td><td class="cal-txt">Trening — regeneracja, 90 min</td></tr>
+          <tr class="cal-row"><td class="cal-dow">WT</td><td class="cal-d">10</td><td class="cal-txt">Transfer: Kraków → Turyn</td></tr>
+          <tr class="cal-row is-today"><td class="cal-dow">ŚR</td><td class="cal-d">11</td><td class="cal-txt">Odprawa sztabu, 16:00<span class="cal-mark">Dziś</span></td></tr>
+          <tr class="cal-row is-raceday"><td class="cal-dow">CZW</td><td class="cal-d">12</td><td class="cal-txt">Milano–Torino · 1.Pro · 177 km<span class="cal-mark">Wyścig</span></td></tr>
+          <tr class="cal-row"><td class="cal-dow">PT</td><td class="cal-d">13</td><td class="cal-txt">Rozruch — 60 min</td></tr>
+          <tr class="cal-row"><td class="cal-dow">SOB</td><td class="cal-d">14</td><td class="cal-txt">Trening siłowy — siłownia</td></tr>
+          <tr class="cal-row"><td class="cal-dow">NIE</td><td class="cal-d">15</td><td class="cal-txt">Dzień wolny</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="panel panel-grow" aria-labelledby="inboxH">
+      <h2 class="panel-h" id="inboxH">inbox <span class="count">3 sprawy</span></h2>
+      <div class="mails">
+        <article class="mail open">
+          <div class="mail-head">
+            <span class="mail-idx">01</span>
+            <span class="mail-subj">Odprawa sztabu — dziś 16:00</span>
+            <span class="mail-plus">+</span>
+          </div>
+          <div class="mail-body">
+            <p class="mail-from">Od: DS Marek Sowa</p>
+            <p class="mail-text">Agenda: skład na Milano–Torino, plan na finał pod Supergą, podział zadań w peletonie. Proszę o punktualność.</p>
+          </div>
+        </article>
+        <article class="mail filed">
+          <div class="mail-head">
+            <span class="mail-idx">02</span>
+            <span class="mail-subj">Wynik do odłożenia: GP Primavera — Rutka 12.</span>
+            <span class="mail-plus">+</span>
+          </div>
+          <span class="mail-stamp">Odłożone</span>
+        </article>
+        <article class="mail">
+          <div class="mail-head">
+            <span class="mail-idx">03</span>
+            <span class="mail-subj">Media: prośba o krótki komentarz</span>
+            <span class="mail-plus">+</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <footer class="action">
+      <span class="action-note">Jedna decyzja dziennie: przesuń świat o dzień.</span>
+      <div class="main-btn" role="button" aria-label="Advance Day"><span class="lbl">Advance Day</span></div>
+    </footer>
+  </div>
+</main>
+
+</body>
+</html>

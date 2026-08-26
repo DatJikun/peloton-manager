@@ -1,0 +1,256 @@
+<!doctype html>
+<!--
+  08D — DECO DESK · statyczny prototyp biurka managera (Peloton Manager)
+  Sam dashboard, zero funkcjonalności — do oceny wyglądu.
+  Kafelki Forever Infinite (github.com/isas1/forever-ai-components), przerobione
+  na paletę i fonty koncepcji, bez pętli demo / halo / losowych danych:
+  - infinite/art-deco/01-sunburst-fan.html — wachlarz 13 złotych promieni jako winieta
+                                             za medalionem z datą; tu statyczny, wpisany
+                                             w inline SVG (rotacje policzone, zero JS)
+  - infinite/art-deco/06-gatsby-frame.html — złota ramka strony; rysuje się raz przy
+                                             wejściu (stroke-dashoffset, CSS, forwards)
+  - infinite/cards/06-expanding-accordion.html — pozycja rejestru skrzynki z treścią
+  - infinite/buttons/08-sliding-fill.html  — suwane złote wypełnienie plakiety guzika
+  Paleta: szmaragd #0c1410 / #10362c, mosiądz #d4af37 / #c9a227, krem #f1e7c8,
+  czerwień pracodawcy #d64533.
+  Fonty: Cinzel (display) + Jost (body).
+-->
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>08D — Deco Desk · Peloton Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Jost:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --emerald:#0c1410; --emerald-2:#10362c;
+  --gold:#d4af37; --brass:#c9a227; --gold-lt:#f1d98a; --gold-dk:#8a6d1f;
+  --cream:#f1e7c8; --mute:#9c9170; --red:#d64533;
+  --disp:"Cinzel",Georgia,serif; --body:"Jost",system-ui,sans-serif;
+  --deco:cubic-bezier(.45,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--emerald); color:var(--cream); font-family:var(--body); font-size:14.5px; font-weight:300; overflow:hidden}
+
+/* ramka — rysunek jednorazowy */
+.frame{position:fixed; inset:10px; z-index:1; pointer-events:none; width:calc(100% - 20px); height:calc(100% - 20px)}
+.frame .fl{fill:none; stroke:var(--gold); stroke-width:1.4; stroke-dasharray:1000; stroke-dashoffset:1000; animation:draw 1.4s var(--deco) forwards}
+.frame .fl.fine{stroke:var(--gold-dk); stroke-width:1; animation-delay:.25s}
+.frame .fl.corner{animation-delay:.5s}
+@keyframes draw{to{stroke-dashoffset:0}}
+
+.desk{
+  position:relative; z-index:2; height:100dvh; max-width:1160px; margin:0 auto;
+  padding:26px 28px 22px; display:grid; grid-template-rows:auto 1fr auto; gap:14px;
+}
+
+/* hero: medalion + wachlarz */
+.hero{position:relative; text-align:center; padding-top:112px}
+.sunburst{position:absolute; left:50%; top:-16px; transform:translateX(-50%); width:min(860px,94vw); height:220px; z-index:-1; pointer-events:none}
+.medal{
+  position:absolute; left:50%; top:30px; transform:translateX(-50%);
+  width:104px; height:104px; border-radius:50%;
+  border:1.5px solid var(--gold); background:var(--emerald);
+  box-shadow:0 0 0 5px var(--emerald), 0 0 0 6.5px var(--gold-dk);
+  display:grid; place-content:center; gap:2px;
+  animation:medal-in .9s var(--deco) .3s both;
+}
+@keyframes medal-in{from{opacity:0; transform:translateX(-50%) translateY(10px)}to{opacity:1; transform:translateX(-50%) translateY(0)}}
+.medal .m-dow{font:600 10px/1 var(--disp); letter-spacing:.24em; color:var(--mute); text-transform:uppercase}
+.medal .m-big{font:700 26px/1 var(--disp); color:var(--gold-lt)}
+.date-line{font:600 clamp(17px,2.2vw,24px)/1.2 var(--disp); letter-spacing:.22em; text-transform:uppercase}
+.date-line .sep{color:var(--gold); font-size:.6em; vertical-align:.2em; padding:0 .5em}
+.day-kind{margin:6px 0 0; font:italic 400 13px/1.5 var(--body); color:var(--mute)}
+.employer{
+  margin:10px auto 0; width:max-content; max-width:90%; position:relative;
+  display:flex; align-items:center; gap:14px; padding:8px 22px; border:1px solid var(--gold);
+}
+.employer::before{content:""; position:absolute; inset:3px; border:1px solid var(--gold-dk); pointer-events:none}
+.emp-label{font:500 9.5px/1 var(--body); letter-spacing:.34em; text-transform:uppercase; color:var(--mute)}
+.emp-name{font:700 14px/1 var(--disp); letter-spacing:.12em; text-transform:uppercase; color:var(--red)}
+
+/* rejestry */
+.board{display:grid; grid-template-columns:1fr 1fr; gap:22px; min-height:0}
+.panel{position:relative; border:1px solid var(--gold-dk); background:#0e1a14; display:flex; flex-direction:column; min-height:0; overflow:hidden}
+.panel::before{content:""; position:absolute; inset:4px; border:1px solid #1d2b22; pointer-events:none}
+.corner{position:absolute; width:14px; height:14px; pointer-events:none}
+.corner::before,.corner::after{content:""; position:absolute; background:var(--gold)}
+.corner.tl{top:-1px; left:-1px} .corner.tr{top:-1px; right:-1px}
+.corner.bl{bottom:-1px; left:-1px} .corner.br{bottom:-1px; right:-1px}
+.corner::before{width:14px; height:2px; top:0}
+.corner::after{width:2px; height:14px; left:0}
+.corner.tr::before{right:0} .corner.tr::after{left:auto; right:0}
+.corner.br::before{bottom:0; top:auto} .corner.br::after{bottom:0; top:auto; left:auto; right:0}
+.corner.bl::before{bottom:0; top:auto} .corner.bl::after{bottom:0; top:auto}
+.panel-h{
+  margin:0; padding:11px 16px; text-align:center; border-bottom:1px solid var(--gold-dk);
+  font:600 12px/1 var(--disp); letter-spacing:.4em; text-transform:uppercase; color:var(--gold);
+}
+.panel-h .count{display:block; margin-top:4px; font:italic 400 10.5px/1 var(--body); letter-spacing:.08em; text-transform:none; color:var(--mute)}
+.cal-wrap{overflow:auto; min-height:0; padding:4px 16px 10px}
+.cal-row{
+  display:grid; grid-template-columns:1.4em 3.4em 3em 1fr; gap:10px; align-items:baseline;
+  padding:8.5px 0; border-bottom:1px solid #1d2b22;
+}
+.cal-loz{color:var(--red); font-size:11px; align-self:center}
+.cal-row:not(.is-today) .cal-loz{visibility:hidden}
+.cal-dow{font:600 10.5px/1 var(--disp); letter-spacing:.2em; color:var(--mute); text-transform:uppercase}
+.cal-d{font:500 11px/1 var(--body); letter-spacing:.14em; color:var(--mute)}
+.cal-txt{font:400 13.5px/1.35 var(--body)}
+.is-today .cal-dow,.is-today .cal-d{color:var(--gold-lt)}
+.is-today .cal-txt{font-weight:500}
+.is-raceday .cal-txt{color:var(--gold)}
+
+/* skrzynka */
+.mails{overflow:auto; min-height:0; padding:4px 16px 10px}
+.mail{border-bottom:1px solid #1d2b22}
+.mail-head{display:flex; align-items:baseline; gap:12px; padding:11px 2px}
+.mail-no{font:600 11px/1 var(--disp); color:var(--gold-dk)}
+.mail-subj{flex:1; font:500 14px/1.4 var(--body)}
+.mail-mark{font:400 11px/1 var(--body); color:var(--gold)}
+.mail.open .mail-mark{transform:rotate(45deg)}
+.mail-body{display:none}
+.mail.open .mail-body{display:block}
+.mail-from{margin:0; padding:0 2px; font:500 10px/1.5 var(--body); letter-spacing:.26em; text-transform:uppercase; color:var(--mute)}
+.mail-text{margin:0; padding:6px 2px 10px; font:400 13.5px/1.6 var(--body)}
+.mail.filed{opacity:.45}
+.mail.filed .filed-note{font:italic 400 11.5px/1 var(--body); color:var(--gold)}
+.filed-note{display:none}
+.mail.filed .filed-note{display:inline}
+
+/* guzik — plakieta */
+.action{display:flex; align-items:center; gap:18px; justify-content:flex-end}
+.action-note{margin-right:auto; font:italic 400 12px/1.5 var(--body); color:var(--mute)}
+.main-btn{
+  position:relative; overflow:hidden; isolation:isolate; user-select:none;
+  font:700 clamp(14px,1.5vw,17px)/1 var(--disp); letter-spacing:.3em; text-transform:uppercase;
+  color:var(--gold); border:1.5px solid var(--gold); padding:3px;
+}
+.main-btn .in{position:relative; z-index:1; display:block; padding:17px 42px; border:1px solid var(--gold-dk); transition:color .35s}
+.main-btn::before{
+  content:""; position:absolute; inset:3px; z-index:0; background:var(--gold);
+  transform:translateX(-101%); transition:transform .55s var(--deco);
+}
+.main-btn:hover::before{transform:translateX(0)}
+.main-btn:hover .in{color:var(--emerald)}
+.main-btn:active{transform:translateY(2px)}
+
+@media (max-width:900px){
+  body{overflow:auto}
+  .desk{height:auto; min-height:100dvh}
+  .board{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important; transition:none!important}
+  .frame .fl{stroke-dashoffset:0}
+}
+</style>
+</head>
+<body>
+
+<svg class="frame" viewBox="0 0 1000 700" preserveAspectRatio="none" aria-hidden="true">
+  <rect class="fl" x="10" y="10" width="980" height="680" pathLength="1000" vector-effect="non-scaling-stroke"/>
+  <rect class="fl fine" x="22" y="22" width="956" height="656" pathLength="1000" vector-effect="non-scaling-stroke"/>
+  <path class="fl corner" pathLength="1000" vector-effect="non-scaling-stroke" d="M34 66 V46 h8 V38 h8 v-4 h16 v4 h8 v8 h8 v20"/>
+  <path class="fl corner" pathLength="1000" vector-effect="non-scaling-stroke" d="M966 66 V46 h-8 V38 h-8 v-4 h-16 v4 h-8 v8 h-8 v20"/>
+  <path class="fl corner" pathLength="1000" vector-effect="non-scaling-stroke" d="M34 634 V654 h8 v8 h8 v4 h16 v-4 h8 v-8 h8 v-20"/>
+  <path class="fl corner" pathLength="1000" vector-effect="non-scaling-stroke" d="M966 634 V654 h-8 v8 h-8 v4 h-16 v-4 h-8 v-8 h-8 v-20"/>
+</svg>
+
+<main class="desk">
+  <header class="hero">
+    <svg class="sunburst" viewBox="0 0 100 60" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+      <defs>
+        <linearGradient id="bladeG" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0" stop-color="#8a6d1f"/>
+          <stop offset="55" stop-color="#d4af37"/>
+          <stop offset="100" stop-color="#f1d98a"/>
+        </linearGradient>
+      </defs>
+      <g>
+        <path d="M50 58 L47.4 8 Q50 2 52.6 8 Z" fill="url(#bladeG)" stroke="#0c1410" stroke-width=".35" transform="rotate(-30 50 58)"/>
+        <path d="M50 58 L47.4 8 Q50 2 52.6 8 Z" fill="#c9a227"     stroke="#0c1410" stroke-width=".35" transform="rotate(-25 50 58)"/>
+        <path d="M50 58 L47.4 8 Q50 2 52.6 8 Z" fill="url(#bladeG)" stroke="#0c1410" stroke-width=".35" transform="rotate(-20 50 58)"/>
+        <path d="M50 58 L47.4 8 Q50 2 52.6 8 Z" fill="#c9a227"     stroke="#0c1410" stroke-width=".35" transform="rotate(-15 50 58)"/>
+        <path d="M50 58 L47.4 8 Q50 2 52.6 8 Z" fill="url(#bladeG)" stroke="#0c1410" stroke-width=".35" transform="rotate(-10 50 58)"/>
+        <path d="M50 58 L47.4 8 Q50 2 52.6 8 Z" fill="#c9a227"     stroke="#0c1410" stroke-width=".35" transform="rotate(-5 50 58)"/>
+        <path d="M50 58 L47.4 8 Q50 2 52.6 8 Z" fill="url(#bladeG)" stroke="#0c1410" stroke-width=".35"/>
+        <path d="M50 58 L47.4 8 Q50 2 52.6 8 Z" fill="#c9a227"     stroke="#0c1410" stroke-width=".35" transform="rotate(5 50 58)"/>
+        <path d="M50 58 L47.4 8 Q50 2 52.6 8 Z" fill="url(#bladeG)" stroke="#0c1410" stroke-width=".35" transform="rotate(10 50 58)"/>
+        <path d="M50 58 L47.4 8 Q50 2 52.6 8 Z" fill="#c9a227"     stroke="#0c1410" stroke-width=".35" transform="rotate(15 50 58)"/>
+        <path d="M50 58 L47.4 8 Q50 2 52.6 8 Z" fill="url(#bladeG)" stroke="#0c1410" stroke-width=".35" transform="rotate(20 50 58)"/>
+        <path d="M50 58 L47.4 8 Q50 2 52.6 8 Z" fill="#c9a227"     stroke="#0c1410" stroke-width=".35" transform="rotate(25 50 58)"/>
+        <path d="M50 58 L47.4 8 Q50 2 52.6 8 Z" fill="url(#bladeG)" stroke="#0c1410" stroke-width=".35" transform="rotate(30 50 58)"/>
+      </g>
+    </svg>
+    <div class="medal">
+      <span class="m-dow">Środa</span>
+      <span class="m-big">11·03</span>
+    </div>
+    <div class="date-line"><span>Środa</span><span class="sep">◆</span><span>11 marca 2026</span></div>
+    <p class="day-kind">Dzień roboczy — świat czeka na Advance Day.</p>
+    <div class="employer">
+      <span class="emp-label">Zespół</span>
+      <strong class="emp-name">Beskid–Vetter ProTeam</strong>
+    </div>
+  </header>
+
+  <div class="board">
+    <section class="panel" aria-labelledby="calH">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <h2 class="panel-h" id="calH">calendar<span class="count">tydzień 11 · 9 – 15 marca</span></h2>
+      <div class="cal-wrap">
+        <div class="cal-row"><span class="cal-loz">◆</span><span class="cal-dow">PON</span><span class="cal-d">09</span><span class="cal-txt">Trening — regeneracja, 90 min</span></div>
+        <div class="cal-row"><span class="cal-loz">◆</span><span class="cal-dow">WT</span><span class="cal-d">10</span><span class="cal-txt">Transfer: Kraków → Turyn</span></div>
+        <div class="cal-row is-today"><span class="cal-loz">◆</span><span class="cal-dow">ŚR</span><span class="cal-d">11</span><span class="cal-txt">Odprawa sztabu, 16:00</span></div>
+        <div class="cal-row is-raceday"><span class="cal-loz">◆</span><span class="cal-dow">CZW</span><span class="cal-d">12</span><span class="cal-txt">Milano–Torino · 1.Pro · 177 km</span></div>
+        <div class="cal-row"><span class="cal-loz">◆</span><span class="cal-dow">PT</span><span class="cal-d">13</span><span class="cal-txt">Rozruch — 60 min</span></div>
+        <div class="cal-row"><span class="cal-loz">◆</span><span class="cal-dow">SOB</span><span class="cal-d">14</span><span class="cal-txt">Trening siłowy — siłownia</span></div>
+        <div class="cal-row"><span class="cal-loz">◆</span><span class="cal-dow">NIE</span><span class="cal-d">15</span><span class="cal-txt">Dzień wolny</span></div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="inboxH">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <h2 class="panel-h" id="inboxH">inbox<span class="count">3 sprawy</span></h2>
+      <div class="mails">
+        <article class="mail open">
+          <div class="mail-head">
+            <span class="mail-no">01</span>
+            <span class="mail-subj">Odprawa sztabu — dziś 16:00</span>
+            <span class="mail-mark">✦</span>
+          </div>
+          <div class="mail-body">
+            <p class="mail-from">Od: DS Marek Sowa</p>
+            <p class="mail-text">Agenda: skład na Milano–Torino, plan na finał pod Supergą, podział zadań w peletonie. Proszę o punktualność.</p>
+          </div>
+        </article>
+        <article class="mail filed">
+          <div class="mail-head">
+            <span class="mail-no">02</span>
+            <span class="mail-subj">Wynik do odłożenia: GP Primavera — Rutka 12.</span>
+            <span class="filed-note">odłożone do akt</span>
+          </div>
+        </article>
+        <article class="mail">
+          <div class="mail-head">
+            <span class="mail-no">03</span>
+            <span class="mail-subj">Media: prośba o krótki komentarz</span>
+            <span class="mail-mark">✦</span>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <footer class="action">
+    <span class="action-note">Jedna decyzja dziennie: przesuń świat o dzień.</span>
+    <div class="main-btn" role="button" aria-label="Advance Day"><span class="in">Advance Day</span></div>
+  </footer>
+</main>
+
+</body>
+</html>

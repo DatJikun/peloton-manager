@@ -1,0 +1,215 @@
+<!doctype html>
+<!--
+  08B — BROADCAST DESK · statyczny prototyp biurka managera (Peloton Manager)
+  Sam dashboard, zero funkcjonalności — do oceny wyglądu.
+  Kafelki Forever Infinite (github.com/isas1/forever-ai-components), przerobione
+  na paletę i fonty koncepcji, bez pętli demo / neonu / losowych danych:
+  - infinite/kinetic-type/03-split-flap-board.html — klapki tablicy odjazdów na dacie
+                                             i na etykiecie guzika; tu statyczne (czysty CSS:
+                                             półklapka, przesłona, bez mechaniki rAF)
+  - infinite/cards/06-expanding-accordion.html   — wiersz skrzynki z treścią pod spodem
+  - infinite/buttons/08-sliding-fill.html        — suwane wypełnienie guzika (bursztyn)
+  Paleta: petrol #06272e / #04191e, bursztyn #f4c430, krem #f2efe6, czerwień #ff5a4d.
+  Fonty: Barlow Condensed + Barlow.
+-->
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>08B — Broadcast Desk · Peloton Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --petrol:#06272e; --petrol-2:#0a363f; --deep:#04191e;
+  --amber:#f4c430; --amber-dim:#b8922c; --paper:#f2efe6; --mute:#7fa3aa; --red:#ff5a4d;
+  --cond:"Barlow Condensed","Arial Narrow",Impact,system-ui,sans-serif;
+  --body:"Barlow",system-ui,sans-serif;
+  --mech:cubic-bezier(.7,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--deep); color:var(--paper); font-family:var(--body); font-size:14px; overflow:hidden}
+
+/* klapki — statyczne, czysty CSS */
+.flap{
+  position:relative; display:inline-flex; align-items:center; justify-content:center;
+  width:1.06em; height:1.5em; background:#0b0f10; color:var(--amber);
+  font:600 1em/1 var(--cond); border-radius:.08em; overflow:hidden;
+  box-shadow:inset 0 0 0 1px #22343a, 0 2px 0 #000; text-transform:uppercase;
+}
+.flap::after{content:""; position:absolute; left:0; right:0; top:50%; height:1px; background:rgba(0,0,0,.75)}
+.flap-strip{display:inline-flex; gap:.12em}
+
+.desk{height:100dvh; padding:16px 18px; display:grid; grid-template-rows:auto auto 1fr auto; gap:12px}
+
+/* pas studyjny */
+.band{
+  display:flex; align-items:center; gap:18px;
+  background:var(--petrol); border:2px solid #0d3b44; padding:10px 16px;
+}
+.band-call{
+  font:700 15px/1 var(--cond); letter-spacing:.18em; text-transform:uppercase;
+  border-right:2px solid #0d3b44; padding-right:18px;
+}
+.band-call b{color:var(--amber)}
+.band-mid{font:500 11px/1.4 var(--body); letter-spacing:.16em; text-transform:uppercase; color:var(--mute)}
+.band-date{margin-left:auto; display:flex; align-items:center; gap:12px}
+.band-date .cap{font:600 10px/1 var(--body); letter-spacing:.22em; color:var(--mute); text-transform:uppercase}
+.band-date .flap-strip{font-size:clamp(18px,2.4vw,26px)}
+
+/* pracodawca — czerwony lower-third */
+.employer{
+  display:flex; align-items:center; gap:12px; width:max-content; max-width:100%;
+  background:var(--red); padding:7px 14px;
+  clip-path:polygon(0 0,100% 0,calc(100% - 14px) 100%,0 100%);
+}
+.emp-label{font:600 10px/1 var(--body); letter-spacing:.24em; text-transform:uppercase; color:#3d0f0b}
+.emp-name{font:700 14px/1 var(--cond); letter-spacing:.1em; text-transform:uppercase; color:#fff}
+
+/* plansze */
+.board{display:grid; grid-template-columns:minmax(360px,6fr) minmax(320px,5fr); gap:12px; min-height:0}
+.panel{background:var(--petrol); border:2px solid #0d3b44; display:flex; flex-direction:column; min-height:0; overflow:hidden}
+.panel-h{
+  margin:0; padding:9px 14px; background:var(--petrol-2);
+  font:700 12px/1 var(--cond); letter-spacing:.26em; text-transform:uppercase; color:var(--amber);
+  border-bottom:2px solid #0d3b44; display:flex; justify-content:space-between;
+}
+.panel-h .count{color:var(--paper); letter-spacing:.1em}
+.fix-head,.fix-row{
+  display:grid; grid-template-columns:3.2em 3em 1fr auto; gap:10px; align-items:baseline; padding:8px 14px;
+}
+.fix-head{font:600 10px/1 var(--body); letter-spacing:.2em; text-transform:uppercase; color:var(--mute); border-bottom:1px solid #0d3b44}
+.fix-row{border-bottom:1px solid #0d3b4433; font-size:13px}
+.fix-dow{font:600 12px/1 var(--body); letter-spacing:.14em; color:var(--mute); text-transform:uppercase}
+.fix-d{color:var(--mute)}
+.fix-status{font:700 11px/1 var(--cond); letter-spacing:.16em; text-transform:uppercase; color:var(--amber-dim)}
+.is-raceday .fix-status{color:var(--amber)}
+.is-today{background:#0b4049}
+.is-today .fix-dow,.is-today .fix-d{color:var(--amber)}
+.is-today .fix-txt{font-weight:600}
+.is-today .fix-status{color:#06272e; background:var(--amber); padding:2px 8px}
+
+/* skrzynka */
+.mails{padding:10px; display:flex; flex-direction:column; gap:8px; overflow:auto; min-height:0}
+.mail{border:2px solid #0d3b44; background:var(--deep)}
+.mail.open{border-color:var(--amber-dim)}
+.mail-head{display:flex; align-items:baseline; gap:10px; padding:10px 12px}
+.mail-idx{font:700 12px/1 var(--cond); color:var(--amber)}
+.mail-subj{flex:1; font:600 13.5px/1.35 var(--body)}
+.mail-arrow{font:700 13px/1 var(--cond); color:var(--amber)}
+.mail.open .mail-arrow{transform:rotate(90deg)}
+.mail-body{display:none}
+.mail.open .mail-body{display:block}
+.mail-from{margin:0; padding:0 12px; font:500 10.5px/1.5 var(--body); letter-spacing:.14em; text-transform:uppercase; color:var(--mute)}
+.mail-text{margin:0; padding:6px 12px 10px; font-size:13px; line-height:1.55}
+.mail-tag{
+  font:700 10px/1 var(--cond); letter-spacing:.2em; text-transform:uppercase; color:var(--mute);
+  border:1px solid var(--mute); padding:3px 8px;
+}
+.mail.filed{opacity:.5}
+
+/* guzik z klapkami */
+.action{display:flex; align-items:center; justify-content:flex-end; gap:16px}
+.action-note{margin-right:auto; font:500 10.5px/1.5 var(--body); letter-spacing:.14em; color:var(--mute); text-transform:uppercase}
+.main-btn{
+  position:relative; isolation:isolate; overflow:hidden;
+  background:var(--petrol); border:2px solid var(--amber); padding:12px 18px; user-select:none;
+}
+.main-btn::before{
+  content:""; position:absolute; inset:0; z-index:0; background:var(--amber);
+  transform:translateX(-101%); transition:transform .45s var(--mech);
+}
+.main-btn:hover::before{transform:translateX(0)}
+.main-btn .flap-strip{position:relative; z-index:1; font-size:clamp(16px,1.8vw,22px)}
+.main-btn:active{transform:translateY(3px)}
+
+@media (max-width:900px){
+  body{overflow:auto}
+  .desk{height:auto; min-height:100dvh}
+  .board{grid-template-columns:1fr}
+  .band{flex-wrap:wrap}
+  .band-date{margin-left:0}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important; transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<main class="desk">
+  <header class="band">
+    <span class="band-call">PM·<b>DESK</b> STUDIO</span>
+    <span class="band-mid">Biurko managera · dzień roboczy</span>
+    <span class="band-date">
+      <span class="cap">Data</span>
+      <span class="flap-strip" role="text" aria-label="Środa, 11 marca">
+        <span class="flap">Ś</span><span class="flap">R</span><span class="flap">&nbsp;</span><span class="flap">1</span><span class="flap">1</span><span class="flap">&nbsp;</span><span class="flap">M</span><span class="flap">A</span><span class="flap">R</span>
+      </span>
+    </span>
+  </header>
+
+  <div class="employer">
+    <span class="emp-label">Zespół</span>
+    <strong class="emp-name">Beskid–Vetter ProTeam</strong>
+  </div>
+
+  <div class="board">
+    <section class="panel" aria-labelledby="calH">
+      <h2 class="panel-h" id="calH">calendar <span class="count">tydzień 11</span></h2>
+      <div class="fix-head" aria-hidden="true"><span>Dzień</span><span>Data</span><span>Wpis</span><span>Status</span></div>
+      <div class="fix-row"><span class="fix-dow">PON</span><span class="fix-d">09</span><span class="fix-txt">Trening — regeneracja, 90 min</span><span class="fix-status">—</span></div>
+      <div class="fix-row"><span class="fix-dow">WT</span><span class="fix-d">10</span><span class="fix-txt">Transfer: Kraków → Turyn</span><span class="fix-status">—</span></div>
+      <div class="fix-row is-today"><span class="fix-dow">ŚR</span><span class="fix-d">11</span><span class="fix-txt">Odprawa sztabu, 16:00</span><span class="fix-status">Dziś</span></div>
+      <div class="fix-row is-raceday"><span class="fix-dow">CZW</span><span class="fix-d">12</span><span class="fix-txt">Milano–Torino · 1.Pro · 177 km</span><span class="fix-status">Wyścig</span></div>
+      <div class="fix-row"><span class="fix-dow">PT</span><span class="fix-d">13</span><span class="fix-txt">Rozruch — 60 min</span><span class="fix-status">—</span></div>
+      <div class="fix-row"><span class="fix-dow">SOB</span><span class="fix-d">14</span><span class="fix-txt">Trening siłowy — siłownia</span><span class="fix-status">—</span></div>
+      <div class="fix-row"><span class="fix-dow">NIE</span><span class="fix-d">15</span><span class="fix-txt">Dzień wolny</span><span class="fix-status">—</span></div>
+    </section>
+
+    <section class="panel" aria-labelledby="inboxH">
+      <h2 class="panel-h" id="inboxH">inbox <span class="count">3 sprawy</span></h2>
+      <div class="mails">
+        <article class="mail open">
+          <div class="mail-head">
+            <span class="mail-idx">01</span>
+            <span class="mail-subj">Odprawa sztabu — dziś 16:00</span>
+            <span class="mail-arrow">›</span>
+          </div>
+          <div class="mail-body">
+            <p class="mail-from">Od: DS Marek Sowa</p>
+            <p class="mail-text">Agenda: skład na Milano–Torino, plan na finał pod Supergą, podział zadań w peletonie. Proszę o punktualność.</p>
+          </div>
+        </article>
+        <article class="mail filed">
+          <div class="mail-head">
+            <span class="mail-idx">02</span>
+            <span class="mail-subj">Wynik do odłożenia: GP Primavera — Rutka 12.</span>
+            <span class="mail-tag">W aktach</span>
+          </div>
+        </article>
+        <article class="mail">
+          <div class="mail-head">
+            <span class="mail-idx">03</span>
+            <span class="mail-subj">Media: prośba o krótki komentarz</span>
+            <span class="mail-arrow">›</span>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <footer class="action">
+    <span class="action-note">Studio czeka — jeden ruch dziennie.</span>
+    <div class="main-btn" role="button" aria-label="Advance Day">
+      <span class="flap-strip" aria-hidden="true">
+        <span class="flap">A</span><span class="flap">D</span><span class="flap">V</span><span class="flap">A</span><span class="flap">N</span><span class="flap">C</span><span class="flap">E</span><span class="flap">&nbsp;</span><span class="flap">D</span><span class="flap">A</span><span class="flap">Y</span>
+      </span>
+    </div>
+  </footer>
+</main>
+
+</body>
+</html>
