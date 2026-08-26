@@ -110,31 +110,9 @@ button{font:inherit; color:inherit; background:none; border:0; cursor:pointer}
 
 /* ── animowane tło: 3 wariacje (szum / pasma / iskry) ─────── */
 #bgFx{position:fixed; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; display:none}
-body.fx-grain #bgFx,body.fx-motes #bgFx{display:block}
-.fx-band{position:fixed; inset:-40%; z-index:0; pointer-events:none; display:none}
-body.fx-bands .fx-band{display:block}
-/* pasma: przesuw o dokładnie jedną kafelkę — pętla bez widocznego szwu */
-.fx-band-1{
-  background-image:repeating-linear-gradient(115deg,
-    transparent 0 90px,
-    color-mix(in srgb, var(--team) 14%, transparent) 90px 150px,
-    transparent 150px 240px,
-    rgba(209,31,31,.075) 240px 280px,
-    transparent 280px 340px);
-  animation:band-drift-a 34s linear infinite;
-}
-.fx-band-2{
-  background-image:repeating-linear-gradient(-64deg,
-    transparent 0 130px,
-    rgba(217,142,0,.08) 130px 170px,
-    transparent 170px 300px,
-    color-mix(in srgb, var(--team) 9%, transparent) 300px 360px,
-    transparent 360px 440px);
-  animation:band-drift-b 47s linear infinite;
-}
-@keyframes band-drift-a{from{transform:translateX(0)}to{transform:translateX(-367.7px)}}
-@keyframes band-drift-b{from{transform:translateX(0)}to{transform:translateX(472.9px)}}
-body.dark .fx-band-1,body.dark .fx-band-2{opacity:.6}
+body.fx-grain #bgFx,body.fx-motes #bgFx,body.fx-bands #bgFx{display:block}
+/* pasma: obiekty na canvasie — wjeżdżają z różnych stron, płyną w losowych
+   kierunkach, po zejściu z ekranu są zastępowane nowymi (logika w JS) */
 .employer{margin-left:auto; display:flex; align-items:center; gap:14px; background:var(--black); padding:13px 22px; transform:rotate(-1deg); box-shadow:var(--s6)}
 .emp-label{font:700 11px/1 var(--body); letter-spacing:.24em; text-transform:uppercase; color:var(--paper); opacity:.6}
 .emp-name{font:400 23px/1 var(--disp); letter-spacing:.06em; text-transform:uppercase; color:var(--team)}
@@ -369,8 +347,6 @@ body.dark .bg-bar{opacity:.55}
 <body>
 
 <canvas id="bgFx" aria-hidden="true"></canvas>
-<div class="fx-band fx-band-1" aria-hidden="true"></div>
-<div class="fx-band fx-band-2" aria-hidden="true"></div>
 <div class="bg-forms" aria-hidden="true"><span class="bg-bar"></span><span class="bg-square"></span></div>
 
 <div class="app">
@@ -471,8 +447,8 @@ body.dark .bg-bar{opacity:.55}
         <span class="sw-label">Tło</span>
         <div class="seg seg-slim" id="bgSeg">
           <button type="button" data-fx="off">Brak</button>
-          <button type="button" data-fx="grain" class="on">Szum</button>
-          <button type="button" data-fx="bands">Pasma</button>
+          <button type="button" data-fx="grain">Szum</button>
+          <button type="button" data-fx="bands" class="on">Pasma</button>
           <button type="button" data-fx="motes">Iskry</button>
         </div>
       </div>
@@ -881,6 +857,44 @@ function drawGrain(){
   fxCtx.fillStyle=pat;fxCtx.fillRect(0,0,bgFx.width+140,bgFx.height+140);fxCtx.restore();
 }
 
+/* wariacja 2: PASMA — obiekty wjeżdżają z różnych stron, płyną powoli
+   w losowych kierunkach; po zejściu z ekranu rodzi się nowe pasmo */
+var fxBands=[];
+function spawnBand(initial){
+  var W=Math.max(bgFx.width,1),H=Math.max(bgFx.height,1),diag=Math.hypot(W,H);
+  var pal=fxPalette();
+  var a=Math.random()*Math.PI*2, vx=Math.cos(a), vy=Math.sin(a);
+  var m=160,x,y;
+  if(initial){x=Math.random()*W;y=Math.random()*H;}
+  else{
+    var edge=(Math.random()*4)|0;
+    if(edge===0){x=-m;y=Math.random()*H;}
+    else if(edge===1){x=W+m;y=Math.random()*H;}
+    else if(edge===2){y=-m;x=Math.random()*W;}
+    else{y=H+m;x=Math.random()*W;}
+    if(vx*(W/2-x)+vy*(H/2-y)<0){vx=-vx;vy=-vy;} // dryf zawsze w stronę ekranu
+  }
+  return {x:x,y:y,vx:vx,vy:vy,speed:13+Math.random()*20,
+    len:diag*(0.35+Math.random()*0.5), w:40+Math.random()*90,
+    ang:Math.atan2(vy,vx),
+    c:pal[(Math.random()*pal.length)|0], alpha:.11+Math.random()*.1};
+}
+function seedBands(){fxBands=[];for(var i=0;i<9;i++)fxBands.push(spawnBand(true));}
+function drawBands(dt){
+  fxCtx.clearRect(0,0,bgFx.width,bgFx.height);
+  for(var i=0;i<fxBands.length;i++){
+    var b=fxBands[i];
+    b.x+=b.vx*b.speed*dt; b.y+=b.vy*b.speed*dt;
+    var m=b.len/2+b.w+170;
+    if(b.x<-m||b.x>bgFx.width+m||b.y<-m||b.y>bgFx.height+m){fxBands[i]=spawnBand(false);continue;}
+    fxCtx.save();fxCtx.translate(b.x,b.y);fxCtx.rotate(b.ang);
+    fxCtx.globalAlpha=b.alpha;fxCtx.fillStyle=b.c;
+    fxCtx.fillRect(-b.len/2,-b.w/2,b.len,b.w);
+    fxCtx.restore();
+  }
+  fxCtx.globalAlpha=1;
+}
+
 /* wariacja 3: ISKRY — prostokąty gasną i pojawiają się w losowych miejscach */
 function seedMotes(){
   fxMotes=[];var pal=fxPalette();
@@ -908,11 +922,16 @@ function fxSet(mode){
   if(reduce||mode==="off")return;
   fxResize();
   if(mode==="motes")seedMotes();
+  if(mode==="bands")seedBands();
+  fxLastT=0;
   fxRaf=requestAnimationFrame(fxLoop);
 }
+var fxLastT=0;
 function fxLoop(t){
+  var dt=fxLastT?Math.min(0.1,(t-fxLastT)/1000):0.016; fxLastT=t;
   if(fxMode==="grain"){if(t-fxLast>110){drawGrain();fxLast=t;}}
   else if(fxMode==="motes"){drawMotes(t);}
+  else if(fxMode==="bands"){drawBands(dt);}
   fxRaf=requestAnimationFrame(fxLoop);
 }
 document.getElementById("bgSeg").addEventListener("click",function(e){
@@ -926,7 +945,7 @@ document.addEventListener("visibilitychange",function(){
   if(document.hidden)fxStop();
   else if(fxMode!=="off"&&!reduce){fxResize();fxRaf=requestAnimationFrame(fxLoop);}
 });
-fxSet(reduce?"off":"grain"); // domyślnie: szum
+fxSet(reduce?"off":"bands"); // domyślnie: pasma (wybór właściciela)
 
 renderList(RACES[0].id);
 renderInfo(RACES[0]);
