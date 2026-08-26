@@ -9,6 +9,7 @@ public sealed class RaceScenario
     private readonly RaceRiderProfile[] riders;
     private readonly RaceStartingPosition[] startingPositions;
     private readonly RaceCommand[] commands;
+    private readonly RaceTacticalPlan[] tacticalPlans;
 
     public RaceScenario(
         string id,
@@ -17,7 +18,8 @@ public sealed class RaceScenario
         IEnumerable<RaceStartingPosition> startingPositions,
         IEnumerable<RaceCommand> commands,
         double initialSpeedMps,
-        int maximumDurationSeconds)
+        int maximumDurationSeconds,
+        IEnumerable<RaceTacticalPlan>? tacticalPlans = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(definition);
@@ -39,6 +41,10 @@ public sealed class RaceScenario
             .ThenBy(command => command.OrganizationId.Value)
             .ThenBy(command => command.RiderId.Value)
             .ToArray();
+        this.tacticalPlans = (tacticalPlans ?? Array.Empty<RaceTacticalPlan>())
+            .OrderBy(plan => plan.TriggerSecond)
+            .ThenBy(plan => plan.Observation.OrganizationId.Value)
+            .ToArray();
         if (this.riders.Length == 0 || this.startingPositions.Length != this.riders.Length)
         {
             throw new ArgumentException("Race riders and starting positions must be non-empty and aligned.");
@@ -49,6 +55,18 @@ public sealed class RaceScenario
         if (!riderIds.SequenceEqual(positionIds) || riderIds.Distinct().Count() != riderIds.Length)
         {
             throw new ArgumentException("Race rider IDs and starting positions must be unique and identical.");
+        }
+
+        foreach (RaceTacticalPlan plan in this.tacticalPlans)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(plan.TriggerSecond);
+            RaceRiderProfile support = this.riders.SingleOrDefault(
+                rider => rider.RiderId == plan.SupportRiderId)
+                ?? throw new ArgumentException("A tactical plan support rider must start the race.");
+            if (support.OrganizationId != plan.Observation.OrganizationId)
+            {
+                throw new ArgumentException("A tactical plan cannot command another organization's rider.");
+            }
         }
 
         Id = id;
@@ -67,6 +85,8 @@ public sealed class RaceScenario
 
     public IReadOnlyList<RaceCommand> Commands => commands;
 
+    public IReadOnlyList<RaceTacticalPlan> TacticalPlans => tacticalPlans;
+
     public double InitialSpeedMps { get; }
 
     public int MaximumDurationSeconds { get; }
@@ -74,28 +94,43 @@ public sealed class RaceScenario
 
 public interface IRaceEngine
 {
-    RaceSession CreateSession(RaceScenario scenario, long seed);
+    RaceSession CreateSession(
+        RaceScenario scenario,
+        long seed,
+        Peloton.Domain.IWorldSpySink? spySink = null);
 
-    RaceResult RunBatch(RaceScenario scenario, long seed);
+    RaceResult RunBatch(
+        RaceScenario scenario,
+        long seed,
+        Peloton.Domain.IWorldSpySink? spySink = null);
 }
 
 public sealed class PrototypeRaceEngine : IRaceEngine
 {
-    public RaceSession CreateSession(RaceScenario scenario, long seed)
+    public RaceSession CreateSession(
+        RaceScenario scenario,
+        long seed,
+        Peloton.Domain.IWorldSpySink? spySink = null)
     {
-        return new RaceSession(scenario, seed);
+        return new RaceSession(scenario, seed, spySink ?? Peloton.Domain.NullWorldSpySink.Instance);
     }
 
-    public RaceResult RunBatch(RaceScenario scenario, long seed)
+    public RaceResult RunBatch(
+        RaceScenario scenario,
+        long seed,
+        Peloton.Domain.IWorldSpySink? spySink = null)
     {
-        RaceSession session = CreateSession(scenario, seed);
+        RaceSession session = CreateSession(scenario, seed, spySink);
         while (!session.IsCompleted)
         {
             RaceStepResult step = session.Step();
             if (step.Status == RaceStepStatus.DecisionRequired)
             {
-                throw new InvalidOperationException(
-                    "The current physical prototype cannot resolve a DecisionRequest yet.");
+                Peloton.Domain.RaceDecisionRequest request = session.PendingDecision!;
+                session.ResolveDecision(new Peloton.Domain.RaceDecisionResolution(
+                    request.Id,
+                    request.AuthorityId,
+                    request.DelegatedDefaultOption));
             }
         }
 

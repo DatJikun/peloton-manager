@@ -18,13 +18,21 @@ public sealed class RaceSession
 
     private readonly RaceScenario scenario;
     private readonly RiderRuntime[] riders;
+    private readonly IWorldSpySink spySink;
+    private readonly List<RaceCommand> resolvedCommands = new();
+    private readonly HashSet<int> evaluatedTacticalPlans = new();
     private int simulationSecond;
     private int maximumGroupCount = 1;
+    private int decisionCount;
+    private int? lastDecisionSecond;
+    private PendingDecisionContext? pendingDecisionContext;
 
-    internal RaceSession(RaceScenario scenario, long seed)
+    internal RaceSession(RaceScenario scenario, long seed, IWorldSpySink spySink)
     {
         ArgumentNullException.ThrowIfNull(scenario);
+        ArgumentNullException.ThrowIfNull(spySink);
         this.scenario = scenario;
+        this.spySink = spySink;
         Seed = seed;
         Dictionary<WorldEntityId, RaceStartingPosition> positions = scenario.StartingPositions
             .ToDictionary(position => position.RiderId);
@@ -44,11 +52,20 @@ public sealed class RaceSession
 
     public RaceResult? Result { get; private set; }
 
+    public int SimulationSecond => simulationSecond;
+
+    public RaceDecisionRequest? PendingDecision => pendingDecisionContext?.Request;
+
     public RaceStepResult Step()
     {
         if (Result is not null)
         {
             return new RaceStepResult(RaceStepStatus.Completed, Result);
+        }
+
+        if (PendingDecision is not null || DetectDecision())
+        {
+            return new RaceStepResult(RaceStepStatus.DecisionRequired, null);
         }
 
         if (simulationSecond >= scenario.MaximumDurationSeconds)
@@ -150,12 +167,30 @@ public sealed class RaceSession
             return new RaceStepResult(RaceStepStatus.Completed, Result);
         }
 
+        if (DetectDecision())
+        {
+            return new RaceStepResult(RaceStepStatus.DecisionRequired, null);
+        }
+
         return new RaceStepResult(RaceStepStatus.Advanced, null);
+    }
+
+    public void ResolveDecision(RaceDecisionResolution resolution)
+    {
+        ArgumentNullException.ThrowIfNull(resolution);
+        PendingDecisionContext context = pendingDecisionContext
+            ?? throw new InvalidOperationException("The race has no pending decision.");
+        context.Request.Resolve(resolution);
+        ApplyStrategicChoice(context.Plan, resolution.SelectedOption);
+        decisionCount++;
+        lastDecisionSecond = simulationSecond;
+        EmitDecisionTrace(context, resolution.SelectedOption);
+        pendingDecisionContext = null;
     }
 
     private void ApplyCommands()
     {
-        foreach (RaceCommand command in scenario.Commands
+        foreach (RaceCommand command in scenario.Commands.Concat(resolvedCommands)
                      .Where(command => command.SimulationSecond == simulationSecond)
                      .OrderBy(command => command.OrganizationId.Value)
                      .ThenBy(command => command.RiderId.Value))
@@ -174,6 +209,144 @@ public sealed class RaceSession
                 _ => int.MaxValue,
             };
         }
+    }
+
+    private bool DetectDecision()
+    {
+        int planIndex = Enumerable.Range(0, scenario.TacticalPlans.Count)
+            .FirstOrDefault(
+                index => !evaluatedTacticalPlans.Contains(index) &&
+                         scenario.TacticalPlans[index].TriggerSecond <= simulationSecond,
+                -1);
+        if (planIndex < 0)
+        {
+            return false;
+        }
+
+        evaluatedTacticalPlans.Add(planIndex);
+        RaceTacticalPlan plan = scenario.TacticalPlans[planIndex];
+        ChaseDecision decision = ChaseDecisionEvaluator.Evaluate(plan.Observation, plan.Briefing);
+        bool wasRecentlyAsked = lastDecisionSecond is int previousSecond &&
+                                simulationSecond - previousSecond < 60;
+        RaceDecisionGateResult gate = RaceDecisionGate.Evaluate(
+            plan.Observation,
+            plan.Briefing,
+            decision,
+            wasRecentlyAsked);
+        if (!gate.CreateRequest)
+        {
+            ApplyStrategicChoice(plan, decision.SelectedOption);
+            decisionCount++;
+            lastDecisionSecond = simulationSecond;
+            EmitDecisionTrace(
+                new PendingDecisionContext(plan, decision, gate, RequestFor(plan, decision, gate)),
+                decision.SelectedOption);
+            return false;
+        }
+
+        RaceDecisionRequest request = RequestFor(plan, decision, gate);
+        pendingDecisionContext = new PendingDecisionContext(plan, decision, gate, request);
+        EmitRequestTrace(pendingDecisionContext);
+        return true;
+    }
+
+    private RaceDecisionRequest RequestFor(
+        RaceTacticalPlan plan,
+        ChaseDecision decision,
+        RaceDecisionGateResult gate)
+    {
+        return new RaceDecisionRequest(
+            new RaceDecisionRequestId(
+                $"{scenario.Id}:chase:{plan.Observation.OrganizationId.Value}:{simulationSecond}"),
+            plan.Observation.DecisionAuthorityId,
+            simulationSecond,
+            $"Visible split at official gap {plan.Observation.OfficialGapSeconds}s",
+            gate.DefensibleOptions,
+            decision.SelectedOption);
+    }
+
+    private void ApplyStrategicChoice(RaceTacticalPlan plan, RaceDecisionOption selectedOption)
+    {
+        RaceCommandKind? commandKind = selectedOption switch
+        {
+            RaceDecisionOption.CommitSupport => RaceCommandKind.ForcePace,
+            RaceDecisionOption.WaitForRivals => RaceCommandKind.Conserve,
+            RaceDecisionOption.ProtectSecondLeader => RaceCommandKind.Conserve,
+            RaceDecisionOption.TrustDs => null,
+            _ => throw new InvalidOperationException("Unsupported race decision option."),
+        };
+        if (commandKind is RaceCommandKind command)
+        {
+            resolvedCommands.Add(new RaceCommand(
+                simulationSecond,
+                plan.Observation.OrganizationId,
+                plan.SupportRiderId,
+                command));
+        }
+    }
+
+    private void EmitRequestTrace(PendingDecisionContext context)
+    {
+        spySink.Emit(BuildTrace(
+            context,
+            selectedOption: string.Empty,
+            selectionReasons: context.Gate.Diagnostics,
+            commands: Array.Empty<string>()));
+    }
+
+    private void EmitDecisionTrace(PendingDecisionContext context, RaceDecisionOption selectedOption)
+    {
+        string[] commands = selectedOption switch
+        {
+            RaceDecisionOption.CommitSupport => new[] { $"ForcePace rider:{context.Plan.SupportRiderId.Value}" },
+            RaceDecisionOption.WaitForRivals => new[] { $"Conserve rider:{context.Plan.SupportRiderId.Value}" },
+            RaceDecisionOption.ProtectSecondLeader => new[] { $"Conserve rider:{context.Plan.SupportRiderId.Value}" },
+            RaceDecisionOption.TrustDs => new[] { "Continue DS policy" },
+            _ => throw new InvalidOperationException("Unsupported race decision option."),
+        };
+        spySink.Emit(BuildTrace(
+            context,
+            selectedOption.ToString(),
+            context.Decision.SelectionReasons,
+            commands));
+    }
+
+    private DecisionTrace BuildTrace(
+        PendingDecisionContext context,
+        string selectedOption,
+        IReadOnlyList<string> selectionReasons,
+        IReadOnlyList<string> commands)
+    {
+        TeamRaceObservation observation = context.Plan.Observation;
+        Dictionary<string, string> knownInputs = new(StringComparer.Ordinal)
+        {
+            ["OfficialGapSeconds"] = observation.OfficialGapSeconds.ToString(
+                System.Globalization.CultureInfo.InvariantCulture),
+            ["VisibleSplit"] = observation.VisibleSplit.ToString(),
+            ["LeaderPositionBand"] = observation.LeaderPositionBand.ToString(),
+            ["ThreatEstimate"] = observation.ThreatEstimate.ToString(),
+            ["Objective"] = observation.Objective.ToString(),
+        };
+        return new DecisionTrace(
+            context.Request.Id.Value,
+            simulationSecond,
+            "Race",
+            "ChaseResponse",
+            ActorPersonId: null,
+            observation.OrganizationId,
+            observation.DecisionAuthorityId,
+            context.Request.Trigger,
+            new[] { observation.Objective.ToString() },
+            context.Gate.Diagnostics,
+            knownInputs,
+            context.Decision.Interpretations,
+            observation.Confidence.ToString(),
+            context.Decision.OptionEvaluations,
+            selectedOption,
+            selectionReasons,
+            commands,
+            new[] { observation.OrganizationId, context.Plan.SupportRiderId },
+            TruthDebugRef: $"{scenario.Id}:truth:t{simulationSecond}");
     }
 
     private Dictionary<int, double> DetermineGroupTargetSpeeds()
@@ -333,7 +506,7 @@ public sealed class RaceSession
             metrics,
             teamEnergyJ,
             maximumGroupCount,
-            DecisionCount: 0,
+            decisionCount,
             Checksum: string.Empty);
         return provisional with
         {
@@ -408,4 +581,10 @@ public sealed class RaceSession
         double RealizablePowerW,
         double EffectiveCriticalPowerW,
         RiderPhysiologyState NextPhysiology);
+
+    private sealed record PendingDecisionContext(
+        RaceTacticalPlan Plan,
+        ChaseDecision Decision,
+        RaceDecisionGateResult Gate,
+        RaceDecisionRequest Request);
 }
