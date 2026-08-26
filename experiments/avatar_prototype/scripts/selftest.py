@@ -115,16 +115,60 @@ def main() -> int:
     receded_only = [a2 for a2 in m.by_category("hair") if "hairline_receded" in a2.requires_tags]
     check(bool(receded_only), "pack has hair assets gated on a receding hairline")
     check(
-        weighted_pick(RiderRng(1, 1).stream("t"), receded_only, teen, set()) is None,
+        weighted_pick(RiderRng(1, 1), "t", receded_only, teen, set()) is None,
         "gated hair is unreachable without the tag",
     )
     check(
-        weighted_pick(RiderRng(1, 1).stream("t"), receded_only, teen, {"hairline_receded"}) is not None,
+        weighted_pick(RiderRng(1, 1), "t", receded_only, teen, {"hairline_receded"}) is not None,
         "gated hair becomes reachable with the tag",
     )
     excl = [a2 for a2 in m.by_category("skin_details") if "beard_dense" in a2.excludes_tags]
     check(bool(excl), "pack has an excludes_tags rule (stubble shadow vs dense beard)")
     check(not _eligible(excl[0], teen, {"beard_dense"}), "excludes_tags blocks the conflicting asset")
+
+    print("weighted selection is append-stable")
+    import dataclasses
+    import math
+    from collections import Counter
+
+    from avatarlab.manifest import Asset
+    from avatarlab.rng import neg_log2_q32
+
+    worst_log = max(
+        abs(neg_log2_q32(u) / 2**32 + math.log2(u / 2**64))
+        for u in (1, 2**32, 2**60, 2**63, 2**64 - 1, 12345678901234567)
+    )
+    check(worst_log < 1e-6, f"fixed-point log2 matches libm to {worst_log:.1e} (platform independent)")
+
+    pool_riders = [Rider(rider_id=i, age=20 + i % 18, region="west_europe") for i in range(1, 8001)]
+    heads_before = {r.rider_id: generate(r, m).identity["head"] for r in pool_riders}
+    counts = Counter(heads_before.values())
+    total_w = sum(a.weight for a in m.by_category("head"))
+    worst = max(abs(counts[a.asset_id] / len(pool_riders) - a.weight / total_w) for a in m.by_category("head"))
+    check(worst < 0.02, f"asset frequencies follow their weights (worst deviation {worst * 100:.2f} pp)")
+
+    appended = dataclasses.replace(
+        m, assets=m.assets + (Asset(asset_id="head_99_probe", category="head", parts=(), weight=0.10, tags=("jaw_medium",)),)
+    )
+    heads_after = {r.rider_id: generate(r, appended).identity["head"] for r in pool_riders}
+    moved = [k for k in heads_before if heads_before[k] != heads_after[k]]
+    swapped = [k for k in moved if heads_after[k] != "head_99_probe"]
+    check(not swapped, f"appending an asset moves riders only to it ({len(moved)} moved, 0 reshuffled)")
+    expected = 0.10 / (total_w + 0.10)
+    check(
+        abs(len(moved) / len(pool_riders) - expected) < 0.02,
+        f"the moved share matches the new weight ({len(moved) / len(pool_riders) * 100:.1f}% vs {expected * 100:.1f}%)",
+    )
+
+    retired = dataclasses.replace(
+        m, assets=tuple(dataclasses.replace(a, weight=0.0) if a.asset_id == "head_03_square" else a for a in m.assets)
+    )
+    heads_retired = {r.rider_id: generate(r, retired).identity["head"] for r in pool_riders}
+    moved_r = [k for k in heads_before if heads_before[k] != heads_retired[k]]
+    check(
+        bool(moved_r) and all(heads_before[k] == "head_03_square" for k in moved_r),
+        "retiring an asset (weight 0) only moves the riders who had it",
+    )
 
     print("duplicate prevention")
     riders = [Rider(rider_id=i, age=20 + i % 18, region="west_europe") for i in range(1, 3001)]

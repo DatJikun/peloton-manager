@@ -252,16 +252,45 @@ region. `visual_seed` overrides `rider_id` as the seed for editor-authored rider
 
 ## 6. Weighted trait selection
 
+The obvious implementation - one roll walked across the cumulative weights - is wrong for a
+live game. Appending an asset changes the total, so the same roll lands on a different asset
+and a slice of the existing riders silently get a new face. That breaks the versioning lock
+in section 12.
+
+Instead every candidate gets its own hashed draw and the winner is the smallest
+`-ln(u_i) / w_i` (an exponential race, i.e. Efraimidis-Spirakis weighted sampling):
+
 ```python
-pool = [(a, a.weight * a.region_weights.get(region, 1.0))
-        for a in manifest.by_category(cat)
-        if age_ok(a, rider) and requires_tags ⊆ chosen_tags and excludes_tags ∩ chosen_tags = ∅]
-roll = stream.unit() * sum(w)          # single draw, cumulative walk
+for asset in eligible(category, rider, chosen_tags):
+    w = int(round(weight(asset, rider) * 10_000))           # integer shares
+    e = neg_log2_q32(rng.u64_for(domain, asset.asset_id))    # Exp(1) in Q32 fixed point
+    if e * best_w < best_e * w:                              # exact integer comparison
+        best = asset
 ```
 
-Weights are relative, not probabilities, so an artist can add an asset without renormalising
-the others. Measured on 20 000 riders: `hair_02_crop` 16.1%, `hair_09_spiky` ~4%,
-`hair_14_longer` ~2%, no facial hair 70.7% — common stays common, rare stays rare.
+Two implementation details matter:
+
+- `-ln(u)` comes from a bit-by-bit **fixed-point log2**, not from libm. A platform's `log`
+  can differ in the last bits between the game and the tools, which would mean two machines
+  disagreeing about a rider's face. The log2-vs-ln constant cancels in the ratio.
+- Comparisons are integer cross-multiplications, so there is no float accumulation at all.
+
+Measured properties, asserted in `selftest.py` over 8 000 riders:
+
+| property | result |
+|---|---|
+| frequencies follow weights | worst deviation 0.29 pp |
+| appending weight 0.10 to a total of 1.00 | 8.7 % of riders move (expected 9.1 %) |
+| ... riders swapping between two *old* assets | **0** |
+| retiring an asset (`weight: 0`) | only the riders who had it move |
+
+Cost: one hash per candidate instead of one per category, so appearance generation went from
+0.17 ms to 0.63 ms per rider in Python. Irrelevant next to rendering, and it buys the
+versioning guarantee.
+
+Weights stay relative, not probabilities, so an artist adds an asset without renormalising
+the others. Measured on 20 000 riders: short crops dominate the hairstyles and ~70 % of
+riders have no facial hair - common stays common, rare stays rare.
 
 Continuous parameters use a 3-uniform mean (a cheap bell curve), so most riders are average
 and extremes are rare. That is what stops the "artificially diverse" look.
@@ -395,11 +424,19 @@ Only the derived appearance and the PNG are cacheable; nothing in the save depen
 | `asset_pack_version` | which pixels/weights | cache invalidated, faces unchanged if ids kept |
 | `seed_version` | the hash namespace | **every face changes** — opt-in migration only |
 
-Rule: adding assets must not change existing riders. That holds because weights are
-relative and streams are domain-separated, but the guarantee is only real if retired assets
-keep their ids with `weight: 0`. A save records the triple it was created with; if a pack no
-longer resolves an id, the loader falls back to the same category's highest-weight asset and
-logs it, rather than silently re-rolling the face.
+Rule: adding assets must not change existing riders. Two independent defences:
+
+1. **Materialise the appearance.** The save stores the `identity` + `shape` blocks (about 30
+   small values, not the PNG) when the rider is created, so an existing rider is never
+   regenerated and no algorithm change can move his face. This is the primary defence and
+   the one to implement in C#.
+2. **Append-stable selection** (section 6) for everything that still regenerates: riders
+   created before materialisation existed, editor previews, bulk tooling. Adding an asset
+   only moves the `w / (W + w)` share that lands on it.
+
+Retired assets keep their ids with `weight: 0`. If a pack no longer resolves an id, the
+loader falls back to the same category's highest-weight asset and logs it, rather than
+silently re-rolling the face.
 
 ## 13. Folder structure
 

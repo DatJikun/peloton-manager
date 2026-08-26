@@ -60,6 +60,32 @@ class Stream:
         return min(1.0, max(0.0, v))
 
 
+def neg_log2_q32(u: int) -> int:
+    """`-log2(u / 2**64)` in Q32 fixed point, integer math only.
+
+    Weighted selection needs an Exp(1) variable per candidate, i.e. `-ln(u)`.
+    Using a libm `log` would make the result depend on the platform's libm, so
+    the game and the tools could disagree on a rider's face. This bit-by-bit
+    fixed-point log2 gives the same integer on every platform, and the constant
+    factor between log2 and ln cancels out because only ratios are compared.
+    """
+    if u <= 0:
+        raise ValueError("u must be positive")
+    k = 0
+    x = u
+    while x < (1 << 63):  # normalise to x / 2**63 in [1, 2)
+        x <<= 1
+        k += 1
+    frac = 0
+    y = x
+    for i in range(1, 33):
+        y = (y * y) >> 63
+        if y >= (1 << 64):
+            y >>= 1
+            frac |= 1 << (32 - i)
+    return ((k + 1) << 32) - frac
+
+
 class RiderRng:
     """Factory of independent streams for one rider."""
 
@@ -69,6 +95,16 @@ class RiderRng:
         self.rider_id = rider_id
         self.seed_version = seed_version
         self.salt = salt
+
+    def u64_for(self, domain: str, key: str, salted: bool = False) -> int:
+        """One hashed draw bound to a single (domain, key) pair.
+
+        Used by append-stable weighted selection: every candidate asset gets its
+        own independent draw, so adding an asset to a category cannot reshuffle
+        the riders who were not moved to it.
+        """
+        salt = self.salt if salted else 0
+        return _hash64("pmav", self.seed_version, self.rider_id, domain, salt, key)
 
     def stream(self, domain: str, salted: bool = False) -> Stream:
         """Stream for `domain`.

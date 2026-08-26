@@ -19,7 +19,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Iterable
 
 from .manifest import Asset, Manifest
-from .rng import RiderRng, Stream
+from .rng import RiderRng, Stream, neg_log2_q32  # noqa: F401  (Stream re-exported)
 
 # --------------------------------------------------------------------------- #
 # rider input
@@ -69,24 +69,48 @@ def _weight_for(asset: Asset, rider: Rider) -> float:
     return max(0.0, w)
 
 
+WEIGHT_SCALE = 10_000  # weights become integer shares, so comparisons stay exact
+
+
 def weighted_pick(
-    stream: Stream,
+    rng: RiderRng,
+    domain: str,
     assets: Iterable[Asset],
     rider: Rider,
     chosen_tags: set[str],
+    salted: bool = False,
 ) -> Asset | None:
-    pool = [(a, _weight_for(a, rider)) for a in assets if _eligible(a, rider, chosen_tags)]
-    pool = [(a, w) for a, w in pool if w > 0.0]
-    if not pool:
-        return None
-    total = sum(w for _, w in pool)
-    roll = stream.unit() * total
-    acc = 0.0
-    for asset, w in pool:
-        acc += w
-        if roll < acc:
-            return asset
-    return pool[-1][0]
+    """Weighted choice that is stable when the pack grows.
+
+    The obvious implementation - one roll walked across the cumulative weights -
+    is wrong for a live game: appending an asset changes the total, so the same
+    roll lands on a different asset and a slice of the existing riders silently
+    get a new face. Instead every candidate gets its own hashed draw and we run
+    an exponential race: pick the smallest `-ln(u_i) / w_i`.
+
+    Adding an asset with weight w therefore moves only w / (W + w) of the pool to
+    it and leaves everyone else untouched; setting a weight to 0 only affects the
+    riders who had that asset. Comparisons use integer cross-multiplication, so
+    the result cannot drift between Python and C#.
+    """
+    best: Asset | None = None
+    best_u = 0
+    best_w = 0
+    for asset in assets:
+        if not _eligible(asset, rider, chosen_tags):
+            continue
+        w = int(round(_weight_for(asset, rider) * WEIGHT_SCALE))
+        if w <= 0:
+            continue
+        # Exp(1) variate in Q32 fixed point: deterministic on every platform
+        e = neg_log2_q32(rng.u64_for(domain, asset.asset_id, salted) | 1)
+        if best is None:
+            best, best_u, best_w = asset, e, w
+            continue
+        lhs, rhs = e * best_w, best_u * w
+        if lhs < rhs or (lhs == rhs and asset.asset_id < best.asset_id):
+            best, best_u, best_w = asset, e, w
+    return best
 
 
 # --------------------------------------------------------------------------- #
@@ -192,19 +216,19 @@ def _identity(rng: RiderRng, rider: Rider, m: Manifest) -> tuple[dict[str, Any],
     build = _build_factor(rng, rider)
     tags: set[str] = set()
 
-    head = weighted_pick(rng.stream("identity.head"), m.by_category("head"), rider, tags)
+    head = weighted_pick(rng, "identity.head", m.by_category("head"), rider, tags)
     if head is None:
         raise RuntimeError("pack has no head assets")
     tags |= set(head.tags)
 
     ident: dict[str, Any] = {"head": head.asset_id}
     for cat in ("ears", "eyes", "eyebrows", "nose", "mouth"):
-        pick = weighted_pick(rng.stream(f"identity.{cat}"), m.by_category(cat), rider, tags)
+        pick = weighted_pick(rng, f"identity.{cat}", m.by_category(cat), rider, tags)
         if pick is not None:
             ident[cat] = pick.asset_id
             tags |= set(pick.tags)
 
-    iris = weighted_pick(rng.stream("identity.iris"), m.by_category("iris_color"), rider, tags)
+    iris = weighted_pick(rng, "identity.iris", m.by_category("iris_color"), rider, tags)
     ident["iris_color"] = iris.asset_id if iris else None
     ident["skin_tone"] = _skin_tone(rng, rider)
     ident["build"] = build
@@ -236,10 +260,8 @@ def _mutable(rng: RiderRng, rider: Rider, m: Manifest, ident: dict[str, Any]) ->
     elif recession > 0.3:
         tags.add("hairline_thinning")
 
-    hair = weighted_pick(rng.stream("mutable.hair", salted=True), m.by_category("hair"), rider, tags)
-    hair_color = weighted_pick(
-        rng.stream("mutable.hair_color", salted=True), m.by_category("hair_color"), rider, tags
-    )
+    hair = weighted_pick(rng, "mutable.hair", m.by_category("hair"), rider, tags, salted=True)
+    hair_color = weighted_pick(rng, "mutable.hair_color", m.by_category("hair_color"), rider, tags, salted=True)
 
     # --- gray ---------------------------------------------------------------
     gray = min(1.0, max(0.0, (age - gen["gray_onset_age"]) / 18.0 * gen["gray_speed"]))
@@ -252,9 +274,7 @@ def _mutable(rng: RiderRng, rider: Rider, m: Manifest, ident: dict[str, Any]) ->
         beard_p *= 0.7
     facial = None
     if rng.stream("mutable.beard_gate", salted=True).chance(beard_p):
-        facial = weighted_pick(
-            rng.stream("mutable.beard", salted=True), m.by_category("facial_hair"), rider, tags
-        )
+        facial = weighted_pick(rng, "mutable.beard", m.by_category("facial_hair"), rider, tags, salted=True)
 
     # --- wrinkles / skin wear ----------------------------------------------
     wear = min(1.0, max(0.0, (age - 25.0) / 24.0))
@@ -282,11 +302,11 @@ def _mutable(rng: RiderRng, rider: Rider, m: Manifest, ident: dict[str, Any]) ->
 
 def _equipment(rng: RiderRng, rider: Rider, m: Manifest) -> dict[str, Any]:
     tags: set[str] = set()
-    helmet = weighted_pick(rng.stream("equip.helmet"), m.by_category("helmet"), rider, tags)
+    helmet = weighted_pick(rng, "equip.helmet", m.by_category("helmet"), rider, tags)
     glasses = None
     if rng.stream("equip.glasses_gate").chance(0.55):
-        glasses = weighted_pick(rng.stream("equip.glasses"), m.by_category("glasses"), rider, tags)
-    jersey = weighted_pick(rng.stream("equip.jersey_cut"), m.by_category("jersey"), rider, tags)
+        glasses = weighted_pick(rng, "equip.glasses", m.by_category("glasses"), rider, tags)
+    jersey = weighted_pick(rng, "equip.jersey_cut", m.by_category("jersey"), rider, tags)
     return {
         "jersey_template": jersey.asset_id if jersey else None,
         "team_id": rider.team_id,

@@ -9,21 +9,21 @@ same appearance rendered twice -> identical pixels: True
 after transfer + 6 birthdays -> identity block unchanged: True
                              -> shape block unchanged:    True
                              -> mutable block changed:    True
-cache key before/after: 50fcafb14e7ceb8a -> f0fa112fc81af500
+cache key before/after: e61f0028cd924d2d -> 7efbf8a2a1286fd9
 
 === duplicate prevention on a 20000 rider pool ===
-generate_pool: 3.39s total, 0.169 ms per rider
-riders=20000 rerolled=21 unresolved_clones=0
-distinct similarity keys=20000 distinct identity cores=19997
-identity-core collisions remaining: 3 (0.01%)
-same pool WITHOUT salt re-rolls would ship 21 look-alike pairs
+generate_pool: 12.57s total, 0.628 ms per rider
+riders=20000 rerolled=19 unresolved_clones=0
+distinct similarity keys=20000 distinct identity cores=19992
+identity-core collisions remaining: 8 (0.04%)
+same pool WITHOUT salt re-rolls would ship 19 look-alike pairs
 
 === distribution sanity (weighted, not uniform) ===
-head: 01_oval 14.4%, 03_square 11.7%, 05_angular 11.2%, 02_long 11.0%, 04_round 10.9%, 06_broad 10.2%
-hair: 02_crop 8.7%, 17_fringe 8.1%, 04_messy_short 7.6%, 03_side_part 7.4%, 19_textured_spikes 6.3%, 01_buzz 6.1%
-facial_hair: None 70.7%, 01_stubble_light 8.1%, 02_stubble_heavy 6.4%, 03_beard_short 4.6%, 05_goatee 3.0%, 04_beard_full 2.7%
+head: 01_oval 14.6%, 03_square 11.6%, 02_long 11.5%, 05_angular 11.2%, 04_round 10.7%, 06_broad 10.2%
+hair: 02_crop 9.1%, 17_fringe 8.7%, 03_side_part 7.4%, 04_messy_short 7.3%, 01_buzz 6.5%, 19_textured_spikes 6.0%
+facial_hair: None 70.7%, 01_stubble_light 8.2%, 02_stubble_heavy 6.2%, 03_beard_short 4.6%, 05_goatee 3.1%, 04_beard_full 2.9%
 
 === render performance (single thread, Pillow + numpy) ===
-200 portraits in 5.52s -> 27.6 ms each, 36 portraits/s
-extrapolated cold render of 20000 portraits: 552s single threaded
-cache hit read: 2.63 ms each
+200 portraits in 5.43s -> 27.2 ms each, 37 portraits/s
+extrapolated cold render of 20000 portraits: 543s single threaded
+cache hit read: 2.53 ms each

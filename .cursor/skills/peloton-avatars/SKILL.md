@@ -100,6 +100,8 @@ Three mechanisms create variety from ~120 assets:
   skin-tone mean. Nothing may be assigned deterministically from nationality, and every
   option stays reachable from every region.
 - **Aging is monotonic.** Wrinkles, gray and hairline recession never decrease with age.
+- **Adding an asset must not move the riders who keep their old one.** See the weights note
+  below; `selftest.py` asserts that 0 riders swap between two old assets.
 - **No new asset may dead-end generation.** There must always be at least one legal hair
   option for every age x hairline-state combination (the validator checks this).
 
@@ -167,10 +169,16 @@ overlay in `BAND_OVERLAYS` if it needs stripes. Keep old names working via
 
 **A team**: `TEAMS` in `pack.py` (`primary`, `secondary`, `accent`, `nation_colors`).
 
-**Weights are relative, not probabilities.** Adding an asset does not require
-renormalising the others. Common traits must stay common: check
-`out/demo/report.txt` after a change (short crops should dominate hairstyles, ~70 % of
-riders have no facial hair).
+**Weights are relative, not probabilities.** Adding an asset does not require renormalising
+the others, and it must not disturb the riders who keep their old asset. Selection is an
+exponential race over per-asset hashed draws (`weighted_pick` in `generate.py`): appending
+weight `w` moves only `w / (W + w)` of the pool, all of it to the new asset. Never replace
+this with a cumulative-weight walk - that reshuffles existing faces on every pack update.
+Never compute the Exp(1) key with libm `log`; use `neg_log2_q32`, because the game and the
+tools must agree bit for bit.
+
+Common traits must stay common: check `out/demo/report.txt` after a change (short crops
+should dominate hairstyles, ~70 % of riders have no facial hair).
 
 ## Changing the style
 
@@ -224,6 +232,11 @@ pack update is a miss. Three versions exist and mean different things:
 `avatar_schema_version` (JSON shape, needs migration code), `asset_pack_version` (pixels
 and weights, invalidates the cache only), `seed_version` (the hash namespace — changes
 every face, migration only).
+
+In the shipping build the save also stores the materialised `identity` + `shape` blocks
+(~30 small values, not the PNG), so an existing rider is never regenerated and no algorithm
+change can move his face. Append-stable selection is the second line of defence for riders
+that do get regenerated.
 
 Retired assets keep their id with `weight: 0`; never re-use an id for different art.
 
