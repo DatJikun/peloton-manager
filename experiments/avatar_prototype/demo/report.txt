@@ -12,7 +12,7 @@ after transfer + 6 birthdays -> identity block unchanged: True
 cache key before/after: 03724fc3feb80221 -> 008c72d5d8353ea2
 
 === duplicate prevention on a 20000 rider pool ===
-generate_pool: 3.22s total, 0.161 ms per rider
+generate_pool: 3.18s total, 0.159 ms per rider
 riders=20000 rerolled=38 unresolved_clones=0
 distinct similarity keys=20000 distinct identity cores=19994
 identity-core collisions remaining: 6 (0.03%)
@@ -24,6 +24,6 @@ hair: 02_crop 16.1%, 03_side_part 13.1%, 04_messy_short 12.8%, 01_buzz 10.5%, 06
 facial_hair: None 70.7%, 01_stubble_light 8.0%, 02_stubble_heavy 6.3%, 03_beard_short 4.6%, 05_goatee 2.9%, 04_beard_full 2.7%
 
 === render performance (single thread, Pillow + numpy) ===
-200 portraits in 4.00s -> 20.0 ms each, 50 portraits/s
-extrapolated cold render of 20000 portraits: 400s single threaded
-cache hit read: 3.12 ms each
+200 portraits in 3.95s -> 19.7 ms each, 51 portraits/s
+extrapolated cold render of 20000 portraits: 395s single threaded
+cache hit read: 3.10 ms each

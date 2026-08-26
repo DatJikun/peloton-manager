@@ -76,7 +76,11 @@ def grid(tiles: list[Image.Image], cols: int, pad: int = 6, header: str = "", su
     tw, th = tiles[0].size
     rows = (len(tiles) + cols - 1) // cols
     head_h = 0 if not header else (54 if not sub else 78)
-    sheet = Image.new("RGBA", (cols * (tw + pad) + pad, head_h + rows * (th + pad) + pad), (*BG, 255))
+    width = cols * (tw + pad) + pad
+    if header:  # never clip the caption on a narrow sheet
+        need = max(font(26, bold=True).getlength(header), font(15).getlength(sub) if sub else 0)
+        width = max(width, int(need) + 2 * pad + 12)
+    sheet = Image.new("RGBA", (width, head_h + rows * (th + pad) + pad), (*BG, 255))
     d = ImageDraw.Draw(sheet)
     if header:
         d.text((pad + 4, 14), header, fill=TEXT, font=font(26, bold=True))
