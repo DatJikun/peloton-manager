@@ -9,6 +9,10 @@ piece of logic below is deliberately portable to C#: integer hashing, no floatin
 accumulation across frames, no library-specific randomness, no data hidden in code that
 should live in the manifest.
 
+**Operating manual for other agents:** `.cursor/skills/peloton-avatars/SKILL.md`. It
+carries the owner's taste decisions, the recipe tables, the mandatory gate and the art
+traps already paid for. Read it before editing assets or the style.
+
 ## 0. Owner answers locked on 2026-08-26
 
 | Question | Answer | Consequence |
@@ -28,7 +32,8 @@ The dashboard direction is constructivist poster: paper `#f3ede1`, red `#d11f1f`
 `#0c0c0d`, 3 px black borders, hard offset shadows, Anton display type. The avatar pack now
 borrows from that lab instead of inventing a parallel palette:
 
-- skin stops and hair colours come from `09-avatar-lab.html` (the owner's reference),
+- skin stops and hair colours were lifted from `09-avatar-lab.html` before the owner
+  rejected and deleted that lab; the values now live in `SKIN_RAMP_FLAT` / `HAIR_COLORS`,
 - jersey override keys and colours are the lab's: `team`, `tour` (yellow), `giro` (pink),
   `vuelta` (red), `world` (rainbow bands), `national` (two bands), with the pre-lab names
   (`leader`, `world_champion`, `national_champion`) kept as aliases,
@@ -60,6 +65,8 @@ One canonical framing that every asset in a pack must match. It lives in
 | head half width | 109 px (head 218 x 280, ratio 0.78) |
 | single-eye anchor | x = 256 + 47 |
 | neck top / shoulder line | y = 330 / y = 456 |
+| torso half width | 246 px |
+| head crop for small UI sizes | (96, 44, 416, 364) |
 | light | key from upper-left, ~35 degrees elevation |
 
 Changing any of these invalidates the whole pack: it is an art-direction reset, not a tweak.

@@ -45,7 +45,9 @@ Awatary są dopasowane do zmergowanego laboratorium UI, nie do własnej palety:
 - kolory z `12-dashboard-team-mid.html`: papier `#f3ede1`, czerwień `#d11f1f`, czerń `#0c0c0d`,
   biel `#fffdf7` — plansze oceny są renderowane na papierze, z 3 px czarną obwódką i twardym
   cieniem, czyli tak, jak wyglądają panele dashboardu,
-- karnacje i kolory włosów przeniesione z `09-avatar-lab.html` (Twojej referencji),
+- karnacje i kolory włosów pochodzą z odrzuconego `09-avatar-lab.html` (Twojej referencji);
+  sam lab został usunięty, a wartości mieszkają teraz w `SKIN_RAMP_FLAT` i `HAIR_COLORS`
+  w `avatarlab/bake/pack.py`,
 - klucze i kolory koszulek te same co w labie: `team` / `tour` / `giro` / `vuelta` / `world` /
   `national` (żółta, różowa, czerwona, tęcza, opaski),
 - grubość kreski tuszem (~4 px na 512) dobrana pod 3 px obwódki paneli.
@@ -157,3 +159,10 @@ out/                     wyniki lokalne (gitignore)
 ```
 
 Szczegóły techniczne, rekomendacja renderera i plan docelowy: `DESIGN_SKETCH.md`.
+
+## Dla innych AI
+
+`.cursor/skills/peloton-avatars/SKILL.md` — instrukcja obsługi: zamknięte decyzje o guście,
+niezmienny kadr, tabele przepisów na assety, profile stylu, obowiązkowa bramka
+(bake → validate → selftest → render_demo) i lista pułapek rysunkowych, za które już
+zapłaciliśmy. Każdy agent dotykający awatarów ma ją przeczytać najpierw.
