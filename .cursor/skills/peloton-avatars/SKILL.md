@@ -105,21 +105,29 @@ Three mechanisms create variety from ~120 assets:
 - **No new asset may dead-end generation.** There must always be at least one legal hair
   option for every age x hairline-state combination (the validator checks this).
 
-## The gate — run all four, in order
+## The gate — run it, in order
 
 ```bash
 cd experiments/avatar_prototype
-python3 scripts/bake_pack.py poster      # or `all` for every style, ~30 s per style
+python3 scripts/bake_pack.py all         # every style, ~30 s each; see the warning below
 python3 scripts/validate_pack.py         # size / alpha / alignment / manifest rules
-python3 scripts/selftest.py poster       # 36 behavioural assertions
+python3 scripts/selftest.py poster       # behavioural assertions
 python3 scripts/render_demo.py poster    # review sheets into out/demo/
+python3 scripts/asset_usage.py <asset>   # only when you added or gated an asset
 ```
 
-Never hand over a pack that fails `validate_pack.py`, and never claim a visual result
-without looking at the rendered sheets. Copy the sheets you actually judged into
-`demo/` when the change is meant to be reviewed by the owner.
+`bake_pack.py all` is **mandatory whenever an asset table changes**, not a convenience.
+Baking one style leaves the other packs holding the previous asset table, and
+`validate_pack.py` validates every pack directory it finds, so a green result would cover
+four stale packs. `render_demo.py` refuses to emit the style-comparison sheet when the
+packs disagree (it compares the content fingerprint in `asset_pack_version`), and
+`bake_pack.py` warns you which packs went stale.
 
-What each sheet answers:
+`selftest.py <style>` runs its behavioural checks against that pack and validates all of
+them. Do not hard-code the number of checks anywhere: read what the script prints, and
+treat a **decrease** as a regression.
+
+What each review sheet answers:
 
 | Sheet | Question |
 |---|---|
@@ -136,31 +144,75 @@ What each sheet answers:
 Sheets render on the UI palette (paper `#f3ede1`, ink `#0c0c0d`, red `#d11f1f`, bordered
 cards) because judging a portrait on a dark background says nothing about a light UI.
 
+**Sheet 05 does not prove a gate works.** It force-swaps every asset id onto one base
+rider, so it only proves the art bakes and composites. `out/demo/report.txt` does not
+prove it either: it prints the six most common assets per category, so anything rare or
+newly added is invisible. Use `scripts/asset_usage.py <asset_id>`, which prints the
+asset's weight against its category total, the expected and measured share of a 20 000
+rider pool, how many riders carry each gated tag, and a **GATE VIOLATIONS** count that
+must be 0.
+
+`out/` is gitignored. Copy sheets into the committed `demo/` folder only when the owner is
+meant to review this change, and then copy **all** of them plus `report.txt`, so the
+committed set stays internally consistent. Never copy a single sheet.
+
 ## Recipes — how to add things
 
 All recipes are plain tables in `avatarlab/bake/pack.py`. A new asset is a few numbers,
-never free-hand drawing.
+never free-hand drawing. Position in the table is irrelevant: selection depends only on the
+asset id and its weight, so append anywhere. Ids follow `<category>_<nn>_<descriptor>` with
+the next free `nn`; the number never has to match the row position, and a retired id is
+never re-used.
 
-**A hairstyle** (`HAIR_RECIPES`): `t` = thickness, `hl` = hairline as a fraction of head
-height (smaller = higher forehead), `side` = how far down the sides reach, `style` = one of
-`straight`, `round`, `swept`, `m_shape`, `quiff`, `fringe`, `undercut`, `mid_part`,
-`wob` = `("curl"|"spike", amount)`.
+**Recipe keys are checked at bake time** (`check_recipe`) and an unknown key is a hard
+error with a hint. This exists because the keys differ between the recipe tables and the
+manifest — recipes use `requires` / `excludes` / `w`, the manifest uses `requires_tags` /
+`excludes_tags` / `weight` — and before the check a typo silently shipped an asset with no
+gating rule while the whole gate stayed green.
+
+**Tags you can gate on** (nothing else is accepted):
+
+| tag | where it comes from |
+|---|---|
+| `hairline_thinning` | derived recession > 0.30 |
+| `hairline_receded` | derived recession > 0.62 (mutually exclusive with thinning) |
+| `beard_dense` | the chosen facial-hair asset carries it |
+| `jaw_narrow` / `jaw_medium` / `jaw_wide` | the chosen head asset carries it |
+
+`requires` needs all listed tags; `excludes` rejects the asset if any is present. Gating on
+"receded" does **not** cover thinning riders — they are separate buckets, so decide which
+you mean.
+
+**A hairstyle** (`HAIR_RECIPES`):
+
+| key | meaning |
+|---|---|
+| `id` | `hair_<nn>_<descriptor>` |
+| `w` | weight, a share of the category total (currently ~2.0, so `0.06` is ~3 %) |
+| `t` | thickness in px above the skull, 3 (shaved) to 25 (tall curls) |
+| `hl` | hairline as a fraction of head height, 0.05 (horseshoe) to 0.28; smaller = higher forehead |
+| `side` | how far down the sides reach, as a fraction of head height: 0.42 (high fade) to 0.70 (over the ears) |
+| `style` | `straight`, `round`, `swept`, `m_shape`, `quiff`, `fringe`, `undercut`, `mid_part` |
+| `wob` | optional silhouette detail `("curl"|"spike", amount)`, amount 5..15 px |
+| `part` | optional bool, adds a parting shadow |
+| `min_age` / `max_age` | optional age window |
+| `requires` / `excludes` | optional tag gates |
+| `region_weights` | optional dict, e.g. `{"*": 1.0, "west_africa": 2.2, "east_asia": 0.3}` |
 
 ```python
 {"id": "hair_26_short_wave", "w": 0.06, "t": 13.0, "hl": 0.22, "side": 0.50,
- "style": "swept", "wob": ("curl", 5.0)}
+ "style": "swept", "wob": ("curl", 5.0), "excludes": ("hairline_receded",)}
 ```
 
-Gate a style on state with `requires`/`excludes`/`min_age`/`max_age`, e.g. a receding cut
-uses `"requires": ("hairline_receded",)`.
+**A head** (`HEAD_RECIPES`, a 4-tuple `(id, weight, params, tags)`): params are multipliers
+around 1.0 on `cranium_w`, `temple_w`, `cheek_w`, `jaw_w`, `chin_w`, `crown_w`, plus
+`crown` and `chin_len` in px. Tag it `jaw_narrow` / `jaw_medium` / `jaw_wide` so beards and
+hair can react.
 
-**A head** (`HEAD_RECIPES`): multipliers around 1.0 on `cranium_w`, `temple_w`, `cheek_w`,
-`jaw_w`, `chin_w`, `crown_w`, plus `crown` and `chin_len` in px. Tag it `jaw_narrow` /
-`jaw_medium` / `jaw_wide` so beards and hair can react.
-
-**Facial hair** (`FACIAL_RECIPES`): `cov` = `full`/`short`/`chin`/`strap`/`moustache`,
-`alpha`, `soft`, `min_age`, and `tags: ("beard_dense",)` for anything that should suppress
-the shaved-stubble skin detail.
+**Facial hair** (`FACIAL_RECIPES`): `cov` = `full` / `short` / `chin` / `strap` /
+`moustache`, `alpha` (0.24 stubble .. 0.96 dense), `soft` (blur px), `moustache` bool,
+`min_age`, and `tags: ("beard_dense",)` for anything that should suppress the shaved
+stubble skin detail.
 
 **A jersey override** (classification kit): add a key to `JERSEY_OVERRIDES` in
 `avatarlab/render.py` with `team_primary` / `team_secondary` / `team_accent`, and a band
@@ -172,13 +224,27 @@ overlay in `BAND_OVERLAYS` if it needs stripes. Keep old names working via
 **Weights are relative, not probabilities.** Adding an asset does not require renormalising
 the others, and it must not disturb the riders who keep their old asset. Selection is an
 exponential race over per-asset hashed draws (`weighted_pick` in `generate.py`): appending
-weight `w` moves only `w / (W + w)` of the pool, all of it to the new asset. Never replace
-this with a cumulative-weight walk - that reshuffles existing faces on every pack update.
-Never compute the Exp(1) key with libm `log`; use `neg_log2_q32`, because the game and the
-tools must agree bit for bit.
+weight `w` moves only `w / (W + w)` of the pool, all of it to the new asset. `W` is the sum
+of the category's weights — do not guess it, `asset_usage.py` prints it. Never replace this
+with a cumulative-weight walk, and never compute the Exp(1) key with libm `log`; use
+`neg_log2_q32`, because the game and the tools must agree bit for bit.
 
-Common traits must stay common: check `out/demo/report.txt` after a change (short crops
-should dominate hairstyles, ~70 % of riders have no facial hair).
+Common traits must stay common: after a change, check the distribution block of
+`out/demo/report.txt` (short crops should dominate hairstyles, ~70 % of riders have no
+facial hair).
+
+**Formatting:** there is no Python formatter or linter configured for this experiment, so
+match the neighbouring entries — single-line dicts for short recipes, the multi-line shape
+used by `hair_24_curly_tall` once a recipe carries `region_weights`. Do not reformat rows
+you did not touch.
+
+**Versions:** never bump `asset_pack_version` by hand. The baker appends a content
+fingerprint (`0.1.0-placeholder+2c093d35`) computed from the style, the asset table **and
+the bytes of every PNG**, so anything visible invalidates the portrait cache - a new asset,
+a reweight, a style change, or a drawing constant that only moves pixels. The manifest also
+carries `asset_table_hash`, a fingerprint of the recipe table with parts deliberately
+excluded; that is what tells you whether two packs were baked from the same table, and it
+is what `render_demo.py` checks before it will emit the style comparison sheet.
 
 ## Changing the style
 
@@ -230,7 +296,8 @@ The key covers schema/pack/seed versions, rider id, salt and all four appearance
 A birthday inside the same `age_stage` is a cache hit; a transfer, a new hairstyle or a
 pack update is a miss. Three versions exist and mean different things:
 `avatar_schema_version` (JSON shape, needs migration code), `asset_pack_version` (pixels
-and weights, invalidates the cache only), `seed_version` (the hash namespace — changes
+and weights, invalidates the cache only; the baker appends a content fingerprint of the
+asset table so it can never be forgotten), `seed_version` (the hash namespace — changes
 every face, migration only).
 
 In the shipping build the save also stores the materialised `identity` + `shape` blocks

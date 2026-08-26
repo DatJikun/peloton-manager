@@ -66,6 +66,7 @@ python3 scripts/bake_pack.py all        # wypieka 5 pakietów (out/pack_<styl>),
 python3 scripts/validate_pack.py        # walidacja każdego pakietu: 512x512, alpha, alignment
 python3 scripts/selftest.py poster      # 36 asercji: determinizm, starzenie, kompatybilność, klony
 python3 scripts/render_demo.py poster   # plansze do oceny + out/demo/report.txt
+python3 scripts/asset_usage.py hair_26_short_wave   # czy asset trafia do puli i czy blokada działa
 ```
 
 Gotowe plansze (bez uruchamiania czegokolwiek) leżą w `demo/`.
@@ -153,7 +154,7 @@ avatarlab/render.py      kompozytor warstw, tinty, head_crop, cache
 avatarlab/validate.py    walidator pakietu (rozmiar, alpha, regiony, reguły)
 avatarlab/bake/draw.py   master reference + profile stylu + primitywy rysowania
 avatarlab/bake/pack.py   PLACEHOLDER: przepisy na wszystkie kategorie assetów
-scripts/                 bake / validate / selftest / render_demo
+scripts/                 bake / validate / selftest / render_demo / asset_usage
 demo/                    plansze do oceny + report.txt
 out/                     wyniki lokalne (gitignore)
 ```

@@ -170,6 +170,25 @@ def main() -> int:
         "retiring an asset (weight 0) only moves the riders who had it",
     )
 
+    print("recipe schema")
+    from avatarlab.bake.pack import check_recipe
+
+    good = {"id": "hair_probe", "w": 0.05, "t": 10.0, "hl": 0.22, "side": 0.5, "style": "swept", "excludes": ("hairline_receded",)}
+    check_recipe("hair", good)
+    check(True, "a correct hair recipe passes the schema check")
+    for broken, label in (
+        ({**good, "excludes_tags": ("hairline_receded",)}, "a manifest-style key (excludes_tags) is rejected"),
+        ({**good, "style": "spiky"}, "an unknown hair style is rejected"),
+        ({**good, "requires": ("bald",)}, "gating on an unknown tag is rejected"),
+    ):
+        broken.pop("excludes", None) if "excludes_tags" in broken else None
+        try:
+            check_recipe("hair", broken)
+        except ValueError:
+            check(True, label)
+        else:
+            raise AssertionError(f"FAILED: {label}")
+
     print("duplicate prevention")
     riders = [Rider(rider_id=i, age=20 + i % 18, region="west_europe") for i in range(1, 3001)]
     pool, rep = generate_pool(riders, m)

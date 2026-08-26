@@ -46,6 +46,7 @@ class Manifest:
     pack_id: str
     style: str
     asset_pack_version: str
+    asset_table_hash: str
     avatar_schema_version: int
     seed_version: int
     canvas: dict[str, Any]
@@ -97,6 +98,7 @@ def load(path: str | Path) -> Manifest:
     return Manifest(
         pack_id=data["pack_id"],
         style=data.get("style", "unspecified"),
+        asset_table_hash=data.get("asset_table_hash", ""),
         asset_pack_version=data["asset_pack_version"],
         avatar_schema_version=int(data["avatar_schema_version"]),
         seed_version=int(data["seed_version"]),

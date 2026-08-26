@@ -239,6 +239,34 @@ def _identity(rng: RiderRng, rider: Rider, m: Manifest) -> tuple[dict[str, Any],
     return ident, shape
 
 
+RECESSION_THINNING = 0.30  # tag threshold: hairline_thinning
+RECESSION_RECEDED = 0.62  # tag threshold: hairline_receded
+
+
+def hairline_tags(recession: float) -> set[str]:
+    """Tag vocabulary a hair recipe can gate on, from the continuous value."""
+    if recession > RECESSION_RECEDED:
+        return {"hairline_receded"}
+    if recession > RECESSION_THINNING:
+        return {"hairline_thinning"}
+    return set()
+
+
+def active_tags(app: Appearance, m: Manifest) -> set[str]:
+    """Every tag a rider carries once his appearance is resolved.
+
+    Used by tooling to prove a gating rule actually fires, instead of trusting
+    that an asset with `excludes` never reaches a rider who has the tag.
+    """
+    tags = set(app.identity.get("tags", ()))
+    tags |= hairline_tags(app.mutable.get("hairline_recession", 0.0))
+    for cat in ("facial_hair", "hair"):
+        asset_id = app.mutable.get(cat)
+        if asset_id:
+            tags |= set(m.get(asset_id).tags)
+    return tags
+
+
 def age_stage(age: int) -> int:
     """Coarse visual age buckets; the cache key only moves when this moves."""
     for i, upper in enumerate((21, 25, 29, 33, 37, 42, 48, 55, 200)):
@@ -255,10 +283,7 @@ def _mutable(rng: RiderRng, rider: Rider, m: Manifest, ident: dict[str, Any]) ->
     # --- hairline recession: continuous, personal, monotonic in age ----------
     recession_drive = max(0.0, (age - (23.0 + 12.0 * (1.0 - gen["balding_propensity"]))) / 22.0)
     recession = min(1.0, max(0.0, recession_drive * (0.35 + 1.15 * gen["balding_propensity"])))
-    if recession > 0.62:
-        tags.add("hairline_receded")
-    elif recession > 0.3:
-        tags.add("hairline_thinning")
+    tags |= hairline_tags(recession)
 
     hair = weighted_pick(rng, "mutable.hair", m.by_category("hair"), rider, tags, salted=True)
     hair_color = weighted_pick(rng, "mutable.hair_color", m.by_category("hair_color"), rider, tags, salted=True)

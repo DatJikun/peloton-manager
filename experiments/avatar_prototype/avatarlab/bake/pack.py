@@ -14,6 +14,8 @@ Part file convention:  <category>/<asset_id>__<part>.png
 
 from __future__ import annotations
 
+import hashlib
+import json
 import math
 import random
 from pathlib import Path
@@ -166,6 +168,54 @@ def detail(rgb: tuple[int, int, int], alpha: Image.Image, strength: float) -> Im
 # --------------------------------------------------------------------------- #
 
 
+# Recipe schemas. A typo in a recipe key used to be silent: the baker read the
+# keys it knew via dict.get() and dropped the rest, so `excludes_tags` instead of
+# `excludes` shipped an asset with no gating rule at all while the whole gate
+# stayed green. Unknown keys are now a hard failure at bake time.
+RECIPE_KEYS: dict[str, set[str]] = {
+    "hair": {"id", "w", "t", "hl", "side", "style", "wob", "part", "min_age", "max_age", "requires", "excludes", "region_weights"},
+    "facial_hair": {"id", "w", "cov", "alpha", "soft", "min_age", "max_age", "tags", "moustache"},
+    "glasses": {"id", "w", "lens", "alpha", "wrap", "half"},
+    "helmet": {"id", "w", "vents", "back", "aero"},
+    "head.params": {"crown", "crown_w", "cranium_w", "temple_w", "cheek_w", "jaw_w", "chin_w", "chin_len"},
+    "ears.params": {"w", "out", "h"},
+    "eyes.params": {"hw", "th", "bh", "tilt", "hood", "crease", "crease_a", "lash", "iris_r", "iris_dx"},
+    "eyebrows.params": {"th", "arch", "angle", "len", "drop", "rough"},
+    "nose.params": {"len", "bridge", "tip", "flare", "hook", "upturn", "depth", "bulb"},
+    "mouth.params": {"hw", "upper", "lower", "droop", "bow", "smile"},
+}
+
+# keys people reach for because the manifest or another table spells them differently
+RECIPE_KEY_HINTS: dict[str, str] = {
+    "excludes_tags": "excludes",
+    "requires_tags": "requires",
+    "weight": "w",
+    "tag": "tags",
+    "thickness": "t",
+    "hairline": "hl",
+    "coverage": "cov",
+}
+
+HAIR_STYLES = {"straight", "round", "swept", "m_shape", "quiff", "fringe", "undercut", "mid_part"}
+GATEABLE_TAGS = {"hairline_thinning", "hairline_receded", "beard_dense", "jaw_narrow", "jaw_medium", "jaw_wide"}
+
+
+def check_recipe(kind: str, recipe: dict[str, Any], label: str = "") -> None:
+    allowed = RECIPE_KEYS[kind]
+    for key in recipe:
+        if key in allowed:
+            continue
+        hint = RECIPE_KEY_HINTS.get(key)
+        extra = f" (did you mean {hint!r}?)" if hint else ""
+        raise ValueError(f"{kind} recipe {label or recipe.get('id', '?')}: unknown key {key!r}{extra}. Allowed: {sorted(allowed)}")
+    for field in ("requires", "excludes"):
+        for tag in recipe.get(field, ()):
+            if tag not in GATEABLE_TAGS:
+                raise ValueError(f"{kind} recipe {recipe.get('id', '?')}: {field} references unknown tag {tag!r}. Known: {sorted(GATEABLE_TAGS)}")
+    if kind == "hair" and recipe.get("style") not in HAIR_STYLES:
+        raise ValueError(f"hair recipe {recipe.get('id', '?')}: unknown style {recipe.get('style')!r}. Allowed: {sorted(HAIR_STYLES)}")
+
+
 class PackBuilder:
     def __init__(self, root: Path, pack_id: str, pack_version: str, style: str) -> None:
         self.root = root
@@ -173,6 +223,7 @@ class PackBuilder:
         self.pack_version = pack_version
         self.style = style
         self.assets: list[dict[str, Any]] = []
+        self.file_digests: dict[str, str] = {}
         self.palettes: dict[str, dict[str, list[int]]] = {}
         self.teams: dict[str, dict[str, Any]] = {}
 
@@ -181,6 +232,7 @@ class PackBuilder:
         path = self.root / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         img.save(path, optimize=True)
+        self.file_digests[rel] = hashlib.blake2b(path.read_bytes(), digest_size=8).hexdigest()
         return rel
 
     def asset(
@@ -246,12 +298,44 @@ class PackBuilder:
         self.assets.append(entry)
         self.palettes.setdefault(category, {})[asset_id] = rgb
 
+    def content_hash(self) -> str:
+        """Fingerprint of the actual pixels plus the asset table and the style.
+
+        Appended to `asset_pack_version`, which the portrait cache key embeds, so
+        the cache is invalidated by anything visible: a new asset, a reweighted
+        one, a changed style profile, or a tweaked drawing constant that only
+        moves pixels. Hashing the manifest alone was not enough - two styles can
+        share an identical manifest and would then have collided in the cache.
+        """
+        payload = json.dumps(
+            {"style": self.style, "assets": self.assets, "files": self.file_digests},
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+        return hashlib.blake2b(payload, digest_size=4).hexdigest()
+
+    def table_hash(self) -> str:
+        """Fingerprint of the *recipe table only*: which assets exist, with what
+        weights and constraints.
+
+        Deliberately excludes the parts entirely - not just their file names but
+        their count - because two styles legitimately produce different parts
+        from the same table: only a line-art style emits ink keylines, and empty
+        parts (a helmet with no vents) are dropped at bake time. This is what
+        tells you whether two packs were baked from the same asset table, i.e.
+        whether a style comparison sheet is honest.
+        """
+        table = [{k: v for k, v in a.items() if k != "parts"} for a in sorted(self.assets, key=lambda x: x["id"])]
+        payload = json.dumps(table, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        return hashlib.blake2b(payload, digest_size=4).hexdigest()
+
     def write_manifest(self) -> None:
         manifest_mod.dump(
             {
                 "pack_id": self.pack_id,
                 "style": self.style,
-                "asset_pack_version": self.pack_version,
+                "asset_pack_version": f"{self.pack_version}+{self.content_hash()}",
+                "asset_table_hash": self.table_hash(),
                 "avatar_schema_version": 1,
                 "seed_version": 1,
                 "canvas": CANVAS_SPEC,
@@ -1213,6 +1297,16 @@ HAIR_RECIPES: list[dict[str, Any]] = [
         "region_weights": {"*": 1.0, "west_africa": 2.2, "east_africa": 2.0, "latin_america": 1.3, "east_asia": 0.3, "scandinavia": 0.4},
     },
     {"id": "hair_25_shaved", "w": 0.05, "t": 3.0, "hl": 0.26, "side": 0.52, "style": "round"},
+    {
+        "id": "hair_26_short_wave",
+        "w": 0.06,
+        "t": 13.0,
+        "hl": 0.22,
+        "side": 0.50,
+        "style": "swept",
+        "wob": ("curl", 5.0),
+        "excludes": ("hairline_receded",),
+    },
 ]
 
 
@@ -1574,6 +1668,7 @@ def bake(root: str | Path, style: str = "flat", pack_version: str = "0.1.0-place
     b.palettes["skin_ramp"] = {f"stop_{i:02d}": [int(t * 1000), *rgb] for i, (t, rgb) in enumerate(ramp)}
 
     for asset_id, weight, params, tags in HEAD_RECIPES:
+        check_recipe("head.params", params, asset_id)
         b.asset("head", asset_id, bake_head(params), weight=weight, tags=tags, anchor=(CX, EYE_Y))
 
     neck, jaw_shadow, neck_mask = bake_neck()
@@ -1587,6 +1682,7 @@ def bake(root: str | Path, style: str = "flat", pack_version: str = "0.1.0-place
     )
 
     for asset_id, weight, params in EAR_RECIPES:
+        check_recipe("ears.params", params, asset_id)
         b.asset(
             "ears",
             asset_id,
@@ -1597,15 +1693,18 @@ def bake(root: str | Path, style: str = "flat", pack_version: str = "0.1.0-place
         )
 
     for asset_id, weight, params in EYE_RECIPES:
+        check_recipe("eyes.params", params, asset_id)
         b.asset("eyes", asset_id, bake_eye(params), weight=weight, mirrored=True, anchor=(CX + EYE_DX, EYE_Y))
 
     for asset_id, weight, params in BROW_RECIPES:
         b.asset("eyebrows", asset_id, bake_brow(params), weight=weight, mirrored=True, anchor=(CX + EYE_DX, BROW_Y))
 
     for asset_id, weight, params in NOSE_RECIPES:
+        check_recipe("nose.params", params, asset_id)
         b.asset("nose", asset_id, bake_nose(params), weight=weight, anchor=(CX, NOSE_TIP_Y))
 
     for asset_id, weight, params in MOUTH_RECIPES:
+        check_recipe("mouth.params", params, asset_id)
         b.asset("mouth", asset_id, bake_mouth(params), weight=weight, anchor=(CX, MOUTH_Y))
 
     b.asset("wrinkles", "wrinkles_set_01", bake_wrinkles(), anchor=(CX, EYE_Y))
@@ -1614,6 +1713,7 @@ def bake(root: str | Path, style: str = "flat", pack_version: str = "0.1.0-place
         b.asset("skin_details", asset_id, parts, weight=weight, anchor=(CX, EYE_Y), excludes_tags=extra.get("excludes_tags", ()))
 
     for r in HAIR_RECIPES:
+        check_recipe("hair", r)
         b.asset(
             "hair",
             r["id"],
@@ -1628,12 +1728,15 @@ def bake(root: str | Path, style: str = "flat", pack_version: str = "0.1.0-place
         )
 
     for r in FACIAL_RECIPES:
+        check_recipe("facial_hair", r)
         b.asset("facial_hair", r["id"], bake_facial_hair(r), weight=r["w"], anchor=(CX, MOUTH_Y), min_age=r.get("min_age"), tags=r.get("tags", ()))
 
     for r in GLASSES_RECIPES:
+        check_recipe("glasses", r)
         b.asset("glasses", r["id"], bake_glasses(r), weight=r["w"], anchor=(CX, EYE_Y), roles=("rider",))
 
     for r in HELMET_RECIPES:
+        check_recipe("helmet", r)
         b.asset("helmet", r["id"], bake_helmet(r), weight=r["w"], anchor=(CX, hy(0.20)), roles=("rider",))
 
     for tid, weight in (("jersey_01_raglan", 0.6), ("jersey_02_band", 0.4)):

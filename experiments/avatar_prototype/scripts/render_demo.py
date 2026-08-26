@@ -17,6 +17,7 @@ Outputs to out/demo/:
 from __future__ import annotations
 
 import copy
+import json
 import random
 import sys
 import time
@@ -452,6 +453,29 @@ def report(pack: render.Pack, pool_size: int = 20_000) -> str:
     return "\n".join(lines) + "\n"
 
 
+def packs_out_of_sync() -> bool:
+    """True when the baked packs do not share one asset table.
+
+    A style comparison sheet is only meaningful if every column was baked from
+    the same recipes; otherwise one fresh column silently sits next to stale ones.
+    """
+    tables = {}
+    for path in sorted((ROOT / "out").glob("pack_*")):
+        manifest = path / "manifest.json"
+        if not manifest.exists():
+            continue
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+        # the recipe table, not the part files: two styles legitimately bake
+        # different parts from the same table
+        tables[path.name] = data.get("asset_table_hash", "?")
+    if len(set(tables.values())) <= 1:
+        return False
+    print("packs are out of sync:")
+    for name, digest in tables.items():
+        print(f"  {name:20s} asset table {digest}")
+    return True
+
+
 def main(argv: list[str]) -> int:
     style = argv[1] if len(argv) > 1 else DEFAULT_STYLE
     OUT.mkdir(parents=True, exist_ok=True)
@@ -472,7 +496,9 @@ def main(argv: list[str]) -> int:
         img = fn(pack)
         img.convert("RGB").save(OUT / name, quality=95)
         print(f"{name}: {img.size[0]}x{img.size[1]} in {time.perf_counter() - t0:.1f}s")
-    if all((ROOT / "out" / f"pack_{s}").exists() for s in STYLE_ORDER):
+    if packs_out_of_sync():
+        print("07_styles.png: SKIPPED - packs hold different asset tables; run `bake_pack.py all` first")
+    elif all((ROOT / "out" / f"pack_{s}").exists() for s in STYLE_ORDER):
         t0 = time.perf_counter()
         img = styles_sheet()
         img.convert("RGB").save(OUT / "07_styles.png", quality=95)

@@ -30,6 +30,14 @@ def main(argv: list[str]) -> int:
         baker.bake(out, style=style)
         files = sorted(out.rglob("*.png"))
         print(f"{style:13s} {len(files):3d} PNG layers in {time.perf_counter() - t0:5.1f}s -> {out}")
+    stale = [p.name for p in sorted((ROOT / "out").glob("pack_*")) if p.name[len("pack_") :] not in styles]
+    if stale:
+        print(
+            "\nWARNING: not rebaked, so these packs still hold the previous asset table: "
+            + ", ".join(stale)
+            + "\n         run `bake_pack.py all` whenever the asset tables change, or the"
+            + "\n         style comparison sheet will mix fresh and stale columns."
+        )
     return 0
 
 
