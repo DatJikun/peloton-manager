@@ -83,12 +83,11 @@ LIFT = (118, 100, 88)  # warm grey the facial-hair tint is lifted towards
 
 
 def lip_rgb(skin: tuple[int, int, int]) -> tuple[int, int, int]:
-    # Distinct flat rose so the lip mass reads at portrait size; a skin-close
-    # tint left only the dark slit visible and every mouth looked like a thread.
+    # Between skin-close (thread) and brick-rose (sausage). Fill must still read.
     return (
-        int(min(255, skin[0] * 0.86 + 18)),
-        int(min(255, skin[1] * 0.48 + 6)),
-        int(min(255, skin[2] * 0.46 + 4)),
+        int(min(255, skin[0] * 0.91 + 9)),
+        int(min(255, skin[1] * 0.57 + 3)),
+        int(min(255, skin[2] * 0.55 + 2)),
     )
 
 

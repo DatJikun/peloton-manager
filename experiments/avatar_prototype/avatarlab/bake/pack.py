@@ -672,38 +672,59 @@ def bake_ear(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]
 # --------------------------------------------------------------------------- #
 
 EYE_RECIPES = [
-    ("eyes_01_almond", 0.08, {"hw": 25.0, "th": 11.0, "bh": 8.6, "iris_r": 11.2}),
-    ("eyes_02_wide", 0.06, {"hw": 26.5, "th": 12.0, "bh": 9.6, "iris_r": 11.8}),
-    ("eyes_03_narrow", 0.04, {"hw": 25.0, "th": 9.6, "bh": 7.8, "iris_r": 10.6}),
-    ("eyes_04_hooded", 0.05, {"hw": 25.5, "th": 10.4, "bh": 8.4, "hood": 3.5, "lash": 1.2, "iris_r": 11.0}),
-    ("eyes_05_downturned", 0.04, {"hw": 25.0, "th": 10.8, "bh": 8.4, "tilt": 2.2, "iris_r": 11.0}),
-    ("eyes_06_upturned", 0.04, {"hw": 25.0, "th": 10.8, "bh": 8.4, "tilt": -2.4, "iris_r": 11.0}),
-    ("eyes_07_deepset", 0.04, {"hw": 24.8, "th": 10.6, "bh": 8.2, "hood": 4.5, "crease": 10.0, "iris_r": 10.8}),
-    ("eyes_08_round", 0.06, {"hw": 24.0, "th": 12.2, "bh": 10.4, "iris_r": 11.8}),
-    ("eyes_09_monolid", 0.05, {"hw": 25.0, "th": 10.4, "bh": 8.2, "hood": 3.0, "crease": 13.0, "crease_a": 0.10, "iris_r": 11.0}),
+    ("eyes_01_almond", 0.05, {"hw": 25.0, "th": 11.0, "bh": 8.6, "iris_r": 11.2, "peak": 0.22}),
+    ("eyes_02_wide", 0.04, {"hw": 26.5, "th": 12.0, "bh": 9.6, "iris_r": 11.8, "peak": 0.12}),
+    ("eyes_03_narrow", 0.04, {"hw": 25.0, "th": 9.6, "bh": 7.8, "iris_r": 10.6, "peak": 0.28}),
+    ("eyes_04_hooded", 0.06, {"hw": 25.5, "th": 10.4, "bh": 8.4, "hood": 3.5, "lash": 1.2, "iris_r": 11.0, "iris_dy": 1.2}),
+    ("eyes_05_downturned", 0.055, {"hw": 25.0, "th": 10.8, "bh": 8.4, "tilt": 2.2, "iris_r": 11.0, "outer_y": 2.4}),
+    ("eyes_06_upturned", 0.055, {"hw": 25.0, "th": 10.8, "bh": 8.4, "tilt": -2.4, "iris_r": 11.0, "peak": 0.34}),
+    ("eyes_07_deepset", 0.05, {"hw": 24.8, "th": 10.6, "bh": 8.2, "hood": 4.5, "crease": 10.0, "iris_r": 10.8, "iris_dy": 1.0}),
+    ("eyes_08_round", 0.06, {"hw": 24.0, "th": 12.2, "bh": 10.4, "iris_r": 11.8, "peak": 0.02}),
+    ("eyes_09_monolid", 0.06, {"hw": 25.0, "th": 10.4, "bh": 8.2, "hood": 3.0, "crease": 13.0, "crease_a": 0.10, "iris_r": 11.0}),
     ("eyes_10_close_small", 0.0, {"hw": 22.5, "th": 10.2, "bh": 8.0, "iris_r": 10.2}),  # retired: tiny slits
     ("eyes_11_huge_round", 0.0, {"hw": 26.0, "th": 12.2, "bh": 10.4, "iris_r": 12.2}),  # retired: cartoon round
-    ("eyes_12_sleepy", 0.03, {"hw": 25.5, "th": 9.4, "bh": 8.2, "tilt": 1.6, "lash": 0.85, "iris_r": 10.8}),
-    ("eyes_13_wide_open", 0.05, {"hw": 26.5, "th": 12.0, "bh": 9.4, "iris_r": 12.0}),
-    ("eyes_14_small_iris", 0.03, {"hw": 25.0, "th": 11.0, "bh": 8.6, "iris_r": 9.4}),
-    ("eyes_15_sharp", 0.03, {"hw": 25.5, "th": 10.4, "bh": 8.0, "tilt": -1.8, "lash": 1.25, "iris_r": 11.0}),
-    ("eyes_16_heavy_lid", 0.04, {"hw": 25.0, "th": 10.2, "bh": 8.4, "hood": 5.0, "crease": 8.5, "lash": 1.15, "iris_r": 11.0}),
-    ("eyes_17_neutral", 0.07, {"hw": 26.0, "th": 11.6, "bh": 9.2, "iris_r": 11.6}),
-    ("eyes_18_full", 0.06, {"hw": 26.5, "th": 12.4, "bh": 10.2, "iris_r": 12.0}),
-    ("eyes_19_round_open", 0.05, {"hw": 24.5, "th": 12.4, "bh": 10.6, "iris_r": 11.8}),
-    ("eyes_20_large_iris", 0.04, {"hw": 26.0, "th": 11.6, "bh": 9.2, "iris_r": 12.6}),
-    ("eyes_21_classic", 0.07, {"hw": 25.5, "th": 11.2, "bh": 8.8, "iris_r": 11.3}),
-    ("eyes_22_classic_open", 0.06, {"hw": 26.0, "th": 12.0, "bh": 9.4, "iris_r": 11.8}),
-    ("eyes_23_soft_hood", 0.05, {"hw": 25.2, "th": 10.8, "bh": 8.6, "hood": 2.8, "iris_r": 11.2}),
-    ("eyes_24_mild_round", 0.05, {"hw": 24.2, "th": 11.8, "bh": 10.0, "iris_r": 11.6}),
-    ("eyes_25_mild_almond", 0.06, {"hw": 26.0, "th": 10.8, "bh": 8.6, "iris_r": 11.2}),
-    ("eyes_26_even", 0.06, {"hw": 25.5, "th": 11.4, "bh": 9.0, "iris_r": 11.4}),
-    ("eyes_27_even_wide", 0.05, {"hw": 26.4, "th": 11.6, "bh": 9.2, "iris_r": 11.6}),
-    ("eyes_28_low_lid", 0.04, {"hw": 25.4, "th": 10.6, "bh": 8.8, "hood": 2.2, "iris_r": 11.0}),
-    ("eyes_29_bright", 0.05, {"hw": 26.0, "th": 12.0, "bh": 9.6, "iris_r": 12.0}),
-    ("eyes_30_soft_tilt", 0.04, {"hw": 25.5, "th": 11.2, "bh": 8.8, "tilt": -1.2, "iris_r": 11.2}),
-    ("eyes_31_deep_neutral", 0.04, {"hw": 25.0, "th": 11.0, "bh": 8.6, "hood": 3.6, "crease": 10.0, "iris_r": 11.0}),
-    ("eyes_32_open_almond", 0.05, {"hw": 26.2, "th": 12.2, "bh": 9.4, "iris_r": 11.8}),
+    ("eyes_12_sleepy", 0.05, {"hw": 25.5, "th": 9.4, "bh": 8.2, "tilt": 1.6, "lash": 0.85, "iris_r": 10.8, "iris_dy": 2.0}),
+    ("eyes_13_wide_open", 0.05, {"hw": 26.5, "th": 12.0, "bh": 9.4, "iris_r": 12.0, "peak": 0.10}),
+    ("eyes_14_small_iris", 0.04, {"hw": 25.0, "th": 11.0, "bh": 8.6, "iris_r": 9.4}),
+    ("eyes_15_sharp", 0.05, {"hw": 25.5, "th": 10.4, "bh": 8.0, "tilt": -1.8, "lash": 1.25, "iris_r": 11.0, "peak": 0.38}),
+    ("eyes_16_heavy_lid", 0.055, {"hw": 25.0, "th": 10.2, "bh": 8.4, "hood": 5.0, "crease": 8.5, "lash": 1.15, "iris_r": 11.0, "iris_dy": 1.6}),
+    ("eyes_17_neutral", 0.05, {"hw": 26.0, "th": 11.6, "bh": 9.2, "iris_r": 11.6, "peak": 0.08}),
+    ("eyes_18_full", 0.05, {"hw": 26.5, "th": 12.4, "bh": 10.2, "iris_r": 12.0}),
+    ("eyes_19_round_open", 0.05, {"hw": 24.5, "th": 12.4, "bh": 10.6, "iris_r": 11.8, "peak": 0.00}),
+    ("eyes_20_large_iris", 0.045, {"hw": 26.0, "th": 11.6, "bh": 9.2, "iris_r": 12.6}),
+    ("eyes_21_classic", 0.05, {"hw": 25.5, "th": 11.2, "bh": 8.8, "iris_r": 11.3, "peak": 0.16}),
+    ("eyes_22_classic_open", 0.05, {"hw": 26.0, "th": 12.0, "bh": 9.4, "iris_r": 11.8, "peak": 0.12}),
+    ("eyes_23_soft_hood", 0.05, {"hw": 25.2, "th": 10.8, "bh": 8.6, "hood": 2.8, "iris_r": 11.2, "iris_dy": 0.8}),
+    ("eyes_24_mild_round", 0.045, {"hw": 24.2, "th": 11.8, "bh": 10.0, "iris_r": 11.6, "peak": 0.04}),
+    ("eyes_25_mild_almond", 0.045, {"hw": 26.0, "th": 10.8, "bh": 8.6, "iris_r": 11.2, "peak": 0.30}),
+    ("eyes_26_even", 0.045, {"hw": 25.5, "th": 11.4, "bh": 9.0, "iris_r": 11.4, "peak": 0.14}),
+    ("eyes_27_even_wide", 0.04, {"hw": 26.4, "th": 11.6, "bh": 9.2, "iris_r": 11.6, "peak": 0.10}),
+    ("eyes_28_low_lid", 0.05, {"hw": 25.4, "th": 10.6, "bh": 8.8, "hood": 2.2, "iris_r": 11.0, "iris_dy": 1.4}),
+    ("eyes_29_bright", 0.045, {"hw": 26.0, "th": 12.0, "bh": 9.6, "iris_r": 12.0}),
+    ("eyes_30_soft_tilt", 0.045, {"hw": 25.5, "th": 11.2, "bh": 8.8, "tilt": -1.2, "iris_r": 11.2, "peak": 0.26}),
+    ("eyes_31_deep_neutral", 0.045, {"hw": 25.0, "th": 11.0, "bh": 8.6, "hood": 3.6, "crease": 10.0, "iris_r": 11.0}),
+    ("eyes_32_open_almond", 0.05, {"hw": 26.2, "th": 12.2, "bh": 9.4, "iris_r": 11.8, "peak": 0.24}),
+    # Same width band. Variety is lid, tilt, iris, aperture — not wider/thinner.
+    ("eyes_33_fox", 0.055, {"hw": 25.4, "th": 10.8, "bh": 8.4, "peak": 0.44, "tilt": -2.8, "lash": 1.22, "iris_r": 11.0}),
+    ("eyes_34_inner_peak", 0.05, {"hw": 25.4, "th": 11.0, "bh": 8.6, "peak": -0.10, "tilt": 2.4, "iris_r": 11.2}),
+    ("eyes_35_tall_open", 0.055, {"hw": 25.2, "th": 13.6, "bh": 11.2, "iris_r": 11.6, "peak": 0.08}),
+    ("eyes_36_heavy_hood", 0.055, {"hw": 25.3, "th": 10.2, "bh": 8.4, "hood": 6.4, "crease": 7.2, "iris_dy": 2.0, "iris_r": 11.0}),
+    ("eyes_37_sleepy_drop", 0.05, {"hw": 25.4, "th": 9.0, "bh": 9.2, "tilt": 2.6, "iris_dy": 2.4, "lash": 0.78, "iris_r": 10.8}),
+    ("eyes_38_lid_cover", 0.05, {"hw": 25.4, "th": 10.4, "bh": 8.6, "hood": 5.6, "iris_dy": 2.8, "iris_r": 11.4}),
+    ("eyes_39_round_tall", 0.055, {"hw": 24.8, "th": 13.2, "bh": 11.6, "peak": 0.00, "iris_r": 12.0}),
+    ("eyes_40_flat_lid", 0.05, {"hw": 25.4, "th": 10.2, "bh": 8.0, "peak": 0.04, "flat": 0.85, "iris_r": 11.0}),
+    ("eyes_41_lashy", 0.05, {"hw": 25.4, "th": 11.2, "bh": 8.8, "lash": 1.60, "iris_r": 11.2, "peak": 0.18}),
+    ("eyes_42_bare_lid", 0.05, {"hw": 25.4, "th": 11.4, "bh": 8.8, "lash": 0.50, "crease": 12.5, "crease_a": 0.46, "iris_r": 11.2}),
+    ("eyes_43_iris_in", 0.045, {"hw": 25.4, "th": 11.2, "bh": 8.8, "iris_dx": -3.4, "iris_r": 11.2}),
+    ("eyes_44_iris_out", 0.045, {"hw": 25.4, "th": 11.2, "bh": 8.8, "iris_dx": 3.2, "iris_r": 11.2}),
+    ("eyes_45_iris_fill", 0.05, {"hw": 25.4, "th": 12.2, "bh": 10.0, "iris_r": 13.2}),
+    ("eyes_46_iris_dot", 0.045, {"hw": 25.4, "th": 11.6, "bh": 9.2, "iris_r": 8.4}),
+    ("eyes_47_outer_drop", 0.05, {"hw": 25.4, "th": 10.8, "bh": 8.6, "outer_y": 3.6, "tilt": 1.6, "iris_r": 11.0, "peak": 0.20}),
+    ("eyes_48_inner_drop", 0.05, {"hw": 25.4, "th": 10.8, "bh": 8.6, "inner_y": 3.6, "peak": 0.24, "iris_r": 11.0}),
+    ("eyes_49_high_inner", 0.05, {"hw": 25.4, "th": 11.2, "bh": 8.6, "inner_y": -0.8, "peak": 0.06, "iris_r": 11.2}),
+    ("eyes_50_fox_open", 0.055, {"hw": 25.5, "th": 12.6, "bh": 9.4, "peak": 0.42, "tilt": -2.4, "lash": 1.25, "iris_r": 11.6}),
+    ("eyes_51_deep_round", 0.05, {"hw": 25.0, "th": 12.2, "bh": 10.4, "hood": 4.2, "crease": 11.5, "iris_r": 11.8, "peak": 0.02}),
+    ("eyes_52_soft_fox", 0.05, {"hw": 25.4, "th": 11.0, "bh": 8.6, "peak": 0.34, "tilt": -1.6, "iris_r": 11.2}),
 ]
 
 
@@ -714,12 +735,19 @@ def eye_shape(p: dict[str, float]) -> list[tuple[float, float]]:
     th = p.get("th", 11.0) * k
     bh = p.get("bh", 8.6) * k
     tilt = p.get("tilt", 0.0)
+    peak = p.get("peak", 0.15)
+    inner_y = p.get("inner_y", 1.5)
+    outer_y = p.get("outer_y", 1.0)
+    flat = p.get("flat", 0.0)
+    th_in = th * (0.86 + 0.12 * flat)
+    th_out = th * (0.66 + 0.28 * flat)
+    th_pk = th * (1.0 - 0.12 * flat)
     return [
-        (cx - hw, cy + 1.5 + tilt * 0.4),
-        (cx - hw * 0.45, cy - th * 0.86),
-        (cx + hw * 0.15, cy - th),
-        (cx + hw * 0.72, cy - th * 0.66 + tilt * 0.5),
-        (cx + hw, cy + 1.0 - tilt),
+        (cx - hw, cy + inner_y + tilt * 0.4),
+        (cx - hw * 0.45, cy - th_in),
+        (cx + hw * peak, cy - th_pk),
+        (cx + hw * 0.72, cy - th_out + tilt * 0.5),
+        (cx + hw, cy + outer_y - tilt),
         (cx + hw * 0.6, cy + bh * 0.82 - tilt * 0.4),
         (cx - hw * 0.2, cy + bh),
         (cx - hw * 0.7, cy + bh * 0.66),
@@ -740,11 +768,12 @@ def bake_eye(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]
     # --- iris + pupil (iris is tinted at runtime) --------------------------
     r = p.get("iris_r", 11.2) * st().feature_boost
     ix = cx + p.get("iris_dx", 0.0)
-    iris_mask = ImageChops.multiply(sclera, ellipse_mask(ix, cy - 0.5, r, r))
+    iy = cy - 0.5 + p.get("iris_dy", 0.0)
+    iris_mask = ImageChops.multiply(sclera, ellipse_mask(ix, iy, r, r))
     iris_shade = mul(flat(1.0), grad_v(1.16, 0.74))
-    iris_shade = darken(iris_shade, rim(ellipse_mask(ix, cy - 0.5, r, r), 2.4, 1.5), 0.42)
+    iris_shade = darken(iris_shade, rim(ellipse_mask(ix, iy, r, r), 2.4, 1.5), 0.42)
     iris = shaded_color_layer((255, 255, 255), iris_shade, iris_mask)
-    pupil = solid_layer((16, 13, 12), ImageChops.multiply(sclera, blur(ellipse_mask(ix, cy - 0.5, r * 0.42, r * 0.42), 0.8)))
+    pupil = solid_layer((16, 13, 12), ImageChops.multiply(sclera, blur(ellipse_mask(ix, iy, r * 0.42, r * 0.42), 0.8)))
 
     # --- over: lid line, lashes, crease, catchlight ------------------------
     upper = shape[:5]
@@ -762,7 +791,7 @@ def bake_eye(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]
     over = Image.alpha_composite(over, solid_layer((44, 34, 30), lid_line))
     over = Image.alpha_composite(over, solid_layer((96, 68, 58), lower_line))
     over = Image.alpha_composite(over, solid_layer((104, 74, 62), crease))
-    glint = ImageChops.multiply(sclera, blur(ellipse_mask(ix - r * 0.36, cy - r * 0.44, 2.4, 2.0), 0.8))
+    glint = ImageChops.multiply(sclera, blur(ellipse_mask(ix - r * 0.36, iy - r * 0.44, 2.4, 2.0), 0.8))
     over = Image.alpha_composite(over, solid_layer((255, 253, 248), scale_l(glint, 0.82)))
 
     return (
@@ -1151,8 +1180,9 @@ def bake_mouth(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, An
     # Corners past the pupils read as a billboard; a ribbon that tapers to a
     # point reads as a thread even when upper/lower are large.
     hw = min(float(p.get("hw", 44.0)), EYE_DX - 2.0)
-    up = float(p.get("upper", 11.0)) * 1.32
-    lo = float(p.get("lower", 13.6)) * 1.36
+    # Halfway between the thread pass (1.0) and the sausage pass (1.32 / 1.36).
+    up = float(p.get("upper", 11.0)) * 1.16
+    lo = float(p.get("lower", 13.6)) * 1.18
     bow = p.get("bow", 1.6)
     # a fully straight closed mouth still reads sullen; open/laugh are identity
     # variants the owner asked for, not a second emotion system.
@@ -1164,16 +1194,15 @@ def bake_mouth(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, An
     show_teeth = p.get("teeth", 1.0 if gap >= 5.0 else 0.0) > 0.5
 
     if gap < 2.0:
-        # Blunt ends: keep ~40% of lip thickness at the corners so the mouth is
-        # a mass, not a banana tapering to two dots.
-        cu, cl = up * 0.40, lo * 0.42
+        # Halfway blunt: some meat at the corners, not a sausage and not a point.
+        cu, cl = up * 0.20, lo * 0.22
         upper_pts = [
             (CX - hw, y + ldroop - cu),
-            (CX - hw * 0.70, y - up * 0.72),
+            (CX - hw * 0.70, y - up * 0.70),
             (CX - hw * 0.26, y - up - bow * 0.48),
-            (CX, y - up * 0.88),
+            (CX, y - up * 0.84),
             (CX + hw * 0.26, y - up - bow * 0.48),
-            (CX + hw * 0.70, y - up * 0.72),
+            (CX + hw * 0.70, y - up * 0.70),
             (CX + hw, y + rdroop - cu),
             (CX + hw * 0.58, y + 1.2),
             (CX, y + 2.0),
@@ -1186,9 +1215,9 @@ def bake_mouth(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, An
             (CX + hw * 0.55, y + 1.8),
             (CX + hw, y + rdroop + 0.5),
             (CX + hw, y + rdroop + cl),
-            (CX + hw * 0.68, y + lo * 0.96),
+            (CX + hw * 0.68, y + lo * 0.94),
             (CX, y + lo),
-            (CX - hw * 0.68, y + lo * 0.96),
+            (CX - hw * 0.68, y + lo * 0.94),
             (CX - hw, y + ldroop + cl),
         ]
         upper = poly_mask(upper_pts)
@@ -1210,7 +1239,7 @@ def bake_mouth(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, An
         )
         return (
             [("lips", lips_layer, {"blend": "normal", "color_slot": "lip"})]
-            + keyline(lips, 0.78)
+            + keyline(lips, 0.74)
             + [("line", solid_layer(SHADOW_RGB, line), {"blend": "multiply"})]
         )
 
@@ -1937,7 +1966,7 @@ TEAMS: dict[str, dict[str, Any]] = {
 # --------------------------------------------------------------------------- #
 
 
-def bake(root: str | Path, style: str = "flat", pack_version: str = "0.6.0-placeholder") -> Path:
+def bake(root: str | Path, style: str = "flat", pack_version: str = "0.7.0-placeholder") -> Path:
     """Bake one placeholder pack in one style. The recipes are shared; only the
     StyleProfile changes, which is how the same peloton can be shown in several
     art directions without touching game code."""

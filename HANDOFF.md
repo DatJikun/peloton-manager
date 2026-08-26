@@ -199,3 +199,5 @@ Peloton Manager jest na etapie pre-production. Celem jest modularny, determinist
 - `2026-08-26` — Avatar prototype, mniej karykatur, więcej normalnych rysów: wycofane (waga 0) zbyt szerokie/cienkie usta oraz skrajne oczy/uszy/nosy; dodane sąsiednie, spokojniejsze przepisy (~1,5× żywych wariantów ust, oczu, uszu, nosów, brwi). Pakiet `0.5.0-placeholder`. Styl `poster` bez zmian.
 
 - `2026-08-26` — Avatar prototype, usta: wargi pełniejsze (piec nie spłaszcza już środka górnej wargi do nitki), szerokość do środków oczu (`hw` ≤ 47), plus więcej odmiennych kształtów (łuk, kwadrat, cięższa dolna, otwarte z mięsem). Pakiet `0.6.0-placeholder`. Styl `poster` bez zmian.
+
+- `2026-08-26` — Avatar prototype: usta w połowie drogi między nitką a zbyt grubą plamą; oczy — więcej kształtów powieki / nachylenia / tęczówki, bez dalszego szerzenia i chudzenia. Pakiet `0.7.0-placeholder`. Styl `poster` bez zmian.

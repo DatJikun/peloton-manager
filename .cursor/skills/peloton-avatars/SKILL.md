@@ -161,11 +161,13 @@ uses `"requires": ("hairline_receded",)`.
 (pack version bump), do not add a more extreme head.
 
 **Eyes** (`EYE_RECIPES`): keep a **neutral-open** cluster and a **wide/full** cluster as
-the common weights. Slit defaults (`th` ~6, `bh` ~5) flatten the whole peloton. A few
-narrower options may stay as a minority, still readable. Defaults live around
-`hw=25, th=11, bh=8.6, iris_r=11.2`.
+the common weights. Slit defaults (`th` ~6, `bh` ~5) flatten the whole peloton. Do **not**
+grow variety by making eyes wider or thinner (`hw` stays ~25). Vary **lid** (`peak`,
+`hood`, `flat`, `lash`), **tilt / inner_y / outer_y**, **aperture** (`th`/`bh` taller or
+sleepier) and **iris** (`iris_r`, `iris_dx`, `iris_dy`). Defaults live around
+`hw=25, th=11, bh=8.6, iris_r=11.2`. Retired ids keep `weight: 0`.
 
-**Mouths** (`MOUTH_RECIPES`): corners sit **under the pupils** (`hw` around `EYE_DX` = 47, never above it). Closed lips need real meat — `upper` ~10–14, `lower` ~13–17 (the baker scales these up and keeps ~40% thickness at the corners). A banana that tapers to two dots still reads as a thread. Lip fill must contrast with skin (`lip_rgb`); a skin-close tint leaves only the slit. Variety is bow, smile, open/laugh, lift, skew, and upper/lower ratio, not more length. Open mouths still wrap the opening in lip meat. Retired ids keep `weight: 0`. Do not ship thread-wide mouths (`hw` above ~47, or closed `upper`/`lower` under ~10/12).
+**Mouths** (`MOUTH_RECIPES`): corners sit **under the pupils** (`hw` around `EYE_DX` = 47, never above it). Lip thickness sits **halfway** between a thread and a sausage: baker scale ~1.16 / 1.18, ~20% meat at the corners. Lip fill must still contrast with skin (`lip_rgb`). Variety is bow, smile, open/laugh, lift, skew, and upper/lower ratio, not more length. Open mouths still wrap the opening in lip meat. Retired ids keep `weight: 0`. Do not ship thread-wide mouths (`hw` above ~47, or closed `upper`/`lower` under ~10/12) or sausage mouths (baker scale above ~1.2 with 40% blunt corners).
 
 **Brows** (`BROW_RECIPES`): recipes must differ in **inner gap, length, thickness taper,
 arch and peak**, not just `th`/`arch` on the same polygon. `bake_brow` takes `inner` /
