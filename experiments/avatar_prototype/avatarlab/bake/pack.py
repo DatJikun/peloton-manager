@@ -1038,65 +1038,84 @@ def bake_nose(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any
 # mouth
 # --------------------------------------------------------------------------- #
 
+# Live mouth half-width sits at or inside EYE_DX (47): corners under the pupils.
+# Closed lips need real meat (upper ~10+, lower ~13+); the baker used to collapse
+# the philtrum to a thread even when the recipe asked for thickness.
 MOUTH_RECIPES = [
-    ("mouth_01_medium", 0.05, {"hw": 46.0, "upper": 8.4, "lower": 11.0, "smile": 3.0}),
-    ("mouth_02_wide_thin", 0.0, {"hw": 50.0, "upper": 7.5, "lower": 9.5, "smile": 2.4}),  # retired: thread-wide
-    ("mouth_03_full", 0.04, {"hw": 47.0, "upper": 12.0, "lower": 14.5, "smile": 3.0}),
-    ("mouth_04_narrow", 0.03, {"hw": 38.0, "upper": 8.2, "lower": 10.4, "smile": 2.4}),
-    ("mouth_05_downturned", 0.03, {"hw": 44.0, "upper": 8.2, "lower": 10.5, "droop": 3.5, "smile": 0.6}),
-    ("mouth_06_thin_upper", 0.03, {"hw": 47.0, "upper": 6.6, "lower": 12.0, "smile": 2.6}),
-    ("mouth_07_bow", 0.03, {"hw": 43.0, "bow": 3.6, "upper": 10.5, "lower": 10.8, "smile": 2.6}),
-    ("mouth_08_flat", 0.03, {"hw": 48.0, "bow": 0.4, "upper": 7.6, "lower": 9.4, "smile": 1.6}),
-    ("mouth_09_smiling", 0.04, {"hw": 49.0, "smile": 6.5, "upper": 8.6, "lower": 11.2}),
-    ("mouth_10_wide_smile", 0.03, {"hw": 52.0, "smile": 7.0, "upper": 8.4, "lower": 11.0}),
-    ("mouth_11_very_wide", 0.0, {"hw": 52.0, "smile": 3.5, "upper": 8.0, "lower": 10.5}),  # retired: billboard mouth
-    ("mouth_12_tiny", 0.0, {"hw": 36.0, "upper": 7.5, "lower": 9.5, "smile": 2.2}),  # retired: stamp mouth
-    ("mouth_13_heart", 0.03, {"hw": 40.0, "bow": 4.0, "upper": 11.0, "lower": 10.5, "smile": 2.4}),
-    ("mouth_14_wide_full", 0.04, {"hw": 51.0, "upper": 11.5, "lower": 14.0, "smile": 3.2}),
-    ("mouth_15_thin_line", 0.0, {"hw": 46.0, "upper": 7.0, "lower": 8.8, "smile": 2.6, "bow": 0.6}),  # retired: thread
-    ("mouth_16_soft_smile", 0.04, {"hw": 46.0, "smile": 5.2, "upper": 8.4, "lower": 10.8}),
-    ("mouth_17_cupid", 0.03, {"hw": 40.0, "bow": 3.8, "upper": 10.2, "lower": 10.0, "smile": 2.4}),
-    ("mouth_18_broad_thin", 0.0, {"hw": 51.0, "upper": 7.6, "lower": 9.4, "smile": 2.2}),  # retired: wide thread
-    ("mouth_19_neutral", 0.05, {"hw": 46.0, "upper": 9.0, "lower": 11.4, "smile": 2.5, "bow": 1.6}),
-    ("mouth_20_full_wide", 0.04, {"hw": 50.0, "upper": 12.0, "lower": 14.5, "smile": 3.2, "bow": 1.8}),
-    ("mouth_21_open_full", 0.04, {"hw": 48.0, "upper": 8.4, "lower": 10.4, "smile": 5.0, "open": 8.0, "teeth": 1.0}),
-    ("mouth_22_laugh", 0.04, {"hw": 50.0, "upper": 7.8, "lower": 9.6, "smile": 8.0, "open": 11.0, "teeth": 1.0}),
-    ("mouth_23_grin", 0.04, {"hw": 48.0, "upper": 7.4, "lower": 9.0, "smile": 7.0, "open": 9.5, "teeth": 1.0}),
-    ("mouth_24_open_narrow", 0.03, {"hw": 38.0, "upper": 7.6, "lower": 9.2, "smile": 3.4, "open": 7.0, "teeth": 1.0}),
-    ("mouth_25_high", 0.03, {"hw": 45.0, "upper": 8.4, "lower": 10.5, "smile": 3.0, "lift": -7.0}),
-    ("mouth_26_low", 0.03, {"hw": 47.0, "upper": 8.6, "lower": 11.0, "smile": 2.6, "lift": 7.0}),
-    ("mouth_27_thick", 0.04, {"hw": 45.0, "upper": 12.5, "lower": 15.0, "smile": 2.8, "bow": 1.2}),
-    ("mouth_28_thin_high", 0.0, {"hw": 46.0, "upper": 7.2, "lower": 9.0, "smile": 2.8, "lift": -6.0}),  # retired: thin high
-    ("mouth_29_laugh_wide", 0.03, {"hw": 52.0, "upper": 7.8, "lower": 9.6, "smile": 8.0, "open": 10.0, "teeth": 1.0}),
-    ("mouth_30_open_low", 0.03, {"hw": 47.0, "upper": 7.8, "lower": 9.6, "smile": 4.2, "open": 7.5, "teeth": 1.0, "lift": 6.0}),
-    ("mouth_31_toothy", 0.03, {"hw": 49.0, "upper": 7.2, "lower": 8.8, "smile": 6.0, "open": 11.0, "teeth": 1.0}),
-    ("mouth_32_high_full", 0.03, {"hw": 46.0, "upper": 11.5, "lower": 14.0, "smile": 3.0, "lift": -6.0}),
-    ("mouth_33_low_wide", 0.03, {"hw": 50.0, "upper": 8.6, "lower": 11.0, "smile": 2.4, "lift": 6.5}),
-    ("mouth_34_smirk", 0.03, {"hw": 46.0, "upper": 8.0, "lower": 10.4, "smile": 3.2, "skew": 4.0}),
-    ("mouth_35_small_open", 0.03, {"hw": 42.0, "upper": 7.4, "lower": 9.0, "smile": 3.8, "open": 5.5, "teeth": 1.0}),
-    ("mouth_36_even", 0.05, {"hw": 44.0, "upper": 8.6, "lower": 10.8, "smile": 2.8}),
-    ("mouth_37_even_wide", 0.04, {"hw": 50.0, "upper": 9.0, "lower": 11.4, "smile": 3.0}),
-    ("mouth_38_even_narrow", 0.03, {"hw": 41.0, "upper": 8.5, "lower": 10.6, "smile": 2.6}),
-    ("mouth_39_soft_full", 0.04, {"hw": 47.0, "upper": 11.0, "lower": 13.2, "smile": 3.0}),
-    ("mouth_40_quiet", 0.04, {"hw": 45.0, "upper": 8.2, "lower": 10.4, "smile": 2.2, "bow": 1.0}),
-    ("mouth_41_gentle_open", 0.04, {"hw": 46.0, "upper": 8.2, "lower": 10.2, "smile": 4.0, "open": 5.5, "teeth": 1.0}),
-    ("mouth_42_half_smile", 0.04, {"hw": 48.0, "smile": 5.0, "upper": 8.6, "lower": 11.0}),
-    ("mouth_43_compact", 0.03, {"hw": 41.0, "upper": 9.0, "lower": 11.2, "smile": 2.8}),
-    ("mouth_44_medium_bow", 0.03, {"hw": 45.0, "bow": 2.6, "upper": 9.5, "lower": 11.0, "smile": 2.6}),
-    ("mouth_45_slight_open", 0.04, {"hw": 47.0, "upper": 8.0, "lower": 10.0, "smile": 3.4, "open": 6.5, "teeth": 1.0}),
-    ("mouth_46_high_neutral", 0.03, {"hw": 46.0, "upper": 8.6, "lower": 11.0, "smile": 2.8, "lift": -5.0}),
-    ("mouth_47_low_neutral", 0.03, {"hw": 47.0, "upper": 8.6, "lower": 11.0, "smile": 2.6, "lift": 5.0}),
-    ("mouth_48_full_smile", 0.04, {"hw": 49.0, "smile": 6.0, "upper": 10.0, "lower": 12.4}),
-    ("mouth_49_small_full", 0.03, {"hw": 42.0, "upper": 10.4, "lower": 12.4, "smile": 2.6}),
-    ("mouth_50_open_smile", 0.04, {"hw": 49.0, "upper": 8.0, "lower": 10.0, "smile": 5.8, "open": 7.0, "teeth": 1.0}),
-    ("mouth_51_even_open", 0.04, {"hw": 46.0, "upper": 8.0, "lower": 10.0, "smile": 4.4, "open": 7.0, "teeth": 1.0}),
-    ("mouth_52_closed_wide", 0.04, {"hw": 51.0, "upper": 9.2, "lower": 11.6, "smile": 3.2}),
-    ("mouth_53_closed_short", 0.03, {"hw": 40.0, "upper": 8.8, "lower": 11.0, "smile": 2.8}),
-    ("mouth_54_plump", 0.04, {"hw": 45.0, "upper": 11.2, "lower": 13.4, "smile": 2.6}),
-    ("mouth_55_lift_smile", 0.03, {"hw": 47.0, "smile": 5.0, "upper": 8.6, "lower": 11.0, "lift": -4.0}),
-    ("mouth_56_drop_smile", 0.03, {"hw": 48.0, "smile": 4.0, "upper": 8.6, "lower": 11.0, "lift": 4.0}),
-    ("mouth_57_soft_grin", 0.04, {"hw": 49.0, "upper": 7.8, "lower": 9.4, "smile": 6.2, "open": 8.0, "teeth": 1.0}),
-    ("mouth_58_quiet_open", 0.03, {"hw": 44.0, "upper": 7.6, "lower": 9.2, "smile": 3.2, "open": 5.0, "teeth": 1.0}),
+    ("mouth_01_medium", 0.04, {"hw": 44.0, "upper": 11.0, "lower": 13.6, "smile": 3.0}),
+    ("mouth_02_wide_thin", 0.0, {"hw": 45.0, "upper": 11.0, "lower": 13.2, "smile": 2.4}),  # retired: thread-wide
+    ("mouth_03_full", 0.04, {"hw": 45.0, "upper": 13.2, "lower": 16.0, "smile": 3.0}),
+    ("mouth_04_narrow", 0.03, {"hw": 39.0, "upper": 10.8, "lower": 13.2, "smile": 2.4}),
+    ("mouth_05_downturned", 0.03, {"hw": 43.0, "upper": 11.0, "lower": 13.4, "droop": 3.5, "smile": 0.6}),
+    ("mouth_06_thin_upper", 0.03, {"hw": 44.0, "upper": 9.8, "lower": 14.8, "smile": 2.6}),
+    ("mouth_07_bow", 0.04, {"hw": 42.0, "bow": 3.4, "upper": 12.0, "lower": 13.2, "smile": 2.6}),
+    ("mouth_08_flat", 0.03, {"hw": 44.0, "bow": 0.3, "upper": 10.8, "lower": 13.0, "smile": 1.6}),
+    ("mouth_09_smiling", 0.04, {"hw": 45.0, "smile": 6.2, "upper": 11.2, "lower": 13.8}),
+    ("mouth_10_wide_smile", 0.03, {"hw": 47.0, "smile": 6.4, "upper": 11.2, "lower": 13.8}),
+    ("mouth_11_very_wide", 0.0, {"hw": 47.0, "smile": 3.2, "upper": 11.0, "lower": 13.4}),  # retired: billboard mouth
+    ("mouth_12_tiny", 0.0, {"hw": 40.0, "upper": 10.6, "lower": 13.0, "smile": 2.2}),  # retired: stamp mouth
+    ("mouth_13_heart", 0.03, {"hw": 41.0, "bow": 4.0, "upper": 12.4, "lower": 13.0, "smile": 2.4}),
+    ("mouth_14_wide_full", 0.04, {"hw": 47.0, "upper": 13.0, "lower": 15.8, "smile": 3.2}),
+    ("mouth_15_thin_line", 0.0, {"hw": 44.0, "upper": 10.8, "lower": 13.2, "smile": 2.6, "bow": 0.6}),  # retired: thread
+    ("mouth_16_soft_smile", 0.04, {"hw": 44.0, "smile": 5.0, "upper": 11.0, "lower": 13.4}),
+    ("mouth_17_cupid", 0.03, {"hw": 41.0, "bow": 3.6, "upper": 12.0, "lower": 12.6, "smile": 2.4}),
+    ("mouth_18_broad_thin", 0.0, {"hw": 46.0, "upper": 11.0, "lower": 13.2, "smile": 2.2}),  # retired: wide thread
+    ("mouth_19_neutral", 0.04, {"hw": 44.0, "upper": 11.4, "lower": 14.0, "smile": 2.4, "bow": 1.8}),
+    ("mouth_20_full_wide", 0.04, {"hw": 46.0, "upper": 13.4, "lower": 16.2, "smile": 3.2, "bow": 1.8}),
+    ("mouth_21_open_full", 0.04, {"hw": 45.0, "upper": 10.8, "lower": 13.0, "smile": 4.8, "open": 8.0, "teeth": 1.0}),
+    ("mouth_22_laugh", 0.04, {"hw": 46.0, "upper": 10.4, "lower": 12.6, "smile": 7.6, "open": 10.5, "teeth": 1.0}),
+    ("mouth_23_grin", 0.04, {"hw": 45.0, "upper": 10.2, "lower": 12.4, "smile": 6.8, "open": 9.0, "teeth": 1.0}),
+    ("mouth_24_open_narrow", 0.03, {"hw": 39.0, "upper": 10.2, "lower": 12.2, "smile": 3.4, "open": 7.0, "teeth": 1.0}),
+    ("mouth_25_high", 0.03, {"hw": 43.0, "upper": 11.2, "lower": 13.6, "smile": 3.0, "lift": -6.0}),
+    ("mouth_26_low", 0.03, {"hw": 44.0, "upper": 11.2, "lower": 13.8, "smile": 2.6, "lift": 6.0}),
+    ("mouth_27_thick", 0.04, {"hw": 44.0, "upper": 14.0, "lower": 16.8, "smile": 2.8, "bow": 1.2}),
+    ("mouth_28_thin_high", 0.0, {"hw": 44.0, "upper": 11.0, "lower": 13.4, "smile": 2.8, "lift": -5.0}),  # retired: thin high
+    ("mouth_29_laugh_wide", 0.03, {"hw": 47.0, "upper": 10.6, "lower": 12.8, "smile": 7.4, "open": 9.5, "teeth": 1.0}),
+    ("mouth_30_open_low", 0.03, {"hw": 44.0, "upper": 10.4, "lower": 12.6, "smile": 4.0, "open": 7.5, "teeth": 1.0, "lift": 5.5}),
+    ("mouth_31_toothy", 0.03, {"hw": 45.0, "upper": 10.0, "lower": 12.2, "smile": 5.8, "open": 10.5, "teeth": 1.0}),
+    ("mouth_32_high_full", 0.03, {"hw": 44.0, "upper": 13.0, "lower": 15.6, "smile": 3.0, "lift": -5.5}),
+    ("mouth_33_low_wide", 0.03, {"hw": 46.0, "upper": 11.2, "lower": 13.8, "smile": 2.4, "lift": 5.5}),
+    ("mouth_34_smirk", 0.03, {"hw": 44.0, "upper": 11.0, "lower": 13.4, "smile": 3.2, "skew": 4.2}),
+    ("mouth_35_small_open", 0.03, {"hw": 41.0, "upper": 10.2, "lower": 12.2, "smile": 3.6, "open": 5.5, "teeth": 1.0}),
+    ("mouth_36_even", 0.035, {"hw": 43.0, "upper": 11.2, "lower": 13.6, "smile": 2.6}),
+    ("mouth_37_even_wide", 0.035, {"hw": 47.0, "upper": 11.4, "lower": 14.0, "smile": 2.8}),
+    ("mouth_38_even_narrow", 0.03, {"hw": 40.0, "upper": 11.0, "lower": 13.4, "smile": 2.6}),
+    ("mouth_39_soft_full", 0.04, {"hw": 44.0, "upper": 12.6, "lower": 15.0, "smile": 3.0}),
+    ("mouth_40_quiet", 0.03, {"hw": 43.0, "upper": 10.8, "lower": 13.2, "smile": 2.0, "bow": 1.2}),
+    ("mouth_41_gentle_open", 0.04, {"hw": 44.0, "upper": 10.6, "lower": 12.8, "smile": 3.8, "open": 5.5, "teeth": 1.0}),
+    ("mouth_42_half_smile", 0.04, {"hw": 45.0, "smile": 4.8, "upper": 11.2, "lower": 13.6}),
+    ("mouth_43_compact", 0.03, {"hw": 40.0, "upper": 11.4, "lower": 13.8, "smile": 2.8}),
+    ("mouth_44_medium_bow", 0.03, {"hw": 43.0, "bow": 2.8, "upper": 11.8, "lower": 13.4, "smile": 2.6}),
+    ("mouth_45_slight_open", 0.04, {"hw": 44.0, "upper": 10.6, "lower": 12.8, "smile": 3.4, "open": 6.5, "teeth": 1.0}),
+    ("mouth_46_high_neutral", 0.03, {"hw": 44.0, "upper": 11.2, "lower": 13.6, "smile": 2.8, "lift": -4.5}),
+    ("mouth_47_low_neutral", 0.03, {"hw": 44.0, "upper": 11.2, "lower": 13.6, "smile": 2.6, "lift": 4.5}),
+    ("mouth_48_full_smile", 0.04, {"hw": 45.0, "smile": 5.6, "upper": 12.2, "lower": 14.8}),
+    ("mouth_49_small_full", 0.03, {"hw": 40.0, "upper": 12.4, "lower": 14.8, "smile": 2.6}),
+    ("mouth_50_open_smile", 0.04, {"hw": 45.0, "upper": 10.6, "lower": 12.8, "smile": 5.4, "open": 7.0, "teeth": 1.0}),
+    ("mouth_51_even_open", 0.04, {"hw": 44.0, "upper": 10.6, "lower": 12.8, "smile": 4.2, "open": 7.0, "teeth": 1.0}),
+    ("mouth_52_closed_wide", 0.03, {"hw": 47.0, "upper": 11.6, "lower": 14.2, "smile": 3.0}),
+    ("mouth_53_closed_short", 0.03, {"hw": 39.0, "upper": 11.2, "lower": 13.6, "smile": 2.8}),
+    ("mouth_54_plump", 0.04, {"hw": 43.0, "upper": 13.0, "lower": 15.6, "smile": 2.6}),
+    ("mouth_55_lift_smile", 0.03, {"hw": 44.0, "smile": 4.8, "upper": 11.2, "lower": 13.6, "lift": -4.0}),
+    ("mouth_56_drop_smile", 0.03, {"hw": 45.0, "smile": 3.8, "upper": 11.2, "lower": 13.6, "lift": 4.0}),
+    ("mouth_57_soft_grin", 0.04, {"hw": 45.0, "upper": 10.4, "lower": 12.6, "smile": 6.0, "open": 8.0, "teeth": 1.0}),
+    ("mouth_58_quiet_open", 0.03, {"hw": 42.0, "upper": 10.2, "lower": 12.4, "smile": 3.0, "open": 5.0, "teeth": 1.0}),
+    ("mouth_59_square", 0.04, {"hw": 44.0, "bow": 0.2, "upper": 11.6, "lower": 13.8, "smile": 1.8}),
+    ("mouth_60_heavy_lower", 0.04, {"hw": 44.0, "upper": 10.2, "lower": 16.6, "smile": 2.6}),
+    ("mouth_61_even_full", 0.04, {"hw": 45.0, "upper": 12.8, "lower": 15.2, "smile": 2.8, "bow": 1.4}),
+    ("mouth_62_cupid_full", 0.03, {"hw": 42.0, "bow": 3.4, "upper": 12.2, "lower": 13.2, "smile": 2.4}),
+    ("mouth_63_open_bow", 0.03, {"hw": 44.0, "bow": 2.8, "upper": 10.8, "lower": 12.8, "smile": 4.0, "open": 6.5, "teeth": 1.0}),
+    ("mouth_64_tight_smile", 0.03, {"hw": 40.0, "smile": 5.6, "upper": 11.2, "lower": 13.4}),
+    ("mouth_65_eye_width", 0.04, {"hw": 47.0, "upper": 11.4, "lower": 14.0, "smile": 3.0}),
+    ("mouth_66_drop_full", 0.03, {"hw": 44.0, "upper": 12.2, "lower": 15.0, "smile": 2.4, "lift": 5.5}),
+    ("mouth_67_open_meaty", 0.04, {"hw": 45.0, "upper": 11.2, "lower": 13.4, "smile": 4.6, "open": 7.5, "teeth": 1.0}),
+    ("mouth_68_heart_full", 0.03, {"hw": 41.0, "bow": 4.2, "upper": 12.6, "lower": 13.0, "smile": 2.2}),
+    ("mouth_69_smirk_full", 0.03, {"hw": 44.0, "upper": 11.2, "lower": 13.6, "smile": 3.4, "skew": 5.0}),
+    ("mouth_70_low_meaty", 0.03, {"hw": 45.0, "upper": 11.4, "lower": 14.2, "smile": 2.6, "lift": 6.0}),
+    ("mouth_71_high_meaty", 0.03, {"hw": 44.0, "upper": 11.4, "lower": 13.8, "smile": 2.8, "lift": -5.5}),
+    ("mouth_72_laugh_meaty", 0.04, {"hw": 46.0, "upper": 10.8, "lower": 13.0, "smile": 7.4, "open": 10.0, "teeth": 1.0}),
+    ("mouth_73_narrow_full", 0.03, {"hw": 39.0, "upper": 12.0, "lower": 14.6, "smile": 2.6}),
+    ("mouth_74_soft_square", 0.03, {"hw": 45.0, "bow": 0.5, "upper": 10.8, "lower": 13.2, "smile": 1.6}),
 ]
 
 
@@ -1113,18 +1132,18 @@ def _mouth_poly(
     """Banana mouth: corners follow smile, centre opens by `gap`, pads add lip meat."""
     g = max(gap, 1.6)
     return [
-        (CX - hw, y + ldroop - pad_up * 0.18),
-        (CX - hw * 0.62, y - g * 0.12 - bow * 0.2 - pad_up * 0.78),
+        (CX - hw, y + ldroop - pad_up * 0.22),
+        (CX - hw * 0.62, y - g * 0.12 - bow * 0.2 - pad_up * 0.90),
         (CX - hw * 0.18, y - g * 0.50 - bow - pad_up),
-        (CX, y - g * 0.36 - pad_up * 0.72),
+        (CX, y - g * 0.36 - pad_up * 0.92),
         (CX + hw * 0.18, y - g * 0.50 - bow - pad_up),
-        (CX + hw * 0.62, y - g * 0.12 - bow * 0.2 - pad_up * 0.78),
-        (CX + hw, y + rdroop - pad_up * 0.18),
-        (CX + hw, y + rdroop + pad_lo * 0.12),
-        (CX + hw * 0.60, y + g * 0.70 + pad_lo * 0.88),
+        (CX + hw * 0.62, y - g * 0.12 - bow * 0.2 - pad_up * 0.90),
+        (CX + hw, y + rdroop - pad_up * 0.22),
+        (CX + hw, y + rdroop + pad_lo * 0.16),
+        (CX + hw * 0.60, y + g * 0.70 + pad_lo * 0.95),
         (CX, y + g + pad_lo),
-        (CX - hw * 0.60, y + g * 0.70 + pad_lo * 0.88),
-        (CX - hw, y + ldroop + pad_lo * 0.12),
+        (CX - hw * 0.60, y + g * 0.70 + pad_lo * 0.95),
+        (CX - hw, y + ldroop + pad_lo * 0.16),
     ]
 
 
@@ -1143,27 +1162,29 @@ def bake_mouth(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, An
     show_teeth = p.get("teeth", 1.0 if gap >= 5.0 else 0.0) > 0.5
 
     if gap < 2.0:
+        # Outer upper edge keeps meat through the philtrum; bow is a dip in the
+        # silhouette, not a collapse to a 2 px thread.
         upper_pts = [
             (CX - hw, y + ldroop),
-            (CX - hw * 0.55, y - up * 0.72),
-            (CX - hw * 0.16, y - up * 0.5 - bow),
-            (CX, y - up * 0.22),
-            (CX + hw * 0.16, y - up * 0.5 - bow),
-            (CX + hw * 0.55, y - up * 0.72),
+            (CX - hw * 0.68, y - up * 0.62),
+            (CX - hw * 0.24, y - up - bow * 0.50),
+            (CX, y - up * 0.84),
+            (CX + hw * 0.24, y - up - bow * 0.50),
+            (CX + hw * 0.68, y - up * 0.62),
             (CX + hw, y + rdroop),
-            (CX + hw * 0.5, y + 0.6),
-            (CX, y + 1.4),
-            (CX - hw * 0.5, y + 0.6),
+            (CX + hw * 0.52, y + 1.1),
+            (CX, y + 1.8),
+            (CX - hw * 0.52, y + 1.1),
         ]
         lower_pts = [
             (CX - hw, y + ldroop),
-            (CX - hw * 0.5, y + 1.4),
-            (CX, y + 2.0),
-            (CX + hw * 0.5, y + 1.4),
+            (CX - hw * 0.52, y + 1.6),
+            (CX, y + 2.2),
+            (CX + hw * 0.52, y + 1.6),
             (CX + hw, y + rdroop),
-            (CX + hw * 0.58, y + lo * 0.86),
+            (CX + hw * 0.62, y + lo * 0.92),
             (CX, y + lo),
-            (CX - hw * 0.58, y + lo * 0.86),
+            (CX - hw * 0.62, y + lo * 0.92),
         ]
         upper = poly_mask(upper_pts)
         lower = poly_mask(lower_pts)
@@ -1176,26 +1197,22 @@ def bake_mouth(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, An
             blur(
                 stroke_mask(
                     [(CX - hw, y + ldroop), (CX - hw * 0.4, y + 0.4), (CX, y + 1.0), (CX + hw * 0.4, y + 0.4), (CX + hw, y + rdroop)],
-                    2.4,
+                    2.0,
                 ),
                 1.0,
             ),
-            0.48 if st().line_art <= 0 else 0.78,
+            0.42 if st().line_art <= 0 else 0.58,
         )
         for sx, corner in ((-1, ldroop), (1, rdroop)):
-            line = ImageChops.lighter(line, scale_l(blur(ellipse_mask(CX + sx * (hw + 2.0), y + corner + 0.5, 4.5, 3.4), 2.2), 0.38))
-        light = solid_layer(LIGHT_RGB, scale_l(blur(ellipse_mask(CX - 4, y + lo * 0.52, hw * 0.44, lo * 0.24), 3.0), 0.30))
+            line = ImageChops.lighter(line, scale_l(blur(ellipse_mask(CX + sx * (hw + 1.5), y + corner + 0.5, 3.6, 2.8), 1.8), 0.28))
         return (
             [("lips", lips_layer, {"blend": "normal", "color_slot": "lip"})]
             + keyline(lips, 0.7)
-            + [
-                ("line", solid_layer(SHADOW_RGB, line), {"blend": "multiply"}),
-                ("light", light, {"blend": "screen"}),
-            ]
+            + [("line", solid_layer(SHADOW_RGB, line), {"blend": "multiply"})]
         )
 
     envelope = poly_mask(_mouth_poly(hw, y, ldroop, rdroop, bow, gap, up, lo), iters=2)
-    opening = poly_mask(_mouth_poly(hw * 0.90, y, ldroop, rdroop, bow * 0.4, gap, 0.0, 0.0), iters=2)
+    opening = poly_mask(_mouth_poly(hw * 0.84, y, ldroop, rdroop, bow * 0.4, gap, 0.0, 0.0), iters=2)
     opening = ImageChops.multiply(opening, envelope)
     lips = ImageChops.subtract(envelope, opening)
     shade = mul(flat(1.0), grad_h(1.02, 0.90))
@@ -1705,7 +1722,7 @@ def beard_area_mask(coverage: str) -> Image.Image:
     mask = ImageChops.multiply(face, poly_mask(pts))
     if coverage in ("full", "short", "strap"):
         # keep the lips clear so the mouth never disappears under the beard
-        mask = ImageChops.subtract(mask, blur(ellipse_mask(CX, MOUTH_Y + 1, 40, 12), 4))
+        mask = ImageChops.subtract(mask, blur(ellipse_mask(CX, MOUTH_Y + 2, 44, 18), 4))
     return mask
 
 
@@ -1917,7 +1934,7 @@ TEAMS: dict[str, dict[str, Any]] = {
 # --------------------------------------------------------------------------- #
 
 
-def bake(root: str | Path, style: str = "flat", pack_version: str = "0.5.0-placeholder") -> Path:
+def bake(root: str | Path, style: str = "flat", pack_version: str = "0.6.0-placeholder") -> Path:
     """Bake one placeholder pack in one style. The recipes are shared; only the
     StyleProfile changes, which is how the same peloton can be shown in several
     art directions without touching game code."""
