@@ -11,6 +11,7 @@ Outputs to out/demo/:
   07_styles.png          the same riders baked in every style profile
   08_display_sizes.png   how much detail survives at real UI sizes
   09_managers.png        role = manager: civilian torsos, no helmet, no glasses
+  10_look_proposals.png  poster vs four neighbour profiles (thin / woodcut / comic / stencil)
   report.txt             determinism, duplicate and performance numbers
 """
 
@@ -34,6 +35,21 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "out" / "demo"
 DEFAULT_STYLE = "poster"
 STYLE_ORDER = ["poster", "flat", "flat_outline", "painted", "soft"]
+# Neighbours of poster for owner look-review. poster stays first as the locked default.
+PROPOSAL_ORDER = [
+    "poster",
+    "poster_thin",
+    "poster_cut",
+    "poster_comic",
+    "poster_stencil",
+]
+PROPOSAL_LABELS = {
+    "poster": "poster (locked)",
+    "poster_thin": "thin ink 3px",
+    "poster_cut": "woodcut 8px",
+    "poster_comic": "sports comic",
+    "poster_stencil": "stencil",
+}
 
 # palette taken from the merged UI lab (12-dashboard-team-mid.html) so the
 # portraits are judged against the colours they will actually live in
@@ -293,15 +309,19 @@ def skin_hair_sheet(pack: render.Pack) -> Image.Image:
     )
 
 
-def styles_sheet() -> Image.Image:
-    """The same five riders through every StyleProfile in the baker."""
-    riders = [
+def _same_five_riders() -> list[Rider]:
+    return [
         Rider(rider_id=11, age=24, region="west_europe", discipline="sprinter", team_id="team_01_azure"),
         Rider(rider_id=4207, age=31, region="east_africa", discipline="climber", team_id="team_03_rosso"),
         Rider(rider_id=9, age=27, region="scandinavia", discipline="tt", team_id="team_05_arctic"),
         Rider(rider_id=5001, age=36, region="iberia", discipline="classics", team_id="team_02_verde"),
         Rider(rider_id=812, age=20, region="east_asia", discipline="allrounder", team_id="team_04_noir"),
     ]
+
+
+def styles_sheet() -> Image.Image:
+    """The same five riders through every StyleProfile in the baker."""
+    riders = _same_five_riders()
     tiles = []
     for style in STYLE_ORDER:
         pack = render.Pack(ROOT / "out" / f"pack_{style}")
@@ -313,6 +333,24 @@ def styles_sheet() -> Image.Image:
         len(riders),
         header="7. Style profiles - same riders, same recipes",
         sub="rows: poster / flat / flat outline / painted / soft. Style belongs to the asset pack; the game code is identical",
+    )
+
+
+def look_proposals_sheet() -> Image.Image:
+    """Poster vs four neighbour profiles. Same riders, same recipes, only StyleProfile changes."""
+    riders = _same_five_riders()
+    tiles = []
+    for style in PROPOSAL_ORDER:
+        pack = render.Pack(ROOT / "out" / f"pack_{style}")
+        label = PROPOSAL_LABELS[style]
+        for i, rider in enumerate(riders):
+            img = render.render(generate(rider, pack.manifest), pack)
+            tiles.append(tile(img, 200, label if i == 0 else "", f"#{rider.rider_id}", alt=i % 2 == 1))
+    return grid(
+        tiles,
+        len(riders),
+        header="10. Look proposals - neighbours of poster",
+        sub="row 1 is the locked poster default. Rows 2-5 are review-only variants: thinner ink, woodcut, sports comic, stencil. Do not treat these as a replacement until the owner picks one.",
     )
 
 
@@ -477,6 +515,11 @@ def main(argv: list[str]) -> int:
         img = styles_sheet()
         img.convert("RGB").save(OUT / "07_styles.png", quality=95)
         print(f"07_styles.png: {img.size[0]}x{img.size[1]} in {time.perf_counter() - t0:.1f}s")
+    if all((ROOT / "out" / f"pack_{s}").exists() for s in PROPOSAL_ORDER):
+        t0 = time.perf_counter()
+        img = look_proposals_sheet()
+        img.convert("RGB").save(OUT / "10_look_proposals.png", quality=95)
+        print(f"10_look_proposals.png: {img.size[0]}x{img.size[1]} in {time.perf_counter() - t0:.1f}s")
     text = report(pack)
     (OUT / "report.txt").write_text(text, encoding="utf-8")
     print()

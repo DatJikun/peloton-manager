@@ -520,7 +520,9 @@ resolution, order independence, transparent background, cache-key movement).
 
 ## Open questions before this becomes a real system
 
-1. **Which style profile wins?** `demo/07_styles.png` is the decision sheet. Everything else
+1. **Which style profile wins?** `demo/07_styles.png` is the old five-way sheet.
+   `demo/10_look_proposals.png` is the neighbour-of-poster review (thin / woodcut /
+   comic / stencil). `poster` stays default until the owner picks. Everything else
    is already style-agnostic.
 2. **Who authors the final pack?** Procedural/vector (pipeline A) or an artist replacing
    layers file by file. Both fit the same manifest.

@@ -75,6 +75,7 @@ Gotowe plansze (bez uruchamiania czegokolwiek) leżą w `demo/`.
 | Plansza | Pytanie do Ciebie |
 |---|---|
 | `demo/07_styles.png` | **Który styl?** Ci sami kolarze w pięciu kierunkach; `poster` na górze. |
+| `demo/10_look_proposals.png` | **Wariacje `poster`.** Ten sam peleton, cztery sąsiednie profile (cienka kreska / drzeworyt / komiks / szablon). `poster` zostaje domyślny, dopóki nie wybierzesz. |
 | `demo/08_display_sizes.png` | Czy w rozmiarze karty (380 px) i ikony listy (48 px) portret się czyta? |
 | `demo/01_contact_sheet.png` | Czy 40 kolarzy wygląda na 40 różnych ludzi, czy na jedną osobę w różnych fryzurach? |
 | `demo/02_aging.png` | Czy ten sam zawodnik w wieku 19 i 44 lat to nadal ta sama osoba? |
