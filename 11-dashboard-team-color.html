@@ -1,10 +1,12 @@
 <!doctype html>
 <!--
-  10 — DASHBOARD · CONSTRUCTIVIST · pełny przykład biurka managera (Peloton Manager)
-  Kierunek właściciela: koncept 08e (plakat czerwień/czerń/papier, ukośna oś, stack typu).
-  Prototyp UI/UX; jedyna interakcja (na prośbę właściciela): lista 5 nadchodzących
-  wyścigów po lewej przełącza panel wyścigu, a profil trasy PŁYNNIE MORPHUJE
-  między profilami (płaski → pagórkowaty → bergi) przez interpolację punktów SVG.
+  11 — DASHBOARD · TEAM COLOR · wariant 10 z UI w kolorze zespołu (Peloton Manager)
+  Pytanie właściciela: „czy UI w kolorze zespołu może dobrze wyjść?" — ten plik
+  odpowiada na żywo: klikalne próbki w topbarze przełączają --team (myszka).
+  Zasada: kolor zespołu bierze AKCENTY marki (aktywna nawigacja, slaby daty,
+  guzik Advance Day, gwiazdki, marker trasy, własny wiersz rankingu), a czerwień
+  zostaje SEMANTYCZNA (pilna sprawa, spadkowa forma, ujemne kwoty).
+  Rama zostaje konstruktywistyczna: czerń + papier. Sterowanie wyłącznie myszką.
 
   Rodowód: 08e-constructivist-desk.html (Forever: constructivism/08-type-stack +
   constructivism/04-black-square) rozszerzony do pełnego dashboardu.
@@ -19,7 +21,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>10 — Dashboard Constructivist · Peloton Manager</title>
+<title>11 — Dashboard Team Color · Peloton Manager</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=PT+Sans:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -27,6 +29,7 @@
 :root{
   --paper:#f3ede1; --red:#d11f1f; --black:#0c0c0d; --gray:#6f6f72; --white:#fffdf7;
   --hair:#d9d2c0;
+  --team:#2050c8; --team-on:#f3ede1;
   --disp:"Anton","Arial Narrow",Impact,system-ui,sans-serif;
   --body:"PT Sans",system-ui,sans-serif;
   --hard:cubic-bezier(.7,0,.2,1);
@@ -39,12 +42,12 @@ body{
   background-image:repeating-linear-gradient(115deg,transparent 0 38px,rgba(12,12,13,.025) 38px 39px);
   font-family:var(--body); font-size:14px; line-height:1.45;
 }
-:focus-visible{outline:3px solid var(--red); outline-offset:2px}
+:focus-visible{outline:3px solid var(--team); outline-offset:2px}
 button{font:inherit; color:inherit; background:none; border:0; cursor:pointer}
 
 /* tło: statyczne formy suprematystyczne */
 .bg-forms{position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden}
-.bg-bar{position:absolute; left:-12%; top:64%; width:124%; height:7%; background:var(--red); opacity:.9; transform:rotate(-8deg)}
+.bg-bar{position:absolute; left:-12%; top:64%; width:124%; height:7%; background:var(--team); opacity:.9; transform:rotate(-8deg)}
 .bg-square{position:absolute; right:4%; top:8%; width:16vmin; height:16vmin; background:var(--black); transform:rotate(12deg); opacity:.05}
 
 .app{position:relative; z-index:1; display:grid; grid-template-columns:236px 1fr; min-height:100dvh}
@@ -58,7 +61,7 @@ button{font:inherit; color:inherit; background:none; border:0; cursor:pointer}
 .crest{display:flex; align-items:center; gap:10px; padding:2px 4px 16px; border-bottom:2px solid #2a2a2e}
 .crest svg{flex:0 0 auto}
 .crest-name{font:400 13px/1.15 var(--disp); letter-spacing:.06em; text-transform:uppercase}
-.crest-name b{color:var(--red); font-weight:400}
+.crest-name b{color:var(--team); font-weight:400}
 .crest-sub{font:700 9px/1.4 var(--body); letter-spacing:.22em; text-transform:uppercase; opacity:.55; margin-top:2px}
 .nav{margin-top:14px; display:flex; flex-direction:column; gap:2px}
 .nav-item{
@@ -68,7 +71,7 @@ button{font:inherit; color:inherit; background:none; border:0; cursor:pointer}
 }
 .nav-item svg{width:18px; height:18px; stroke:currentColor; flex:0 0 auto}
 .nav-item:hover{color:var(--paper); border-color:#2a2a2e}
-.nav-item.active{background:var(--red); color:var(--paper); border-color:var(--red)}
+.nav-item.active{background:var(--team); color:var(--team-on); border-color:var(--team)}
 .nav-item .badge{
   margin-left:auto; background:var(--paper); color:var(--black);
   font:700 10px/1 var(--body); padding:3px 7px; min-width:20px; text-align:center;
@@ -87,25 +90,29 @@ button{font:inherit; color:inherit; background:none; border:0; cursor:pointer}
   border-bottom:3px solid var(--black); padding-bottom:14px;
 }
 .date-slab{display:flex; align-items:stretch; gap:6px; transform:rotate(-1.2deg)}
-.date-slab .d1{font:400 26px/1 var(--disp); background:var(--red); color:var(--paper); padding:6px 10px 4px}
+.date-slab .d1{font:400 26px/1 var(--disp); background:var(--team); color:var(--team-on); padding:6px 10px 4px}
 .date-slab .d2{font:400 26px/1 var(--disp); background:var(--black); color:var(--paper); padding:6px 10px 4px}
 .date-meta{padding-left:6px}
 .date-dow{font:700 14px/1.2 var(--body)}
 .date-full{font:400 11.5px/1.3 var(--body); color:var(--gray)}
 .top-mid{margin-left:8px; display:flex; gap:18px; align-items:center}
 .pill{border:2px solid var(--black); padding:5px 10px; font:700 11px/1 var(--body); letter-spacing:.12em; text-transform:uppercase; background:var(--white)}
-.pill b{color:var(--red)}
+.pill b{color:var(--team)}
+.swatches{display:flex; align-items:center; gap:8px; border:2px solid var(--black); background:var(--white); padding:6px 10px}
+.sw-label{font:700 9px/1.3 var(--body); letter-spacing:.16em; text-transform:uppercase; color:var(--gray)}
+.sw{width:24px; height:24px; border:2.5px solid var(--black); cursor:pointer; padding:0; transition:transform .12s var(--hard), box-shadow .12s var(--hard)}
+.sw[aria-pressed="true"]{box-shadow:3px 3px 0 var(--black); transform:translate(-1px,-1px)}
 .employer{margin-left:auto; display:flex; align-items:center; gap:10px; background:var(--black); padding:8px 14px; transform:rotate(-1deg); box-shadow:var(--s4)}
 .emp-label{font:700 9px/1 var(--body); letter-spacing:.24em; text-transform:uppercase; color:var(--paper); opacity:.6}
-.emp-name{font:400 14px/1 var(--disp); letter-spacing:.06em; text-transform:uppercase; color:var(--red)}
+.emp-name{font:400 14px/1 var(--disp); letter-spacing:.06em; text-transform:uppercase; color:var(--team)}
 .main-btn{
   font:400 15px/1 var(--disp); letter-spacing:.1em; text-transform:uppercase;
-  color:var(--paper); background:var(--red); border:3px solid var(--black);
+  color:var(--team-on); background:var(--team); border:3px solid var(--black);
   box-shadow:6px 6px 0 var(--black); padding:15px 30px; user-select:none;
   transition:background .2s var(--hard);
 }
 .main-btn:hover{background:var(--black)}
-.main-btn:hover .lbl{color:var(--red)}
+.main-btn:hover .lbl{color:var(--team)}
 .main-btn:active{transform:translate(6px,6px); box-shadow:0 0 0 var(--black)}
 
 /* ── siatka paneli ───────────────────────────────────────── */
@@ -135,17 +142,17 @@ button{font:inherit; color:inherit; background:none; border:0; cursor:pointer}
   display:flex; align-items:baseline; gap:10px;
   font:400 12.5px/1 var(--disp); letter-spacing:.24em; text-transform:uppercase;
 }
-.panel-h .no{color:var(--red); letter-spacing:.05em}
+.panel-h .no{color:var(--team); letter-spacing:.05em}
 .panel-h .more{
   margin-left:auto; font:700 10px/1 var(--body); letter-spacing:.14em; text-transform:uppercase;
   color:#b8b3a6; cursor:pointer; padding:4px 2px;
 }
-.panel-h .more:hover{color:var(--red)}
+.panel-h .more:hover{color:var(--team)}
 .panel-b{padding:12px 14px; display:flex; flex-direction:column; gap:10px; min-height:0}
 
 /* następny wyścig */
 .race-name{font:400 24px/1.05 var(--disp); letter-spacing:.02em; text-transform:uppercase}
-.race-name .cls{color:var(--red)}
+.race-name .cls{color:var(--team)}
 .race-meta{display:flex; flex-wrap:wrap; gap:6px 14px; font:700 11.5px/1.4 var(--body); color:var(--gray); text-transform:uppercase; letter-spacing:.08em}
 .race-meta b{color:var(--black)}
 .profile{border:2.5px solid var(--black); background:var(--paper); padding:8px 8px 4px}
@@ -154,10 +161,10 @@ button{font:inherit; color:inherit; background:none; border:0; cursor:pointer}
 .kv{display:grid; grid-template-columns:auto 1fr; gap:4px 12px; font-size:13px}
 .kv dt{font:700 11px/1.5 var(--body); letter-spacing:.1em; text-transform:uppercase; color:var(--gray)}
 .kv dd{margin:0; font:700 13px/1.4 var(--body)}
-.goal-line{border-left:6px solid var(--red); background:var(--paper); padding:8px 12px; font-size:13px; font-style:italic}
+.goal-line{border-left:6px solid var(--team); background:var(--paper); padding:8px 12px; font-size:13px; font-style:italic}
 .tagrow{display:flex; gap:6px; flex-wrap:wrap}
 .tag{border:2px solid var(--black); font:700 10px/1 var(--body); letter-spacing:.12em; text-transform:uppercase; padding:5px 8px; background:var(--white)}
-.tag.red{background:var(--red); color:var(--paper); border-color:var(--red)}
+.tag.red{background:var(--team); color:var(--team-on); border-color:var(--team)}
 .tag.inv{background:var(--black); color:var(--paper)}
 
 /* lista nadchodzących wyścigów */
@@ -169,15 +176,15 @@ button{font:inherit; color:inherit; background:none; border:0; cursor:pointer}
   text-align:left; cursor:pointer;
   transition:background .18s var(--hard), color .18s var(--hard), transform .12s var(--hard), box-shadow .12s var(--hard);
 }
-.race-row:hover{border-color:var(--red)}
-.race-row:hover .rr-name{color:var(--red)}
+.race-row:hover{border-color:var(--team)}
+.race-row:hover .rr-name{color:var(--team)}
 .race-row.active{background:var(--black); color:var(--paper); box-shadow:var(--s4)}
 .race-row.active .rr-name{color:var(--paper)}
 .race-row.active .rr-meta{color:#b8b3a6}
-.race-row.active .rr-spark polyline{stroke:var(--red)}
+.race-row.active .rr-spark polyline{stroke:var(--team)}
 .race-row:active{transform:translate(4px,4px); box-shadow:0 0 0 var(--black)}
 .rr-date{font:400 15px/1 var(--disp); letter-spacing:.04em; text-transform:uppercase; background:var(--black); color:var(--paper); padding:7px 9px 5px; text-align:center}
-.race-row.active .rr-date{background:var(--red)}
+.race-row.active .rr-date{background:var(--team); color:var(--team-on)}
 .rr-name{font:700 14px/1.15 var(--body)}
 .rr-meta{font:700 10px/1.5 var(--body); letter-spacing:.12em; text-transform:uppercase; color:var(--gray)}
 .rr-spark{width:64px; height:20px}
@@ -192,7 +199,7 @@ button{font:inherit; color:inherit; background:none; border:0; cursor:pointer}
 /* inbox */
 .mail{border:2.5px solid var(--black); background:var(--paper)}
 .mail-head{display:flex; align-items:baseline; gap:10px; padding:9px 12px}
-.mail-idx{font:400 12px/1 var(--disp); color:var(--red)}
+.mail-idx{font:400 12px/1 var(--disp); color:var(--team)}
 .mail-subj{flex:1; font:700 13px/1.3 var(--body)}
 .mail-meta{font:700 10px/1 var(--body); letter-spacing:.1em; text-transform:uppercase; color:var(--gray)}
 .mail-body{padding:0 12px 10px; font-size:12.5px; color:var(--black)}
@@ -217,12 +224,12 @@ button{font:inherit; color:inherit; background:none; border:0; cursor:pointer}
 }
 .stars .b{color:#cfc7b2}
 .stars .p,.stars .r{position:absolute; left:0; top:0; overflow:hidden}
-.stars .p{color:var(--red); opacity:.22}
-.stars .r{color:var(--red)}
+.stars .p{color:var(--team); opacity:.22}
+.stars .r{color:var(--team)}
 th.sortable{cursor:pointer; user-select:none}
 th.sortable:hover{color:var(--black)}
-th.sortable.srt{color:var(--black); border-bottom-color:var(--red)}
-th .arr{font-size:9px; color:var(--red); display:inline-block; min-width:1em}
+th.sortable.srt{color:var(--black); border-bottom-color:var(--team)}
+th .arr{font-size:9px; color:var(--team); display:inline-block; min-width:1em}
 .fstat{font:700 11px/1 var(--body); letter-spacing:.08em; text-transform:uppercase}
 .fstat.down{color:var(--red)}
 .fstat.up::before{content:"↑ "}
@@ -235,7 +242,7 @@ th .arr{font-size:9px; color:var(--red); display:inline-block; min-width:1em}
 .res{display:flex; align-items:baseline; gap:10px; padding:8px 2px; border-bottom:1.5px solid var(--hair); font-size:13px}
 .res:last-child{border-bottom:0}
 .res-pos{font:400 15px/1 var(--disp); min-width:2.2em; text-align:right; font-variant-numeric:tabular-nums}
-.res-pos.top{color:var(--red)}
+.res-pos.top{color:var(--team)}
 .res-race{flex:1}
 .res-race small{display:block; font-size:11px; color:var(--gray)}
 .res-who{font:700 11px/1 var(--body); letter-spacing:.06em; text-transform:uppercase; color:var(--gray)}
@@ -247,7 +254,7 @@ th .arr{font-size:9px; color:var(--red); display:inline-block; min-width:1em}
 .rank-pos{font:400 13px/1 var(--disp); width:2em; text-align:right; color:var(--gray)}
 .rank-pts{text-align:right; font-weight:700}
 .rank-table tr.mine{background:var(--black); color:var(--paper)}
-.rank-table tr.mine .rank-pos{color:var(--red)}
+.rank-table tr.mine .rank-pos{color:var(--team)}
 .rank-cap{font-size:11px; color:var(--gray); padding:8px 2px 0}
 
 /* finanse — książka */
@@ -261,7 +268,7 @@ th .arr{font-size:9px; color:var(--red); display:inline-block; min-width:1em}
 
 /* notatki */
 .note{border-left:6px solid var(--black); background:var(--paper); padding:8px 12px; font-size:12.5px}
-.note.red{border-left-color:var(--red)}
+.note.red{border-left-color:var(--team)}
 .note .who{display:block; font:700 10px/1.6 var(--body); letter-spacing:.16em; text-transform:uppercase; color:var(--gray)}
 
 .foot{margin-top:20px; font:700 9.5px/1.5 var(--body); letter-spacing:.2em; text-transform:uppercase; color:var(--gray)}
@@ -291,7 +298,7 @@ th .arr{font-size:9px; color:var(--red); display:inline-block; min-width:1em}
       <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
         <rect x="2" y="2" width="30" height="30" fill="#f3ede1"/>
         <path d="M2 32 L32 2" stroke="#0c0c0d" stroke-width="3"/>
-        <rect x="6" y="20" width="14" height="8" fill="#d11f1f" transform="rotate(-24 13 24)"/>
+        <rect x="6" y="20" width="14" height="8" style="fill:var(--team)" transform="rotate(-24 13 24)"/>
       </svg>
       <div>
         <div class="crest-name">Beskid<b>–</b>Vetter</div>
@@ -358,6 +365,13 @@ th .arr{font-size:9px; color:var(--red); display:inline-block; min-width:1em}
         <span class="pill">Sezon <b>1</b></span>
         <span class="pill">Wyścig za <b>1 dzień</b></span>
       </div>
+      <div class="swatches" role="group" aria-label="Kolor zespołu">
+        <span class="sw-label">Kolor<br>zespołu</span>
+        <button class="sw" type="button" data-c="#2050c8" data-on="#f3ede1" style="background:#2050c8" aria-label="Granat" aria-pressed="true"></button>
+        <button class="sw" type="button" data-c="#d11f1f" data-on="#f3ede1" style="background:#d11f1f" aria-label="Czerwień" aria-pressed="false"></button>
+        <button class="sw" type="button" data-c="#157a3f" data-on="#f3ede1" style="background:#157a3f" aria-label="Zieleń" aria-pressed="false"></button>
+        <button class="sw" type="button" data-c="#d98e00" data-on="#0c0c0d" style="background:#d98e00" aria-label="Bursztyn" aria-pressed="false"></button>
+      </div>
       <div class="employer">
         <span class="emp-label">Zespół</span>
         <strong class="emp-name">Beskid–Vetter ProTeam</strong>
@@ -385,8 +399,8 @@ th .arr{font-size:9px; color:var(--red); display:inline-block; min-width:1em}
             <svg viewBox="0 0 300 64" aria-label="Profil trasy wybranego wyścigu">
               <path id="routeFill" fill="rgba(12,12,13,.07)" stroke="none"/>
               <path id="routeLine" fill="none" stroke="#0c0c0d" stroke-width="3" stroke-linejoin="round"/>
-              <line id="keyLine" x1="262" y1="14" x2="262" y2="58" stroke="#d11f1f" stroke-width="1.5" stroke-dasharray="3 3"/>
-              <text id="keyLabel" x="262" y="62" font-family="PT Sans" font-size="7" fill="#d11f1f" text-anchor="middle">SUPERGA</text>
+              <line id="keyLine" x1="262" y1="14" x2="262" y2="58" style="stroke:var(--team)" stroke-width="1.5" stroke-dasharray="3 3"/>
+              <text id="keyLabel" x="262" y="62" font-family="PT Sans" font-size="7" style="fill:var(--team)" text-anchor="middle">SUPERGA</text>
               <text x="4" y="62" font-family="PT Sans" font-size="7" fill="#6f6f72">0 KM</text>
               <text id="distLabel" x="296" y="62" font-family="PT Sans" font-size="7" fill="#6f6f72" text-anchor="end">177 KM</text>
             </svg>
@@ -500,7 +514,7 @@ th .arr{font-size:9px; color:var(--red); display:inline-block; min-width:1em}
 
     </div>
 
-    <p class="foot">Peloton Manager · prototyp 10 · pełny dashboard · styl: konstruktywizm (08e) · zawartość poglądowa</p>
+    <p class="foot">Peloton Manager · prototyp 11 · wariant: UI w kolorze zespołu (--team) · zawartość poglądowa</p>
   </main>
 </div>
 
@@ -679,6 +693,15 @@ document.querySelector(".form-table thead").addEventListener("click",function(e)
   if(squadSort.key===k){squadSort.dir=-squadSort.dir;}
   else{squadSort.key=k; squadSort.dir=(k==="name"||k==="role")?1:-1;}
   renderSquad();
+});
+
+/* ── kolor zespołu: przełącznik akcentu marki (myszka) ────── */
+document.querySelectorAll(".sw").forEach(function(b){
+  b.addEventListener("click",function(){
+    document.documentElement.style.setProperty("--team",b.dataset.c);
+    document.documentElement.style.setProperty("--team-on",b.dataset.on);
+    document.querySelectorAll(".sw").forEach(function(x){x.setAttribute("aria-pressed",String(x===b));});
+  });
 });
 
 renderList(RACES[0].id);
