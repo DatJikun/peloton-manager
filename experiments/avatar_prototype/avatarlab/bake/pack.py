@@ -1148,9 +1148,11 @@ def _mouth_poly(
 
 
 def bake_mouth(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]]]:
-    hw = p.get("hw", 46.0)
-    up = p.get("upper", 8.4)
-    lo = p.get("lower", 11.2)
+    # Corners past the pupils read as a billboard; a ribbon that tapers to a
+    # point reads as a thread even when upper/lower are large.
+    hw = min(float(p.get("hw", 44.0)), EYE_DX - 2.0)
+    up = float(p.get("upper", 11.0)) * 1.32
+    lo = float(p.get("lower", 13.6)) * 1.36
     bow = p.get("bow", 1.6)
     # a fully straight closed mouth still reads sullen; open/laugh are identity
     # variants the owner asked for, not a second emotion system.
@@ -1162,52 +1164,53 @@ def bake_mouth(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, An
     show_teeth = p.get("teeth", 1.0 if gap >= 5.0 else 0.0) > 0.5
 
     if gap < 2.0:
-        # Outer upper edge keeps meat through the philtrum; bow is a dip in the
-        # silhouette, not a collapse to a 2 px thread.
+        # Blunt ends: keep ~40% of lip thickness at the corners so the mouth is
+        # a mass, not a banana tapering to two dots.
+        cu, cl = up * 0.40, lo * 0.42
         upper_pts = [
-            (CX - hw, y + ldroop),
-            (CX - hw * 0.68, y - up * 0.62),
-            (CX - hw * 0.24, y - up - bow * 0.50),
-            (CX, y - up * 0.84),
-            (CX + hw * 0.24, y - up - bow * 0.50),
-            (CX + hw * 0.68, y - up * 0.62),
-            (CX + hw, y + rdroop),
-            (CX + hw * 0.52, y + 1.1),
-            (CX, y + 1.8),
-            (CX - hw * 0.52, y + 1.1),
+            (CX - hw, y + ldroop - cu),
+            (CX - hw * 0.70, y - up * 0.72),
+            (CX - hw * 0.26, y - up - bow * 0.48),
+            (CX, y - up * 0.88),
+            (CX + hw * 0.26, y - up - bow * 0.48),
+            (CX + hw * 0.70, y - up * 0.72),
+            (CX + hw, y + rdroop - cu),
+            (CX + hw * 0.58, y + 1.2),
+            (CX, y + 2.0),
+            (CX - hw * 0.58, y + 1.2),
         ]
         lower_pts = [
-            (CX - hw, y + ldroop),
-            (CX - hw * 0.52, y + 1.6),
-            (CX, y + 2.2),
-            (CX + hw * 0.52, y + 1.6),
-            (CX + hw, y + rdroop),
-            (CX + hw * 0.62, y + lo * 0.92),
+            (CX - hw, y + ldroop + 0.5),
+            (CX - hw * 0.55, y + 1.8),
+            (CX, y + 2.4),
+            (CX + hw * 0.55, y + 1.8),
+            (CX + hw, y + rdroop + 0.5),
+            (CX + hw, y + rdroop + cl),
+            (CX + hw * 0.68, y + lo * 0.96),
             (CX, y + lo),
-            (CX - hw * 0.62, y + lo * 0.92),
+            (CX - hw * 0.68, y + lo * 0.96),
+            (CX - hw, y + ldroop + cl),
         ]
         upper = poly_mask(upper_pts)
         lower = poly_mask(lower_pts)
         lips = ImageChops.lighter(upper, lower)
-        shade = mul(flat(1.0), grad_h(1.02, 0.92))
-        shade = darken(shade, blur(upper, 3.0), 0.20)
-        shade = darken(shade, rim(lips, 4.0, 3.0), 0.16)
-        lips_layer = shaded_color_layer((255, 255, 255), shade, scale_l(blur(lips, 0.9), 0.97))
+        shade = mul(flat(1.0), grad_h(1.00, 0.88))
+        shade = darken(shade, blur(lower, 2.4), 0.14)
+        shade = darken(shade, rim(lips, 4.0, 3.0), 0.18)
+        lips_layer = shaded_color_layer((255, 255, 255), shade, scale_l(blur(lips, 0.8), 0.98))
         line = scale_l(
             blur(
                 stroke_mask(
-                    [(CX - hw, y + ldroop), (CX - hw * 0.4, y + 0.4), (CX, y + 1.0), (CX + hw * 0.4, y + 0.4), (CX + hw, y + rdroop)],
-                    2.0,
+                    [(CX - hw + 2.0, y + ldroop), (CX - hw * 0.4, y + 0.6), (CX, y + 1.2), (CX + hw * 0.4, y + 0.6), (CX + hw - 2.0, y + rdroop)],
+                    1.8,
                 ),
-                1.0,
+                0.9,
             ),
-            0.42 if st().line_art <= 0 else 0.58,
+            0.40 if st().line_art <= 0 else 0.52,
         )
-        for sx, corner in ((-1, ldroop), (1, rdroop)):
-            line = ImageChops.lighter(line, scale_l(blur(ellipse_mask(CX + sx * (hw + 1.5), y + corner + 0.5, 3.6, 2.8), 1.8), 0.28))
         return (
             [("lips", lips_layer, {"blend": "normal", "color_slot": "lip"})]
-            + keyline(lips, 0.7)
+            + keyline(lips, 0.78)
             + [("line", solid_layer(SHADOW_RGB, line), {"blend": "multiply"})]
         )
 
