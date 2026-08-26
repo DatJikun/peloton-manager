@@ -613,6 +613,15 @@ body.dark .bg-bar{opacity:.55}
       </div>
     </div>
     <div class="set-row">
+      <span class="set-label">Tło</span>
+      <div class="seg seg-slim" id="bgSegModal">
+        <button type="button" data-fx="off">Brak</button>
+        <button type="button" data-fx="grain">Szum</button>
+        <button type="button" data-fx="bands" class="on">Pasma</button>
+        <button type="button" data-fx="motes">Iskry</button>
+      </div>
+    </div>
+    <div class="set-row">
       <span class="set-label">Prędkość symulacji wyścigu</span>
       <div class="seg" id="speedSeg">
         <button type="button" class="on">×1</button>
@@ -877,7 +886,7 @@ function spawnBand(initial){
   return {x:x,y:y,vx:vx,vy:vy,speed:13+Math.random()*20,
     len:diag*(0.35+Math.random()*0.5), w:40+Math.random()*90,
     ang:Math.atan2(vy,vx),
-    c:pal[(Math.random()*pal.length)|0], alpha:.11+Math.random()*.1};
+    c:pal[(Math.random()*pal.length)|0], alpha:.055+Math.random()*.05};
 }
 function seedBands(){fxBands=[];for(var i=0;i<9;i++)fxBands.push(spawnBand(true));}
 function drawBands(dt){
@@ -934,11 +943,19 @@ function fxLoop(t){
   else if(fxMode==="bands"){drawBands(dt);}
   fxRaf=requestAnimationFrame(fxLoop);
 }
-document.getElementById("bgSeg").addEventListener("click",function(e){
-  var b=e.target.closest("button[data-fx]");
-  if(!b)return;
-  this.querySelectorAll("button").forEach(function(x){x.classList.toggle("on",x===b);});
-  fxSet(b.dataset.fx);
+function fxUI(mode){
+  ["bgSeg","bgSegModal"].forEach(function(id){
+    var seg=document.getElementById(id);
+    if(seg)seg.querySelectorAll("button[data-fx]").forEach(function(x){x.classList.toggle("on",x.dataset.fx===mode);});
+  });
+  fxSet(mode);
+}
+["bgSeg","bgSegModal"].forEach(function(id){
+  var seg=document.getElementById(id);
+  if(seg)seg.addEventListener("click",function(e){
+    var b=e.target.closest("button[data-fx]");
+    if(b)fxUI(b.dataset.fx);
+  });
 });
 addEventListener("resize",function(){if(fxRaf)fxResize();});
 document.addEventListener("visibilitychange",function(){
