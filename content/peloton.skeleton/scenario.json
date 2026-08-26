@@ -19,10 +19,10 @@
     },
     {
       "slot": "competitionRules",
-      "id": "rules.peloton.race.stub-v1",
-      "contract": "race-stub",
+      "id": "rules.peloton.race.prototype-v0",
+      "contract": "race-prototype",
       "contractVersion": 1,
-      "parameterIdentity": "finish-order:seeded-v1"
+      "parameterIdentity": "race-tuning.peloton.prototype-v0"
     }
   ]
 }

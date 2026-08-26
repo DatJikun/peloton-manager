@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Peloton.Domain;
 
 namespace Peloton.Application;
@@ -15,10 +14,14 @@ public sealed record PrepareRaceCommand;
 
 public sealed record StartRaceCommand(
     string PreRaceAutosavePath,
-    string RouteId,
-    IReadOnlyList<WorldEntityId> StartList);
+    string RaceScenarioId);
 
-public sealed record CompleteStubRaceCommand;
+public sealed record AdvanceRaceCommand;
+
+public sealed record RespondToRaceDecisionCommand(
+    RaceDecisionRequestId RequestId,
+    WorldEntityId AuthorityId,
+    RaceDecisionOption SelectedOption);
 
 public sealed record AcknowledgeRaceResultsCommand;
 

@@ -4,22 +4,26 @@ using System.IO;
 using System.Linq;
 using Peloton.Domain;
 using Peloton.Simulation;
+using Peloton.Simulation.Race;
 
 namespace Peloton.Application;
 
 public sealed class GameApplication
 {
     private readonly IScenarioCatalog scenarioCatalog;
+    private readonly IRaceScenarioCatalog raceScenarioCatalog;
     private readonly IWorldSaveStore saveStore;
-    private readonly StubRaceEngine raceEngine;
-    private PendingRace? pendingRace;
+    private readonly IRaceEngine raceEngine;
+    private RaceSession? activeRaceSession;
 
     public GameApplication(
         IScenarioCatalog scenarioCatalog,
+        IRaceScenarioCatalog raceScenarioCatalog,
         IWorldSaveStore saveStore,
-        StubRaceEngine raceEngine)
+        IRaceEngine raceEngine)
     {
         this.scenarioCatalog = scenarioCatalog ?? throw new ArgumentNullException(nameof(scenarioCatalog));
+        this.raceScenarioCatalog = raceScenarioCatalog ?? throw new ArgumentNullException(nameof(raceScenarioCatalog));
         this.saveStore = saveStore ?? throw new ArgumentNullException(nameof(saveStore));
         this.raceEngine = raceEngine ?? throw new ArgumentNullException(nameof(raceEngine));
     }
@@ -27,6 +31,23 @@ public sealed class GameApplication
     public GameState State { get; private set; } = GameState.MainMenu;
 
     public WorldState? World { get; private set; }
+
+    public PendingRaceDecision? PendingRaceDecision
+    {
+        get
+        {
+            RaceDecisionRequest? request = activeRaceSession?.PendingDecision;
+            return request is null
+                ? null
+                : new PendingRaceDecision(
+                    request.Id,
+                    request.AuthorityId,
+                    request.RaceSecond,
+                    request.Trigger,
+                    Array.AsReadOnly(request.DefensibleOptions.ToArray()),
+                    request.DelegatedDefaultOption);
+        }
+    }
 
     public CommandResult Execute(CreateWorldCommand command)
     {
@@ -104,7 +125,7 @@ public sealed class GameApplication
             WorldCheckpoint checkpoint = saveStore.Load(command.Path);
             World = checkpoint.World;
             State = checkpoint.GameState;
-            pendingRace = null;
+            activeRaceSession = null;
             return CommandResult.Success;
         }
         catch (Exception exception) when (exception is IOException or InvalidDataException)
@@ -144,27 +165,93 @@ public sealed class GameApplication
             return CommandResult.Reject("PRE_RACE_AUTOSAVE_FAILED");
         }
 
-        pendingRace = new PendingRace(command.RouteId, command.StartList.ToArray());
-        State = GameState.RaceLive;
-        return CommandResult.Success;
+        try
+        {
+            RaceScenario scenario = raceScenarioCatalog.Resolve(command.RaceScenarioId);
+            long raceSeed = unchecked((long)StableSeedDerivation.Derive(
+                World.MasterSeed,
+                $"official-race-v1:{World.RaceCount + 1}:{scenario.Id}:{scenario.TuningIdentity}"));
+            activeRaceSession = raceEngine.CreateSession(scenario, raceSeed);
+            State = GameState.RaceLive;
+            return CommandResult.Success;
+        }
+        catch (Exception exception) when (
+            exception is IOException or ArgumentException or InvalidOperationException)
+        {
+            activeRaceSession = null;
+            return CommandResult.Reject("RACE_START_FAILED");
+        }
     }
 
-    public CommandResult Execute(CompleteStubRaceCommand command)
+    public CommandResult Execute(AdvanceRaceCommand command)
     {
         ArgumentNullException.ThrowIfNull(command);
-        if (State != GameState.RaceLive || World is null || pendingRace is null)
+        if (State != GameState.RaceLive || World is null || activeRaceSession is null)
         {
             return CommandResult.Reject("GAME_STATE_INVALID");
         }
 
-        StubRaceResult result = raceEngine.Run(
-            World.MasterSeed,
-            pendingRace.RouteId,
-            pendingRace.StartList,
-            checked(World.RaceCount + 1));
-        World.RecordStubRace(new StubRaceSummary(result.RouteId, result.WinnerId, result.FinishOrder));
-        pendingRace = null;
-        State = GameState.RaceResultsFlow;
+        try
+        {
+            while (true)
+            {
+                RaceStepResult step = activeRaceSession.Step();
+                if (step.Status == RaceStepStatus.Advanced)
+                {
+                    continue;
+                }
+
+                if (step.Status == RaceStepStatus.Completed)
+                {
+                    RaceResult result = step.Result
+                        ?? throw new InvalidOperationException("A completed race step must carry its result.");
+                    World.RecordRace(new RaceSummary(result.RouteId, result.WinnerId, result.FinishOrder));
+                    activeRaceSession = null;
+                    State = GameState.RaceResultsFlow;
+                }
+
+                return CommandResult.Success;
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            return CommandResult.Reject("RACE_ADVANCE_FAILED");
+        }
+    }
+
+    public CommandResult Execute(RespondToRaceDecisionCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.RaceLive || activeRaceSession is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        RaceDecisionRequest? pending = activeRaceSession.PendingDecision;
+        if (pending is null)
+        {
+            return CommandResult.Reject("RACE_DECISION_NOT_PENDING");
+        }
+
+        if (command.RequestId != pending.Id)
+        {
+            return CommandResult.Reject("RACE_DECISION_REQUEST_INVALID");
+        }
+
+        if (command.AuthorityId != pending.AuthorityId)
+        {
+            return CommandResult.Reject("RACE_DECISION_AUTHORITY_INVALID");
+        }
+
+        if (!pending.DefensibleOptions.Contains(command.SelectedOption))
+        {
+            return CommandResult.Reject("RACE_DECISION_OPTION_INVALID");
+        }
+
+        activeRaceSession.ResolveDecision(new RaceDecisionResolution(
+            command.RequestId,
+            command.AuthorityId,
+            command.SelectedOption));
         return CommandResult.Success;
     }
 
@@ -265,6 +352,4 @@ public sealed class GameApplication
             organizations,
             new[] { authority });
     }
-
-    private sealed record PendingRace(string RouteId, IReadOnlyList<WorldEntityId> StartList);
 }

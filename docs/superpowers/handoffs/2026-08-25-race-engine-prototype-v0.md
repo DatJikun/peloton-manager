@@ -1,6 +1,6 @@
 # Race Engine Prototype v0 — Implementation Handoff
 
-**Status:** PARTIAL — Tasks 1–5 green. Do not merge; official results still come from `StubRaceEngine`.
+**Status:** PARTIAL — Tasks 1–6 green. Do not merge; Tasks 7–8 remain.
 
 **Branch:** `feature/race-engine-prototype`
 
@@ -32,6 +32,16 @@ Also preserve D-002, D-017 through D-025: one human/AI physics model, no direct 
 - Task 5 — data-only `racePrototypeScenarios` JSON pack, strict untrusted-input
   validation, deterministic definition-to-runtime mapping, and a headless
   `IRaceScenarioCatalog` that leaves the existing `scenarios` loader intact.
+- Task 6 — `GameApplication` now creates and advances a `PrototypeRaceEngine`
+  session from the validated prototype catalog. A pending decision remains in
+  `RaceLive`, is exposed through an immutable query projection, and accepts only
+  the matching request, authority, and legal strategic option. Completion writes
+  the existing `LastRace` JSON shape and follows the unchanged results/debrief flow.
+- The verified pre-race autosave remains the only recovery point. Save and load
+  commands are still rejected during `RaceLive`; SQLite `SchemaVersion` remains 1.
+- `SkeletonCareerRunner` advances the real session and resolves requests through
+  their delegated/default policy. The production `StubRaceEngine` path and its
+  obsolete test were removed; the physical and decision determinism proofs remain.
 - Task 3 drafting/position survival: `MaximumGapDuringPressureM` measures gap to the active ForcePace group while those riders are still racing. `MaximumGapAheadM` is neighbor gap and can invert survival (dropped rider 12 sitting just ahead of 14).
 
 Task 4 keeps tactical evaluation behind `TeamRaceObservation`. The DTO contains
@@ -71,18 +81,43 @@ The survival assertion was not relaxed. It now uses `MaximumGapDuringPressureM` 
 dotnet test PelotonManager.sln
 ```
 
-55 passed, 0 failed (including `RaceContentTests` 18/18,
-`RacePhysicalProofTests` 7/7, `RaceDecisionAndSpyTests` 6/6, Application 25/25,
-and Simulation 24/24).
+59 passed, 0 failed (including `RaceContentTests` 18/18,
+`RacePhysicalProofTests` 7/7, `RaceDecisionAndSpyTests` 6/6, Application 28/28,
+Persistence 4/4, Architecture 3/3, and Simulation 23/23).
 
 ## Remaining plan
 
-- Task 6: make the real engine authoritative in GameApplication without changing SQLite SchemaVersion 1. Then `StubRaceEngine` stops producing official results.
 - Task 7: SimRunner `race` command and trace export.
 - Task 8: docs, full gate, owner fun §49 still `NOT VERIFIED`.
 
 ## Do not claim
 
-- Do not claim official results use the prototype: GameApplication still uses `StubRaceEngine` until Task 6.
+- Do not claim the prototype content IDs are a finished career-world participant
+  mapping. Task 5 still maps validated content definitions to transient prototype
+  IDs; production roster integration remains later work.
 - Do not claim the race is fun or §49 passed.
 - Do not merge this branch yet.
+
+## Task 6 handoff
+
+**DONE:** Prototype race sessions are authoritative in the career application spine.
+
+**CHANGED:** Application race commands/query, dependency wiring, skeleton runner,
+neutral `RaceSummary` naming with unchanged JSON fields, skeleton race-rules identity,
+and regression/architecture/persistence coverage.
+
+**TESTED:** `dotnet test PelotonManager.sln --no-restore` — 59 passed, 0 failed.
+
+**NOT TESTED:** Owner fun review (§49), Godot UI, mid-race persistence (explicitly
+unsupported), 100-year soak, and Task 7 CLI/trace export.
+
+**RISKS:** The fixture's numeric participant IDs are still the Task 5 transient
+prototype mapping rather than career roster identities. This is acceptable only as
+the current headless prototype boundary and must not be mistaken for final roster
+integration.
+
+**NEXT:** Task 7 — add the SimRunner `race` command and trace export without changing
+the official application engine path.
+
+**FILES TO READ:** Task 7 in the execution plan; §11 in the approved design;
+`src/Peloton.SimRunner/Program.cs`; the Task 4 Race Spy projections; this handoff.

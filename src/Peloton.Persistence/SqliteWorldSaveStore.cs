@@ -254,12 +254,12 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         public Organization ToDomain() => new(Id, OriginDefinitionId, Name, DaysSimulated);
     }
 
-    private sealed record StubRaceDto(
+    private sealed record RaceDto(
         string RouteId,
         WorldEntityId WinnerId,
         IReadOnlyList<WorldEntityId> FinishOrder)
     {
-        public StubRaceSummary ToDomain() => new(RouteId, WinnerId, FinishOrder);
+        public RaceSummary ToDomain() => new(RouteId, WinnerId, FinishOrder);
     }
 
     private sealed record WorldSnapshotDto(
@@ -277,7 +277,7 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         IReadOnlyList<OrganizationDto> Organizations,
         IReadOnlyList<DecisionAuthority> DecisionAuthorities,
         int RaceCount,
-        StubRaceDto? LastRace)
+        RaceDto? LastRace)
     {
         public static WorldSnapshotDto FromDomain(WorldState world)
         {
@@ -304,7 +304,7 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                 world.RaceCount,
                 world.LastRace is null
                     ? null
-                    : new StubRaceDto(
+                    : new RaceDto(
                         world.LastRace.RouteId,
                         world.LastRace.WinnerId,
                         world.LastRace.FinishOrder));

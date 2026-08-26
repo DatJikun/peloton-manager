@@ -21,7 +21,7 @@ public sealed record RulesModuleIdentity(
     int ContractVersion,
     string ParameterIdentity);
 
-public sealed record StubRaceSummary(
+public sealed record RaceSummary(
     string RouteId,
     WorldEntityId WinnerId,
     IReadOnlyList<WorldEntityId> FinishOrder);
@@ -51,7 +51,7 @@ public sealed class WorldState
         IEnumerable<Organization> organizations,
         IEnumerable<DecisionAuthority> decisionAuthorities,
         int raceCount = 0,
-        StubRaceSummary? lastRace = null)
+        RaceSummary? lastRace = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(worldId);
         ArgumentNullException.ThrowIfNull(contentIdentity);
@@ -105,7 +105,7 @@ public sealed class WorldState
 
     public int RaceCount { get; private set; }
 
-    public StubRaceSummary? LastRace { get; private set; }
+    public RaceSummary? LastRace { get; private set; }
 
     public WorldEntityId AllocateEntityId() => entityIdAllocator.Allocate();
 
@@ -119,7 +119,7 @@ public sealed class WorldState
         CurrentDate = CurrentDate.NextDay();
     }
 
-    public void RecordStubRace(StubRaceSummary result)
+    public void RecordRace(RaceSummary result)
     {
         ArgumentNullException.ThrowIfNull(result);
         LastRace = result;
