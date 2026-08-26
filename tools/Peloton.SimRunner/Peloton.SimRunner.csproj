@@ -4,6 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/Peloton.Application/Peloton.Application.csproj" />
+    <ProjectReference Include="../../src/Peloton.Content/Peloton.Content.csproj" />
     <ProjectReference Include="../../src/Peloton.Infrastructure/Peloton.Infrastructure.csproj" />
     <ProjectReference Include="../../src/Peloton.Simulation/Peloton.Simulation.csproj" />
   </ItemGroup>

@@ -9,76 +9,136 @@ namespace Peloton.SimRunner;
 
 public static class Program
 {
+    internal const string UsageText =
+        "Usage: peloton-sim run --scenario <id> --years <n> --seed <n> [--content-root <path>]"
+        + "\n       peloton-sim race --scenario <id> --seed <n> [--trace-json <path>] [--trace-markdown <path>] [--content-root <path>]";
+
     public static int Main(string[] args)
     {
+        return Run(args, Console.Out, Console.Error);
+    }
+
+    public static int Run(string[] args, TextWriter output, TextWriter error)
+    {
+        ArgumentNullException.ThrowIfNull(args);
+        ArgumentNullException.ThrowIfNull(output);
+        ArgumentNullException.ThrowIfNull(error);
         try
         {
-            RunnerOptions options = RunnerOptions.Parse(args);
-            GameApplication application = ApplicationFactory.Create(options.ContentRoot);
-            CommandResult create = application.Execute(new CreateWorldCommand(options.ScenarioId, options.Seed));
-            if (!create.Succeeded)
+            if (args.Length == 0 ||
+                (!string.Equals(args[0], "run", StringComparison.Ordinal) &&
+                 !string.Equals(args[0], "race", StringComparison.Ordinal)))
             {
-                Console.Error.WriteLine($"crashed=true reason={create.ReasonCode}");
-                return 1;
+                throw new ArgumentException("The first argument must be 'run' or 'race'.", nameof(args));
             }
 
-            string runDirectory = Path.Combine(
-                Path.GetTempPath(),
-                $"peloton-simrunner-{Guid.NewGuid():N}");
-            try
-            {
-                SkeletonRunReport report = new SkeletonCareerRunner(application).Run(options.Years, runDirectory);
-                Console.WriteLine($"crashed={report.Crashed.ToString().ToLowerInvariant()}");
-                Console.WriteLine($"worldDate={report.WorldDay}");
-                Console.WriteLine($"checksum={report.Checksum}");
-                Console.WriteLine($"raceCount={report.RaceCount}");
-                if (!string.IsNullOrWhiteSpace(report.FailureReason))
-                {
-                    Console.Error.WriteLine($"reason={report.FailureReason}");
-                }
-
-                return report.Crashed ? 1 : 0;
-            }
-            finally
-            {
-                if (Directory.Exists(runDirectory))
-                {
-                    Directory.Delete(runDirectory, recursive: true);
-                }
-            }
+            return string.Equals(args[0], "run", StringComparison.Ordinal)
+                ? RunCareer(CareerOptions.Parse(args), output, error)
+                : RunRace(RaceOptions.Parse(args), output, error);
         }
         catch (ArgumentException exception)
         {
-            Console.Error.WriteLine(exception.Message);
-            Console.Error.WriteLine(
-                "Usage: peloton-sim run --scenario <id> --years <n> --seed <n> [--content-root <path>]");
+            error.WriteLine(exception.Message);
+            error.WriteLine(UsageText);
             return 2;
         }
     }
 
-    private sealed record RunnerOptions(string ScenarioId, int Years, long Seed, string ContentRoot)
+    private static int RunCareer(CareerOptions options, TextWriter output, TextWriter error)
     {
-        public static RunnerOptions Parse(string[] args)
+        GameApplication application = ApplicationFactory.Create(options.ContentRoot);
+        CommandResult create = application.Execute(new CreateWorldCommand(options.ScenarioId, options.Seed));
+        if (!create.Succeeded)
         {
-            if (args.Length == 0 || !string.Equals(args[0], "run", StringComparison.Ordinal))
+            error.WriteLine($"crashed=true reason={create.ReasonCode}");
+            return 1;
+        }
+
+        string runDirectory = Path.Combine(
+            Path.GetTempPath(),
+            $"peloton-simrunner-{Guid.NewGuid():N}");
+        try
+        {
+            SkeletonRunReport report = new SkeletonCareerRunner(application).Run(options.Years, runDirectory);
+            output.WriteLine($"crashed={report.Crashed.ToString().ToLowerInvariant()}");
+            output.WriteLine($"worldDate={report.WorldDay}");
+            output.WriteLine($"checksum={report.Checksum}");
+            output.WriteLine($"raceCount={report.RaceCount}");
+            if (!string.IsNullOrWhiteSpace(report.FailureReason))
             {
-                throw new ArgumentException("The first argument must be 'run'.", nameof(args));
+                error.WriteLine($"reason={report.FailureReason}");
             }
 
-            Dictionary<string, string> values = new(StringComparer.Ordinal);
-            for (int index = 1; index < args.Length; index += 2)
+            return report.Crashed ? 1 : 0;
+        }
+        finally
+        {
+            if (Directory.Exists(runDirectory))
             {
-                if (index + 1 >= args.Length || !args[index].StartsWith("--", StringComparison.Ordinal))
-                {
-                    throw new ArgumentException("Options must use '--name value' pairs.", nameof(args));
-                }
+                Directory.Delete(runDirectory, recursive: true);
+            }
+        }
+    }
 
-                if (!values.TryAdd(args[index], args[index + 1]))
-                {
-                    throw new ArgumentException($"Duplicate option '{args[index]}'.", nameof(args));
-                }
+    private static int RunRace(RaceOptions options, TextWriter output, TextWriter error)
+    {
+        RacePrototypeReport report = RacePrototypeCommand.Execute(new RacePrototypeOptions(
+            options.ScenarioId,
+            options.Seed,
+            options.ContentRoot,
+            options.TraceJsonPath,
+            options.TraceMarkdownPath));
+        RacePrototypeCommand.Write(output, report);
+        if (!string.IsNullOrWhiteSpace(report.FailureReason))
+        {
+            error.WriteLine($"reason={report.FailureReason}");
+        }
+
+        return report.Crashed ? 1 : 0;
+    }
+
+    private static Dictionary<string, string> ParsePairs(string[] args)
+    {
+        Dictionary<string, string> values = new(StringComparer.Ordinal);
+        for (int index = 1; index < args.Length; index += 2)
+        {
+            if (index + 1 >= args.Length || !args[index].StartsWith("--", StringComparison.Ordinal))
+            {
+                throw new ArgumentException("Options must use '--name value' pairs.", nameof(args));
             }
 
+            if (!values.TryAdd(args[index], args[index + 1]))
+            {
+                throw new ArgumentException($"Duplicate option '{args[index]}'.", nameof(args));
+            }
+        }
+
+        return values;
+    }
+
+    private static string Required(Dictionary<string, string> values, string key)
+    {
+        if (!values.TryGetValue(key, out string? value) || string.IsNullOrWhiteSpace(value))
+        {
+            throw new ArgumentException($"Required option '{key}' is missing.", nameof(values));
+        }
+
+        return value;
+    }
+
+    private static string DefaultContentRoot(Dictionary<string, string> values)
+    {
+        string contentRoot = values.TryGetValue("--content-root", out string? configuredRoot)
+            ? configuredRoot
+            : Path.Combine(Environment.CurrentDirectory, "content");
+        return Path.GetFullPath(contentRoot);
+    }
+
+    private sealed record CareerOptions(string ScenarioId, int Years, long Seed, string ContentRoot)
+    {
+        public static CareerOptions Parse(string[] args)
+        {
+            Dictionary<string, string> values = ParsePairs(args);
             string scenario = Required(values, "--scenario");
             if (!int.TryParse(Required(values, "--years"), NumberStyles.None, CultureInfo.InvariantCulture, out int years) ||
                 years <= 0)
@@ -91,20 +151,42 @@ public static class Program
                 throw new ArgumentException("--seed must be a signed integer.", nameof(args));
             }
 
-            string contentRoot = values.TryGetValue("--content-root", out string? configuredRoot)
-                ? configuredRoot
-                : Path.Combine(Environment.CurrentDirectory, "content");
-            return new RunnerOptions(scenario, years, seed, Path.GetFullPath(contentRoot));
+            return new CareerOptions(scenario, years, seed, DefaultContentRoot(values));
+        }
+    }
+
+    private sealed record RaceOptions(
+        string ScenarioId,
+        long Seed,
+        string ContentRoot,
+        string? TraceJsonPath,
+        string? TraceMarkdownPath)
+    {
+        public static RaceOptions Parse(string[] args)
+        {
+            Dictionary<string, string> values = ParsePairs(args);
+            string scenario = Required(values, "--scenario");
+            if (!long.TryParse(Required(values, "--seed"), NumberStyles.Integer, CultureInfo.InvariantCulture, out long seed))
+            {
+                throw new ArgumentException("--seed must be a signed integer.", nameof(args));
+            }
+
+            return new RaceOptions(
+                scenario,
+                seed,
+                DefaultContentRoot(values),
+                OptionalPath(values, "--trace-json"),
+                OptionalPath(values, "--trace-markdown"));
         }
 
-        private static string Required(Dictionary<string, string> values, string key)
+        private static string? OptionalPath(Dictionary<string, string> values, string key)
         {
             if (!values.TryGetValue(key, out string? value) || string.IsNullOrWhiteSpace(value))
             {
-                throw new ArgumentException($"Required option '{key}' is missing.", nameof(values));
+                return null;
             }
 
-            return value;
+            return Path.GetFullPath(value);
         }
     }
 }

@@ -10,10 +10,11 @@ namespace Peloton.Application.Tests;
 
 internal static class TestApplication
 {
+    public static string ContentRoot => Path.Combine(FindRepositoryRoot(), "content");
+
     public static GameApplication Create()
     {
-        string contentRoot = Path.Combine(FindRepositoryRoot(), "content");
-        return ApplicationFactory.Create(contentRoot);
+        return ApplicationFactory.Create(ContentRoot);
     }
 
     public static string RunTenSeasons(long seed)
@@ -40,7 +41,7 @@ internal static class TestApplication
         }
     }
 
-    private static string FindRepositoryRoot()
+    internal static string FindRepositoryRoot()
     {
         DirectoryInfo? current = new(AppContext.BaseDirectory);
         while (current is not null)
