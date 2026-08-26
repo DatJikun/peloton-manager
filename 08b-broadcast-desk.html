@@ -1,33 +1,16 @@
 <!doctype html>
 <!--
-  08B — BROADCAST DESK · prototyp biurka managera (Peloton Manager)
-  Studio TV-sport: petrol, bursztyn, tablica odjazdów. Biurko dnia, nie landing.
-
-  Kafelki Forever Infinite (github.com/isas1/forever-ai-components) — co wzięłam i po co:
-  - infinite/kinetic-type/03-split-flap-board.html — serce koncepcji: mechaniczne klapki
-                                             na DACIE (ŚR 11 MAR → CZ 12 MAR) i na ETYKIECIE
-                                             głównego guzika (ADVANCE DAY → RACE NEXT).
-                                             Pętla słów demo (DEPART/ARRIVE…) usunięta —
-                                             klapki kręcą się wyłącznie przy zmianie stanu.
-                                             Alfabet rozszerzony o polskie znaki.
-  - infinite/cards/06-expanding-accordion.html   — gramatyka skrzynki: wiersz rozwija się
-                                             w miejscu, treść wjeżdża fade-up; bez auto-cyklu,
-                                             hover zastąpiony klikiem + aria-expanded.
-  - infinite/buttons/08-sliding-fill.html        — wypełnienie głównego guzika: suwak
-                                             ::before translateX; gradient iris→cyan
-                                             zamieniony na płaski bursztyn.
-
-  Hexy kafelków zachowane tylko częściowo: bursztyn #f4c430 zostaje (barwa tablicy),
-  tło #161616/#0a0a0a zamienione na petrol #06272e / #04191e; czerwień #ff5a4d tylko
-  dla pracodawcy. Fonty kafelków (Helvetica / Space Grotesk / Inter) zastąpione parą:
-  Barlow Condensed + Barlow.
-  Usunięto: pętle demo, neon, losowe dane; zero auto-marquee i „live" tickerów.
-
-  Kontrakt klikania (wspólny dla 08a–08e):
-  Advance Day → ten sam ekran, dzień wyścigu (12 MAR). Race next → przygotowanie
-  (skład + cel jednym zdaniem). Start race widoczny, disabled. inbox rozwija w miejscu,
-  nie odpala prep. Query: ?day=work|race oraz &view=prep. Przełącznik Work/Race u góry
-  to chrome prototypu, nie UI gry.
+  08B — BROADCAST DESK · statyczny prototyp biurka managera (Peloton Manager)
+  Sam dashboard, zero funkcjonalności — do oceny wyglądu.
+  Kafelki Forever Infinite (github.com/isas1/forever-ai-components), przerobione
+  na paletę i fonty koncepcji, bez pętli demo / neonu / losowych danych:
+  - infinite/kinetic-type/03-split-flap-board.html — klapki tablicy odjazdów na dacie
+                                             i na etykiecie guzika; tu statyczne (czysty CSS:
+                                             półklapka, przesłona, bez mechaniki rAF)
+  - infinite/cards/06-expanding-accordion.html   — wiersz skrzynki z treścią pod spodem
+  - infinite/buttons/08-sliding-fill.html        — suwane wypełnienie guzika (bursztyn)
+  Paleta: petrol #06272e / #04191e, bursztyn #f4c430, krem #f2efe6, czerwień #ff5a4d.
+  Fonty: Barlow Condensed + Barlow.
 -->
 <html lang="pl">
 <head>
@@ -39,247 +22,132 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --petrol:#06272e;
-  --petrol-2:#0a363f;
-  --deep:#04191e;
-  --amber:#f4c430;
-  --amber-dim:#b8922c;
-  --paper:#f2efe6;
-  --mute:#7fa3aa;
-  --red:#ff5a4d;
+  --petrol:#06272e; --petrol-2:#0a363f; --deep:#04191e;
+  --amber:#f4c430; --amber-dim:#b8922c; --paper:#f2efe6; --mute:#7fa3aa; --red:#ff5a4d;
   --cond:"Barlow Condensed","Arial Narrow",Impact,system-ui,sans-serif;
   --body:"Barlow",system-ui,sans-serif;
-  --ease-out:cubic-bezier(.22,1,.36,1);
-  --ease-mech:cubic-bezier(.7,0,.2,1);
+  --mech:cubic-bezier(.7,0,.2,1);
 }
 *,*::before,*::after{box-sizing:border-box}
 html,body{margin:0;height:100%}
-body{
-  background:var(--deep);color:var(--paper);
-  font-family:var(--body);font-size:14px;overflow:hidden;
-}
-button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
-:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+body{background:var(--deep); color:var(--paper); font-family:var(--body); font-size:14px; overflow:hidden}
 
-/* ── chrome prototypu (nie UI gry) ─────────────────────────── */
-.proto{
-  position:fixed;top:0;left:0;right:0;z-index:50;
-  display:flex;align-items:center;gap:10px;padding:5px 12px;
-  background:#02100d;color:var(--mute);
-  font:600 10px/1 var(--body);letter-spacing:.1em;text-transform:uppercase;
-  border-bottom:1px solid #0d3b44;
-}
-.proto-tag{color:var(--amber);font-weight:700}
-.proto-hint{opacity:.55;text-transform:none;letter-spacing:.02em}
-.proto-spacer{flex:1}
-.proto-btn{padding:3px 10px;border:1px solid #14505c;color:var(--mute);text-transform:uppercase;letter-spacing:.1em;font-size:10px;font-weight:600}
-.proto-btn[aria-pressed="true"]{background:var(--amber);color:#06272e;border-color:var(--amber)}
-.proto-btn:hover{border-color:var(--amber);color:var(--paper)}
-.proto-btn[aria-pressed="true"]:hover{color:#06272e}
-
-/* ── klapki split-flap ─────────────────────────────────────── */
+/* klapki — statyczne, czysty CSS */
 .flap{
-  position:relative;display:inline-flex;align-items:center;justify-content:center;
-  width:1.06em;height:1.5em;
-  background:#0b0f10;color:var(--amber);
-  font:600 1em/1 var(--cond);
-  border-radius:.08em;overflow:hidden;
-  box-shadow:inset 0 0 0 1px #22343a,0 2px 0 #000;
-  text-transform:uppercase;
+  position:relative; display:inline-flex; align-items:center; justify-content:center;
+  width:1.06em; height:1.5em; background:#0b0f10; color:var(--amber);
+  font:600 1em/1 var(--cond); border-radius:.08em; overflow:hidden;
+  box-shadow:inset 0 0 0 1px #22343a, 0 2px 0 #000; text-transform:uppercase;
 }
-.flap::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.75)}
-.flap .ch{display:block}
-.flap.spin .ch{animation:flap-flip .09s linear}
-@keyframes flap-flip{0%{transform:rotateX(0);opacity:1}50%{transform:rotateX(-90deg);opacity:.3}51%{transform:rotateX(90deg)}100%{transform:rotateX(0);opacity:1}}
-.flap-strip{display:inline-flex;gap:.12em}
+.flap::after{content:""; position:absolute; left:0; right:0; top:50%; height:1px; background:rgba(0,0,0,.75)}
+.flap-strip{display:inline-flex; gap:.12em}
 
-/* ── biurko ────────────────────────────────────────────────── */
-.desk{height:100dvh;padding:38px 18px 16px;display:grid;grid-template-rows:auto auto auto 1fr auto;gap:12px}
-.desk[hidden],.prep[hidden]{display:none}
+.desk{height:100dvh; padding:16px 18px; display:grid; grid-template-rows:auto auto 1fr auto; gap:12px}
 
 /* pas studyjny */
 .band{
-  display:flex;align-items:center;gap:18px;
-  background:var(--petrol);border:2px solid #0d3b44;
-  padding:10px 16px;
+  display:flex; align-items:center; gap:18px;
+  background:var(--petrol); border:2px solid #0d3b44; padding:10px 16px;
 }
 .band-call{
-  font:700 15px/1 var(--cond);letter-spacing:.18em;text-transform:uppercase;color:var(--paper);
-  border-right:2px solid #0d3b44;padding-right:18px;
+  font:700 15px/1 var(--cond); letter-spacing:.18em; text-transform:uppercase;
+  border-right:2px solid #0d3b44; padding-right:18px;
 }
 .band-call b{color:var(--amber)}
-.band-mid{font:500 11px/1.4 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--mute)}
-.band-date{margin-left:auto;display:flex;align-items:center;gap:12px}
-.band-date .cap{font:600 10px/1 var(--body);letter-spacing:.22em;color:var(--mute);text-transform:uppercase}
+.band-mid{font:500 11px/1.4 var(--body); letter-spacing:.16em; text-transform:uppercase; color:var(--mute)}
+.band-date{margin-left:auto; display:flex; align-items:center; gap:12px}
+.band-date .cap{font:600 10px/1 var(--body); letter-spacing:.22em; color:var(--mute); text-transform:uppercase}
 .band-date .flap-strip{font-size:clamp(18px,2.4vw,26px)}
 
-/* pracodawca — czerwony pasek jak lower-third */
+/* pracodawca — czerwony lower-third */
 .employer{
-  display:flex;align-items:center;gap:12px;
-  background:var(--red);padding:7px 14px;width:max-content;
+  display:flex; align-items:center; gap:12px; width:max-content; max-width:100%;
+  background:var(--red); padding:7px 14px;
   clip-path:polygon(0 0,100% 0,calc(100% - 14px) 100%,0 100%);
 }
-.emp-label{font:600 10px/1 var(--body);letter-spacing:.24em;text-transform:uppercase;color:#3d0f0b}
-.emp-name{font:700 14px/1 var(--cond);letter-spacing:.1em;text-transform:uppercase;color:#fff}
+.emp-label{font:600 10px/1 var(--body); letter-spacing:.24em; text-transform:uppercase; color:#3d0f0b}
+.emp-name{font:700 14px/1 var(--cond); letter-spacing:.1em; text-transform:uppercase; color:#fff}
 
-/* lower-third dnia wyścigu */
-.strap{overflow:hidden;max-height:0;transition:max-height .5s var(--ease-mech)}
-body[data-day="race"] .strap{max-height:40px}
-.strap-in{
-  display:flex;align-items:center;gap:14px;
-  background:var(--amber);color:#06272e;padding:8px 16px;
-  font:700 13px/1 var(--cond);letter-spacing:.14em;text-transform:uppercase;
-}
-.strap-in .sq{width:10px;height:10px;background:var(--red);flex:0 0 auto}
-.strap-in .dim{font:600 11px/1 var(--body);letter-spacing:.18em;opacity:.75}
-
-/* ── plansze ───────────────────────────────────────────────── */
-.board{display:grid;grid-template-columns:minmax(360px,6fr) minmax(320px,5fr);gap:12px;min-height:0}
-.panel{background:var(--petrol);border:2px solid #0d3b44;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+/* plansze */
+.board{display:grid; grid-template-columns:minmax(360px,6fr) minmax(320px,5fr); gap:12px; min-height:0}
+.panel{background:var(--petrol); border:2px solid #0d3b44; display:flex; flex-direction:column; min-height:0; overflow:hidden}
 .panel-h{
-  margin:0;padding:9px 14px;background:var(--petrol-2);
-  font:700 12px/1 var(--cond);letter-spacing:.26em;text-transform:uppercase;color:var(--amber);
-  border-bottom:2px solid #0d3b44;display:flex;justify-content:space-between;
+  margin:0; padding:9px 14px; background:var(--petrol-2);
+  font:700 12px/1 var(--cond); letter-spacing:.26em; text-transform:uppercase; color:var(--amber);
+  border-bottom:2px solid #0d3b44; display:flex; justify-content:space-between;
 }
-.panel-h .count{color:var(--paper);letter-spacing:.1em}
-
-/* calendar — tablica fixture'ów */
+.panel-h .count{color:var(--paper); letter-spacing:.1em}
 .fix-head,.fix-row{
-  display:grid;grid-template-columns:3.2em 3em 1fr auto;gap:10px;align-items:baseline;
-  padding:8px 14px;
+  display:grid; grid-template-columns:3.2em 3em 1fr auto; gap:10px; align-items:baseline; padding:8px 14px;
 }
-.fix-head{font:600 10px/1 var(--body);letter-spacing:.2em;text-transform:uppercase;color:var(--mute);border-bottom:1px solid #0d3b44}
-.fix-row{border-bottom:1px solid #0d3b4433;font-size:13px;transition:background .2s}
-.fix-dow{font:600 12px/1 var(--body);letter-spacing:.14em;color:var(--mute);text-transform:uppercase}
+.fix-head{font:600 10px/1 var(--body); letter-spacing:.2em; text-transform:uppercase; color:var(--mute); border-bottom:1px solid #0d3b44}
+.fix-row{border-bottom:1px solid #0d3b4433; font-size:13px}
+.fix-dow{font:600 12px/1 var(--body); letter-spacing:.14em; color:var(--mute); text-transform:uppercase}
 .fix-d{color:var(--mute)}
-.fix-txt{color:var(--paper)}
-.fix-status{font:700 11px/1 var(--cond);letter-spacing:.16em;text-transform:uppercase;color:var(--amber-dim)}
-.fix-row.is-raceday .fix-status{color:var(--amber)}
-.fix-row.is-today{background:#0b4049}
-.fix-row.is-today .fix-dow,.fix-row.is-today .fix-d{color:var(--amber)}
-.fix-row.is-today .fix-txt{font-weight:600}
-.fix-row.is-today .fix-status{color:#06272e;background:var(--amber);padding:2px 8px}
-@keyframes row-blink{0%,49%{background:var(--amber)}50%,100%{background:#0b4049}}
-.fix-row.flash-now{animation:row-blink .5s steps(1,end) 2}
-.fix-row.flash-now .fix-txt,.fix-row.flash-now .fix-dow,.fix-row.flash-now .fix-d{animation:none}
-.fix-row.flash-now{color:#06272e}
-.fix-row.flash-now .fix-txt,.fix-row.flash-now .fix-dow,.fix-row.flash-now .fix-d{color:#06272e}
+.fix-status{font:700 11px/1 var(--cond); letter-spacing:.16em; text-transform:uppercase; color:var(--amber-dim)}
+.is-raceday .fix-status{color:var(--amber)}
+.is-today{background:#0b4049}
+.is-today .fix-dow,.is-today .fix-d{color:var(--amber)}
+.is-today .fix-txt{font-weight:600}
+.is-today .fix-status{color:#06272e; background:var(--amber); padding:2px 8px}
 
-/* inbox — bursztynowy accordion */
-.mails{padding:10px;display:flex;flex-direction:column;gap:8px;overflow:auto;min-height:0}
-.mail{border:2px solid #0d3b44;background:var(--deep);transition:border-color .2s}
+/* skrzynka */
+.mails{padding:10px; display:flex; flex-direction:column; gap:8px; overflow:auto; min-height:0}
+.mail{border:2px solid #0d3b44; background:var(--deep)}
 .mail.open{border-color:var(--amber-dim)}
-.mail-head{width:100%;display:flex;align-items:baseline;gap:10px;text-align:left;padding:10px 12px}
-.mail-head:hover{background:#0a363f55}
-.mail-idx{font:700 12px/1 var(--cond);color:var(--amber);letter-spacing:.1em}
-.mail-subj{flex:1;font:600 13.5px/1.35 var(--body);color:var(--paper)}
-.mail-subj .due{color:var(--amber)}
-.mail-arrow{font:700 13px/1 var(--cond);color:var(--amber);transition:transform .3s var(--ease-mech)}
+.mail-head{display:flex; align-items:baseline; gap:10px; padding:10px 12px}
+.mail-idx{font:700 12px/1 var(--cond); color:var(--amber)}
+.mail-subj{flex:1; font:600 13.5px/1.35 var(--body)}
+.mail-arrow{font:700 13px/1 var(--cond); color:var(--amber)}
 .mail.open .mail-arrow{transform:rotate(90deg)}
-.mail-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s var(--ease-out)}
-.mail.open .mail-body{grid-template-rows:1fr}
-.mail-body-in{overflow:hidden;opacity:0;transform:translateY(8px);transition:opacity .28s var(--ease-out) .12s,transform .28s var(--ease-out) .12s}
-.mail.open .mail-body-in{opacity:1;transform:translateY(0)}
-.mail-from{padding:0 12px;font:500 10.5px/1.5 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
-.mail-text{padding:6px 12px 10px;color:var(--paper);line-height:1.55;font-size:13px}
-.mail-foot{padding:0 12px 10px}
-.file-btn{
-  border:2px solid var(--amber);color:var(--amber);
-  font:700 10.5px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;
-  padding:7px 12px;position:relative;overflow:hidden;isolation:isolate;
-}
-.file-btn::before{content:"";position:absolute;inset:0;background:var(--amber);z-index:-1;transform:translateX(-101%);transition:transform .35s var(--ease-mech)}
-.file-btn:hover{color:#06272e}
-.file-btn:hover::before{transform:translateX(0)}
-.mail.filed{opacity:.5}
-.mail.filed .file-btn{visibility:hidden}
+.mail-body{display:none}
+.mail.open .mail-body{display:block}
+.mail-from{margin:0; padding:0 12px; font:500 10.5px/1.5 var(--body); letter-spacing:.14em; text-transform:uppercase; color:var(--mute)}
+.mail-text{margin:0; padding:6px 12px 10px; font-size:13px; line-height:1.55}
 .mail-tag{
-  font:700 10px/1 var(--cond);letter-spacing:.2em;text-transform:uppercase;color:var(--mute);
-  border:1px solid var(--mute);padding:3px 8px;
+  font:700 10px/1 var(--cond); letter-spacing:.2em; text-transform:uppercase; color:var(--mute);
+  border:1px solid var(--mute); padding:3px 8px;
 }
+.mail.filed{opacity:.5}
 
-/* ── główny guzik z klapkami ───────────────────────────────── */
-.action{display:flex;align-items:center;gap:16px;justify-content:flex-end}
-.action-note{margin-right:auto;font:500 10.5px/1.5 var(--body);letter-spacing:.14em;color:var(--mute);text-transform:uppercase}
+/* guzik z klapkami */
+.action{display:flex; align-items:center; justify-content:flex-end; gap:16px}
+.action-note{margin-right:auto; font:500 10.5px/1.5 var(--body); letter-spacing:.14em; color:var(--mute); text-transform:uppercase}
 .main-btn{
-  position:relative;isolation:isolate;overflow:hidden;
-  background:var(--petrol);border:2px solid var(--amber);
-  padding:12px 18px;
-  transition:border-color .3s;
+  position:relative; isolation:isolate; overflow:hidden;
+  background:var(--petrol); border:2px solid var(--amber); padding:12px 18px; user-select:none;
 }
 .main-btn::before{
-  content:"";position:absolute;inset:0;background:var(--amber);z-index:0;
-  transform:translateX(-101%);transition:transform .45s var(--ease-mech);
+  content:""; position:absolute; inset:0; z-index:0; background:var(--amber);
+  transform:translateX(-101%); transition:transform .45s var(--mech);
 }
-.main-btn:hover::before,.main-btn:focus-visible::before{transform:translateX(0)}
-.main-btn .flap-strip{position:relative;z-index:1;font-size:clamp(16px,1.8vw,22px)}
-@keyframes btn-press{0%{transform:translateY(0)}40%{transform:translateY(3px)}100%{transform:translateY(0)}}
-.main-btn.pressed{animation:btn-press .3s var(--ease-mech)}
-
-/* ── przygotowanie ─────────────────────────────────────────── */
-.prep{height:100dvh;padding:38px 18px 16px;display:grid;grid-template-rows:auto auto 1fr auto;gap:12px}
-.prep-strap{
-  background:var(--amber);color:#06272e;padding:10px 16px;
-  display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;
-  clip-path:polygon(0 0,100% 0,calc(100% - 22px) 100%,0 100%);
-}
-.prep-strap h1{margin:0;font:700 clamp(20px,2.6vw,30px)/1 var(--cond);letter-spacing:.08em;text-transform:uppercase}
-.prep-strap .meta{font:600 11px/1.4 var(--body);letter-spacing:.16em;text-transform:uppercase;opacity:.8}
-.prep-grid{display:grid;grid-template-columns:minmax(360px,6fr) minmax(300px,4fr);gap:12px;min-height:0}
-.squad-list{overflow:auto;min-height:0}
-.squad-row{
-  display:grid;grid-template-columns:2.4em 1fr auto;gap:12px;align-items:baseline;
-  padding:9px 14px;border-bottom:1px solid #0d3b4433;
-}
-.squad-row:nth-child(odd){background:#0a363f44}
-.squad-nr{font:700 13px/1 var(--cond);color:var(--amber)}
-.squad-name{font:600 14px/1.3 var(--body);color:var(--paper)}
-.squad-role{font:500 12px/1.3 var(--body);color:var(--mute)}
-.goal-box{margin:10px;border:2px solid var(--amber-dim);background:var(--deep);padding:14px}
-.goal-box h3{margin:0 0 8px;font:700 10px/1 var(--body);letter-spacing:.26em;text-transform:uppercase;color:var(--amber)}
-.goal-box p{margin:0;font:500 14px/1.6 var(--body);color:var(--paper)}
-.prep-actions{display:flex;align-items:center;gap:14px;justify-content:flex-end}
-.start-note{margin-right:auto;font:500 10.5px/1.5 var(--body);color:var(--mute);letter-spacing:.12em;text-transform:uppercase}
-.back-btn{
-  border:2px solid var(--mute);color:var(--paper);
-  font:700 11.5px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;padding:12px 20px;
-  transition:border-color .2s,color .2s;
-}
-.back-btn:hover{border-color:var(--amber);color:var(--amber)}
-.start-btn{
-  font:700 clamp(14px,1.6vw,18px)/1 var(--cond);letter-spacing:.14em;text-transform:uppercase;
-  padding:16px 38px;border:2px solid #1c3a41;background:#0a2228;color:#476a72;cursor:not-allowed;
-}
+.main-btn:hover::before{transform:translateX(0)}
+.main-btn .flap-strip{position:relative; z-index:1; font-size:clamp(16px,1.8vw,22px)}
+.main-btn:active{transform:translateY(3px)}
 
 @media (max-width:900px){
   body{overflow:auto}
-  .desk,.prep{height:auto;min-height:100dvh}
-  .board,.prep-grid{grid-template-columns:1fr}
+  .desk{height:auto; min-height:100dvh}
+  .board{grid-template-columns:1fr}
   .band{flex-wrap:wrap}
   .band-date{margin-left:0}
 }
 @media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  *,*::before,*::after{animation:none!important; transition:none!important}
 }
 </style>
 </head>
-<body data-day="work" data-view="desk">
+<body>
 
-<div class="proto" role="region" aria-label="Przełącznik prototypu">
-  <span class="proto-tag">Prototyp 08B · Broadcast Desk</span>
-  <span class="proto-hint">przełącznik prototypu — nie UI gry</span>
-  <span class="proto-spacer"></span>
-  <button class="proto-btn" type="button" data-goto="work" aria-pressed="true">Work</button>
-  <button class="proto-btn" type="button" data-goto="race" aria-pressed="false">Race</button>
-</div>
-
-<main class="desk" id="desk">
+<main class="desk">
   <header class="band">
     <span class="band-call">PM·<b>DESK</b> STUDIO</span>
-    <span class="band-mid" id="bandMid">Biurko managera · dzień roboczy</span>
+    <span class="band-mid">Biurko managera · dzień roboczy</span>
     <span class="band-date">
       <span class="cap">Data</span>
-      <span class="flap-strip" id="dateFlap" role="text" aria-label="Środa, 11 marca"></span>
+      <span class="flap-strip" role="text" aria-label="Środa, 11 marca">
+        <span class="flap">Ś</span><span class="flap">R</span><span class="flap">&nbsp;</span><span class="flap">1</span><span class="flap">1</span><span class="flap">&nbsp;</span><span class="flap">M</span><span class="flap">A</span><span class="flap">R</span>
+      </span>
     </span>
   </header>
 
@@ -288,299 +156,60 @@ body[data-day="race"] .strap{max-height:40px}
     <strong class="emp-name">Beskid–Vetter ProTeam</strong>
   </div>
 
-  <div class="strap" aria-hidden="true">
-    <div class="strap-in">
-      <span class="sq"></span>
-      <span>Dzień wyścigu — Milano–Torino</span>
-      <span class="dim">1.Pro · 177 km · start 11:35, Turyn</span>
-    </div>
-  </div>
-
   <div class="board">
     <section class="panel" aria-labelledby="calH">
       <h2 class="panel-h" id="calH">calendar <span class="count">tydzień 11</span></h2>
       <div class="fix-head" aria-hidden="true"><span>Dzień</span><span>Data</span><span>Wpis</span><span>Status</span></div>
-      <div id="calBody"></div>
+      <div class="fix-row"><span class="fix-dow">PON</span><span class="fix-d">09</span><span class="fix-txt">Trening — regeneracja, 90 min</span><span class="fix-status">—</span></div>
+      <div class="fix-row"><span class="fix-dow">WT</span><span class="fix-d">10</span><span class="fix-txt">Transfer: Kraków → Turyn</span><span class="fix-status">—</span></div>
+      <div class="fix-row is-today"><span class="fix-dow">ŚR</span><span class="fix-d">11</span><span class="fix-txt">Odprawa sztabu, 16:00</span><span class="fix-status">Dziś</span></div>
+      <div class="fix-row is-raceday"><span class="fix-dow">CZW</span><span class="fix-d">12</span><span class="fix-txt">Milano–Torino · 1.Pro · 177 km</span><span class="fix-status">Wyścig</span></div>
+      <div class="fix-row"><span class="fix-dow">PT</span><span class="fix-d">13</span><span class="fix-txt">Rozruch — 60 min</span><span class="fix-status">—</span></div>
+      <div class="fix-row"><span class="fix-dow">SOB</span><span class="fix-d">14</span><span class="fix-txt">Trening siłowy — siłownia</span><span class="fix-status">—</span></div>
+      <div class="fix-row"><span class="fix-dow">NIE</span><span class="fix-d">15</span><span class="fix-txt">Dzień wolny</span><span class="fix-status">—</span></div>
     </section>
 
     <section class="panel" aria-labelledby="inboxH">
-      <h2 class="panel-h" id="inboxH">inbox <span class="count" id="inboxCount"></span></h2>
-      <div class="mails" id="mails"></div>
-    </section>
-  </div>
-
-  <footer class="action">
-    <span class="action-note" id="actionNote">Studio czeka — jeden ruch dziennie.</span>
-    <button class="main-btn" id="mainBtn" type="button" aria-label="Advance Day — przejdź do dnia wyścigu">
-      <span class="flap-strip" id="btnFlap" aria-hidden="true"></span>
-    </button>
-  </footer>
-</main>
-
-<main class="prep" id="prep" hidden>
-  <header class="band">
-    <span class="band-call">PM·<b>DESK</b> STUDIO</span>
-    <span class="band-mid">Przygotowanie do wyścigu</span>
-    <span class="band-date">
-      <span class="cap">Data</span>
-      <span class="flap-strip" id="dateFlapPrep" role="text" aria-label="Czwartek, 12 marca"></span>
-    </span>
-  </header>
-
-  <section class="prep-strap">
-    <h1>Przygotowanie — Milano–Torino</h1>
-    <span class="meta">Czwartek, 12 marca 2026 · 1.Pro · 177 km · start 11:35, Turyn</span>
-  </section>
-
-  <div class="prep-grid">
-    <section class="panel" aria-labelledby="squadH">
-      <h2 class="panel-h" id="squadH">Skład <span class="count">7 zawodników</span></h2>
-      <div class="squad-list" id="squadList"></div>
-    </section>
-    <section class="panel" aria-labelledby="goalH">
-      <h2 class="panel-h" id="goalH">Cel wyścigu <span class="count">1 zdanie</span></h2>
-      <div class="goal-box">
-        <h3>Jedno zdanie, cały plan</h3>
-        <p>Cel wyścigu: dowozimy Kowalczyka w pierwszej grupie pod ostatni podjazd na Supergę i gramy finał na nim — realny wynik to miejsca 5–10.</p>
+      <h2 class="panel-h" id="inboxH">inbox <span class="count">3 sprawy</span></h2>
+      <div class="mails">
+        <article class="mail open">
+          <div class="mail-head">
+            <span class="mail-idx">01</span>
+            <span class="mail-subj">Odprawa sztabu — dziś 16:00</span>
+            <span class="mail-arrow">›</span>
+          </div>
+          <div class="mail-body">
+            <p class="mail-from">Od: DS Marek Sowa</p>
+            <p class="mail-text">Agenda: skład na Milano–Torino, plan na finał pod Supergą, podział zadań w peletonie. Proszę o punktualność.</p>
+          </div>
+        </article>
+        <article class="mail filed">
+          <div class="mail-head">
+            <span class="mail-idx">02</span>
+            <span class="mail-subj">Wynik do odłożenia: GP Primavera — Rutka 12.</span>
+            <span class="mail-tag">W aktach</span>
+          </div>
+        </article>
+        <article class="mail">
+          <div class="mail-head">
+            <span class="mail-idx">03</span>
+            <span class="mail-subj">Media: prośba o krótki komentarz</span>
+            <span class="mail-arrow">›</span>
+          </div>
+        </article>
       </div>
     </section>
   </div>
 
-  <footer class="prep-actions" style="display:flex;align-items:center;gap:14px;justify-content:flex-end">
-    <span class="start-note">Start race to krok 2/2 — w tym prototypie celowo zablokowany.</span>
-    <button class="back-btn" id="backBtn" type="button">← Wróć na biurko</button>
-    <button class="start-btn" id="startBtn" type="button" disabled aria-disabled="true">Start race</button>
+  <footer class="action">
+    <span class="action-note">Studio czeka — jeden ruch dziennie.</span>
+    <div class="main-btn" role="button" aria-label="Advance Day">
+      <span class="flap-strip" aria-hidden="true">
+        <span class="flap">A</span><span class="flap">D</span><span class="flap">V</span><span class="flap">A</span><span class="flap">N</span><span class="flap">C</span><span class="flap">E</span><span class="flap">&nbsp;</span><span class="flap">D</span><span class="flap">A</span><span class="flap">Y</span>
+      </span>
+    </div>
   </footer>
 </main>
 
-<script>
-(function(){
-"use strict";
-var reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
-function after(ms,fn){ if(reduce){fn();}else{setTimeout(fn,ms);} }
-
-/* ── split-flap: mechanika tablicy (zdarzeniowa, bez pętli) ── */
-var POOL=" AĄBCĆDEĘFGHIJKLŁMNŃOÓPQRSŚTUVWXYZŹŻ0123456789·";
-function FlapStrip(el,len){
-  this.flaps=[];this.raf=0;this.step=0;this.done=null;
-  for(var i=0;i<len;i++){
-    var f=document.createElement("span");f.className="flap";
-    var c=document.createElement("span");c.className="ch";c.textContent=" ";
-    f.appendChild(c);el.appendChild(f);
-    this.flaps.push({el:f,ch:c,cur:" ",goal:" "});
-  }
-}
-FlapStrip.prototype.set=function(text){
-  for(var i=0;i<this.flaps.length;i++){
-    var t=text[i]||" ",f=this.flaps[i];
-    f.cur=f.goal=t;f.ch.textContent=t;
-  }
-};
-FlapStrip.prototype.spinTo=function(text,done){
-  for(var i=0;i<this.flaps.length;i++)this.flaps[i].goal=text[i]||" ";
-  this.done=done||null;
-  if(reduce){this.set(text);if(this.done)this.done();return;}
-  if(!this.raf){var self=this;this.raf=requestAnimationFrame(function(){self.tick();});}
-};
-FlapStrip.prototype.tick=function(){
-  var self=this;this.step++;
-  if(this.step%3!==0){this.raf=requestAnimationFrame(function(){self.tick();});return;}
-  var moving=false;
-  for(var i=0;i<this.flaps.length;i++){
-    var f=this.flaps[i];
-    if(f.cur!==f.goal){
-      var ci=(POOL.indexOf(f.cur)+1)%POOL.length;
-      f.cur=POOL[ci];f.ch.textContent=f.cur;
-      f.el.classList.remove("spin");void f.el.offsetWidth;f.el.classList.add("spin");
-      moving=true;
-    }
-  }
-  if(moving){this.raf=requestAnimationFrame(function(){self.tick();});}
-  else{this.raf=0;if(this.done)this.done();}
-};
-
-/* ── dane dnia (wspólne dla wszystkich prototypów 08) ─────── */
-var CAL=[
-  {dow:"PON",d:"09",txt:"Trening — regeneracja, 90 min",key:null},
-  {dow:"WT", d:"10",txt:"Transfer: Kraków → Turyn",key:null},
-  {dow:"ŚR", d:"11",txt:"Odprawa sztabu, 16:00",key:"work"},
-  {dow:"CZW",d:"12",txt:"Milano–Torino · 1.Pro · 177 km",key:"race"},
-  {dow:"PT", d:"13",txt:"Rozruch — 60 min",key:null},
-  {dow:"SOB",d:"14",txt:"Trening siłowy — siłownia",key:null},
-  {dow:"NIE",d:"15",txt:"Dzień wolny",key:null}
-];
-var MAIL={
-  work:[
-    {id:"m1",from:"DS Marek Sowa",subj:"Odprawa sztabu — dziś 16:00",body:"Agenda: skład na Milano–Torino, plan na finał pod Supergą, podział zadań w peletonie. Proszę o punktualność."},
-    {id:"m2",from:"Sekretariat",subj:"Wynik do odłożenia: GP Primavera — Rutka 12.",body:"Protokół z niedzieli kompletny. Do podpisania i odłożenia do akt — nic pilnego.",file:true},
-    {id:"m3",from:"Rzecznik prasowy",subj:"Media: prośba o krótki komentarz",body:"Dwie redakcje proszą o trzy zdania przed jutrzejszym startem. Może poczekać do rana."}
-  ],
-  race:[
-    {id:"m4",from:"Organizator",subj:"A race is due today.",due:true,body:"Milano–Torino (1.Pro) — start 11:35, Turyn, 177 km. Skład zgłoszony, numery przydzielone. Przygotowanie otwierasz guzikiem Race next — skrzynka tylko informuje."},
-    {id:"m2",from:"Sekretariat",subj:"Wynik do odłożenia: GP Primavera — Rutka 12.",body:"Protokół z niedzieli kompletny. Do podpisania i odłożenia do akt — nic pilnego.",file:true},
-    {id:"m5",from:"Logistyka",subj:"Autokar pod hotelem o 8:10",body:"Rowery pakujemy od 7:30. Licencje i bidony przy sobie."}
-  ]
-};
-var SQUAD=[
-  ["1","Piotr Kowalczyk","kapitan — finał na nim"],
-  ["2","Michał Zieliński","pomocnik — tempo na podjazdach"],
-  ["3","Tomasz Barski","pomocnik — pierwsze 120 km"],
-  ["4","Dariusz Rutka","pomocnik — pilnuje ucieczek"],
-  ["5","Jan Malinowski","pomocnik — pozycja pod Supergę"],
-  ["6","Kacper Osmański","pomocnik — bidony i wiatr"],
-  ["7","Szymon Dudek","zapas na ucieczkę dnia"]
-];
-var FLAP_TXT={
-  work:{date:"ŚR 11 MAR",aria:"Środa, 11 marca",btn:"ADVANCE DAY",mid:"Biurko managera · dzień roboczy",note:"Studio czeka — jeden ruch dziennie."},
-  race:{date:"CZ 12 MAR",aria:"Czwartek, 12 marca",btn:"RACE NEXT  ",mid:"Biurko managera · dzień wyścigu",note:"Wyścig czeka. Race next otwiera przygotowanie."}
-};
-
-/* ── stan + URL ────────────────────────────────────────────── */
-function readUrl(){
-  var p=new URLSearchParams(location.search);
-  var day=p.get("day")==="race"?"race":"work";
-  var view=p.get("view")==="prep"?"prep":"desk";
-  if(view==="prep")day="race";
-  return {day:day,view:view};
-}
-var state=readUrl();
-var openMails={},filedMails={};
-function syncUrl(){
-  var q="?day="+state.day;
-  if(state.view==="prep")q+="&view=prep";
-  try{history.replaceState(null,"",q);}catch(e){/* file:// fallback */}
-}
-
-/* ── render ────────────────────────────────────────────────── */
-var $=function(id){return document.getElementById(id);};
-var dateFlap=new FlapStrip($("dateFlap"),9);
-var dateFlapPrep=new FlapStrip($("dateFlapPrep"),9);
-var btnFlap=new FlapStrip($("btnFlap"),11);
-
-function renderCal(){
-  var html="";
-  CAL.forEach(function(r){
-    var today=r.key===state.day;
-    var status=today?"Dziś":(r.key==="race"?"Wyścig":"—");
-    html+='<div class="fix-row'+(today?" is-today":"")+(r.key==="race"?" is-raceday":"")+'" data-key="'+(r.key||"")+'">'
-        +'<span class="fix-dow">'+r.dow+'</span><span class="fix-d">'+r.d+'</span>'
-        +'<span class="fix-txt">'+r.txt+'</span>'
-        +'<span class="fix-status">'+status+'</span></div>';
-  });
-  $("calBody").innerHTML=html;
-}
-
-function renderMails(){
-  var list=MAIL[state.day],html="";
-  list.forEach(function(m,i){
-    var open=!!openMails[m.id],filed=!!filedMails[m.id];
-    html+='<article class="mail'+(open?" open":"")+(filed?" filed":"")+'" data-id="'+m.id+'">'
-      +'<button class="mail-head" type="button" aria-expanded="'+open+'" aria-controls="body-'+m.id+'">'
-        +'<span class="mail-idx">'+String(i+1).padStart(2,"0")+'</span>'
-        +'<span class="mail-subj">'+(m.due?'<span class="due">'+m.subj+'</span>':m.subj)+'</span>'
-        +'<span class="mail-arrow" aria-hidden="true">›</span>'
-      +'</button>'
-      +'<div class="mail-body" id="body-'+m.id+'"><div class="mail-body-in">'
-        +'<p class="mail-from">Od: '+m.from+'</p>'
-        +'<p class="mail-text">'+m.body+'</p>'
-        +(m.file?'<div class="mail-foot"><button class="file-btn" type="button" data-file="'+m.id+'">Odłóż do akt</button></div>':"")
-      +'</div></div></article>';
-  });
-  $("mails").innerHTML=html;
-  var pending=list.filter(function(m){return !filedMails[m.id];}).length;
-  $("inboxCount").textContent=pending+" sprawy";
-}
-
-function renderSquad(){
-  var html="";
-  SQUAD.forEach(function(r){
-    html+='<div class="squad-row"><span class="squad-nr">'+r[0]+'</span>'
-        +'<span class="squad-name">'+r[1]+'</span>'
-        +'<span class="squad-role">'+r[2]+'</span></div>';
-  });
-  $("squadList").innerHTML=html;
-}
-
-function render(opts){
-  opts=opts||{};
-  document.body.dataset.day=state.day;
-  document.body.dataset.view=state.view;
-  var t=FLAP_TXT[state.day];
-
-  renderCal();renderMails();renderSquad();
-  $("bandMid").textContent=t.mid;
-  $("actionNote").textContent=t.note;
-  $("dateFlap").setAttribute("aria-label",t.aria);
-  $("mainBtn").setAttribute("aria-label",
-    state.day==="work"?"Advance Day — przejdź do dnia wyścigu":"Race next — otwórz przygotowanie");
-
-  dateFlapPrep.set("CZ 12 MAR"); // data w prep jest zawsze 12 MAR
-  if(opts.instant){
-    dateFlap.set(t.date);btnFlap.set(t.btn);
-  }else{
-    dateFlap.spinTo(t.date);btnFlap.spinTo(t.btn);
-  }
-
-  var prep=state.view==="prep";
-  $("desk").hidden=prep;
-  $("prep").hidden=!prep;
-  document.querySelectorAll(".proto-btn").forEach(function(b){
-    b.setAttribute("aria-pressed",String(b.dataset.goto===state.day));
-  });
-  syncUrl();
-}
-
-/* ── przejścia ─────────────────────────────────────────────── */
-var busy=false;
-function advanceDay(){
-  if(busy||state.day!=="work")return;
-  busy=true;
-  var btn=$("mainBtn");
-  btn.classList.remove("pressed");void btn.offsetWidth;btn.classList.add("pressed");
-  after(160,function(){
-    state.day="race";
-    render({instant:false}); // klapki kręcą datą i etykietą guzika
-    var row=document.querySelector('.fix-row[data-key="race"]');
-    after(600,function(){if(row)row.classList.add("flash-now");});
-    after(2200,function(){if(row)row.classList.remove("flash-now");busy=false;});
-  });
-}
-function goPrep(){state.day="race";state.view="prep";render({instant:true});}
-function backToDesk(){state.view="desk";render({instant:false});}
-
-/* ── zdarzenia ─────────────────────────────────────────────── */
-$("mainBtn").addEventListener("click",function(){
-  if(state.day==="work")advanceDay();else goPrep();
-});
-$("backBtn").addEventListener("click",backToDesk);
-$("startBtn").addEventListener("click",function(e){e.preventDefault();}); // disabled — krok 2 niezrobiony
-
-$("mails").addEventListener("click",function(e){
-  var fileBtn=e.target.closest("[data-file]");
-  if(fileBtn){
-    e.stopPropagation();
-    filedMails[fileBtn.dataset.file]=true;
-    renderMails();
-    return;
-  }
-  var head=e.target.closest(".mail-head");
-  if(head){
-    var id=head.parentElement.dataset.id;
-    openMails[id]=!openMails[id];
-    renderMails(); // rozwija w miejscu — nigdy nie otwiera prep
-  }
-});
-
-document.querySelectorAll(".proto-btn").forEach(function(b){
-  b.addEventListener("click",function(){
-    state.day=b.dataset.goto==="race"?"race":"work";
-    state.view="desk";
-    render({instant:false});
-  });
-});
-
-render({instant:reduce?true:false});
-})();
-</script>
 </body>
 </html>
