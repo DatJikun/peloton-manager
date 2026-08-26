@@ -249,6 +249,10 @@ public sealed class SimRunnerContractTests
         Assert.Contains("raceDue=true", stdout, StringComparison.Ordinal);
         Assert.Contains("note=A race is due today.", stdout, StringComparison.Ordinal);
         Assert.Contains("employer=red", stdout, StringComparison.Ordinal);
+        Assert.Contains("calendar=day=12 kind=race status=due title=Skeleton race", stdout, StringComparison.Ordinal);
+        Assert.Contains("inboxCount=1", stdout, StringComparison.Ordinal);
+        Assert.Contains("inbox=identity=calendar:", stdout, StringComparison.Ordinal);
+        Assert.Contains("category=race-due", stdout, StringComparison.Ordinal);
         Assert.True(string.IsNullOrWhiteSpace(error.ToString()));
     }
 

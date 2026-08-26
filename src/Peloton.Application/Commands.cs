@@ -27,6 +27,8 @@ public sealed record AcknowledgeRaceResultsCommand;
 
 public sealed record CompleteRaceDebriefCommand;
 
+public sealed record ArchiveInboxItemCommand(string Identity);
+
 public sealed record CommandResult(bool Succeeded, string ReasonCode)
 {
     public static CommandResult Success { get; } = new(true, "OK");

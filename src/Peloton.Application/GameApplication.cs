@@ -77,6 +77,12 @@ public sealed class GameApplication
         }
     }
 
+    public IReadOnlyList<CalendarEntryProjection> Calendar =>
+        World is null ? Array.Empty<CalendarEntryProjection>() : CareerProjectionQueries.BuildCalendar(World);
+
+    public IReadOnlyList<InboxItemProjection> Inbox =>
+        World is null ? Array.Empty<InboxItemProjection>() : CareerProjectionQueries.BuildInbox(World);
+
     public CommandResult Execute(CreateWorldCommand command)
     {
         ArgumentNullException.ThrowIfNull(command);
@@ -313,6 +319,29 @@ public sealed class GameApplication
         return CommandResult.Success;
     }
 
+    public CommandResult Execute(ArchiveInboxItemCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.Management || World is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        InboxItemProjection? item = Inbox.FirstOrDefault(
+            inboxItem => string.Equals(inboxItem.Identity, command.Identity, StringComparison.Ordinal));
+        if (item is null)
+        {
+            return CommandResult.Reject("INBOX_ITEM_NOT_FOUND");
+        }
+
+        if (string.Equals(item.Category, "race-due", StringComparison.Ordinal))
+        {
+            return CommandResult.Reject("INBOX_SOURCE_CANNOT_BE_DISMISSED");
+        }
+
+        return CommandResult.Reject("INBOX_ITEM_NOT_FOUND");
+    }
+
     public AccessContext GetAccessContext()
     {
         if (World is null)
@@ -370,6 +399,12 @@ public sealed class GameApplication
             new WorldDate(0),
             null);
         DecisionAuthority authority = new(authorityId, DecisionAuthorityKind.HumanInput);
+        int calendarPeriodDays = ReadCalendarPeriodDays(recipe);
+        WorldEntityId initialRaceEntryId = allocator.Allocate();
+        IReadOnlyList<CalendarEntry> calendarEntries = new[]
+        {
+            new CalendarEntry(initialRaceEntryId, calendarPeriodDays, CalendarEntryKind.Race, "Skeleton race"),
+        };
 
         return new WorldState(
             $"{recipe.ContentIdentity.ScenarioId}:{seed}",
@@ -387,7 +422,8 @@ public sealed class GameApplication
             new[] { authority },
             raceCount: 0,
             lastRace: null,
-            calendarPeriodDays: ReadCalendarPeriodDays(recipe));
+            calendarPeriodDays: calendarPeriodDays,
+            calendarEntries: calendarEntries);
     }
 
     private static int ReadCalendarPeriodDays(WorldRecipe recipe)

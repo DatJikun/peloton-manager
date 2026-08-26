@@ -90,6 +90,16 @@ public static class WorldChecksum
             {
                 writer.Write(note);
             }
+
+            foreach (CalendarEntry entry in world.CalendarEntries
+                         .OrderBy(entry => entry.DayNumber)
+                         .ThenBy(entry => entry.Id.Value))
+            {
+                writer.Write(entry.Id.Value);
+                writer.Write(entry.DayNumber);
+                writer.Write((int)entry.Kind);
+                writer.Write(entry.Title);
+            }
         }
 
         return Convert.ToHexString(SHA256.HashData(buffer.ToArray()));

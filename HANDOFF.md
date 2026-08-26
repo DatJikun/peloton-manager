@@ -10,13 +10,13 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`Thin career day loop`
+`Career inbox + calendar entries`
 
 ### Goal
-After New Game, the player lives in Management: Advance Day moves the whole world, a Hub query shows date/job/next race, and a skeleton race day blocks further Advance Day until the race is run.
+After New Game, the player lives in Management: Advance Day moves the whole world, calendar entries and inbox items surface race deadlines, and a skeleton race day blocks further Advance Day until the race is run.
 
 ### Status
-On branch `cursor/thin-core-loop-babe`, stacked on the race prototype. §49 watch still waits for Godot. `D-032` still deferred.
+On branch `cursor/career-inbox-calendar-babe`, stacked on thin career day loop. §49 watch still waits for Godot. `D-032` still deferred.
 
 ## What works now
 - [x] High-level game design v0.7
@@ -46,6 +46,7 @@ On branch `cursor/thin-core-loop-babe`, stacked on the race prototype. §49 watc
 - [x] Pre-race autosave, RaceLive save rejection, and crash recovery
 - [x] Prototype race engine (physics, groups, chase decisions, Race Spy) and 10-season SimRunner
 - [x] Thin career day loop: Hub projection, race-due Advance Day block, SimRunner `day`
+- [x] Career calendar entries (domain system of record) and inbox query (race-due only); archive cannot dismiss race deadlines
 - [x] Headless domain/application/persistence/architecture tests
 
 ## What is currently being changed
@@ -65,7 +66,7 @@ On branch `cursor/thin-core-loop-babe`, stacked on the race prototype. §49 watc
 - [x] Testing v0.1 (DRAFT)
 
 ## Next task
-`Następna warstwa kariery (inbox/kalendarz z wpisami, nie dashboard). Watch Race zostaje na Godota. Nie zamykaj §49 automatami. Nie implementuj D-032 w jednodniowym prototypie.`
+`Richer inbox sources later (not a dashboard). Watch Race stays on Godot. Do not close §49 with automations. Do not implement D-032 in the one-day prototype.`
 
 ## Known blockers
 - None.

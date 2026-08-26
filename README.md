@@ -29,7 +29,7 @@ dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.
 
 `race --scenario race.prototype.gate` is an alias for the same prototype fixture.
 
-The skeleton calendar is deliberately short: one season is 12 calls to `AdvanceDay` followed by one prototype race. The season runner reports crash status, final world day, deterministic checksum, and race count. The `race` command reports winner, checksum, decision count, Spy neutrality, and crash status. Optional `--trace-json` and `--trace-markdown` write Race Spy artifacts. The `day` command creates a skeleton career, advances the requested days, prints the Hub snapshot (date, employer, next race, today's notes), and stops with `RACE_DAY_PENDING` when a race is due.
+The skeleton calendar is deliberately short: one season is 12 calls to `AdvanceDay` followed by one prototype race. The season runner reports crash status, final world day, deterministic checksum, and race count. The `race` command reports winner, checksum, decision count, Spy neutrality, and crash status. Optional `--trace-json` and `--trace-markdown` write Race Spy artifacts. The `day` command creates a skeleton career, advances the requested days, prints the Hub snapshot (date, employer, next race, today's notes), calendar entries (`calendar=day=… kind=… status=… title=…`), inbox items (`inboxCount`, `inbox=identity=…`), and stops with `RACE_DAY_PENDING` when a race is due.
 
 ## Godot boundary
 

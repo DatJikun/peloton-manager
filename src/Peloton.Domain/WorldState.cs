@@ -36,6 +36,7 @@ public sealed class WorldState
     private readonly List<Organization> organizations;
     private readonly List<DecisionAuthority> decisionAuthorities;
     private readonly List<RulesModuleIdentity> rulesModules;
+    private readonly List<CalendarEntry> calendarEntries;
 
     public WorldState(
         string worldId,
@@ -55,7 +56,8 @@ public sealed class WorldState
         RaceSummary? lastRace = null,
         int calendarPeriodDays = 12,
         int lastCompletedRaceDay = 0,
-        IEnumerable<string>? lastDayNotes = null)
+        IEnumerable<string>? lastDayNotes = null,
+        IEnumerable<CalendarEntry>? calendarEntries = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(worldId);
         ArgumentNullException.ThrowIfNull(contentIdentity);
@@ -84,6 +86,7 @@ public sealed class WorldState
         CalendarPeriodDays = calendarPeriodDays;
         LastCompletedRaceDay = lastCompletedRaceDay;
         this.lastDayNotes = (lastDayNotes ?? Array.Empty<string>()).ToList();
+        this.calendarEntries = SortCalendarEntries(calendarEntries ?? Array.Empty<CalendarEntry>());
     }
 
     public string WorldId { get; }
@@ -121,6 +124,8 @@ public sealed class WorldState
     public int LastCompletedRaceDay { get; private set; }
 
     public IReadOnlyList<string> LastDayNotes => lastDayNotes;
+
+    public IReadOnlyList<CalendarEntry> CalendarEntries => calendarEntries;
 
     public bool IsRaceDue =>
         CurrentDate.DayNumber > 0 &&
@@ -160,6 +165,34 @@ public sealed class WorldState
         LastRace = result;
         RaceCount = checked(RaceCount + 1);
         LastCompletedRaceDay = CurrentDate.DayNumber;
+        EnsureUpcomingRaceEntry();
+    }
+
+    public void EnsureUpcomingRaceEntry()
+    {
+        int nextRaceDay = NextRaceDayNumber;
+        if (calendarEntries.Any(entry => entry.DayNumber == nextRaceDay))
+        {
+            return;
+        }
+
+        calendarEntries.Add(new CalendarEntry(
+            AllocateEntityId(),
+            nextRaceDay,
+            CalendarEntryKind.Race,
+            "Skeleton race"));
+        calendarEntries.Sort(CompareCalendarEntries);
+    }
+
+    private static List<CalendarEntry> SortCalendarEntries(IEnumerable<CalendarEntry> entries)
+    {
+        return entries.OrderBy(entry => entry.DayNumber).ThenBy(entry => entry.Id.Value).ToList();
+    }
+
+    private static int CompareCalendarEntries(CalendarEntry left, CalendarEntry right)
+    {
+        int dayComparison = left.DayNumber.CompareTo(right.DayNumber);
+        return dayComparison != 0 ? dayComparison : left.Id.Value.CompareTo(right.Id.Value);
     }
 
     public void CaptureDayNotes(AccessContext access)

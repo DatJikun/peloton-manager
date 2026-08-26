@@ -81,26 +81,27 @@ public static class CareerDayCommand
             return 1;
         }
 
-        WriteHub(output, application.CareerDay);
+        WriteHub(output, application);
         for (int day = 0; day < options.Days; day++)
         {
             CommandResult advanced = application.Execute(new AdvanceDayCommand());
             if (!advanced.Succeeded)
             {
                 output.WriteLine($"stopped={advanced.ReasonCode}");
-                WriteHub(output, application.CareerDay);
+                WriteHub(output, application);
                 return string.Equals(advanced.ReasonCode, "RACE_DAY_PENDING", StringComparison.Ordinal) ? 0 : 1;
             }
 
-            WriteHub(output, application.CareerDay);
+            WriteHub(output, application);
         }
 
         output.WriteLine("crashed=false");
         return 0;
     }
 
-    private static void WriteHub(TextWriter output, CareerDayProjection? hub)
+    private static void WriteHub(TextWriter output, GameApplication application)
     {
+        CareerDayProjection? hub = application.CareerDay;
         if (hub is null)
         {
             output.WriteLine("hub=missing");
@@ -116,6 +117,24 @@ public static class CareerDayCommand
         foreach (string note in hub.TodayNotes)
         {
             output.WriteLine($"note={note}");
+        }
+
+        foreach (CalendarEntryProjection entry in application.Calendar)
+        {
+            output.WriteLine(
+                string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"calendar=day={entry.DayNumber} kind={entry.Kind} status={entry.Status} title={entry.Title}"));
+        }
+
+        IReadOnlyList<InboxItemProjection> inbox = application.Inbox;
+        output.WriteLine($"inboxCount={inbox.Count.ToString(CultureInfo.InvariantCulture)}");
+        foreach (InboxItemProjection item in inbox)
+        {
+            output.WriteLine(
+                string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"inbox=identity={item.Identity} category={item.Category} day={item.DayNumber} {item.Body}"));
         }
     }
 }

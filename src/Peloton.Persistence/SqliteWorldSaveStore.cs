@@ -262,6 +262,15 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         public RaceSummary ToDomain() => new(RouteId, WinnerId, FinishOrder);
     }
 
+    private sealed record CalendarEntryDto(
+        WorldEntityId Id,
+        int DayNumber,
+        CalendarEntryKind Kind,
+        string Title)
+    {
+        public CalendarEntry ToDomain() => new(Id, DayNumber, Kind, Title);
+    }
+
     private sealed record WorldSnapshotDto(
         string WorldId,
         long MasterSeed,
@@ -280,7 +289,8 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         RaceDto? LastRace,
         int CalendarPeriodDays,
         int LastCompletedRaceDay,
-        IReadOnlyList<string> LastDayNotes)
+        IReadOnlyList<string> LastDayNotes,
+        IReadOnlyList<CalendarEntryDto>? CalendarEntries = null)
     {
         public static WorldSnapshotDto FromDomain(WorldState world)
         {
@@ -313,7 +323,10 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                         world.LastRace.FinishOrder),
                 world.CalendarPeriodDays,
                 world.LastCompletedRaceDay,
-                world.LastDayNotes.ToArray());
+                world.LastDayNotes.ToArray(),
+                world.CalendarEntries
+                    .Select(entry => new CalendarEntryDto(entry.Id, entry.DayNumber, entry.Kind, entry.Title))
+                    .ToArray());
         }
 
         public WorldState ToDomain()
@@ -336,7 +349,9 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                 LastRace?.ToDomain(),
                 CalendarPeriodDays > 0 ? CalendarPeriodDays : 12,
                 LastCompletedRaceDay,
-                LastDayNotes ?? Array.Empty<string>());
+                LastDayNotes ?? Array.Empty<string>(),
+                (CalendarEntries ?? Array.Empty<CalendarEntryDto>())
+                    .Select(entry => entry.ToDomain()));
         }
     }
 }
