@@ -33,7 +33,26 @@ pakietu assetów, nie od tego kodu — kod zostaje ten sam.
 | Kask w portrecie | bez | `helmet_worn = false`, kask jest opcjonalną warstwą |
 | Peleton | męski + stroje menadżerów | `role="rider"` / `role="manager"` (polo, softshell, garnitur) |
 | Rozmiar w UI | karta zawodnika, max ~1/6 strony laptopa | master 512×512; `head_crop` z manifestu dla ikon 48–96 px |
-| Styl | kandydat: płaski wektor, ale do porównania wszystkie | 4 profile: `flat`, `flat_outline`, `painted`, `soft` |
+| Styl | płaski wektor; „za realistyczny jak na awatar" | domyślny profil `poster`: kontur tuszem, dwa płaskie tony, palety z UI |
+| Uśmiech | minimalnie bardziej uśmiechnięci | każde usta mają lekki uśmiech + 2 warianty szerszego |
+| Fryzury | większa różnorodność | 25 fryzur (grzywka, quiff, undercut, fade, przedziałek, kolce, loki…) |
+| Koszulki | zespoły + lider GC Tour/Giro/Vuelta | `jersey_override`: `tour`, `giro`, `vuelta`, `world`, `national` |
+
+## Spójność z UI (PR #18)
+
+Awatary są dopasowane do zmergowanego laboratorium UI, nie do własnej palety:
+
+- kolory z `12-dashboard-team-mid.html`: papier `#f3ede1`, czerwień `#d11f1f`, czerń `#0c0c0d`,
+  biel `#fffdf7` — plansze oceny są renderowane na papierze, z 3 px czarną obwódką i twardym
+  cieniem, czyli tak, jak wyglądają panele dashboardu,
+- karnacje i kolory włosów przeniesione z `09-avatar-lab.html` (Twojej referencji),
+- klucze i kolory koszulek te same co w labie: `team` / `tour` / `giro` / `vuelta` / `world` /
+  `national` (żółta, różowa, czerwona, tęcza, opaski),
+- grubość kreski tuszem (~4 px na 512) dobrana pod 3 px obwódki paneli.
+
+Profil `poster` istnieje właśnie dlatego, że miękko cieniowany portret wyglądał w tym UI jak
+zdjęcie wklejone w plakat. Stare profile (`flat`, `flat_outline`, `painted`, `soft`) zostają
+do porównania.
 
 ## Jak uruchomić
 
@@ -41,10 +60,10 @@ pakietu assetów, nie od tego kodu — kod zostaje ten sam.
 cd experiments/avatar_prototype
 pip install -r requirements.txt
 
-python3 scripts/bake_pack.py all      # wypieka 4 pakiety (out/pack_<styl>), ~2 min
-python3 scripts/validate_pack.py      # walidacja każdego pakietu: 512x512, alpha, alignment
-python3 scripts/selftest.py flat      # 35 asercji: determinizm, starzenie, kompatybilność, klony
-python3 scripts/render_demo.py flat   # plansze do oceny + out/demo/report.txt
+python3 scripts/bake_pack.py all        # wypieka 5 pakietów (out/pack_<styl>), ~2,5 min
+python3 scripts/validate_pack.py        # walidacja każdego pakietu: 512x512, alpha, alignment
+python3 scripts/selftest.py poster      # 36 asercji: determinizm, starzenie, kompatybilność, klony
+python3 scripts/render_demo.py poster   # plansze do oceny + out/demo/report.txt
 ```
 
 Gotowe plansze (bez uruchamiania czegokolwiek) leżą w `demo/`.
@@ -53,11 +72,11 @@ Gotowe plansze (bez uruchamiania czegokolwiek) leżą w `demo/`.
 
 | Plansza | Pytanie do Ciebie |
 |---|---|
-| `demo/07_styles.png` | **Który styl?** Ci sami kolarze w czterech kierunkach artystycznych. |
+| `demo/07_styles.png` | **Który styl?** Ci sami kolarze w pięciu kierunkach; `poster` na górze. |
 | `demo/08_display_sizes.png` | Czy w rozmiarze karty (380 px) i ikony listy (48 px) portret się czyta? |
 | `demo/01_contact_sheet.png` | Czy 40 kolarzy wygląda na 40 różnych ludzi, czy na jedną osobę w różnych fryzurach? |
 | `demo/02_aging.png` | Czy ten sam zawodnik w wieku 19 i 44 lat to nadal ta sama osoba? |
-| `demo/03_teams.png` | Czy transfer / koszulka mistrza świata zmienia tylko strój, a nie twarz? |
+| `demo/03_teams.png` | Koszulki zespołów + lider Tour / Giro / Vuelta + mistrz świata i kraju — twarz bez zmian. |
 | `demo/09_managers.png` | Czy menadżerowie w cywilnych strojach wyglądają sensownie? |
 | `demo/04_equipment.png` | Czy kask i okulary siedzą poprawnie na tej samej twarzy? |
 | `demo/05_trait_variants.png` | Czy warianty pojedynczych cech (głowa, oczy, nos, usta, włosy) są dość różne? |
@@ -118,9 +137,9 @@ Wrzuć wyniki gdziekolwiek w repo albo do rozmowy, a ja dopasuję do nich pakiet
 
 ## Znane słabości pakietu placeholder
 
-Zarost i wąsy nadal czytają się jak plama, a nie jak włosy. Kołnierze koszulek przy
-niektórych kolorach drużyn wyglądają jak obręcz. Kształty koszulek są najsłabszym
-elementem. To wady **grafiki zastępczej**, nie pipeline'u — znikają razem z wymianą pakietu.
+Zarost nadal czyta się bardziej jak plama niż włosy. Koszulka zajmuje mało kadru, więc kolor
+lidera GC jest widoczny, ale nie dominuje tak jak na prawdziwym zdjęciu. Oczy przy małych
+rozmiarach bywają lekko „wybałuszone". To wady **grafiki zastępczej**, nie pipeline'u.
 
 ## Pliki
 

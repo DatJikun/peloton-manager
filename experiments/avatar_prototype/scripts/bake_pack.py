@@ -18,7 +18,7 @@ from avatarlab.bake import pack as baker  # noqa: E402
 from avatarlab.bake.draw import STYLES  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_STYLE = "flat"
+DEFAULT_STYLE = "poster"
 
 
 def main(argv: list[str]) -> int:

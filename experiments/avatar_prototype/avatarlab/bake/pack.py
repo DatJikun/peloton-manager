@@ -66,6 +66,7 @@ from .draw import (
     stroke_mask,
 )
 
+INK_RGB = (12, 12, 13)  # UI lab --black, so the portrait line weight matches the panels
 SHADOW_RGB = (74, 50, 42)
 LIGHT_RGB = (255, 250, 242)
 COOL_SHADOW_RGB = (70, 70, 86)
@@ -100,6 +101,19 @@ def _styled(shade: Image.Image, outline: Image.Image | None) -> Image.Image:
     if outline is not None:
         out = ImageChops.subtract(out, scale_l(outline, st().outline_darkness))
     return out
+
+
+def keyline(mask: Image.Image, width_scale: float = 1.0) -> list[tuple[str, Image.Image, dict[str, Any]]]:
+    """Ink contour drawn INSIDE the silhouette.
+
+    Inside, not centred on the edge, because an outer stroke would overlap the
+    neighbouring layers and could drift when a continuous parameter scales the
+    feature. Returns a list so callers can splice it into their part list.
+    """
+    w = st().line_art * width_scale
+    if w <= 0.0:
+        return []
+    return [("line", solid_layer(INK_RGB, harden_edges(scale_l(rim(mask, w, 0.5), 1.7))), {"blend": "normal"})]
 
 
 def outline_of(mask: Image.Image) -> Image.Image | None:
@@ -268,7 +282,7 @@ HEAD_RECIPES: list[tuple[str, float, dict[str, float], tuple[str, ...]]] = [
 ]
 
 
-def bake_head(p: dict[str, float]) -> Image.Image:
+def bake_head(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]]]:
     mask = poly_mask(head_contour(p))
     chin_y = CHIN_Y + p.get("chin_len", 0.0)
     cw = p.get("cheek_w", 1.0)
@@ -304,7 +318,7 @@ def bake_head(p: dict[str, float]) -> Image.Image:
     shade = darken(shade, blur(ellipse_mask(CX, NOSE_TIP_Y + 11, 32, 9), 9), 0.10)
     shade = darken(shade, blur(ellipse_mask(CX, MOUTH_Y + 22, 28, 11), 10), 0.10)
     shade = darken(shade, ImageChops.multiply(blur(ellipse_mask(CX, chin_y + 0.03 * HEAD_H, 0.92 * HEAD_HW, 0.10 * HEAD_H), 16), mask), 0.16)
-    return gray_layer(shade, mask, outline_of(mask))
+    return [("skin", gray_layer(shade, mask, outline_of(mask)), {"blend": "normal", "color_slot": "skin"})] + keyline(mask)
 
 
 # --------------------------------------------------------------------------- #
@@ -312,7 +326,7 @@ def bake_head(p: dict[str, float]) -> Image.Image:
 # --------------------------------------------------------------------------- #
 
 
-def bake_neck() -> tuple[Image.Image, Image.Image]:
+def bake_neck() -> tuple[Image.Image, Image.Image, Image.Image]:
     pts = [
         (CX - 44, NECK_TOP - 40),
         (CX - 47, NECK_TOP + 18),
@@ -323,10 +337,10 @@ def bake_neck() -> tuple[Image.Image, Image.Image]:
     ]
     mask = poly_mask(pts, iters=2)
     shade = mul(flat(1.0), grad_h(1.02, 0.86), grad_v(1.02, 0.88))
-    shade = darken(shade, blur(ellipse_mask(CX, NECK_TOP + 4, 76, 40), 18), 0.34)
+    shade = darken(shade, blur(ellipse_mask(CX, NECK_TOP + 4, 76, 40), 18), 0.34 if st().line_art <= 0 else 0.62)
     shade = darken(shade, rim(mask, 12.0, 8.0), 0.30)
     jaw_shadow = solid_layer(SHADOW_RGB, scale_l(blur(ellipse_mask(CX, NECK_TOP - 6, 80, 26), 16), 0.26))
-    return gray_layer(shade, mask), jaw_shadow
+    return gray_layer(shade, mask), jaw_shadow, mask
 
 
 COLLAR_TOP = SHOULDER_Y - 62.0
@@ -381,7 +395,12 @@ def collar_mask() -> Image.Image:
             (CX + 50, COLLAR_TOP + 4),
         ]
     )
-    return ImageChops.subtract(outer, inner)
+    ring = ImageChops.subtract(outer, inner)
+    # keep the front arc only; a full ring around the neck reads as jewellery
+    front = poly_mask(
+        [(CX - 70, COLLAR_TOP + 13), (CX + 70, COLLAR_TOP + 13), (CX + 70, SIZE), (CX - 70, SIZE)], iters=1
+    )
+    return ImageChops.multiply(ring, front)
 
 
 def bake_jersey(template: str) -> list[tuple[str, Image.Image, dict[str, Any]]]:
@@ -435,7 +454,7 @@ def bake_jersey(template: str) -> list[tuple[str, Image.Image, dict[str, Any]]]:
         ("piping", shaded_color_layer((255, 255, 255), shade, piping), {"blend": "normal", "color_slot": "team_accent"}),
         ("seam", solid_layer(SHADOW_RGB, scale_l(blur(zip_line, 1.4), 0.32)), {"blend": "multiply"}),
         ("sheen", solid_layer(LIGHT_RGB, scale_l(ImageChops.multiply(blur(ellipse_mask(CX - 130, 496, 52, 30), 24), body), 0.14)), {"blend": "screen"}),
-    ]
+    ] + keyline(body)
 
 
 def bake_outfit(kind: str) -> list[tuple[str, Image.Image, dict[str, Any]]]:
@@ -547,7 +566,7 @@ EAR_RECIPES = [
 ]
 
 
-def bake_ear(p: dict[str, float]) -> Image.Image:
+def bake_ear(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]]]:
     x = CX + HEAD_HW - 4 + p.get("out", 0.0)
     top = EAR_TOP - p.get("h", 0.0)
     bot = EAR_BOTTOM + p.get("h", 0.0)
@@ -572,7 +591,7 @@ def bake_ear(p: dict[str, float]) -> Image.Image:
     # contact shadow where the head overlaps the ear, otherwise the ear
     # disappears into the cheek once the head layer is drawn on top
     shade = darken(shade, ImageChops.multiply(mask, blur(ellipse_mask(x - 4, (top + bot) / 2, 10, (bot - top) * 0.7), 6)), 0.34)
-    return gray_layer(shade, mask, outline_of(mask))
+    return [("skin", gray_layer(shade, mask, outline_of(mask)), {"blend": "normal", "color_slot": "skin"})] + keyline(mask, 0.8)
 
 
 # --------------------------------------------------------------------------- #
@@ -594,9 +613,10 @@ EYE_RECIPES = [
 
 def eye_shape(p: dict[str, float]) -> list[tuple[float, float]]:
     cx, cy = CX + EYE_DX, EYE_Y
-    hw = p.get("hw", 23.0)
-    th = p.get("th", 8.8)
-    bh = p.get("bh", 6.6)
+    k = st().feature_boost
+    hw = p.get("hw", 23.0) * k
+    th = p.get("th", 8.8) * k
+    bh = p.get("bh", 6.6) * k
     tilt = p.get("tilt", 0.0)
     return [
         (cx - hw, cy + 1.5 + tilt * 0.4),
@@ -622,7 +642,7 @@ def bake_eye(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]
     under = shaded_color_layer((242, 238, 232), sc_shade, sclera)
 
     # --- iris + pupil (iris is tinted at runtime) --------------------------
-    r = p.get("iris_r", 9.9)
+    r = p.get("iris_r", 9.9) * st().feature_boost
     ix = cx + p.get("iris_dx", 0.0)
     iris_mask = ImageChops.multiply(sclera, ellipse_mask(ix, cy - 0.5, r, r))
     iris_shade = mul(flat(1.0), grad_v(1.16, 0.74))
@@ -649,12 +669,15 @@ def bake_eye(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]
     glint = ImageChops.multiply(sclera, blur(ellipse_mask(ix - r * 0.36, cy - r * 0.44, 2.4, 2.0), 0.8))
     over = Image.alpha_composite(over, solid_layer((255, 253, 248), scale_l(glint, 0.82)))
 
-    return [
-        ("under", under, {"blend": "normal"}),
-        ("iris", iris, {"blend": "normal", "color_slot": "iris"}),
-        ("pupil", pupil, {"blend": "normal"}),
-        ("over", over, {"blend": "normal"}),
-    ]
+    return (
+        [("under", under, {"blend": "normal"})]
+        + keyline(sclera, 0.55)
+        + [
+            ("iris", iris, {"blend": "normal", "color_slot": "iris"}),
+            ("pupil", pupil, {"blend": "normal"}),
+            ("over", over, {"blend": "normal"}),
+        ]
+    )
 
 
 # --------------------------------------------------------------------------- #
@@ -677,7 +700,7 @@ def bake_brow(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any
     inner_x = CX + 0.14 * HEAD_HW
     outer_x = CX + 0.72 * HEAD_HW + p.get("len", 0.0)
     y = BROW_Y + p.get("drop", 0.0)
-    th = p.get("th", 6.2)
+    th = p.get("th", 6.2) * (st().feature_boost + (0.18 if st().line_art > 0 else 0.0))
     arch = p.get("arch", 2.0)
     ang = p.get("angle", 0.0)
     span = outer_x - inner_x
@@ -705,7 +728,7 @@ def bake_brow(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any
             strands = ImageChops.lighter(strands, stroke_mask([(bx, by + 3), (bx + rnd.uniform(2, 7), by - 5)], 1.6))
         mask = ImageChops.lighter(mask, ImageChops.multiply(blur(strands, 1.0), blur(body, 5)))
     shade = mul(flat(1.0), grad_h(1.0, 0.86))
-    return [("hair", gray_layer(shade, scale_l(mask, 0.94), crisp=False), {"blend": "normal", "color_slot": "facial_hair"})]
+    return [("hair", gray_layer(shade, scale_l(mask, 0.96), crisp=False), {"blend": "normal", "color_slot": "brow"})]
 
 
 # --------------------------------------------------------------------------- #
@@ -801,11 +824,29 @@ def bake_nose(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any
                         ),
                         0.9,
                     ),
-                    0.42,
+                    0.60,
                 ),
             )
-            line = ImageChops.lighter(line, scale_l(blur(ellipse_mask(CX + sx * tw * 0.52, tip_y + 1.0, 3.6, 2.4), 0.9), 0.52))
-        parts.append(("line", solid_layer(SHADOW_RGB, line), {"blend": "multiply"}))
+            line = ImageChops.lighter(line, scale_l(blur(ellipse_mask(CX + sx * tw * 0.52, tip_y + 1.0, 3.6, 2.4), 0.9), 0.72))
+        if style.line_art > 0:
+            line = ImageChops.lighter(
+                line,
+                scale_l(
+                    blur(
+                        stroke_mask(
+                            [
+                                (CX + bw * 0.75, bridge_top + 16),
+                                (CX + bw * 0.95 + p.get("hook", 0.0), (bridge_top + tip_y) / 2 + 6),
+                                (CX + tw * 0.62, tip_y - 7),
+                            ],
+                            2.6,
+                        ),
+                        0.9,
+                    ),
+                    0.44,
+                ),
+            )
+        parts.append(("line", solid_layer(INK_RGB if style.line_art > 0 else SHADOW_RGB, line), {"blend": "multiply"}))
     return parts
 
 
@@ -822,6 +863,8 @@ MOUTH_RECIPES = [
     ("mouth_06_thin_upper", 0.12, {"upper": 3.8, "lower": 8.2}),
     ("mouth_07_bow", 0.09, {"bow": 2.6, "upper": 6.8}),
     ("mouth_08_flat", 0.07, {"bow": 0.4, "upper": 5.0, "lower": 6.4}),
+    ("mouth_09_smiling", 0.10, {"smile": 5.0, "lower": 8.4}),
+    ("mouth_10_wide_smile", 0.07, {"hw": 45.0, "smile": 6.0, "upper": 5.0, "lower": 7.4}),
 ]
 
 
@@ -829,8 +872,10 @@ def bake_mouth(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, An
     hw = p.get("hw", 41.0)
     up = p.get("upper", 5.8)
     lo = p.get("lower", 7.8)
-    droop = p.get("droop", 0.0)
     bow = p.get("bow", 1.6)
+    # every mouth carries a slight smile: a neutral straight line reads as sullen
+    # at portrait size. `droop` still lets a variant pull the corners back down.
+    droop = p.get("droop", 0.0) - p.get("smile", 2.4)
     y = MOUTH_Y
 
     upper_pts = [
@@ -866,16 +911,19 @@ def bake_mouth(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, An
 
     line = scale_l(
         blur(stroke_mask([(CX - hw, y + droop), (CX - hw * 0.4, y + 0.4), (CX, y + 1.0), (CX + hw * 0.4, y + 0.4), (CX + hw, y + droop)], 2.4), 1.0),
-        0.48,
+        0.48 if st().line_art <= 0 else 0.78,
     )
     for sx in (-1, 1):
         line = ImageChops.lighter(line, scale_l(blur(ellipse_mask(CX + sx * (hw + 2.0), y + droop + 0.5, 4.5, 3.4), 2.2), 0.38))
     light = solid_layer(LIGHT_RGB, scale_l(blur(ellipse_mask(CX - 4, y + lo * 0.52, hw * 0.44, lo * 0.24), 3.0), 0.30))
-    return [
-        ("lips", lips_layer, {"blend": "normal", "color_slot": "lip"}),
-        ("line", solid_layer(SHADOW_RGB, line), {"blend": "multiply"}),
-        ("light", light, {"blend": "screen"}),
-    ]
+    return (
+        [("lips", lips_layer, {"blend": "normal", "color_slot": "lip"})]
+        + keyline(lips, 0.7)
+        + [
+            ("line", solid_layer(SHADOW_RGB, line), {"blend": "multiply"}),
+            ("light", light, {"blend": "screen"}),
+        ]
+    )
 
 
 # --------------------------------------------------------------------------- #
@@ -1046,6 +1094,32 @@ def hair_polygon(t: float, hl_f: float, side_f: float, style: str) -> list[tuple
         inner_right[3] = (CX + 0.40 * hw, hl_y - 6.0)
         inner_right[4] = (CX + 0.14 * hw, hl_y + 4.0)
         inner_right[5] = (CX, hl_y + 12.0)
+    elif style == "quiff":
+        # volume lifted at the front, tight at the back
+        outer_right[0] = (CX, SKULL_TOP - t * 1.9)
+        outer_right[1] = (CX + 0.26 * hw, SKULL_TOP - t * 1.7)
+        outer_right[2] = (CX + 0.60 * hw, SKULL_TOP - t * 0.9)
+        outer_right[3] = (CX + 0.98 * hw + t * 0.2, hy(0.20))
+        inner_right[3] = (CX + 0.46 * hw, hl_y - 10.0)
+        inner_right[4] = (CX + 0.16 * hw, hl_y - 16.0)
+        inner_right[5] = (CX, hl_y - 12.0)
+    elif style == "fringe":
+        # hair falls forward onto the forehead
+        inner_right[2] = (CX + 0.74 * hw, hl_y + 34.0)
+        inner_right[3] = (CX + 0.48 * hw, hl_y + 30.0)
+        inner_right[4] = (CX + 0.20 * hw, hl_y + 22.0)
+        inner_right[5] = (CX, hl_y + 26.0)
+    elif style == "undercut":
+        # narrow, nearly shaved sides with volume on top
+        outer_right[2] = (CX + 0.92 * hw + t * 0.7, hy(0.16))
+        outer_right[3] = (CX + 0.84 * hw, hy(0.30))
+        outer_right[4] = (CX + 0.80 * hw, hy(0.40))
+        outer_right[5] = (CX + 0.78 * hw, side_y)
+        inner_right[0] = (CX + 0.72 * hw, side_y - 6.0)
+        inner_right[1] = (CX + 0.70 * hw, hl_y + 30.0)
+    elif style == "mid_part":
+        inner_right[4] = (CX + 0.18 * hw, hl_y - 8.0)
+        inner_right[5] = (CX + 0.03 * hw, hl_y + 16.0)
     elif style == "round":
         inner_right[2] = (CX + 0.66 * hw, hl_y + 8.0)
         inner_right[3] = (CX + 0.38 * hw, hl_y - 2.0)
@@ -1120,6 +1194,25 @@ HAIR_RECIPES: list[dict[str, Any]] = [
     {"id": "hair_13_horseshoe", "w": 0.05, "t": 6.0, "hl": 0.05, "side": 0.53, "style": "m_shape", "requires": ("hairline_receded",), "min_age": 30},
     {"id": "hair_14_longer", "w": 0.03, "t": 19.0, "hl": 0.23, "side": 0.70, "style": "straight"},
     {"id": "hair_15_flat_helmet", "w": 0.07, "t": 9.0, "hl": 0.24, "side": 0.52, "style": "straight"},
+    {"id": "hair_16_quiff", "w": 0.07, "t": 13.0, "hl": 0.20, "side": 0.48, "style": "quiff"},
+    {"id": "hair_17_fringe", "w": 0.15, "t": 15.0, "hl": 0.18, "side": 0.51, "style": "fringe"},
+    {"id": "hair_18_undercut", "w": 0.07, "t": 17.0, "hl": 0.21, "side": 0.50, "style": "undercut"},
+    {"id": "hair_19_textured_spikes", "w": 0.11, "t": 15.0, "hl": 0.23, "side": 0.50, "style": "quiff", "wob": ("spike", 8.0)},
+    {"id": "hair_20_wavy_medium", "w": 0.06, "t": 19.0, "hl": 0.22, "side": 0.55, "style": "swept", "wob": ("curl", 6.0)},
+    {"id": "hair_21_crew_cut", "w": 0.09, "t": 7.0, "hl": 0.235, "side": 0.49, "style": "round"},
+    {"id": "hair_22_high_fade", "w": 0.07, "t": 14.0, "hl": 0.22, "side": 0.42, "style": "undercut"},
+    {"id": "hair_23_mid_part", "w": 0.05, "t": 17.0, "hl": 0.20, "side": 0.52, "style": "mid_part"},
+    {
+        "id": "hair_24_curly_tall",
+        "w": 0.04,
+        "t": 24.0,
+        "hl": 0.26,
+        "side": 0.51,
+        "style": "round",
+        "wob": ("curl", 15.0),
+        "region_weights": {"*": 1.0, "west_africa": 2.2, "east_africa": 2.0, "latin_america": 1.3, "east_asia": 0.3, "scandinavia": 0.4},
+    },
+    {"id": "hair_25_shaved", "w": 0.05, "t": 3.0, "hl": 0.26, "side": 0.52, "style": "round"},
 ]
 
 
@@ -1150,6 +1243,28 @@ def bake_hair(r: dict[str, Any]) -> list[tuple[str, Image.Image, dict[str, Any]]
         shade = darken(shade, ImageChops.multiply(mask, blur(strands, 1.6)), 0.10)
     # flat styles keep only the rim + hairline shading already applied above
 
+    if st().line_art > 0:
+        # one deliberate second-tone shape instead of fake strand texture
+        shade = darken(
+            shade,
+            ImageChops.multiply(
+                mask,
+                blur(
+                    poly_mask(
+                        [
+                            (CX + 0.10 * HEAD_HW, SKULL_TOP - r["t"]),
+                            (CX + 1.3 * HEAD_HW, SKULL_TOP),
+                            (CX + 1.3 * HEAD_HW, hy(r["side"])),
+                            (CX + 0.34 * HEAD_HW, hy(r["side"])),
+                        ],
+                        iters=2,
+                    ),
+                    6,
+                ),
+            ),
+            0.34,
+        )
+
     sheen = solid_layer(
         LIGHT_RGB, scale_l(ImageChops.multiply(mask, blur(ellipse_mask(CX - 44, hy(0.16), 46, 28), 22)), 0.16)
     )
@@ -1159,11 +1274,14 @@ def bake_hair(r: dict[str, Any]) -> list[tuple[str, Image.Image, dict[str, Any]]
         face_region(),
         blur(stroke_mask([(CX - 0.95 * HEAD_HW, hl_y + 30), (CX, hl_y + 6), (CX + 0.95 * HEAD_HW, hl_y + 30)], 12.0), 7.0),
     )
-    return [
-        ("cast_shadow", solid_layer(SHADOW_RGB, scale_l(cast, 0.16)), {"blend": "multiply"}),
-        ("main", gray_layer(shade, mask, outline_of(mask)), {"blend": "normal", "color_slot": "hair"}),
-        ("sheen", sheen, {"blend": "screen"}),
-    ]
+    return (
+        [
+            ("cast_shadow", solid_layer(SHADOW_RGB, scale_l(cast, 0.16)), {"blend": "multiply"}),
+            ("main", gray_layer(shade, mask, outline_of(mask)), {"blend": "normal", "color_slot": "hair"}),
+        ]
+        + keyline(mask)
+        + [("sheen", sheen, {"blend": "screen"})]
+    )
 
 
 # --------------------------------------------------------------------------- #
@@ -1376,7 +1494,7 @@ def bake_helmet(r: dict[str, Any]) -> list[tuple[str, Image.Image, dict[str, Any
         ("vents", solid_layer((34, 34, 40), scale_l(vents, 0.62)), {"blend": "normal"}),
         ("strap", solid_layer((44, 44, 50), scale_l(straps, 0.66)), {"blend": "normal"}),
         ("glint", solid_layer((255, 255, 255), scale_l(glint, 0.20)), {"blend": "screen"}),
-    ]
+    ] + keyline(shell)
 
 
 # --------------------------------------------------------------------------- #
@@ -1395,26 +1513,26 @@ SKIN_RAMP: list[tuple[float, tuple[int, int, int]]] = [
     (1.00, (68, 44, 32)),
 ]
 
-# flat vector art carries a little more chroma; same lightness curve
+# flat / poster packs reuse the skin stops already approved in the merged UI lab
+# (09-avatar-lab.html), so portraits and the dashboard share one palette
 SKIN_RAMP_FLAT: list[tuple[float, tuple[int, int, int]]] = [
-    (0.00, (253, 224, 199)),
-    (0.15, (246, 206, 172)),
-    (0.30, (236, 186, 144)),
-    (0.45, (214, 156, 112)),
-    (0.60, (183, 124, 84)),
-    (0.75, (142, 90, 57)),
-    (0.88, (101, 61, 39)),
-    (1.00, (70, 42, 29)),
+    (0.00, (246, 209, 174)),
+    (0.20, (242, 201, 164)),
+    (0.36, (232, 178, 140)),
+    (0.52, (209, 154, 114)),
+    (0.68, (176, 123, 82)),
+    (0.84, (138, 90, 59)),
+    (1.00, (107, 66, 38)),
 ]
 
 HAIR_COLORS = [
-    ("hc_01_black", [34, 29, 27], 0.30, {"*": 1.0, "scandinavia": 0.5, "east_asia": 2.4, "west_africa": 2.6, "east_africa": 2.4, "south_asia": 2.2}),
-    ("hc_02_dark_brown", [56, 41, 33], 0.27, {"*": 1.0, "east_asia": 1.2, "iberia": 1.4}),
-    ("hc_03_brown", [82, 58, 42], 0.19, {"*": 1.0, "east_asia": 0.4, "west_africa": 0.3}),
-    ("hc_04_light_brown", [116, 84, 58], 0.11, {"*": 1.0, "scandinavia": 1.5, "east_asia": 0.15, "west_africa": 0.1}),
-    ("hc_05_dark_blond", [154, 120, 76], 0.07, {"*": 1.0, "scandinavia": 3.0, "west_europe": 1.3, "east_asia": 0.05, "west_africa": 0.05}),
-    ("hc_06_blond", [188, 156, 102], 0.04, {"*": 1.0, "scandinavia": 4.0, "west_europe": 1.4, "east_asia": 0.02, "west_africa": 0.02}),
-    ("hc_07_auburn", [118, 62, 40], 0.02, {"*": 1.0, "west_europe": 1.6, "scandinavia": 1.4, "east_asia": 0.05}),
+    ("hc_01_black", [25, 25, 25], 0.30, {"*": 1.0, "scandinavia": 0.5, "east_asia": 2.4, "west_africa": 2.6, "east_africa": 2.4, "south_asia": 2.2}),
+    ("hc_02_dark_brown", [58, 42, 28], 0.27, {"*": 1.0, "east_asia": 1.2, "iberia": 1.4}),
+    ("hc_03_brown", [107, 74, 44], 0.19, {"*": 1.0, "east_asia": 0.4, "west_africa": 0.3}),
+    ("hc_04_light_brown", [138, 98, 58], 0.11, {"*": 1.0, "scandinavia": 1.5, "east_asia": 0.15, "west_africa": 0.1}),
+    ("hc_05_dark_blond", [169, 124, 63], 0.07, {"*": 1.0, "scandinavia": 3.0, "west_europe": 1.3, "east_asia": 0.05, "west_africa": 0.05}),
+    ("hc_06_blond", [201, 162, 75], 0.04, {"*": 1.0, "scandinavia": 4.0, "west_europe": 1.4, "east_asia": 0.02, "west_africa": 0.02}),
+    ("hc_07_auburn", [181, 83, 60], 0.02, {"*": 1.0, "west_europe": 1.6, "scandinavia": 1.4, "east_asia": 0.05}),
 ]
 
 IRIS_COLORS = [
@@ -1456,13 +1574,15 @@ def bake(root: str | Path, style: str = "flat", pack_version: str = "0.1.0-place
     b.palettes["skin_ramp"] = {f"stop_{i:02d}": [int(t * 1000), *rgb] for i, (t, rgb) in enumerate(ramp)}
 
     for asset_id, weight, params, tags in HEAD_RECIPES:
-        b.asset("head", asset_id, [("skin", bake_head(params), {"blend": "normal", "color_slot": "skin"})], weight=weight, tags=tags, anchor=(CX, EYE_Y))
+        b.asset("head", asset_id, bake_head(params), weight=weight, tags=tags, anchor=(CX, EYE_Y))
 
-    neck, jaw_shadow = bake_neck()
+    neck, jaw_shadow, neck_mask = bake_neck()
     b.asset(
         "neck",
         "neck_01",
-        [("skin", neck, {"blend": "normal", "color_slot": "skin"}), ("jaw_shadow", jaw_shadow, {"blend": "multiply"})],
+        [("skin", neck, {"blend": "normal", "color_slot": "skin"})]
+        + keyline(neck_mask, 0.9)
+        + [("jaw_shadow", jaw_shadow, {"blend": "multiply"})],
         anchor=(CX, NECK_TOP),
     )
 
@@ -1470,7 +1590,7 @@ def bake(root: str | Path, style: str = "flat", pack_version: str = "0.1.0-place
         b.asset(
             "ears",
             asset_id,
-            [("skin", bake_ear(params), {"blend": "normal", "color_slot": "skin"})],
+            bake_ear(params),
             weight=weight,
             mirrored=True,
             anchor=(CX + HEAD_HW, (EAR_TOP + EAR_BOTTOM) / 2),

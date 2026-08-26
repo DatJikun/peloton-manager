@@ -19,7 +19,7 @@ from avatarlab.generate import Rider, _eligible, generate, generate_pool, simila
 from avatarlab.rng import RiderRng
 
 ROOT = Path(__file__).resolve().parents[1]
-STYLE = sys.argv[1] if len(sys.argv) > 1 else "flat"
+STYLE = sys.argv[1] if len(sys.argv) > 1 else "poster"
 PACK = ROOT / "out" / f"pack_{STYLE}"
 
 checks = 0

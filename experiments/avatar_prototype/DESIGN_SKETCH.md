@@ -17,10 +17,27 @@ should live in the manifest.
 | helmet in the portrait | off by default | `helmet_worn = false`; helmet stays an optional layer |
 | peloton | male riders + manager outfits | `role` field on riders and assets; no women's pack |
 | size in the UI | rider card, up to ~1/6 of a laptop page | 512x512 master, `head_crop` for 48-96 px icons |
-| art direction | flat vector is the front runner, all options to be compared | four `StyleProfile`s bakeable from the same recipes |
+| art direction | flat vector, but "too realistic for what an avatar does" | default profile `poster`: ink keylines, two flat tones |
+| expression | slightly more smiling | every mouth carries a small smile; two wider-smile variants |
+| hair | more variety | 25 hairstyles, incl. fringe, quiff, undercut, fade, mid part |
+| kits | teams plus Tour / Giro / Vuelta GC leader | `jersey_override`: `tour` / `giro` / `vuelta` / `world` / `national` |
 
-Open: which of the four styles wins, and whether the pack is authored procedurally or by
-an artist. Both are answered by looking at `demo/07_styles.png`, not by writing more code.
+### Alignment with the merged UI lab (PR #18)
+
+The dashboard direction is constructivist poster: paper `#f3ede1`, red `#d11f1f`, ink
+`#0c0c0d`, 3 px black borders, hard offset shadows, Anton display type. The avatar pack now
+borrows from that lab instead of inventing a parallel palette:
+
+- skin stops and hair colours come from `09-avatar-lab.html` (the owner's reference),
+- jersey override keys and colours are the lab's: `team`, `tour` (yellow), `giro` (pink),
+  `vuelta` (red), `world` (rainbow bands), `national` (two bands), with the pre-lab names
+  (`leader`, `world_champion`, `national_champion`) kept as aliases,
+- keyline weight (~4 px on a 512 master) is chosen against the 3 px panel borders,
+- review sheets render on paper with bordered cards, because a portrait judged on a dark
+  background tells you nothing about how it sits in a light UI.
+
+Open: which of the five styles wins, and whether the pack is authored procedurally or by an
+artist. Both are answered by looking at `demo/07_styles.png`, not by writing more code.
 
 ---
 
@@ -63,13 +80,21 @@ Art direction is a property of the pack, not of the game code. One `StyleProfile
 | `detail_alpha` | wrinkles / tan lines / freckles intensity |
 | `line_features` | nose and lips get line work instead of pure shading |
 
-Shipped profiles: `flat`, `flat_outline`, `painted`, `soft`. Two lessons the prototype
-learned the hard way, both encoded above:
+| `line_art`, `feature_boost` | true ink keyline width, and a small scale-up of eyes/brows |
+
+Shipped profiles: `poster` (default), `flat`, `flat_outline`, `painted`, `soft`. Three lessons
+the prototype learned the hard way, all encoded above:
 
 - **Never harden every alpha.** Stubble and eyebrows are soft on purpose; posterising and
   hardening them turns a gradient into an amoeba. `gray_layer(..., crisp=False)` opts out.
 - **Never posterise a full-canvas gradient.** It bands across the whole face. A flat style
   gets a small number of deliberate shading shapes instead of many soft ones.
+- **Fake texture reads as damage.** Random ink strokes meant to suggest hair strands looked
+  like scratches at portrait size; one deliberate second-tone shape reads as hair.
+
+Keylines are drawn as their own part, inside the silhouette (`keyline()`), never centred on
+the edge: an outer stroke would overlap neighbouring layers and drift when a continuous
+parameter scales the feature.
 
 ## 2. Layer architecture
 

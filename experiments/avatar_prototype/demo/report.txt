@@ -1,7 +1,7 @@
 === pack ===
 pack_id=peloton_placeholder asset_pack_version=0.1.0-placeholder schema=1 seed_version=1
-assets=109 png_parts=247
-assets per category: ears=4, eyebrows=8, eyes=9, facial_hair=7, glasses=5, hair=15, hair_color=7, head=10, helmet=4, iris_color=6, jersey=5, jersey_overlay=2, mouth=8, neck=1, nose=10, skin_details=7, wrinkles=1
+assets=121 png_parts=338
+assets per category: ears=4, eyebrows=8, eyes=9, facial_hair=7, glasses=5, hair=25, hair_color=7, head=10, helmet=4, iris_color=6, jersey=5, jersey_overlay=2, mouth=10, neck=1, nose=10, skin_details=7, wrinkles=1
 
 === determinism ===
 same rider generated twice -> identical appearance: True
@@ -9,21 +9,21 @@ same appearance rendered twice -> identical pixels: True
 after transfer + 6 birthdays -> identity block unchanged: True
                              -> shape block unchanged:    True
                              -> mutable block changed:    True
-cache key before/after: 03724fc3feb80221 -> 008c72d5d8353ea2
+cache key before/after: 50fcafb14e7ceb8a -> f0fa112fc81af500
 
 === duplicate prevention on a 20000 rider pool ===
-generate_pool: 3.29s total, 0.164 ms per rider
-riders=20000 rerolled=38 unresolved_clones=0
-distinct similarity keys=20000 distinct identity cores=19994
-identity-core collisions remaining: 6 (0.03%)
-same pool WITHOUT salt re-rolls would ship 38 look-alike pairs
+generate_pool: 3.39s total, 0.169 ms per rider
+riders=20000 rerolled=21 unresolved_clones=0
+distinct similarity keys=20000 distinct identity cores=19997
+identity-core collisions remaining: 3 (0.01%)
+same pool WITHOUT salt re-rolls would ship 21 look-alike pairs
 
 === distribution sanity (weighted, not uniform) ===
 head: 01_oval 14.4%, 03_square 11.7%, 05_angular 11.2%, 02_long 11.0%, 04_round 10.9%, 06_broad 10.2%
-hair: 02_crop 16.1%, 03_side_part 13.1%, 04_messy_short 12.8%, 01_buzz 10.5%, 06_curly_short 8.7%, 05_swept_medium 7.6%
+hair: 02_crop 8.7%, 17_fringe 8.1%, 04_messy_short 7.6%, 03_side_part 7.4%, 19_textured_spikes 6.3%, 01_buzz 6.1%
 facial_hair: None 70.7%, 01_stubble_light 8.1%, 02_stubble_heavy 6.4%, 03_beard_short 4.6%, 05_goatee 3.0%, 04_beard_full 2.7%
 
 === render performance (single thread, Pillow + numpy) ===
-200 portraits in 3.95s -> 19.8 ms each, 51 portraits/s
-extrapolated cold render of 20000 portraits: 395s single threaded
-cache hit read: 3.09 ms each
+200 portraits in 5.52s -> 27.6 ms each, 36 portraits/s
+extrapolated cold render of 20000 portraits: 552s single threaded
+cache hit read: 2.63 ms each

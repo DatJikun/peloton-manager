@@ -94,6 +94,8 @@ class StyleProfile:
     outline_darkness: float = 0.62  # how dark the outline gets vs the fill
     detail_alpha: float = 1.0  # wrinkles / tan lines / freckles multiplier
     line_features: bool = False  # nose and lips get line work, not just shading
+    line_art: float = 0.0  # true ink keyline width in px (0 = none)
+    feature_boost: float = 1.0  # scales eyes/brows for a more graphic read
 
 
 STYLES: dict[str, StyleProfile] = {
@@ -124,6 +126,23 @@ STYLES: dict[str, StyleProfile] = {
         outline_darkness=0.58,
         detail_alpha=0.62,
         line_features=True,
+    ),
+    # constructivist poster: ink keylines, two flat tones, graphic features.
+    # Matches the merged UI lab (paper #f3ede1 / red #d11f1f / black #0c0c0d,
+    # 3 px black borders), where a soft painted portrait would read as a photo
+    # dropped into a poster.
+    "poster": StyleProfile(
+        name="poster",
+        tone_steps=2,
+        tone_floor=0.78,
+        form_strength=0.60,
+        highlight_strength=0.0,
+        edge_hardness=1.0,
+        gradient_scale=0.16,
+        detail_alpha=0.22,
+        line_features=True,
+        line_art=5.0,
+        feature_boost=1.10,
     ),
     # high-contrast painted: more form, stronger highlights, soft edges
     "painted": StyleProfile(

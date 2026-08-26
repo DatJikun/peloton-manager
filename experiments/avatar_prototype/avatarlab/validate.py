@@ -114,6 +114,7 @@ def validate(pack_root: str | Path) -> Report:
                 "skin",
                 "lip",
                 "hair",
+                "brow",
                 "facial_hair",
                 "iris",
                 "team_primary",

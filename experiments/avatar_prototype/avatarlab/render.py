@@ -91,7 +91,7 @@ def lip_rgb(skin: tuple[int, int, int]) -> tuple[int, int, int]:
 
 
 def gray_hair_rgb(base: tuple[int, int, int], gray: float) -> tuple[int, int, int]:
-    target = (186, 183, 180)
+    target = (150, 150, 150)
     g = min(1.0, max(0.0, gray)) * 0.9
     return tuple(int(round(base[i] + (target[i] - base[i]) * g)) for i in range(3))  # type: ignore[return-value]
 
@@ -297,6 +297,11 @@ def _tint_for(slot: str | None, app: Appearance, pack: Pack) -> tuple[float, flo
     elif slot == "hair":
         base = pal["hair_color"].get(mut.get("hair_color") or "", [40, 34, 30])
         rgb = gray_hair_rgb(tuple(base), mut.get("gray", 0.0))  # type: ignore[arg-type]
+    elif slot == "brow":
+        base = pal["hair_color"].get(mut.get("hair_color") or "", [40, 34, 30])
+        # brows read darker than hair and grey later than hair does
+        g = gray_hair_rgb(tuple(base), mut.get("gray", 0.0) * 0.55)  # type: ignore[arg-type]
+        rgb = (int(g[0] * 0.72), int(g[1] * 0.70), int(g[2] * 0.70))
     elif slot == "facial_hair":
         base = pal["hair_color"].get(mut.get("hair_color") or "", [40, 34, 30])
         rgb = gray_hair_rgb(tuple(base), min(1.0, mut.get("gray", 0.0) * 1.25))  # type: ignore[arg-type]
@@ -313,6 +318,32 @@ def _tint_for(slot: str | None, app: Appearance, pack: Pack) -> tuple[float, flo
     return (rgb[0] / 255.0, rgb[1] / 255.0, rgb[2] / 255.0)
 
 
+# classification kits, colours taken from the merged UI lab (09-avatar-lab.html)
+INK = [27, 28, 31]
+JERSEY_OVERRIDES: dict[str, dict[str, list[int]]] = {
+    "tour": {"team_primary": [255, 212, 0], "team_secondary": INK, "team_accent": INK},
+    "giro": {"team_primary": [230, 111, 162], "team_secondary": [255, 255, 255], "team_accent": INK},
+    "vuelta": {"team_primary": [209, 31, 31], "team_secondary": [255, 255, 255], "team_accent": INK},
+    "world": {"team_primary": [252, 250, 244], "team_secondary": [238, 236, 230], "team_accent": INK},
+}
+# older names kept so a save written before the UI lab landed still resolves
+OVERRIDE_ALIASES = {
+    "leader": "tour",
+    "leader_tour": "tour",
+    "leader_giro": "giro",
+    "leader_vuelta": "vuelta",
+    "world_champion": "world",
+    "national_champion": "national",
+}
+BAND_OVERLAYS = {"world": "overlay_bands_rainbow", "national": "overlay_bands_champion"}
+
+
+def normalise_override(override: str | None) -> str | None:
+    if override is None:
+        return None
+    return OVERRIDE_ALIASES.get(override, override)
+
+
 def _kit_colors(app: Appearance, pack: Pack) -> dict[str, list[int]]:
     teams = pack.manifest.teams
     team_id = app.equipment.get("team_id") or next(iter(teams))
@@ -322,14 +353,12 @@ def _kit_colors(app: Appearance, pack: Pack) -> dict[str, list[int]]:
         "team_secondary": team["secondary"],
         "team_accent": team["accent"],
     }
-    override = app.equipment.get("jersey_override")
-    if override == "world_champion":
-        kit = {"team_primary": [244, 244, 246], "team_secondary": [232, 232, 236], "team_accent": [40, 40, 44]}
-    elif override == "leader":
-        kit = {"team_primary": [248, 206, 38], "team_secondary": [232, 178, 20], "team_accent": [40, 38, 34]}
-    elif override == "national_champion":
+    override = normalise_override(app.equipment.get("jersey_override"))
+    if override in JERSEY_OVERRIDES:
+        return dict(JERSEY_OVERRIDES[override])
+    if override == "national":
         nat = team.get("nation_colors", [[220, 224, 230], [40, 60, 150]])
-        kit = {"team_primary": [246, 246, 248], "team_secondary": nat[0], "team_accent": nat[1]}
+        return {"team_primary": [252, 250, 244], "team_secondary": nat[0], "team_accent": nat[1]}
     return kit
 
 
@@ -344,9 +373,7 @@ def _layer_plan(app: Appearance, pack: Pack) -> list[tuple[Asset, Part, bool]]:
             selection.setdefault(cat, []).append(asset_id)
 
     put("jersey", eq.get("jersey_template"))
-    if eq.get("jersey_override") in ("world_champion", "national_champion"):
-        overlay = "overlay_bands_rainbow" if eq["jersey_override"] == "world_champion" else "overlay_bands_champion"
-        put("jersey_overlay", overlay)
+    put("jersey_overlay", BAND_OVERLAYS.get(normalise_override(eq.get("jersey_override")) or ""))
     put("neck", "neck_01")
     put("ears", app.identity.get("ears"))
     put("head", app.identity["head"])

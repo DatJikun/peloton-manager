@@ -32,14 +32,21 @@ from avatarlab.generate import Rider, core_fingerprint, generate, generate_pool,
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "out" / "demo"
-DEFAULT_STYLE = "flat"
-STYLE_ORDER = ["flat", "flat_outline", "painted", "soft"]
+DEFAULT_STYLE = "poster"
+STYLE_ORDER = ["poster", "flat", "flat_outline", "painted", "soft"]
 
-BG = (30, 33, 38)
-CARD = (48, 52, 59)
-CARD_ALT = (41, 45, 51)
-TEXT = (226, 230, 236)
-SUBTEXT = (152, 160, 172)
+# palette taken from the merged UI lab (12-dashboard-team-mid.html) so the
+# portraits are judged against the colours they will actually live in
+PAPER = (243, 237, 225)
+WHITE = (255, 253, 247)
+INK = (12, 12, 13)
+RED = (209, 31, 31)
+GRAY = (111, 111, 114)
+BG = PAPER
+CARD = WHITE
+CARD_ALT = (237, 231, 218)
+TEXT = INK
+SUBTEXT = GRAY
 
 FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
 FONT_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
@@ -67,30 +74,36 @@ def font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
 
 
 def tile(img: Image.Image, size: int, title: str, subtitle: str = "", alt: bool = False) -> Image.Image:
-    label_h = 34 if subtitle else 24
-    card = Image.new("RGBA", (size, size + label_h), (*(CARD_ALT if alt else CARD), 255))
-    card.alpha_composite(img.resize((size, size), Image.LANCZOS), (0, 0))
+    """Constructivist card: paper fill, 3 px ink border, hard offset shadow."""
+    label_h = 36 if subtitle else 26
+    border, shadow = 3, 5
+    w, h = size + 2 * border, size + label_h + 2 * border
+    card = Image.new("RGBA", (w + shadow, h + shadow), (0, 0, 0, 0))
     d = ImageDraw.Draw(card)
-    d.text((7, size + 3), title, fill=TEXT, font=font(max(10, size // 18), bold=True))
+    d.rectangle((shadow, shadow, w + shadow - 1, h + shadow - 1), fill=(*INK, 255))
+    d.rectangle((0, 0, w - 1, h - 1), fill=(*(CARD_ALT if alt else CARD), 255), outline=(*INK, 255), width=border)
+    card.alpha_composite(img.resize((size, size), Image.LANCZOS), (border, border))
+    d.text((border + 5, border + size + 3), title.upper(), fill=TEXT, font=font(max(10, size // 18), bold=True))
     if subtitle:
-        d.text((7, size + 3 + max(11, size // 16)), subtitle, fill=SUBTEXT, font=font(max(9, size // 22)))
+        d.text((border + 5, border + size + 4 + max(11, size // 16)), subtitle, fill=SUBTEXT, font=font(max(9, size // 22)))
     return card
 
 
 def grid(tiles: list[Image.Image], cols: int, pad: int = 6, header: str = "", sub: str = "") -> Image.Image:
     tw, th = tiles[0].size
     rows = (len(tiles) + cols - 1) // cols
-    head_h = 0 if not header else (54 if not sub else 78)
+    head_h = 0 if not header else (58 if not sub else 84)
     width = cols * (tw + pad) + pad
     if header:  # never clip the caption on a narrow sheet
-        need = max(font(26, bold=True).getlength(header), font(15).getlength(sub) if sub else 0)
+        need = max(font(24, bold=True).getlength(header.upper()), font(15).getlength(sub) if sub else 0)
         width = max(width, int(need) + 2 * pad + 12)
     sheet = Image.new("RGBA", (width, head_h + rows * (th + pad) + pad), (*BG, 255))
     d = ImageDraw.Draw(sheet)
     if header:
-        d.text((pad + 4, 14), header, fill=TEXT, font=font(26, bold=True))
+        d.text((pad + 4, 14), header.upper(), fill=TEXT, font=font(24, bold=True))
+        d.rectangle((pad + 4, 44, min(width - pad, pad + 4 + 210), 50), fill=(*RED, 255))
         if sub:
-            d.text((pad + 4, 48), sub, fill=SUBTEXT, font=font(15))
+            d.text((pad + 4, 56), sub, fill=SUBTEXT, font=font(15))
     for i, t in enumerate(tiles):
         x = pad + (i % cols) * (tw + pad)
         y = head_h + pad + (i // cols) * (th + pad)
@@ -178,15 +191,21 @@ def teams_sheet(pack: render.Pack) -> Image.Image:
         app = generate(rider, pack.manifest)
         img = render.render(app, pack)
         tiles.append(tile(img, 216, pack.manifest.teams[team]["name"], team))
-    for override, label in (("world_champion", "world champion"), ("national_champion", "national champion"), ("leader", "race leader")):
+    for override, label in (
+        ("tour", "Tour de France - GC leader"),
+        ("giro", "Giro d'Italia - GC leader"),
+        ("vuelta", "Vuelta a Espana - GC leader"),
+        ("world", "world champion"),
+        ("national", "national champion"),
+    ):
         rider = Rider(rider_id=rid, age=27, region="west_europe", discipline="classics", team_id="team_03_rosso", jersey_override=override)
         app = generate(rider, pack.manifest)
-        tiles.append(tile(render.render(app, pack), 216, label, "jersey_override"))
+        tiles.append(tile(render.render(app, pack), 216, label, f"jersey_override = {override}", alt=True))
     return grid(
         tiles,
         3,
-        header="3. Team identity is separate from rider identity",
-        sub="six transfers and three special jerseys on rider #880404 - the face never regenerates",
+        header="3. Team and classification kits",
+        sub="six transfers plus Tour / Giro / Vuelta GC leader, world and national champion on rider #880404 - the face never regenerates",
     )
 
 
@@ -232,12 +251,13 @@ def trait_variants_sheet(pack: render.Pack) -> Image.Image:
     tw = 132
     pad = 5
     label_w = 118
-    sheet = Image.new("RGBA", (label_w + cols * (tw + pad) + pad, 78 + len(rows) * (tw + 24 + pad) + pad), (*BG, 255))
+    sheet = Image.new("RGBA", (label_w + cols * (tw + pad + 8) + pad, 84 + len(rows) * (tw + 40 + pad) + pad), (*BG, 255))
     d = ImageDraw.Draw(sheet)
-    d.text((10, 14), "5. Asset explorer - one base rider, one trait swapped", fill=TEXT, font=font(26, bold=True))
-    d.text((10, 48), "this is the sheet used to accept or reject a newly generated asset: only the named layer may change", fill=SUBTEXT, font=font(15))
+    d.text((10, 14), "5. ASSET EXPLORER - ONE BASE RIDER, ONE TRAIT SWAPPED", fill=TEXT, font=font(24, bold=True))
+    d.rectangle((10, 44, 220, 50), fill=(*RED, 255))
+    d.text((10, 56), "this is the sheet used to accept or reject a newly generated asset: only the named layer may change", fill=SUBTEXT, font=font(15))
     for r, (cat, block, ids) in enumerate(rows):
-        y = 78 + pad + r * (tw + 24 + pad)
+        y = 84 + pad + r * (tw + 40 + pad)
         d.text((10, y + 8), cat, fill=TEXT, font=font(15, bold=True))
         d.text((10, y + 28), block, fill=SUBTEXT, font=font(12))
         for c, asset_id in enumerate(ids):
@@ -250,7 +270,7 @@ def trait_variants_sheet(pack: render.Pack) -> Image.Image:
                 app.equipment[cat] = asset_id
                 app.equipment[f"{cat}_worn"] = True
             img = render.render(app, pack)
-            sheet.alpha_composite(tile(img, tw, asset_id.split("_", 1)[1][:18]), (label_w + pad + c * (tw + pad), y))
+            sheet.alpha_composite(tile(img, tw, asset_id.split("_", 1)[1][:18]), (label_w + pad + c * (tw + pad + 8), y))
     return sheet
 
 
@@ -291,8 +311,8 @@ def styles_sheet() -> Image.Image:
     return grid(
         tiles,
         len(riders),
-        header="7. Style profiles - identical riders, identical recipes, different art direction",
-        sub="rows: flat / flat outline / painted / soft. Style is a property of the asset pack, the game code is unchanged",
+        header="7. Style profiles - same riders, same recipes",
+        sub="rows: poster / flat / flat outline / painted / soft. Style belongs to the asset pack; the game code is identical",
     )
 
 
@@ -305,17 +325,19 @@ def display_sizes_sheet(pack: render.Pack) -> Image.Image:
     sizes = [(380, "rider card", False), (180, "medium panel", False), (96, "roster row, head crop", True), (48, "list icon, head crop", True)]
     pad = 10
     width = pad + sum(max(s, 150) + pad for s, _, _ in sizes)
-    sheet = Image.new("RGBA", (max(width, 900), 92 + len(riders) * (380 + 34 + pad)), (*BG, 255))
+    sheet = Image.new("RGBA", (max(width, 980), 96 + len(riders) * (380 + 34 + pad)), (*BG, 255))
     d = ImageDraw.Draw(sheet)
-    d.text((14, 16), "8. The same portrait at real display sizes", fill=TEXT, font=font(26, bold=True))
-    d.text((14, 50), "512x512 masters downscaled; small sizes use the manifest head_crop so the pixels go on the face", fill=SUBTEXT, font=font(15))
+    d.text((14, 16), "8. THE SAME PORTRAIT AT REAL DISPLAY SIZES", fill=TEXT, font=font(24, bold=True))
+    d.rectangle((14, 44, 224, 50), fill=(*RED, 255))
+    d.text((14, 56), "512x512 masters downscaled; small sizes use the manifest head_crop so the pixels go on the face", fill=SUBTEXT, font=font(15))
     for r, rider in enumerate(riders):
         img = render.render(generate(rider, pack.manifest), pack)
-        y = 92 + r * (380 + 34 + pad)
+        y = 96 + r * (380 + 34 + pad)
         x = pad
         for size, label, crop in sizes:
             cell = max(size, 150)
             card = Image.new("RGBA", (cell, 380), (*(CARD if r % 2 == 0 else CARD_ALT), 255))
+            ImageDraw.Draw(card).rectangle((0, 0, cell - 1, 379), outline=(*INK, 255), width=3)
             src = render.crop_head(img, pack) if crop else img
             card.alpha_composite(src.resize((size, size), Image.LANCZOS), ((cell - size) // 2, (380 - size) // 2))
             sheet.alpha_composite(card, (x, y))
