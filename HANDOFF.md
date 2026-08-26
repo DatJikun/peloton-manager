@@ -10,13 +10,13 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`Race result on calendar and inbox`
+`Hub Race next on race day`
 
 ### Goal
-After a skeleton race is run, the calendar entry shows the official result and the inbox surfaces a race-result item the player may archive. Race-due items still cannot be archived. SimRunner `day --through-races` can walk through the race so day advancement continues past the first race day.
+On a race-due day the Hub primary control relabels from Advance Day to Race next and enters Race Preparation. Inbox stays a queue and does not launch the race.
 
 ### Status
-On branch `cursor/race-result-inbox-babe`, stacked on career inbox + calendar entries. §49 watch still waits for Godot. `D-032` still deferred.
+On branch `cursor/race-next-hub-action-babe`, stacked on race-result inbox. §49 watch still waits for Godot. `D-032` still deferred.
 
 ## What works now
 - [x] High-level game design v0.7
@@ -66,7 +66,7 @@ On branch `cursor/race-result-inbox-babe`, stacked on career inbox + calendar en
 - [x] Testing v0.1 (DRAFT)
 
 ## Next task
-`Richer inbox sources later (not a dashboard). Watch Race stays on Godot. Do not close §49 with automations. Do not implement D-032 in the one-day prototype.`
+`Implement Hub Race next (D-034) in code. Inbox does not launch races. Watch Race stays on Godot. Do not close §49 with automations. Do not implement D-032.`
 
 ## Known blockers
 - None.
@@ -117,6 +117,7 @@ Career Hub), albo stub wyścigu udający prawdziwy Race Engine.
 - `2026-08-25` — Kanoniczna ścieżka developmentu/testów to Dynamic + Advanced + Guessed. Trzy osie New Game zostają niezależnymi polami scenariusza, nie 27 osobnymi grami.
 - `2026-08-26` — W wieloetapowym wyścigu słaby wyznaczony lider, który nie ma już realistycznych szans, powinien wspierać kolegę z najlepszymi pozostałymi szansami. Ocena knowledge-bounded; AI też podejmuje tę decyzję, czasem dobrze, czasem źle, zależnie od cech (np. teamwork / `formSensitivity` / `leaderLoyalty`). `D-032`, deferred poza obecnym race prototype.
 - `2026-08-26` — Wstępny playtest §49: decyzje prototypu „póki co chyba tak”, jeśli oglądanie nie jest godzinami 1:1. Doprecyzowanie: zegar oglądania nadzoruje, symulacja jest płynna (mapa/ikony z prędkości), nie skok 1s=100s. `D-033`. Gate niezamknięty (brak UI).
+- `2026-08-26` — Skrzynka nie otwiera wyścigu. Na dniu wyścigu główny guzik postępu (Advance Day) zmienia nazwę na Race next i wchodzi w menu przygotowania. `D-034`.
 
 ## Owner feedback / project experience
 Wcześniejszy Ping-Pong Manager był rozwijany przez miesiące z AI i technicznie osiągnął sporo, ale ostatecznie główny gameplay okazał się nudny, ponieważ w trakcie meczu brakowało ciekawych decyzji. W Peloton Managerze jest to jawna lekcja projektowa: nie budować kolejnych warstw na pętli, która nie przeszła ręcznego testu fun/decision density.

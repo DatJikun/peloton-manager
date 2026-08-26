@@ -123,3 +123,8 @@ Zegar oglądania (Watch Race) jest nadzorujący: gracz wybiera tempo (np. ×1 / 
 Fizyka zostaje kanoniczna (`R-001`). Prototype `dt = 1s` to krok referencyjny silnika, nie klatka filmu. Renderer może interpolować pozycje między krokami. `DecisionRequest` pauzuje zegar oglądania. Renderer nie steruje fizyką.
 
 Headless komenda `watch` jest na razie skrótem decyzji (start / pauza / meta), nie modelem Watch Race.
+
+## D-034 — Race next is the Hub primary on race day
+On a race-due day the Hub primary time-progress control relabels to **Race next** and enters `RacePreparationFlow`. Inbox remains a queue of items and does not launch the race.
+
+Normal Hub primary action stays **Advance Day** (D-006). The `AdvanceDay` command still cannot skip a due race. Race next only opens preparation; starting the race remains a later prep-menu command.
