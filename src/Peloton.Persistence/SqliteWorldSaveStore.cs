@@ -266,9 +266,11 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         WorldEntityId Id,
         int DayNumber,
         CalendarEntryKind Kind,
-        string Title)
+        string Title,
+        string? OfficialResult = null,
+        bool ResultAcknowledged = false)
     {
-        public CalendarEntry ToDomain() => new(Id, DayNumber, Kind, Title);
+        public CalendarEntry ToDomain() => new(Id, DayNumber, Kind, Title, OfficialResult, ResultAcknowledged);
     }
 
     private sealed record WorldSnapshotDto(
@@ -325,7 +327,13 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                 world.LastCompletedRaceDay,
                 world.LastDayNotes.ToArray(),
                 world.CalendarEntries
-                    .Select(entry => new CalendarEntryDto(entry.Id, entry.DayNumber, entry.Kind, entry.Title))
+                    .Select(entry => new CalendarEntryDto(
+                        entry.Id,
+                        entry.DayNumber,
+                        entry.Kind,
+                        entry.Title,
+                        entry.OfficialResult,
+                        entry.ResultAcknowledged))
                     .ToArray());
         }
 

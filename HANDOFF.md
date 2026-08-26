@@ -10,13 +10,13 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`Career inbox + calendar entries`
+`Race result on calendar and inbox`
 
 ### Goal
-After New Game, the player lives in Management: Advance Day moves the whole world, calendar entries and inbox items surface race deadlines, and a skeleton race day blocks further Advance Day until the race is run.
+After a skeleton race is run, the calendar entry shows the official result and the inbox surfaces a race-result item the player may archive. Race-due items still cannot be archived. SimRunner `day --through-races` can walk through the race so day advancement continues past the first race day.
 
 ### Status
-On branch `cursor/career-inbox-calendar-babe`, stacked on thin career day loop. §49 watch still waits for Godot. `D-032` still deferred.
+On branch `cursor/race-result-inbox-babe`, stacked on career inbox + calendar entries. §49 watch still waits for Godot. `D-032` still deferred.
 
 ## What works now
 - [x] High-level game design v0.7
@@ -46,7 +46,7 @@ On branch `cursor/career-inbox-calendar-babe`, stacked on thin career day loop. 
 - [x] Pre-race autosave, RaceLive save rejection, and crash recovery
 - [x] Prototype race engine (physics, groups, chase decisions, Race Spy) and 10-season SimRunner
 - [x] Thin career day loop: Hub projection, race-due Advance Day block, SimRunner `day`
-- [x] Career calendar entries (domain system of record) and inbox query (race-due only); archive cannot dismiss race deadlines
+- [x] Career calendar entries (domain system of record) and inbox query (race-due + race-result); archive cannot dismiss race deadlines
 - [x] Headless domain/application/persistence/architecture tests
 
 ## What is currently being changed
@@ -162,6 +162,7 @@ dotnet run --project tools/Peloton.SimRunner -- run --scenario scenario.peloton.
 dotnet run --project tools/Peloton.SimRunner -- race --scenario race-scenario.peloton.prototype-v0 --seed 91234
 dotnet run --project tools/Peloton.SimRunner -- watch --scenario race-scenario.peloton.prototype-v0 --seed 91234
 dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13
+dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --through-races
 ```
 
 `race --scenario race.prototype.gate` is an alias for the same fixture.

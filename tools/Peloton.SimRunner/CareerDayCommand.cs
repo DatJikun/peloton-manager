@@ -7,22 +7,54 @@ using Peloton.Infrastructure;
 
 namespace Peloton.SimRunner;
 
-public sealed record CareerDayOptions(string ScenarioId, long Seed, int Days, string ContentRoot)
+public sealed record CareerDayOptions(
+    string ScenarioId,
+    long Seed,
+    int Days,
+    string ContentRoot,
+    bool ThroughRaces)
 {
     public static CareerDayOptions Parse(string[] args)
     {
         Dictionary<string, string> values = new(StringComparer.Ordinal);
-        for (int index = 1; index < args.Length; index += 2)
+        bool throughRaces = false;
+        for (int index = 1; index < args.Length; index++)
         {
-            if (index + 1 >= args.Length || !args[index].StartsWith("--", StringComparison.Ordinal))
+            string option = args[index];
+            if (!option.StartsWith("--", StringComparison.Ordinal))
             {
-                throw new ArgumentException("Options must use '--name value' pairs.", nameof(args));
+                throw new ArgumentException("Options must start with '--'.", nameof(args));
             }
 
-            if (!values.TryAdd(args[index], args[index + 1]))
+            if (string.Equals(option, "--through-races", StringComparison.Ordinal))
             {
-                throw new ArgumentException($"Duplicate option '{args[index]}'.", nameof(args));
+                if (index + 1 < args.Length &&
+                    !args[index + 1].StartsWith("--", StringComparison.Ordinal) &&
+                    (string.Equals(args[index + 1], "true", StringComparison.OrdinalIgnoreCase) ||
+                     string.Equals(args[index + 1], "false", StringComparison.OrdinalIgnoreCase)))
+                {
+                    throughRaces = string.Equals(args[index + 1], "true", StringComparison.OrdinalIgnoreCase);
+                    index++;
+                }
+                else
+                {
+                    throughRaces = true;
+                }
+
+                continue;
             }
+
+            if (index + 1 >= args.Length)
+            {
+                throw new ArgumentException($"Option '{option}' requires a value.", nameof(args));
+            }
+
+            if (!values.TryAdd(option, args[index + 1]))
+            {
+                throw new ArgumentException($"Duplicate option '{option}'.", nameof(args));
+            }
+
+            index++;
         }
 
         if (!values.TryGetValue("--scenario", out string? scenario) || string.IsNullOrWhiteSpace(scenario))
@@ -52,7 +84,7 @@ public sealed record CareerDayOptions(string ScenarioId, long Seed, int Days, st
         string contentRoot = values.TryGetValue("--content-root", out string? configuredRoot)
             ? configuredRoot
             : Path.Combine(Environment.CurrentDirectory, "content");
-        return new CareerDayOptions(scenario, seed, days, Path.GetFullPath(contentRoot));
+        return new CareerDayOptions(scenario, seed, days, Path.GetFullPath(contentRoot), throughRaces);
     }
 
     private static string Required(Dictionary<string, string> values, string key)
@@ -68,6 +100,8 @@ public sealed record CareerDayOptions(string ScenarioId, long Seed, int Days, st
 
 public static class CareerDayCommand
 {
+    private const string PrototypeRaceScenarioId = "race-scenario.peloton.prototype-v0";
+
     public static int Execute(CareerDayOptions options, TextWriter output, TextWriter error)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -82,21 +116,97 @@ public static class CareerDayCommand
         }
 
         WriteHub(output, application);
-        for (int day = 0; day < options.Days; day++)
+        string autosaveDirectory = Path.Combine(
+            Path.GetTempPath(),
+            $"peloton-simrunner-day-{Guid.NewGuid():N}");
+        try
         {
-            CommandResult advanced = application.Execute(new AdvanceDayCommand());
-            if (!advanced.Succeeded)
+            for (int day = 0; day < options.Days; day++)
             {
-                output.WriteLine($"stopped={advanced.ReasonCode}");
-                WriteHub(output, application);
-                return string.Equals(advanced.ReasonCode, "RACE_DAY_PENDING", StringComparison.Ordinal) ? 0 : 1;
-            }
+                CommandResult advanced = application.Execute(new AdvanceDayCommand());
+                if (!advanced.Succeeded &&
+                    options.ThroughRaces &&
+                    string.Equals(advanced.ReasonCode, "RACE_DAY_PENDING", StringComparison.Ordinal))
+                {
+                    CommandResult raced = RunSkeletonRace(application, autosaveDirectory);
+                    if (!raced.Succeeded)
+                    {
+                        output.WriteLine($"stopped={raced.ReasonCode}");
+                        WriteHub(output, application);
+                        return 1;
+                    }
 
-            WriteHub(output, application);
+                    WriteHub(output, application);
+                    advanced = application.Execute(new AdvanceDayCommand());
+                }
+
+                if (!advanced.Succeeded)
+                {
+                    output.WriteLine($"stopped={advanced.ReasonCode}");
+                    WriteHub(output, application);
+                    return string.Equals(advanced.ReasonCode, "RACE_DAY_PENDING", StringComparison.Ordinal) ? 0 : 1;
+                }
+
+                WriteHub(output, application);
+            }
+        }
+        finally
+        {
+            if (Directory.Exists(autosaveDirectory))
+            {
+                Directory.Delete(autosaveDirectory, recursive: true);
+            }
         }
 
         output.WriteLine("crashed=false");
         return 0;
+    }
+
+    private static CommandResult RunSkeletonRace(GameApplication application, string autosaveDirectory)
+    {
+        Directory.CreateDirectory(autosaveDirectory);
+        CommandResult prepare = application.Execute(new PrepareRaceCommand());
+        if (!prepare.Succeeded)
+        {
+            return prepare;
+        }
+
+        CommandResult start = application.Execute(new StartRaceCommand(
+            Path.Combine(autosaveDirectory, "pre-race.peloton"),
+            PrototypeRaceScenarioId));
+        if (!start.Succeeded)
+        {
+            return start;
+        }
+
+        while (application.State == GameState.RaceLive)
+        {
+            CommandResult advance = application.Execute(new AdvanceRaceCommand());
+            if (!advance.Succeeded)
+            {
+                return advance;
+            }
+
+            if (application.PendingRaceDecision is PendingRaceDecision decision)
+            {
+                CommandResult respond = application.Execute(new RespondToRaceDecisionCommand(
+                    decision.RequestId,
+                    decision.AuthorityId,
+                    decision.DelegatedDefaultOption));
+                if (!respond.Succeeded)
+                {
+                    return respond;
+                }
+            }
+        }
+
+        CommandResult acknowledge = application.Execute(new AcknowledgeRaceResultsCommand());
+        if (!acknowledge.Succeeded)
+        {
+            return acknowledge;
+        }
+
+        return application.Execute(new CompleteRaceDebriefCommand());
     }
 
     private static void WriteHub(TextWriter output, GameApplication application)
@@ -121,10 +231,20 @@ public static class CareerDayCommand
 
         foreach (CalendarEntryProjection entry in application.Calendar)
         {
-            output.WriteLine(
-                string.Create(
-                    CultureInfo.InvariantCulture,
-                    $"calendar=day={entry.DayNumber} kind={entry.Kind} status={entry.Status} title={entry.Title}"));
+            if (entry.OfficialResult is null)
+            {
+                output.WriteLine(
+                    string.Create(
+                        CultureInfo.InvariantCulture,
+                        $"calendar=day={entry.DayNumber} kind={entry.Kind} status={entry.Status} title={entry.Title}"));
+            }
+            else
+            {
+                output.WriteLine(
+                    string.Create(
+                        CultureInfo.InvariantCulture,
+                        $"calendar=day={entry.DayNumber} kind={entry.Kind} status={entry.Status} title={entry.Title} result={entry.OfficialResult}"));
+            }
         }
 
         IReadOnlyList<InboxItemProjection> inbox = application.Inbox;

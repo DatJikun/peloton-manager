@@ -257,6 +257,48 @@ public sealed class SimRunnerContractTests
     }
 
     [Fact]
+    public void DayCommandThroughRacesContinuesPastFirstRaceDay()
+    {
+        using StringWriter output = new();
+        using StringWriter error = new();
+        int exitCode = Program.Run(
+            [
+                "day",
+                "--scenario",
+                "scenario.peloton.skeleton",
+                "--seed",
+                "91234",
+                "--days",
+                "13",
+                "--through-races",
+                "true",
+                "--content-root",
+                TestApplication.ContentRoot,
+            ],
+            output,
+            error);
+
+        string stdout = output.ToString();
+        Assert.Equal(0, exitCode);
+        Assert.Contains("crashed=false", stdout, StringComparison.Ordinal);
+        Assert.Contains("calendar=day=12 kind=race status=completed title=Skeleton race result=Winner 1006", stdout, StringComparison.Ordinal);
+        Assert.Contains("category=race-result", stdout, StringComparison.Ordinal);
+        Assert.Contains("day=13", stdout, StringComparison.Ordinal);
+        Assert.DoesNotContain("stopped=RACE_DAY_PENDING", stdout, StringComparison.Ordinal);
+        Assert.True(string.IsNullOrWhiteSpace(error.ToString()));
+    }
+
+    [Fact]
+    public void RaceGateSeedProducesExpectedWinnerAndChecksum()
+    {
+        RacePrototypeReport report = Execute(RacePrototypeCommand.CanonicalScenarioId, GateSeed);
+
+        Assert.False(report.Crashed);
+        Assert.Equal("1006", report.Winner);
+        Assert.Equal("5A35E88103E2FBB40325EA8BEF15AAAC2F2E1AB70F4E6DE2BBCE584EC7EE6721", report.Checksum);
+    }
+
+    [Fact]
     public void ExistingCareerRunCommandStillParsesAndRejectsMalformedYears()
     {
         using StringWriter output = new();

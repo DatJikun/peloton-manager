@@ -24,6 +24,7 @@ public sealed class CareerCalendarInboxTests
         Assert.Equal("race", entry.Kind);
         Assert.Equal("scheduled", entry.Status);
         Assert.Equal("Skeleton race", entry.Title);
+        Assert.Null(entry.OfficialResult);
         Assert.Empty(application.Inbox);
     }
 
@@ -54,7 +55,7 @@ public sealed class CareerCalendarInboxTests
     }
 
     [Fact]
-    public void CompletingRaceMarksEntryCompletedAndSchedulesNextRace()
+    public void CompletingRaceMarksEntryCompletedWithOfficialResultAndRaceResultInbox()
     {
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 42)).Succeeded);
@@ -70,12 +71,71 @@ public sealed class CareerCalendarInboxTests
         Assert.Equal(2, application.Calendar.Count);
         CalendarEntryProjection completed = application.Calendar.Single(entry => entry.Id == firstRaceEntryId);
         Assert.Equal("completed", completed.Status);
+        Assert.NotNull(completed.OfficialResult);
+        Assert.StartsWith("Winner ", completed.OfficialResult, StringComparison.Ordinal);
         CalendarEntryProjection upcoming = application.Calendar.Single(entry => entry.DayNumber == 24);
         Assert.Equal("scheduled", upcoming.Status);
         Assert.Equal("Skeleton race", upcoming.Title);
-        Assert.Empty(application.Inbox);
+        Assert.Null(upcoming.OfficialResult);
+
+        InboxItemProjection resultItem = Assert.Single(application.Inbox);
+        Assert.Equal("race-result", resultItem.Category);
+        Assert.Equal($"calendar:{firstRaceEntryId.Value}:result", resultItem.Identity);
+        Assert.Contains(completed.OfficialResult, resultItem.Body, StringComparison.Ordinal);
         Assert.True(application.Execute(new AdvanceDayCommand()).Succeeded);
         Assert.Equal(13, application.World!.CurrentDate.DayNumber);
+    }
+
+    [Fact]
+    public void ArchivingRaceResultClearsInboxButKeepsCalendarOfficialResult()
+    {
+        GameApplication application = TestApplication.Create();
+        Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 42)).Succeeded);
+        for (int day = 0; day < 12; day++)
+        {
+            Assert.True(application.Execute(new AdvanceDayCommand()).Succeeded);
+        }
+
+        using TemporaryDirectory temp = new();
+        CompleteRaceFlow(application, temp.Path);
+        WorldEntityId firstRaceEntryId = application.Calendar[0].Id;
+        string? officialResult = application.Calendar[0].OfficialResult;
+        string resultIdentity = Assert.Single(application.Inbox).Identity;
+        string checksumBefore = WorldChecksum.Compute(application.World!);
+
+        Assert.True(application.Execute(new ArchiveInboxItemCommand(resultIdentity)).Succeeded);
+        Assert.Empty(application.Inbox);
+        CalendarEntryProjection completed = application.Calendar.Single(entry => entry.Id == firstRaceEntryId);
+        Assert.Equal("completed", completed.Status);
+        Assert.Equal(officialResult, completed.OfficialResult);
+        Assert.NotEqual(checksumBefore, WorldChecksum.Compute(application.World!));
+    }
+
+    [Fact]
+    public void SaveLoadPreservesOfficialResultAndResultAcknowledged()
+    {
+        using TemporaryDirectory temp = new();
+        string savePath = Path.Combine(temp.Path, "race-result.peloton");
+        GameApplication source = TestApplication.Create();
+        Assert.True(source.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 42)).Succeeded);
+        for (int day = 0; day < 12; day++)
+        {
+            Assert.True(source.Execute(new AdvanceDayCommand()).Succeeded);
+        }
+
+        CompleteRaceFlow(source, temp.Path);
+        WorldEntityId calendarEntryId = source.Calendar[0].Id;
+        string? officialResult = source.Calendar[0].OfficialResult;
+        string resultIdentity = Assert.Single(source.Inbox).Identity;
+        Assert.True(source.Execute(new ArchiveInboxItemCommand(resultIdentity)).Succeeded);
+        Assert.True(source.Execute(new SaveGameCommand(savePath)).Succeeded);
+
+        GameApplication loaded = TestApplication.Create();
+        Assert.True(loaded.Execute(new LoadGameCommand(savePath)).Succeeded);
+        CalendarEntryProjection loadedEntry = loaded.Calendar.Single(entry => entry.Id == calendarEntryId);
+        Assert.Equal("completed", loadedEntry.Status);
+        Assert.Equal(officialResult, loadedEntry.OfficialResult);
+        Assert.Empty(loaded.Inbox);
     }
 
     [Fact]

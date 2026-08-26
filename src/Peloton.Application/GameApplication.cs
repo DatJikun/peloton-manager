@@ -339,6 +339,16 @@ public sealed class GameApplication
             return CommandResult.Reject("INBOX_SOURCE_CANNOT_BE_DISMISSED");
         }
 
+        if (string.Equals(item.Category, "race-result", StringComparison.Ordinal))
+        {
+            if (item.RelatedEntryId is not WorldEntityId entryId || !World.AcknowledgeRaceResult(entryId))
+            {
+                return CommandResult.Reject("INBOX_ITEM_NOT_FOUND");
+            }
+
+            return CommandResult.Success;
+        }
+
         return CommandResult.Reject("INBOX_ITEM_NOT_FOUND");
     }
 

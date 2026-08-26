@@ -11,7 +11,8 @@ public sealed record CalendarEntryProjection(
     int DayNumber,
     string Kind,
     string Status,
-    string Title);
+    string Title,
+    string? OfficialResult);
 
 public sealed record InboxItemProjection(
     string Identity,
@@ -32,7 +33,8 @@ internal static class CareerProjectionQueries
                 entry.DayNumber,
                 FormatKind(entry.Kind),
                 DeriveStatus(world, entry),
-                entry.Title))
+                entry.Title,
+                entry.OfficialResult))
             .ToArray();
     }
 
@@ -40,33 +42,48 @@ internal static class CareerProjectionQueries
     {
         ArgumentNullException.ThrowIfNull(world);
 
-        if (!world.IsRaceDue)
+        if (world.IsRaceDue)
         {
-            return Array.Empty<InboxItemProjection>();
+            CalendarEntry? dueEntry = world.CalendarEntries
+                .FirstOrDefault(entry =>
+                    entry.DayNumber == world.CurrentDate.DayNumber &&
+                    DeriveStatus(world, entry) == "due");
+            if (dueEntry is not null)
+            {
+                return new[]
+                {
+                    new InboxItemProjection(
+                        FormatDueIdentity(dueEntry.Id),
+                        "race-due",
+                        "A race is due today.",
+                        dueEntry.DayNumber,
+                        dueEntry.Id),
+                };
+            }
         }
 
-        CalendarEntry? dueEntry = world.CalendarEntries
-            .FirstOrDefault(entry =>
-                entry.DayNumber == world.CurrentDate.DayNumber &&
-                DeriveStatus(world, entry) == "due");
-        if (dueEntry is null)
+        List<InboxItemProjection> results = new();
+        foreach (CalendarEntry entry in world.CalendarEntries)
         {
-            return Array.Empty<InboxItemProjection>();
+            if (entry.OfficialResult is not null && !entry.ResultAcknowledged)
+            {
+                results.Add(new InboxItemProjection(
+                    FormatResultIdentity(entry.Id),
+                    "race-result",
+                    string.Create(CultureInfo.InvariantCulture, $"Skeleton race finished. {entry.OfficialResult}."),
+                    entry.DayNumber,
+                    entry.Id));
+            }
         }
 
-        return new[]
-        {
-            new InboxItemProjection(
-                FormatDueIdentity(dueEntry.Id),
-                "race-due",
-                "A race is due today.",
-                dueEntry.DayNumber,
-                dueEntry.Id),
-        };
+        return results;
     }
 
     public static string FormatDueIdentity(WorldEntityId entryId) =>
         string.Create(CultureInfo.InvariantCulture, $"calendar:{entryId.Value}:due");
+
+    public static string FormatResultIdentity(WorldEntityId entryId) =>
+        string.Create(CultureInfo.InvariantCulture, $"calendar:{entryId.Value}:result");
 
     private static string DeriveStatus(WorldState world, CalendarEntry entry)
     {

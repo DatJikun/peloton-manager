@@ -13,7 +13,7 @@ public static class Program
         "Usage: peloton-sim run --scenario <id> --years <n> --seed <n> [--content-root <path>]"
         + "\n       peloton-sim race --scenario <id> --seed <n> [--trace-json <path>] [--trace-markdown <path>] [--content-root <path>]"
         + "\n       peloton-sim watch --scenario <id> --seed <n> [--trace-markdown <path>] [--content-root <path>]"
-        + "\n       peloton-sim day --scenario <id> --seed <n> --days <n> [--content-root <path>]";
+        + "\n       peloton-sim day --scenario <id> --seed <n> --days <n> [--through-races] [--content-root <path>]";
 
     public static int Main(string[] args)
     {

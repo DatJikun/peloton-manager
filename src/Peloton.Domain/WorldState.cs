@@ -165,7 +165,43 @@ public sealed class WorldState
         LastRace = result;
         RaceCount = checked(RaceCount + 1);
         LastCompletedRaceDay = CurrentDate.DayNumber;
+
+        string officialResult = string.Create(
+            System.Globalization.CultureInfo.InvariantCulture,
+            $"Winner {result.WinnerId.Value}");
+        int entryIndex = calendarEntries.FindIndex(entry =>
+            entry.DayNumber == CurrentDate.DayNumber && entry.Kind == CalendarEntryKind.Race);
+        if (entryIndex >= 0)
+        {
+            CalendarEntry existing = calendarEntries[entryIndex];
+            calendarEntries[entryIndex] = new CalendarEntry(
+                existing.Id,
+                existing.DayNumber,
+                existing.Kind,
+                existing.Title,
+                officialResult,
+                ResultAcknowledged: false);
+        }
+
         EnsureUpcomingRaceEntry();
+    }
+
+    public bool AcknowledgeRaceResult(WorldEntityId entryId)
+    {
+        int entryIndex = calendarEntries.FindIndex(entry => entry.Id == entryId);
+        if (entryIndex < 0)
+        {
+            return false;
+        }
+
+        CalendarEntry existing = calendarEntries[entryIndex];
+        if (existing.OfficialResult is null || existing.ResultAcknowledged)
+        {
+            return false;
+        }
+
+        calendarEntries[entryIndex] = existing with { ResultAcknowledged = true };
+        return true;
     }
 
     public void EnsureUpcomingRaceEntry()

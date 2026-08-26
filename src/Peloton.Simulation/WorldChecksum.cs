@@ -99,6 +99,8 @@ public static class WorldChecksum
                 writer.Write(entry.DayNumber);
                 writer.Write((int)entry.Kind);
                 writer.Write(entry.Title);
+                writer.Write(entry.OfficialResult ?? string.Empty);
+                writer.Write(entry.ResultAcknowledged);
             }
         }
 

@@ -9,4 +9,6 @@ public sealed record CalendarEntry(
     WorldEntityId Id,
     int DayNumber,
     CalendarEntryKind Kind,
-    string Title);
+    string Title,
+    string? OfficialResult = null,
+    bool ResultAcknowledged = false);
