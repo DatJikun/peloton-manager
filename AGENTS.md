@@ -38,7 +38,7 @@ exists, run from the repo root:
 - `dotnet test`
 - `dotnet run --project tools/Peloton.SimRunner -- run --scenario scenario.peloton.skeleton --years 10 --seed 91234`
 - `dotnet run --project tools/Peloton.SimRunner -- race --scenario race-scenario.peloton.prototype-v0 --seed 91234`
-- `dotnet run --project tools/Peloton.SimRunner -- watch --scenario race-scenario.peloton.prototype-v0 --seed 91234`
+- `dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13`
 
 `HANDOFF.md` and `CODEBASE_MAP.md` already list the real skeleton commands and projects.
 Keep them current when the layout changes.

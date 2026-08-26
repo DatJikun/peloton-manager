@@ -277,7 +277,10 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         IReadOnlyList<OrganizationDto> Organizations,
         IReadOnlyList<DecisionAuthority> DecisionAuthorities,
         int RaceCount,
-        RaceDto? LastRace)
+        RaceDto? LastRace,
+        int CalendarPeriodDays,
+        int LastCompletedRaceDay,
+        IReadOnlyList<string> LastDayNotes)
     {
         public static WorldSnapshotDto FromDomain(WorldState world)
         {
@@ -307,7 +310,10 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                     : new RaceDto(
                         world.LastRace.RouteId,
                         world.LastRace.WinnerId,
-                        world.LastRace.FinishOrder));
+                        world.LastRace.FinishOrder),
+                world.CalendarPeriodDays,
+                world.LastCompletedRaceDay,
+                world.LastDayNotes.ToArray());
         }
 
         public WorldState ToDomain()
@@ -327,7 +333,10 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                 Organizations.Select(organization => organization.ToDomain()),
                 DecisionAuthorities,
                 RaceCount,
-                LastRace?.ToDomain());
+                LastRace?.ToDomain(),
+                CalendarPeriodDays > 0 ? CalendarPeriodDays : 12,
+                LastCompletedRaceDay,
+                LastDayNotes ?? Array.Empty<string>());
         }
     }
 }

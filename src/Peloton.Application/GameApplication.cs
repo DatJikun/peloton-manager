@@ -49,6 +49,34 @@ public sealed class GameApplication
         }
     }
 
+    public CareerDayProjection? CareerDay
+    {
+        get
+        {
+            if (World is null)
+            {
+                return null;
+            }
+
+            AccessContext access = GetAccessContext();
+            Person? manager = access.ViewerPersonId is WorldEntityId personId
+                ? World.Persons.FirstOrDefault(person => person.Id == personId)
+                : null;
+            Organization? employer = access.CurrentOrganizationId is WorldEntityId organizationId
+                ? World.Organizations.FirstOrDefault(organization => organization.Id == organizationId)
+                : null;
+            return new CareerDayProjection(
+                World.CurrentDate.DayNumber,
+                manager?.Name ?? string.Empty,
+                employer?.Name,
+                World.DaysUntilNextRace,
+                World.NextRaceDayNumber,
+                World.IsRaceDue,
+                World.LastDayNotes,
+                World.RaceCount);
+        }
+    }
+
     public CommandResult Execute(CreateWorldCommand command)
     {
         ArgumentNullException.ThrowIfNull(command);
@@ -81,7 +109,13 @@ public sealed class GameApplication
             return CommandResult.Reject("GAME_STATE_INVALID");
         }
 
+        if (World.IsRaceDue)
+        {
+            return CommandResult.Reject("RACE_DAY_PENDING");
+        }
+
         DeterministicScheduler.AdvanceDay(World);
+        World.CaptureDayNotes(GetAccessContext());
         return CommandResult.Success;
     }
 
@@ -350,6 +384,29 @@ public sealed class GameApplication
             new[] { managerCareer },
             new[] { employment },
             organizations,
-            new[] { authority });
+            new[] { authority },
+            raceCount: 0,
+            lastRace: null,
+            calendarPeriodDays: ReadCalendarPeriodDays(recipe));
+    }
+
+    private static int ReadCalendarPeriodDays(WorldRecipe recipe)
+    {
+        RulesModuleIdentity? calendar = recipe.RulesModules.FirstOrDefault(
+            module => string.Equals(module.Slot, "calendarStructure", StringComparison.Ordinal));
+        const string prefix = "days-per-season:";
+        if (calendar is not null &&
+            calendar.ParameterIdentity.StartsWith(prefix, StringComparison.Ordinal) &&
+            int.TryParse(
+                calendar.ParameterIdentity[prefix.Length..],
+                System.Globalization.NumberStyles.None,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out int days) &&
+            days > 0)
+        {
+            return days;
+        }
+
+        return 12;
     }
 }

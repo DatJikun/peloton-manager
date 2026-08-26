@@ -10,13 +10,13 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`Race Engine Prototype v0`
+`Thin career day loop`
 
 ### Goal
-Replace seed-ranked official race results with one deterministic, phase-based, one-second-step engine that proves the nine prototype mechanics and exposes knowledge-bounded decisions through Race Spy.
+After New Game, the player lives in Management: Advance Day moves the whole world, a Hub query shows date/job/next race, and a skeleton race day blocks further Advance Day until the race is run.
 
 ### Status
-On branch `feature/race-engine-prototype`. Tasks 1–8 implemented. Owner §49 fun/decision-density gate remains `NOT VERIFIED`. Architecture Skeleton remains on `main` (`#9`).
+On branch `cursor/thin-core-loop-babe`, stacked on the race prototype. §49 watch still waits for Godot. `D-032` still deferred.
 
 ## What works now
 - [x] High-level game design v0.7
@@ -45,7 +45,7 @@ On branch `feature/race-engine-prototype`. Tasks 1–8 implemented. Owner §49 f
 - [x] SQLite SchemaVersion 1 save/load with content/rules identity
 - [x] Pre-race autosave, RaceLive save rejection, and crash recovery
 - [x] Prototype race engine (physics, groups, chase decisions, Race Spy) and 10-season SimRunner
-- [x] Headless `watch` SimRunner command: scaled presentation beats, official checksum unchanged
+- [x] Thin career day loop: Hub projection, race-due Advance Day block, SimRunner `day`
 - [x] Headless domain/application/persistence/architecture tests
 
 ## What is currently being changed
@@ -65,7 +65,7 @@ On branch `feature/race-engine-prototype`. Tasks 1–8 implemented. Owner §49 f
 - [x] Testing v0.1 (DRAFT)
 
 ## Next task
-`Owner playtest §49 nadal otwarty. D-033 = nadzorujący zegar oglądania + płynna symulacja (mapa/ikony według prędkości), nie skok 1s=100s. Headless watch to tylko spis decyzji. Nie zamykaj gate'u automatami. Nie implementuj D-032 w jednodniowym prototypie.`
+`Następna warstwa kariery (inbox/kalendarz z wpisami, nie dashboard). Watch Race zostaje na Godota. Nie zamykaj §49 automatami. Nie implementuj D-032 w jednodniowym prototypie.`
 
 ## Known blockers
 - None.
@@ -160,6 +160,7 @@ dotnet test PelotonManager.sln
 dotnet run --project tools/Peloton.SimRunner -- run --scenario scenario.peloton.skeleton --years 10 --seed 91234
 dotnet run --project tools/Peloton.SimRunner -- race --scenario race-scenario.peloton.prototype-v0 --seed 91234
 dotnet run --project tools/Peloton.SimRunner -- watch --scenario race-scenario.peloton.prototype-v0 --seed 91234
+dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13
 ```
 
 `race --scenario race.prototype.gate` is an alias for the same fixture.

@@ -28,6 +28,7 @@ public sealed record RaceSummary(
 
 public sealed class WorldState
 {
+    private readonly List<string> lastDayNotes;
     private readonly WorldEntityIdAllocator entityIdAllocator;
     private readonly List<Person> persons;
     private readonly List<ManagerCareer> managerCareers;
@@ -51,7 +52,10 @@ public sealed class WorldState
         IEnumerable<Organization> organizations,
         IEnumerable<DecisionAuthority> decisionAuthorities,
         int raceCount = 0,
-        RaceSummary? lastRace = null)
+        RaceSummary? lastRace = null,
+        int calendarPeriodDays = 12,
+        int lastCompletedRaceDay = 0,
+        IEnumerable<string>? lastDayNotes = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(worldId);
         ArgumentNullException.ThrowIfNull(contentIdentity);
@@ -59,6 +63,8 @@ public sealed class WorldState
 
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(rngContractVersion);
         ArgumentOutOfRangeException.ThrowIfNegative(raceCount);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(calendarPeriodDays);
+        ArgumentOutOfRangeException.ThrowIfNegative(lastCompletedRaceDay);
 
         WorldId = worldId;
         MasterSeed = masterSeed;
@@ -75,6 +81,9 @@ public sealed class WorldState
         this.decisionAuthorities = decisionAuthorities.OrderBy(authority => authority.Id.Value).ToList();
         RaceCount = raceCount;
         LastRace = lastRace;
+        CalendarPeriodDays = calendarPeriodDays;
+        LastCompletedRaceDay = lastCompletedRaceDay;
+        this.lastDayNotes = (lastDayNotes ?? Array.Empty<string>()).ToList();
     }
 
     public string WorldId { get; }
@@ -107,6 +116,32 @@ public sealed class WorldState
 
     public RaceSummary? LastRace { get; private set; }
 
+    public int CalendarPeriodDays { get; }
+
+    public int LastCompletedRaceDay { get; private set; }
+
+    public IReadOnlyList<string> LastDayNotes => lastDayNotes;
+
+    public bool IsRaceDue =>
+        CurrentDate.DayNumber > 0 &&
+        CurrentDate.DayNumber % CalendarPeriodDays == 0 &&
+        LastCompletedRaceDay != CurrentDate.DayNumber;
+
+    public int NextRaceDayNumber
+    {
+        get
+        {
+            if (IsRaceDue)
+            {
+                return CurrentDate.DayNumber;
+            }
+
+            return ((CurrentDate.DayNumber / CalendarPeriodDays) + 1) * CalendarPeriodDays;
+        }
+    }
+
+    public int DaysUntilNextRace => NextRaceDayNumber - CurrentDate.DayNumber;
+
     public WorldEntityId AllocateEntityId() => entityIdAllocator.Allocate();
 
     public void AdvanceOneDay()
@@ -124,5 +159,32 @@ public sealed class WorldState
         ArgumentNullException.ThrowIfNull(result);
         LastRace = result;
         RaceCount = checked(RaceCount + 1);
+        LastCompletedRaceDay = CurrentDate.DayNumber;
+    }
+
+    public void CaptureDayNotes(AccessContext access)
+    {
+        lastDayNotes.Clear();
+        Organization? employer = access.CurrentOrganizationId is WorldEntityId orgId
+            ? organizations.FirstOrDefault(organization => organization.Id == orgId)
+            : null;
+        if (employer is null)
+        {
+            lastDayNotes.Add("You are unemployed.");
+        }
+        else
+        {
+            lastDayNotes.Add($"Your organization {employer.Name} worked the day.");
+        }
+
+        if (organizations.Count > 1)
+        {
+            lastDayNotes.Add("The rest of the world advanced.");
+        }
+
+        if (IsRaceDue)
+        {
+            lastDayNotes.Add("A race is due today.");
+        }
     }
 }

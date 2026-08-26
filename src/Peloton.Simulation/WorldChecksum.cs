@@ -82,6 +82,14 @@ public static class WorldChecksum
                     writer.Write(rider.Value);
                 }
             }
+
+            writer.Write(world.CalendarPeriodDays);
+            writer.Write(world.LastCompletedRaceDay);
+            writer.Write(world.LastDayNotes.Count);
+            foreach (string note in world.LastDayNotes)
+            {
+                writer.Write(note);
+            }
         }
 
         return Convert.ToHexString(SHA256.HashData(buffer.ToArray()));

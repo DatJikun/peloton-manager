@@ -223,6 +223,36 @@ public sealed class SimRunnerContractTests
     }
 
     [Fact]
+    public void DayCommandPrintsHubAndStopsOnRaceDay()
+    {
+        using StringWriter output = new();
+        using StringWriter error = new();
+        int exitCode = Program.Run(
+            [
+                "day",
+                "--scenario",
+                "scenario.peloton.skeleton",
+                "--seed",
+                "91234",
+                "--days",
+                "13",
+                "--content-root",
+                TestApplication.ContentRoot,
+            ],
+            output,
+            error);
+
+        string stdout = output.ToString();
+        Assert.Equal(0, exitCode);
+        Assert.Contains("stopped=RACE_DAY_PENDING", stdout, StringComparison.Ordinal);
+        Assert.Contains("day=12", stdout, StringComparison.Ordinal);
+        Assert.Contains("raceDue=true", stdout, StringComparison.Ordinal);
+        Assert.Contains("note=A race is due today.", stdout, StringComparison.Ordinal);
+        Assert.Contains("employer=red", stdout, StringComparison.Ordinal);
+        Assert.True(string.IsNullOrWhiteSpace(error.ToString()));
+    }
+
+    [Fact]
     public void ExistingCareerRunCommandStillParsesAndRejectsMalformedYears()
     {
         using StringWriter output = new();

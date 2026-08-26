@@ -12,7 +12,8 @@ public static class Program
     internal const string UsageText =
         "Usage: peloton-sim run --scenario <id> --years <n> --seed <n> [--content-root <path>]"
         + "\n       peloton-sim race --scenario <id> --seed <n> [--trace-json <path>] [--trace-markdown <path>] [--content-root <path>]"
-        + "\n       peloton-sim watch --scenario <id> --seed <n> [--trace-markdown <path>] [--content-root <path>]";
+        + "\n       peloton-sim watch --scenario <id> --seed <n> [--trace-markdown <path>] [--content-root <path>]"
+        + "\n       peloton-sim day --scenario <id> --seed <n> --days <n> [--content-root <path>]";
 
     public static int Main(string[] args)
     {
@@ -29,14 +30,20 @@ public static class Program
             if (args.Length == 0 ||
                 (!string.Equals(args[0], "run", StringComparison.Ordinal) &&
                  !string.Equals(args[0], "race", StringComparison.Ordinal) &&
-                 !string.Equals(args[0], "watch", StringComparison.Ordinal)))
+                 !string.Equals(args[0], "watch", StringComparison.Ordinal) &&
+                 !string.Equals(args[0], "day", StringComparison.Ordinal)))
             {
-                throw new ArgumentException("The first argument must be 'run', 'race', or 'watch'.", nameof(args));
+                throw new ArgumentException("The first argument must be 'run', 'race', 'watch', or 'day'.", nameof(args));
             }
 
             if (string.Equals(args[0], "run", StringComparison.Ordinal))
             {
                 return RunCareer(CareerOptions.Parse(args), output, error);
+            }
+
+            if (string.Equals(args[0], "day", StringComparison.Ordinal))
+            {
+                return CareerDayCommand.Execute(CareerDayOptions.Parse(args), output, error);
             }
 
             return string.Equals(args[0], "race", StringComparison.Ordinal)
