@@ -1,6 +1,6 @@
 # Peloton Manager
 
-Milestone 0 is a headless .NET 8 architecture skeleton. It creates a tiny JSON-defined world, advances the whole world, runs a deterministic stub race, and saves/loads a career from an embedded SQLite file.
+Headless .NET 8 architecture skeleton plus a race prototype. It creates a tiny JSON-defined world, advances the whole world, runs a deterministic prototype race, and saves/loads a career from an embedded SQLite file.
 
 ## Requirements
 
@@ -22,14 +22,17 @@ From the repository root:
 
 ```text
 dotnet run --project tools/Peloton.SimRunner -- run --scenario scenario.peloton.skeleton --years 10 --seed 91234
+dotnet run --project tools/Peloton.SimRunner -- race --scenario race-scenario.peloton.prototype-v0 --seed 91234
 ```
 
-The skeleton calendar is deliberately short: one season is 12 calls to `AdvanceDay` followed by one stub race. The runner reports crash status, final world day, deterministic checksum, and race count.
+`race --scenario race.prototype.gate` is an alias for the same prototype fixture.
+
+The skeleton calendar is deliberately short: one season is 12 calls to `AdvanceDay` followed by one prototype race. The season runner reports crash status, final world day, deterministic checksum, and race count. The `race` command reports winner, checksum, decision count, Spy neutrality, and crash status. Optional `--trace-json` and `--trace-markdown` write Race Spy artifacts.
 
 ## Godot boundary
 
-`src/Peloton.Client.Godot` is an empty compile-time stub. Future Godot code will call Application Commands and Queries; it will not own World State or write SQLite. Godot was not used to implement or verify Milestone 0.
+`src/Peloton.Client.Godot` is an empty compile-time stub. Future Godot code will call Application Commands and Queries; it will not own World State or write SQLite. Godot was not used to implement or verify Milestone 0 or the race prototype.
 
 ## Known difference from the race contract
 
-The race implementation is only deterministic seeded ordering from a start list and route ID. It does not implement physiology, drafting, crosswinds, tactics, information, DS decisions, or Race Spy and must not be treated as the `RACE_ENGINE_DESIGN_v0.2.md` prototype.
+Official results come from `PrototypeRaceEngine`, not a seed-ranked stub. The prototype is still below `RACE_ENGINE_DESIGN_v0.2.md`: one-second `double` steps, synthetic content, simplified shelter/knowledge, no Godot, and the owner §49 fun gate is not verified. See `KNOWN_DIFFERENCE_FROM_CODE.md`.
