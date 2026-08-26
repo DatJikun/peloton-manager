@@ -106,9 +106,38 @@ button{font:inherit; color:inherit; background:none; border:0; cursor:pointer}
 .sw-label{font:700 9px/1.3 var(--body); letter-spacing:.16em; text-transform:uppercase; color:var(--gray)}
 .sw{width:24px; height:24px; border:2.5px solid var(--black); cursor:pointer; padding:0; transition:transform .12s var(--hard), box-shadow .12s var(--hard)}
 .sw[aria-pressed="true"]{box-shadow:3px 3px 0 var(--black); transform:translate(-1px,-1px)}
-.employer{margin-left:auto; display:flex; align-items:center; gap:10px; background:var(--black); padding:8px 14px; transform:rotate(-1deg); box-shadow:var(--s4)}
-.emp-label{font:700 9px/1 var(--body); letter-spacing:.24em; text-transform:uppercase; color:var(--paper); opacity:.6}
-.emp-name{font:400 14px/1 var(--disp); letter-spacing:.06em; text-transform:uppercase; color:var(--team)}
+.seg-slim button{padding:7px 10px; font-size:11px}
+
+/* ── animowane tło: 3 wariacje (szum / pasma / iskry) ─────── */
+#bgFx{position:fixed; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; display:none}
+body.fx-grain #bgFx,body.fx-motes #bgFx{display:block}
+.fx-band{position:fixed; inset:-40%; z-index:0; pointer-events:none; display:none}
+body.fx-bands .fx-band{display:block}
+/* pasma: przesuw o dokładnie jedną kafelkę — pętla bez widocznego szwu */
+.fx-band-1{
+  background-image:repeating-linear-gradient(115deg,
+    transparent 0 90px,
+    color-mix(in srgb, var(--team) 14%, transparent) 90px 150px,
+    transparent 150px 240px,
+    rgba(209,31,31,.075) 240px 280px,
+    transparent 280px 340px);
+  animation:band-drift-a 34s linear infinite;
+}
+.fx-band-2{
+  background-image:repeating-linear-gradient(-64deg,
+    transparent 0 130px,
+    rgba(217,142,0,.08) 130px 170px,
+    transparent 170px 300px,
+    color-mix(in srgb, var(--team) 9%, transparent) 300px 360px,
+    transparent 360px 440px);
+  animation:band-drift-b 47s linear infinite;
+}
+@keyframes band-drift-a{from{transform:translateX(0)}to{transform:translateX(-367.7px)}}
+@keyframes band-drift-b{from{transform:translateX(0)}to{transform:translateX(472.9px)}}
+body.dark .fx-band-1,body.dark .fx-band-2{opacity:.6}
+.employer{margin-left:auto; display:flex; align-items:center; gap:14px; background:var(--black); padding:13px 22px; transform:rotate(-1deg); box-shadow:var(--s6)}
+.emp-label{font:700 11px/1 var(--body); letter-spacing:.24em; text-transform:uppercase; color:var(--paper); opacity:.6}
+.emp-name{font:400 23px/1 var(--disp); letter-spacing:.06em; text-transform:uppercase; color:var(--team)}
 .main-btn{
   font:400 15px/1 var(--disp); letter-spacing:.1em; text-transform:uppercase;
   color:var(--team-on); background:var(--team); border:3px solid var(--black);
@@ -339,6 +368,9 @@ body.dark .bg-bar{opacity:.55}
 </head>
 <body>
 
+<canvas id="bgFx" aria-hidden="true"></canvas>
+<div class="fx-band fx-band-1" aria-hidden="true"></div>
+<div class="fx-band fx-band-2" aria-hidden="true"></div>
 <div class="bg-forms" aria-hidden="true"><span class="bg-bar"></span><span class="bg-square"></span></div>
 
 <div class="app">
@@ -434,6 +466,15 @@ body.dark .bg-bar{opacity:.55}
         <button class="sw" type="button" data-c="#d11f1f" data-on="#f3ede1" style="background:#d11f1f" aria-label="Czerwień" aria-pressed="false"></button>
         <button class="sw" type="button" data-c="#157a3f" data-on="#f3ede1" style="background:#157a3f" aria-label="Zieleń" aria-pressed="false"></button>
         <button class="sw" type="button" data-c="#d98e00" data-on="#0c0c0d" style="background:#d98e00" aria-label="Bursztyn" aria-pressed="false"></button>
+      </div>
+      <div class="swatches" role="group" aria-label="Animacja tła">
+        <span class="sw-label">Tło</span>
+        <div class="seg seg-slim" id="bgSeg">
+          <button type="button" data-fx="off">Brak</button>
+          <button type="button" data-fx="grain" class="on">Szum</button>
+          <button type="button" data-fx="bands">Pasma</button>
+          <button type="button" data-fx="motes">Iskry</button>
+        </div>
       </div>
       <div class="employer">
         <span class="emp-label">Zespół</span>
@@ -811,6 +852,81 @@ document.querySelectorAll(".sw").forEach(function(b){
     document.querySelectorAll(".sw").forEach(function(x){x.setAttribute("aria-pressed",String(x===b));});
   });
 });
+
+/* ── tło animowane: 3 wariacje, pętla bez szwu, losowość z szumu ── */
+var bgFx=document.getElementById("bgFx"),fxCtx=bgFx.getContext("2d");
+var fxMode="off",fxRaf=0,fxLast=0,fxMotes=[];
+function fxPalette(){
+  var team=getComputedStyle(document.documentElement).getPropertyValue("--team").trim()||"#2050c8";
+  return [team,"#d11f1f","#6f6f72","#d98e00","#1b1c1f"]; // tło ≠ tylko barwa zespołu
+}
+function hexRgb(h){h=h.replace("#","");return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+function fxResize(){bgFx.width=innerWidth;bgFx.height=innerHeight;}
+
+/* wariacja 1: SZUM — kolorowe ziarno, co ~110 ms nowe (z natury bez szwu) */
+var noiseTile=document.createElement("canvas");noiseTile.width=140;noiseTile.height=140;
+var noiseCtx=noiseTile.getContext("2d");
+function drawGrain(){
+  var img=noiseCtx.createImageData(140,140),d=img.data,pal=fxPalette().map(hexRgb);
+  for(var i=0;i<d.length;i+=4){
+    if(Math.random()<0.32){
+      var c=pal[(Math.random()*pal.length)|0];
+      d[i]=c[0];d[i+1]=c[1];d[i+2]=c[2];d[i+3]=20+Math.random()*30;
+    }
+  }
+  noiseCtx.putImageData(img,0,0);
+  var pat=fxCtx.createPattern(noiseTile,"repeat");
+  fxCtx.clearRect(0,0,bgFx.width,bgFx.height);
+  fxCtx.save();fxCtx.translate(-((Math.random()*140)|0),-((Math.random()*140)|0));
+  fxCtx.fillStyle=pat;fxCtx.fillRect(0,0,bgFx.width+140,bgFx.height+140);fxCtx.restore();
+}
+
+/* wariacja 3: ISKRY — prostokąty gasną i pojawiają się w losowych miejscach */
+function seedMotes(){
+  fxMotes=[];var pal=fxPalette();
+  for(var i=0;i<46;i++)fxMotes.push({x:Math.random(),y:Math.random(),w:3+Math.random()*7,ph:Math.random()*6.28,sp:.5+Math.random()*1.3,c:pal[(Math.random()*pal.length)|0]});
+}
+function drawMotes(t){
+  fxCtx.clearRect(0,0,bgFx.width,bgFx.height);
+  var s=t/1000;
+  fxMotes.forEach(function(m){
+    var a=Math.max(0,Math.sin(s*m.sp+m.ph));a=a*a*0.16;
+    if(a<0.004){m.x=Math.random();m.y=Math.random();}
+    fxCtx.globalAlpha=a;fxCtx.fillStyle=m.c;
+    fxCtx.fillRect(m.x*bgFx.width,m.y*bgFx.height,m.w,m.w);
+  });
+  fxCtx.globalAlpha=1;
+}
+
+function fxStop(){cancelAnimationFrame(fxRaf);fxRaf=0;if(fxCtx)fxCtx.clearRect(0,0,bgFx.width,bgFx.height);}
+function fxSet(mode){
+  fxMode=mode;
+  document.body.classList.toggle("fx-grain",mode==="grain");
+  document.body.classList.toggle("fx-bands",mode==="bands");
+  document.body.classList.toggle("fx-motes",mode==="motes");
+  fxStop();
+  if(reduce||mode==="off")return;
+  fxResize();
+  if(mode==="motes")seedMotes();
+  fxRaf=requestAnimationFrame(fxLoop);
+}
+function fxLoop(t){
+  if(fxMode==="grain"){if(t-fxLast>110){drawGrain();fxLast=t;}}
+  else if(fxMode==="motes"){drawMotes(t);}
+  fxRaf=requestAnimationFrame(fxLoop);
+}
+document.getElementById("bgSeg").addEventListener("click",function(e){
+  var b=e.target.closest("button[data-fx]");
+  if(!b)return;
+  this.querySelectorAll("button").forEach(function(x){x.classList.toggle("on",x===b);});
+  fxSet(b.dataset.fx);
+});
+addEventListener("resize",function(){if(fxRaf)fxResize();});
+document.addEventListener("visibilitychange",function(){
+  if(document.hidden)fxStop();
+  else if(fxMode!=="off"&&!reduce){fxResize();fxRaf=requestAnimationFrame(fxLoop);}
+});
+fxSet(reduce?"off":"grain"); // domyślnie: szum
 
 renderList(RACES[0].id);
 renderInfo(RACES[0]);
