@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using Peloton.SimRunner;
 using Xunit;
 
@@ -155,6 +156,73 @@ public sealed class SimRunnerContractTests
     }
 
     [Fact]
+    public void WatchCommandCompressesQuietTimeAndMatchesOfficialRaceChecksum()
+    {
+        RacePrototypeReport official = Execute(RacePrototypeCommand.CanonicalScenarioId, GateSeed);
+        using StringWriter output = new();
+        using StringWriter error = new();
+
+        int exitCode = Program.Run(
+            [
+                "watch",
+                "--scenario",
+                RacePrototypeCommand.CanonicalScenarioId,
+                "--seed",
+                GateSeed.ToString(CultureInfo.InvariantCulture),
+                "--content-root",
+                TestApplication.ContentRoot,
+            ],
+            output,
+            error);
+
+        string stdout = output.ToString();
+        Assert.Equal(0, exitCode);
+        Assert.Contains($"checksum={official.Checksum}", stdout, StringComparison.Ordinal);
+        Assert.Contains($"winner={official.Winner}", stdout, StringComparison.Ordinal);
+        Assert.Contains("kind=start", stdout, StringComparison.Ordinal);
+        Assert.Contains("kind=decision", stdout, StringComparison.Ordinal);
+        Assert.Contains("kind=finish", stdout, StringComparison.Ordinal);
+        Assert.Contains("spyNeutral=true", stdout, StringComparison.Ordinal);
+        Assert.True(string.IsNullOrWhiteSpace(error.ToString()));
+
+        int watchBeats = ParseKey(stdout, "watchBeats");
+        int simulationSeconds = ParseKey(stdout, "simulationSeconds");
+        Assert.True(watchBeats < simulationSeconds);
+        Assert.True(watchBeats >= 3);
+    }
+
+    [Fact]
+    public void WatchMarkdownExportSkipsQuietPhysics()
+    {
+        using TemporaryDirectory temp = new();
+        string markdownPath = Path.Combine(temp.Path, "watch.md");
+        using StringWriter output = new();
+        using StringWriter error = new();
+
+        int exitCode = Program.Run(
+            [
+                "watch",
+                "--scenario",
+                RacePrototypeCommand.GateScenarioAlias,
+                "--seed",
+                GateSeed.ToString(CultureInfo.InvariantCulture),
+                "--content-root",
+                TestApplication.ContentRoot,
+                "--trace-markdown",
+                markdownPath,
+            ],
+            output,
+            error);
+
+        Assert.Equal(0, exitCode);
+        Assert.True(File.Exists(markdownPath));
+        string markdown = File.ReadAllText(markdownPath);
+        Assert.Contains("Scaled race watch", markdown, StringComparison.Ordinal);
+        Assert.Contains("Watch seconds skip quiet physics", markdown, StringComparison.Ordinal);
+        Assert.DoesNotContain("WPrime", markdown, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void ExistingCareerRunCommandStillParsesAndRejectsMalformedYears()
     {
         using StringWriter output = new();
@@ -177,5 +245,16 @@ public sealed class SimRunnerContractTests
             TestApplication.ContentRoot,
             TraceJsonPath: null,
             TraceMarkdownPath: null));
+    }
+
+    private static int ParseKey(string stdout, string key)
+    {
+        string prefix = key + "=";
+        string? line = stdout
+            .Replace("\r\n", "\n", StringComparison.Ordinal)
+            .Split('\n')
+            .FirstOrDefault(item => item.StartsWith(prefix, StringComparison.Ordinal));
+        Assert.False(string.IsNullOrWhiteSpace(line));
+        return int.Parse(line.AsSpan(prefix.Length), NumberStyles.Integer, CultureInfo.InvariantCulture);
     }
 }

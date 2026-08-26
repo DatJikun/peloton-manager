@@ -45,7 +45,7 @@ On branch `feature/race-engine-prototype`. Tasks 1–8 implemented. Owner §49 f
 - [x] SQLite SchemaVersion 1 save/load with content/rules identity
 - [x] Pre-race autosave, RaceLive save rejection, and crash recovery
 - [x] Prototype race engine (physics, groups, chase decisions, Race Spy) and 10-season SimRunner
-- [x] Headless `race` SimRunner command with Spy neutrality and optional trace export
+- [x] Headless `watch` SimRunner command: scaled presentation beats, official checksum unchanged
 - [x] Headless domain/application/persistence/architecture tests
 
 ## What is currently being changed
@@ -159,6 +159,7 @@ dotnet build PelotonManager.sln
 dotnet test PelotonManager.sln
 dotnet run --project tools/Peloton.SimRunner -- run --scenario scenario.peloton.skeleton --years 10 --seed 91234
 dotnet run --project tools/Peloton.SimRunner -- race --scenario race-scenario.peloton.prototype-v0 --seed 91234
+dotnet run --project tools/Peloton.SimRunner -- watch --scenario race-scenario.peloton.prototype-v0 --seed 91234
 ```
 
 `race --scenario race.prototype.gate` is an alias for the same fixture.

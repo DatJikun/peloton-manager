@@ -11,7 +11,8 @@ public static class Program
 {
     internal const string UsageText =
         "Usage: peloton-sim run --scenario <id> --years <n> --seed <n> [--content-root <path>]"
-        + "\n       peloton-sim race --scenario <id> --seed <n> [--trace-json <path>] [--trace-markdown <path>] [--content-root <path>]";
+        + "\n       peloton-sim race --scenario <id> --seed <n> [--trace-json <path>] [--trace-markdown <path>] [--content-root <path>]"
+        + "\n       peloton-sim watch --scenario <id> --seed <n> [--trace-markdown <path>] [--content-root <path>]";
 
     public static int Main(string[] args)
     {
@@ -27,14 +28,20 @@ public static class Program
         {
             if (args.Length == 0 ||
                 (!string.Equals(args[0], "run", StringComparison.Ordinal) &&
-                 !string.Equals(args[0], "race", StringComparison.Ordinal)))
+                 !string.Equals(args[0], "race", StringComparison.Ordinal) &&
+                 !string.Equals(args[0], "watch", StringComparison.Ordinal)))
             {
-                throw new ArgumentException("The first argument must be 'run' or 'race'.", nameof(args));
+                throw new ArgumentException("The first argument must be 'run', 'race', or 'watch'.", nameof(args));
             }
 
-            return string.Equals(args[0], "run", StringComparison.Ordinal)
-                ? RunCareer(CareerOptions.Parse(args), output, error)
-                : RunRace(RaceOptions.Parse(args), output, error);
+            if (string.Equals(args[0], "run", StringComparison.Ordinal))
+            {
+                return RunCareer(CareerOptions.Parse(args), output, error);
+            }
+
+            return string.Equals(args[0], "race", StringComparison.Ordinal)
+                ? RunRace(RaceOptions.Parse(args), output, error)
+                : RunWatch(RaceOptions.Parse(args), output, error);
         }
         catch (ArgumentException exception)
         {
@@ -89,6 +96,23 @@ public static class Program
             options.TraceJsonPath,
             options.TraceMarkdownPath));
         RacePrototypeCommand.Write(output, report);
+        if (!string.IsNullOrWhiteSpace(report.FailureReason))
+        {
+            error.WriteLine($"reason={report.FailureReason}");
+        }
+
+        return report.Crashed ? 1 : 0;
+    }
+
+    private static int RunWatch(RaceOptions options, TextWriter output, TextWriter error)
+    {
+        RaceWatchCliReport report = RaceWatchCommand.Execute(new RacePrototypeOptions(
+            options.ScenarioId,
+            options.Seed,
+            options.ContentRoot,
+            options.TraceJsonPath,
+            options.TraceMarkdownPath));
+        RaceWatchCommand.Write(output, report);
         if (!string.IsNullOrWhiteSpace(report.FailureReason))
         {
             error.WriteLine($"reason={report.FailureReason}");
