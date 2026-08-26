@@ -253,16 +253,16 @@ def trait_variants_sheet(pack: render.Pack) -> Image.Image:
     base_rider = Rider(rider_id=123_456, age=28, region="west_europe", discipline="classics", team_id="team_01_azure")
     base = generate(base_rider, pack.manifest)
     rows: list[tuple[str, str, list[str]]] = [
-        ("head", "identity", [a.asset_id for a in pack.manifest.by_category("head")]),
-        ("neck", "identity", [a.asset_id for a in pack.manifest.by_category("neck")]),
-        ("eyes", "identity", [a.asset_id for a in pack.manifest.by_category("eyes")]),
-        ("nose", "identity", [a.asset_id for a in pack.manifest.by_category("nose")]),
-        ("mouth", "identity", [a.asset_id for a in pack.manifest.by_category("mouth")]),
-        ("eyebrows", "identity", [a.asset_id for a in pack.manifest.by_category("eyebrows")]),
-        ("hair", "mutable", [a.asset_id for a in pack.manifest.by_category("hair")]),
-        ("facial_hair", "mutable", [a.asset_id for a in pack.manifest.by_category("facial_hair")]),
-        ("helmet", "equipment", [a.asset_id for a in pack.manifest.by_category("helmet")]),
-        ("glasses", "equipment", [a.asset_id for a in pack.manifest.by_category("glasses")]),
+        ("head", "identity", [a.asset_id for a in pack.manifest.by_category("head") if a.weight > 0]),
+        ("neck", "identity", [a.asset_id for a in pack.manifest.by_category("neck") if a.weight > 0]),
+        ("eyes", "identity", [a.asset_id for a in pack.manifest.by_category("eyes") if a.weight > 0]),
+        ("nose", "identity", [a.asset_id for a in pack.manifest.by_category("nose") if a.weight > 0]),
+        ("mouth", "identity", [a.asset_id for a in pack.manifest.by_category("mouth") if a.weight > 0]),
+        ("eyebrows", "identity", [a.asset_id for a in pack.manifest.by_category("eyebrows") if a.weight > 0]),
+        ("hair", "mutable", [a.asset_id for a in pack.manifest.by_category("hair") if a.weight > 0]),
+        ("facial_hair", "mutable", [a.asset_id for a in pack.manifest.by_category("facial_hair") if a.weight > 0]),
+        ("helmet", "equipment", [a.asset_id for a in pack.manifest.by_category("helmet") if a.weight > 0]),
+        ("glasses", "equipment", [a.asset_id for a in pack.manifest.by_category("glasses") if a.weight > 0]),
     ]
     cols = max(len(ids) for _, _, ids in rows)
     tw = 132

@@ -165,12 +165,11 @@ the common weights. Slit defaults (`th` ~6, `bh` ~5) flatten the whole peloton. 
 narrower options may stay as a minority, still readable. Defaults live around
 `hw=25, th=11, bh=8.6, iris_r=11.2`.
 
-**Mouths** (`MOUTH_RECIPES`): mouths must look different at portrait size — **open, laugh,
-wide, narrow, high, low, thick, thin**. Closed mouths still carry a hint of smile so they
-do not read sullen. Open mouths are a banana opening with a cream teeth band (`open`,
-`teeth`, `lift`, `skew`), not a bigger closed smile. Defaults live around
-`hw=46, upper=8.4, lower=11.2`. The mouth validator box is tight (under the nose, above
-the chin); keep geometry inside it.
+**Mouths** (`MOUTH_RECIPES`): mouths must look different at portrait size — open, laugh,
+wide-with-meat, narrow, high, low, thick, thin-enough-to-read. Closed mouths keep a hint
+of smile. **Do not ship thread-wide mouths** (`hw` above ~52 with `upper`/`lower` under
+~7): the owner retired those as caricature. Stay in a normal band and add more neighbours
+there. Open mouths use `open` / `teeth` / `lift`. Retired ids keep `weight: 0`.
 
 **Brows** (`BROW_RECIPES`): recipes must differ in **inner gap, length, thickness taper,
 arch and peak**, not just `th`/`arch` on the same polygon. `bake_brow` takes `inner` /
