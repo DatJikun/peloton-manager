@@ -520,10 +520,8 @@ resolution, order independence, transparent background, cache-key movement).
 
 ## Open questions before this becomes a real system
 
-1. **Which style profile wins?** `demo/07_styles.png` is the old five-way sheet.
-   `demo/10_look_proposals.png` is the neighbour-of-poster review (thin / woodcut /
-   comic / stencil). `poster` stays default until the owner picks. Everything else
-   is already style-agnostic.
+1. **Which style profile wins?** Owner locked `poster`. `demo/01_contact_sheet.png` and
+   `demo/05_trait_variants.png` are the sheets for face-recipe variety.
 2. **Who authors the final pack?** Procedural/vector (pipeline A) or an artist replacing
    layers file by file. Both fit the same manifest.
 3. **Do we ship the pack or bake it on first run?** ~245 small PNGs is ~2-3 MB shipped, or
