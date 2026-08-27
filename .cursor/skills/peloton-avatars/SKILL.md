@@ -167,6 +167,10 @@ uses `"requires": ("hairline_receded",)`.
 **Brows** (`BROW_RECIPES`): recipes must differ in **inner gap, length, thickness taper,
 arch and peak**, not just `th`/`arch` on the same polygon. `bake_brow` takes `inner` /
 `outer` (fractions of `HEAD_HW`), `inner_th` / `outer_th`, `peak_t`, `drop`, `angle`.
+High `drop` (negative) plus high `arch` plus affine `brow_height` of -9 px stacked into
+a surprised caricature with the eyes. Live recipes keep `drop` ≥ 0 and `arch` ≤ 8.5
+(baker clamps the same). Affine `brow_height` is **-2..+4** extra on top of following
+the eyes, biased toward sitting closer to the lid, not flying up the forehead.
 
 **Noses** (`NOSE_RECIPES`): bake a **skin silhouette** (`nose_contour`) plus keyline and
 nostril ticks. Multiply-only ticks all look identical at portrait size. Vary `bridge`,
@@ -257,7 +261,10 @@ To add a look the owner asked for, append recipes in `pack.py`. Do not silently 
 - **A nose without a silhouette is invisible.** Multiply ticks at the nostrils do not
   carry width, length or hook. Give the nose a skin mask and a keyline.
 - **Same-polygon brows stay identical.** Changing only `th` by 2 px does not read; move
-  inner gap, outer length, taper and arch peak.
+  inner gap, outer length, taper and arch peak. A high `drop` (negative) plus a tall
+  `arch` plus affine `brow_height` of -9 px parks the brow on the forehead and reads
+  as a shocked caricature next to any eye. Keep `drop` ≥ 0, `arch` ≤ 8.5, and the
+  extra brow affine a couple of pixels either way.
 
 ## Cache and versioning
 

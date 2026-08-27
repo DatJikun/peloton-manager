@@ -816,22 +816,22 @@ def bake_eye(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]
 
 BROW_RECIPES = [
     ("brows_01_straight", 0.12, {"arch": 0.6, "th": 6.4, "inner": 0.16, "outer": 0.70, "peak_t": 0.45}),
-    ("brows_02_arched", 0.11, {"arch": 11.0, "th": 6.2, "inner": 0.14, "outer": 0.74, "peak_t": 0.38}),
+    ("brows_02_arched", 0.11, {"arch": 8.0, "th": 6.2, "inner": 0.14, "outer": 0.74, "peak_t": 0.38}),
     ("brows_03_thick", 0.11, {"th": 11.5, "arch": 3.5, "inner": 0.12, "outer": 0.68, "inner_th": 1.15, "outer_th": 0.85}),
     ("brows_04_bushy", 0.09, {"th": 12.5, "len": 4.0, "rough": 1.0, "arch": 4.0, "inner": 0.10, "inner_th": 1.35, "outer_th": 0.70}),
     ("brows_05_thin", 0.06, {"th": 5.2, "arch": 4.5, "inner": 0.15, "outer": 0.75, "outer_th": 0.35}),
     ("brows_06_angled", 0.09, {"angle": 8.5, "th": 7.2, "arch": 2.0, "inner": 0.13, "outer": 0.73, "peak_t": 0.55}),
     ("brows_07_short", 0.07, {"outer": 0.58, "th": 7.4, "arch": 3.0, "inner": 0.18}),
     ("brows_08_low", 0.07, {"drop": 7.0, "th": 8.2, "arch": 1.5, "inner": 0.14, "outer": 0.72}),
-    ("brows_09_high_arch", 0.07, {"arch": 13.5, "drop": -4.5, "th": 5.6, "peak_t": 0.34, "outer": 0.75}),
+    ("brows_09_high_arch", 0.07, {"arch": 8.0, "drop": 0.0, "th": 5.6, "peak_t": 0.34, "outer": 0.75}),
     ("brows_10_flat_heavy", 0.07, {"arch": 0.0, "th": 10.8, "drop": 2.5, "inner": 0.11, "outer": 0.71, "outer_th": 0.95}),
     ("brows_11_tapered", 0.06, {"th": 7.0, "inner_th": 1.40, "outer_th": 0.25, "arch": 6.0, "outer": 0.76, "len": 2.0}),
-    ("brows_12_peak", 0.06, {"arch": 12.0, "angle": -3.0, "th": 6.8, "peak_t": 0.52, "outer": 0.74}),
+    ("brows_12_peak", 0.06, {"arch": 8.0, "angle": -3.0, "th": 6.8, "peak_t": 0.52, "outer": 0.74}),
     ("brows_13_soft_low", 0.05, {"th": 8.0, "drop": 5.0, "arch": 2.2, "inner": 0.15, "outer_th": 0.60}),
     ("brows_14_wide", 0.05, {"inner": 0.08, "outer": 0.80, "th": 6.6, "arch": 4.0}),
     ("brows_15_close", 0.05, {"inner": 0.05, "outer": 0.68, "th": 7.8, "arch": 2.5}),
     ("brows_16_outer_heavy", 0.05, {"inner_th": 0.45, "outer_th": 1.35, "th": 8.0, "arch": 5.5, "outer": 0.76, "angle": 3.0}),
-    ("brows_17_high_thin", 0.04, {"drop": -3.0, "th": 5.2, "arch": 7.0, "inner": 0.16, "outer": 0.73, "outer_th": 0.40}),
+    ("brows_17_high_thin", 0.04, {"drop": 0.0, "th": 5.2, "arch": 5.5, "inner": 0.16, "outer": 0.73, "outer_th": 0.40}),
     ("brows_18_broken", 0.04, {"arch": 6.0, "th": 6.2, "peak_t": 0.32, "angle": 3.5, "inner": 0.18, "outer": 0.72}),
     ("brows_19_even", 0.07, {"arch": 3.5, "th": 6.8, "inner": 0.15, "outer": 0.72, "peak_t": 0.40}),
     ("brows_20_soft_arch", 0.06, {"arch": 6.5, "th": 6.4, "inner": 0.14, "outer": 0.73, "peak_t": 0.36}),
@@ -848,9 +848,9 @@ BROW_RECIPES = [
 def bake_brow(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]]]:
     inner_x = CX + p.get("inner", 0.14) * HEAD_HW
     outer_x = CX + p.get("outer", 0.72) * HEAD_HW + p.get("len", 0.0)
-    y = BROW_Y + p.get("drop", 0.0)
+    y = BROW_Y + max(p.get("drop", 0.0), -1.0)
     th = p.get("th", 6.2) * (st().feature_boost + (0.18 if st().line_art > 0 else 0.0))
-    arch = p.get("arch", 2.0)
+    arch = min(p.get("arch", 2.0), 8.5)
     ang = p.get("angle", 0.0)
     peak_t = p.get("peak_t", 0.34)
     inner_th = th * p.get("inner_th", 1.0)
@@ -1971,7 +1971,7 @@ TEAMS: dict[str, dict[str, Any]] = {
 # --------------------------------------------------------------------------- #
 
 
-def bake(root: str | Path, style: str = "flat", pack_version: str = "0.10.0-placeholder") -> Path:
+def bake(root: str | Path, style: str = "flat", pack_version: str = "0.11.0-placeholder") -> Path:
     """Bake one placeholder pack in one style. The recipes are shared; only the
     StyleProfile changes, which is how the same peloton can be shown in several
     art directions without touching game code."""
