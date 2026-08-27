@@ -193,6 +193,7 @@ public sealed class CareerCalendarInboxTests
     private static void CompleteRaceFlow(GameApplication application, string autosaveDirectory)
     {
         Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
+        Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
         Assert.True(application.Execute(new StartRaceCommand(
             Path.Combine(autosaveDirectory, "pre-race.peloton"),
             PrototypeRaceScenarioId)).Succeeded);

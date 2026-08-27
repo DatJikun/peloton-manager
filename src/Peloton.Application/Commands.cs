@@ -12,11 +12,17 @@ public sealed record LoadGameCommand(string Path);
 
 public sealed record PrepareRaceCommand;
 
+public sealed record CancelRacePreparationCommand;
+
+public sealed record ConfirmRacePreparationPlanCommand;
+
 public sealed record FollowHubPrimaryActionCommand;
 
 public sealed record StartRaceCommand(
     string PreRaceAutosavePath,
     string RaceScenarioId);
+
+public sealed record SimulateRaceCommand(string RaceScenarioId);
 
 public sealed record AdvanceRaceCommand;
 

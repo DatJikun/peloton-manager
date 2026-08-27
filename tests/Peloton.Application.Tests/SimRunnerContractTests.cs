@@ -283,9 +283,44 @@ public sealed class SimRunnerContractTests
         Assert.Equal(0, exitCode);
         Assert.Contains("stopped=RACE_DAY_PENDING", stdout, StringComparison.Ordinal);
         Assert.Contains("state=RacePreparationFlow", stdout, StringComparison.Ordinal);
+        Assert.Contains(
+            "prep=title=Skeleton race objective=StageWin squad=1001,1002,1003,1004 planConfirmed=false canStart=false canSimulate=false",
+            stdout,
+            StringComparison.Ordinal);
         Assert.Contains("primaryAction=race-next", stdout, StringComparison.Ordinal);
         Assert.Contains("primaryLabel=Race next", stdout, StringComparison.Ordinal);
         Assert.DoesNotContain("winner=", stdout, StringComparison.Ordinal);
+        Assert.True(string.IsNullOrWhiteSpace(error.ToString()));
+    }
+
+    [Fact]
+    public void DayCommandCanConfirmAndSimulateDirectlyFromPreparation()
+    {
+        using StringWriter output = new();
+        using StringWriter error = new();
+
+        int exitCode = Program.Run(
+            [
+                "day",
+                "--scenario",
+                "scenario.peloton.skeleton",
+                "--seed",
+                "91234",
+                "--days",
+                "13",
+                "--simulate-from-prep",
+                "--content-root",
+                TestApplication.ContentRoot,
+            ],
+            output,
+            error);
+
+        string stdout = output.ToString();
+        Assert.Equal(0, exitCode);
+        Assert.Contains("prep=title=Skeleton race", stdout, StringComparison.Ordinal);
+        Assert.Contains("state=RaceResultsFlow", stdout, StringComparison.Ordinal);
+        Assert.Contains("winner=1006", stdout, StringComparison.Ordinal);
+        Assert.DoesNotContain("state=RaceLive", stdout, StringComparison.Ordinal);
         Assert.True(string.IsNullOrWhiteSpace(error.ToString()));
     }
 

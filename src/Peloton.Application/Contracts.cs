@@ -16,7 +16,10 @@ public interface IScenarioCatalog
     WorldRecipe Resolve(string scenarioId);
 }
 
-public sealed record WorldCheckpoint(GameState GameState, WorldState World);
+public sealed record WorldCheckpoint(
+    GameState GameState,
+    WorldState World,
+    RacePreparationCheckpoint? RacePreparation = null);
 
 public interface IWorldSaveStore
 {

@@ -40,6 +40,7 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
             VerifySqlite(candidatePath);
             WorldCheckpoint verified = Load(candidatePath);
             if (verified.GameState != checkpoint.GameState ||
+                verified.RacePreparation != checkpoint.RacePreparation ||
                 !string.Equals(
                     WorldChecksum.Compute(verified.World),
                     WorldChecksum.Compute(checkpoint.World),
@@ -108,7 +109,7 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                     $"Save world checksum does not match its snapshot. Expected {expectedChecksum}, actual {actualChecksum}.");
             }
 
-            return new WorldCheckpoint(snapshot.GameState, world);
+            return new WorldCheckpoint(snapshot.GameState, world, snapshot.RacePreparation);
         }
         catch (SqliteException exception)
         {
@@ -150,7 +151,10 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         WriteMetadata(connection, transaction, "rules_identity", checkpoint.World.RulesIdentity);
         WriteMetadata(connection, transaction, "world_checksum", WorldChecksum.Compute(checkpoint.World));
 
-        SaveSnapshotDto snapshot = new(checkpoint.GameState, WorldSnapshotDto.FromDomain(checkpoint.World));
+        SaveSnapshotDto snapshot = new(
+            checkpoint.GameState,
+            WorldSnapshotDto.FromDomain(checkpoint.World),
+            checkpoint.RacePreparation);
         using (SqliteCommand insert = connection.CreateCommand())
         {
             insert.Transaction = transaction;
@@ -243,7 +247,10 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         return options;
     }
 
-    private sealed record SaveSnapshotDto(GameState GameState, WorldSnapshotDto World);
+    private sealed record SaveSnapshotDto(
+        GameState GameState,
+        WorldSnapshotDto World,
+        RacePreparationCheckpoint? RacePreparation = null);
 
     private sealed record OrganizationDto(
         WorldEntityId Id,

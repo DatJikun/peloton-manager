@@ -68,6 +68,7 @@ public sealed class GameApplicationTests
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 404)).Succeeded);
         Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
+        Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
         string autosave = Path.Combine(temp.Path, "pre-race.peloton");
         Assert.True(application.Execute(new StartRaceCommand(autosave, PrototypeRaceScenarioId)).Succeeded);
         Assert.Equal(GameState.RaceLive, application.State);
@@ -91,12 +92,98 @@ public sealed class GameApplicationTests
     }
 
     [Fact]
+    public void RacePreparationProjectionUsesFixtureSquadAndConfirmationGatesBothPaths()
+    {
+        using TemporaryDirectory temp = new();
+        GameApplication application = TestApplication.Create();
+        Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 404)).Succeeded);
+        Assert.Null(application.RacePreparation);
+
+        Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
+
+        RacePreparationProjection prep = Assert.IsType<RacePreparationProjection>(application.RacePreparation);
+        Assert.Equal("Skeleton race", prep.Title);
+        Assert.Equal("StageWin", prep.Objective);
+        Assert.Equal(new long[] { 1001, 1002, 1003, 1004 }, prep.Squad.Select(id => id.Value));
+        Assert.False(prep.PlanConfirmed);
+        Assert.False(prep.CanStart);
+        Assert.False(prep.CanSimulate);
+        Assert.Equal(
+            "PREP_PLAN_INCOMPLETE",
+            application.Execute(new StartRaceCommand(
+                Path.Combine(temp.Path, "blocked.peloton"),
+                PrototypeRaceScenarioId)).ReasonCode);
+        Assert.Equal(
+            "PREP_PLAN_INCOMPLETE",
+            application.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId)).ReasonCode);
+
+        Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+
+        prep = Assert.IsType<RacePreparationProjection>(application.RacePreparation);
+        Assert.True(prep.PlanConfirmed);
+        Assert.True(prep.CanStart);
+        Assert.True(prep.CanSimulate);
+    }
+
+    [Fact]
+    public void CancelRacePreparationReturnsToManagementWithoutCompletingDueRace()
+    {
+        GameApplication application = TestApplication.Create();
+        Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 42)).Succeeded);
+        for (int day = 0; day < 12; day++)
+        {
+            Assert.True(application.Execute(new AdvanceDayCommand()).Succeeded);
+        }
+
+        Assert.True(application.Execute(new FollowHubPrimaryActionCommand()).Succeeded);
+        Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+
+        Assert.True(application.Execute(new CancelRacePreparationCommand()).Succeeded);
+
+        Assert.Equal(GameState.Management, application.State);
+        Assert.Null(application.RacePreparation);
+        Assert.True(application.World!.IsRaceDue);
+        Assert.Equal(0, application.World.RaceCount);
+        Assert.Equal(HubPrimaryActionIds.RaceNext, application.CareerDay!.PrimaryAction);
+    }
+
+    [Fact]
+    public void SimulateFromConfirmedPreparationMatchesWatchResultWithoutReturningToRaceLive()
+    {
+        using TemporaryDirectory temp = new();
+        GameApplication watched = TestApplication.Create();
+        Assert.True(watched.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 99117)).Succeeded);
+        Assert.True(watched.Execute(new PrepareRaceCommand()).Succeeded);
+        Assert.True(watched.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(watched.Execute(new StartRaceCommand(
+            Path.Combine(temp.Path, "watched-pre-race.peloton"),
+            PrototypeRaceScenarioId)).Succeeded);
+        CompleteRace(watched);
+
+        GameApplication simulated = TestApplication.Create();
+        Assert.True(simulated.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 99117)).Succeeded);
+        Assert.True(simulated.Execute(new PrepareRaceCommand()).Succeeded);
+        Assert.True(simulated.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+
+        Assert.True(simulated.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId)).Succeeded);
+
+        Assert.Equal(GameState.RaceResultsFlow, simulated.State);
+        Assert.Null(simulated.RacePreparation);
+        Assert.Null(simulated.PendingRaceDecision);
+        Assert.Equivalent(watched.World!.LastRace, simulated.World!.LastRace, strict: true);
+        Assert.Equal(
+            Peloton.Simulation.WorldChecksum.Compute(watched.World),
+            Peloton.Simulation.WorldChecksum.Compute(simulated.World));
+    }
+
+    [Fact]
     public void PendingRaceDecisionPausesInRaceLiveAndRejectsInvalidResponses()
     {
         using TemporaryDirectory temp = new();
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 404)).Succeeded);
         Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
+        Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
         Assert.True(application.Execute(new StartRaceCommand(
             Path.Combine(temp.Path, "pre-race.peloton"),
             PrototypeRaceScenarioId)).Succeeded);
@@ -145,6 +232,7 @@ public sealed class GameApplicationTests
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 818)).Succeeded);
         Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
+        Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
 
         CommandResult result = application.Execute(new StartRaceCommand(
             Path.Combine(fileBlockingDirectory, "pre-race.peloton"),
@@ -188,6 +276,7 @@ public sealed class GameApplicationTests
         GameApplication live = TestApplication.Create();
         Assert.True(live.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 505)).Succeeded);
         Assert.True(live.Execute(new PrepareRaceCommand()).Succeeded);
+        Assert.True(live.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
         string preRaceChecksum = Peloton.Simulation.WorldChecksum.Compute(live.World!);
         Assert.True(live.Execute(new StartRaceCommand(autosave, PrototypeRaceScenarioId)).Succeeded);
         Assert.Equal(GameState.RaceLive, live.State);
@@ -292,6 +381,7 @@ public sealed class GameApplicationTests
         Assert.Equal("RACE_DAY_PENDING", reloaded.Execute(new AdvanceDayCommand()).ReasonCode);
         application = reloaded;
         Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
+        Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
         Assert.True(application.Execute(new StartRaceCommand(
             Path.Combine(temp.Path, "pre-race.peloton"),
             PrototypeRaceScenarioId)).Succeeded);
@@ -310,6 +400,7 @@ public sealed class GameApplicationTests
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", seed)).Succeeded);
         Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
+        Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
         Assert.True(application.Execute(new StartRaceCommand(
             Path.Combine(autosaveDirectory, "pre-race.peloton"),
             PrototypeRaceScenarioId)).Succeeded);
@@ -340,4 +431,5 @@ public sealed class GameApplicationTests
 
         Assert.Equal(GameState.RaceResultsFlow, application.State);
     }
+
 }

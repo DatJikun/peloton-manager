@@ -15,6 +15,7 @@ public sealed class GameApplication
     private readonly IWorldSaveStore saveStore;
     private readonly IRaceEngine raceEngine;
     private RaceSession? activeRaceSession;
+    private RacePreparationCheckpoint? racePreparation;
 
     public GameApplication(
         IScenarioCatalog scenarioCatalog,
@@ -31,6 +32,33 @@ public sealed class GameApplication
     public GameState State { get; private set; } = GameState.MainMenu;
 
     public WorldState? World { get; private set; }
+
+    public RacePreparationProjection? RacePreparation
+    {
+        get
+        {
+            if (State != GameState.RacePreparationFlow || racePreparation is null)
+            {
+                return null;
+            }
+
+            RaceScenario scenario = raceScenarioCatalog.Resolve(racePreparation.RaceScenarioId);
+            WorldEntityId organizationId = new(
+                scenario.Riders.Min(rider => rider.OrganizationId.Value));
+            WorldEntityId[] squad = scenario.Riders
+                .Where(rider => rider.OrganizationId == organizationId)
+                .Select(rider => rider.RiderId)
+                .OrderBy(id => id.Value)
+                .ToArray();
+            return new RacePreparationProjection(
+                RacePreparationDefaults.Title,
+                RacePreparationDefaults.Objective,
+                Array.AsReadOnly(squad),
+                racePreparation.PlanConfirmed,
+                racePreparation.PlanConfirmed,
+                racePreparation.PlanConfirmed);
+        }
+    }
 
     public PendingRaceDecision? PendingRaceDecision
     {
@@ -111,6 +139,7 @@ public sealed class GameApplication
         {
             WorldRecipe recipe = scenarioCatalog.Resolve(command.ScenarioId);
             World = CreateWorld(recipe, command.Seed);
+            racePreparation = null;
             State = GameState.Management;
             return CommandResult.Success;
         }
@@ -155,7 +184,7 @@ public sealed class GameApplication
 
         try
         {
-            saveStore.Save(command.Path, new WorldCheckpoint(State, World));
+            saveStore.Save(command.Path, new WorldCheckpoint(State, World, racePreparation));
             return CommandResult.Success;
         }
         catch (Exception exception) when (exception is IOException or InvalidDataException)
@@ -181,6 +210,7 @@ public sealed class GameApplication
             World = checkpoint.World;
             State = checkpoint.GameState;
             activeRaceSession = null;
+            racePreparation = checkpoint.RacePreparation;
             return CommandResult.Success;
         }
         catch (Exception exception) when (exception is IOException or InvalidDataException)
@@ -200,6 +230,34 @@ public sealed class GameApplication
         }
 
         State = GameState.RacePreparationFlow;
+        racePreparation = new RacePreparationCheckpoint(
+            RacePreparationDefaults.PrototypeScenarioId,
+            PlanConfirmed: false);
+        return CommandResult.Success;
+    }
+
+    public CommandResult Execute(CancelRacePreparationCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.RacePreparationFlow || World is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        racePreparation = null;
+        State = GameState.Management;
+        return CommandResult.Success;
+    }
+
+    public CommandResult Execute(ConfirmRacePreparationPlanCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.RacePreparationFlow || racePreparation is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        racePreparation = racePreparation with { PlanConfirmed = true };
         return CommandResult.Success;
     }
 
@@ -227,9 +285,14 @@ public sealed class GameApplication
             return CommandResult.Reject("GAME_STATE_INVALID");
         }
 
+        if (racePreparation is null || !racePreparation.PlanConfirmed)
+        {
+            return CommandResult.Reject("PREP_PLAN_INCOMPLETE");
+        }
+
         try
         {
-            saveStore.Save(command.PreRaceAutosavePath, new WorldCheckpoint(State, World));
+            saveStore.Save(command.PreRaceAutosavePath, new WorldCheckpoint(State, World, racePreparation));
         }
         catch (Exception exception) when (exception is IOException or InvalidDataException)
         {
@@ -239,9 +302,7 @@ public sealed class GameApplication
         try
         {
             RaceScenario scenario = raceScenarioCatalog.Resolve(command.RaceScenarioId);
-            long raceSeed = unchecked((long)StableSeedDerivation.Derive(
-                World.MasterSeed,
-                $"official-race-v1:{World.RaceCount + 1}:{scenario.Id}:{scenario.TuningIdentity}"));
+            long raceSeed = DeriveRaceSeed(World, scenario);
             activeRaceSession = raceEngine.CreateSession(scenario, raceSeed);
             State = GameState.RaceLive;
             return CommandResult.Success;
@@ -251,6 +312,36 @@ public sealed class GameApplication
         {
             activeRaceSession = null;
             return CommandResult.Reject("RACE_START_FAILED");
+        }
+    }
+
+    public CommandResult Execute(SimulateRaceCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.RacePreparationFlow || World is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        if (racePreparation is null || !racePreparation.PlanConfirmed)
+        {
+            return CommandResult.Reject("PREP_PLAN_INCOMPLETE");
+        }
+
+        try
+        {
+            RaceScenario scenario = raceScenarioCatalog.Resolve(command.RaceScenarioId);
+            RaceResult result = raceEngine.RunBatch(scenario, DeriveRaceSeed(World, scenario));
+            World.RecordRace(new RaceSummary(result.RouteId, result.WinnerId, result.FinishOrder));
+            racePreparation = null;
+            activeRaceSession = null;
+            State = GameState.RaceResultsFlow;
+            return CommandResult.Success;
+        }
+        catch (Exception exception) when (
+            exception is IOException or ArgumentException or InvalidOperationException)
+        {
+            return CommandResult.Reject("RACE_SIMULATION_FAILED");
         }
     }
 
@@ -278,6 +369,7 @@ public sealed class GameApplication
                         ?? throw new InvalidOperationException("A completed race step must carry its result.");
                     World.RecordRace(new RaceSummary(result.RouteId, result.WinnerId, result.FinishOrder));
                     activeRaceSession = null;
+                    racePreparation = null;
                     State = GameState.RaceResultsFlow;
                 }
 
@@ -409,6 +501,13 @@ public sealed class GameApplication
             GameState.RacePreparationFlow or
             GameState.RaceResultsFlow or
             GameState.RaceDebriefFlow;
+    }
+
+    private static long DeriveRaceSeed(WorldState world, RaceScenario scenario)
+    {
+        return unchecked((long)StableSeedDerivation.Derive(
+            world.MasterSeed,
+            $"official-race-v1:{world.RaceCount + 1}:{scenario.Id}:{scenario.TuningIdentity}"));
     }
 
     private static WorldState CreateWorld(WorldRecipe recipe, long seed)

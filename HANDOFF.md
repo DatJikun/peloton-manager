@@ -10,13 +10,13 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`Hub Race next on race day`
+`Race preparation actions`
 
 ### Goal
-On a race-due day the Hub primary control relabels from Advance Day to Race next and enters Race Preparation. Inbox stays a queue and does not launch the race.
+Complete the headless Race Preparation flow: Cancel, Confirm, Watch, and Simulate, with the plan stored in the application checkpoint rather than World State.
 
 ### Status
-On branch `cursor/race-next-hub-action-babe`, stacked on race-result inbox. §49 watch still waits for Godot. `D-032` still deferred.
+On branch `cursor/race-next-hub-action-babe`. Prep uses the prototype fixture squad, requires Confirm before Watch or Simulate, and keeps SQLite `SchemaVersion = 1`. §49 watch still waits for Godot. `D-032` remains deferred.
 
 ## What works now
 - [x] High-level game design v0.7
@@ -47,6 +47,8 @@ On branch `cursor/race-next-hub-action-babe`, stacked on race-result inbox. §49
 - [x] Prototype race engine (physics, groups, chase decisions, Race Spy) and 10-season SimRunner
 - [x] Thin career day loop: Hub projection, race-due Advance Day block, SimRunner `day`
 - [x] Hub primary action: Advance Day on normal days, Race next on race-due days; `FollowHubPrimaryActionCommand` enters preparation
+- [x] Race preparation projection and Cancel / Confirm / Watch / Simulate commands; Simulate uses the canonical engine, seed derivation, and delegated defaults
+- [x] Confirmed prep plan round-trips in the application checkpoint at SQLite SchemaVersion 1
 - [x] Career calendar entries (domain system of record) and inbox query (race-due + race-result); archive cannot dismiss race deadlines
 - [x] Headless domain/application/persistence/architecture tests
 
@@ -166,6 +168,7 @@ dotnet run --project tools/Peloton.SimRunner -- watch --scenario race-scenario.p
 dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13
 dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --follow-hub
 dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --through-races
+dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --simulate-from-prep
 ```
 
 `race --scenario race.prototype.gate` is an alias for the same fixture.
