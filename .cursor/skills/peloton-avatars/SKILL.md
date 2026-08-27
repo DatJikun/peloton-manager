@@ -273,7 +273,11 @@ To add a look the owner asked for, append recipes in `pack.py`. Do not silently 
 - **Slit eyes and thread mouths flatten the peloton.** If a pass looks "all the same",
   check `th`/`bh` and lip `upper`/`lower` before adding more hair. Mouth width past the
   pupils (`hw` > `EYE_DX`) reads as a billboard; a philtrum collapsed to `upper * 0.22`
-  reads as a thread no matter what the recipe says. Eye `hw` above ~22, or an affine
+  reads as a thread no matter what the recipe says. Ten crops 2 px apart, or a pile of
+  `even`/`mild` noses around 1.0, also make the peloton cousins. Differentiate
+  **silhouette families** (fringe vs fade vs receded vs curl; long-thin vs short-wide
+  vs hooked noses), not neighbour recipes. Affine mouth height 0.98–1.02 and nose
+  0.88–1.16 are too tight to save a cloned recipe table. Eye `hw` above ~22, or an affine
   that stretches `scale_x` past 1.03 / pushes the pair ±9 px toward the temples, also
   reads as a billboard. A compact `hw` with `th`/`bh` under ~12/10 reads as a
   flattened slot, which the owner rejected after the width pass. Opening `th`/`bh`
