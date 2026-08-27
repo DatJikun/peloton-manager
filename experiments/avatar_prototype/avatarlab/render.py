@@ -119,19 +119,55 @@ class Xform:
         )
 
 
+# Poster 0.15.0 affine ranges. Look overlays may remap these via
+# `manifest.shape_ranges`; missing keys fall back here. Eye size stays locked
+# even if a look tries to reopen it (shocked / billboard history).
+DEFAULT_SHAPE_RANGES: dict[str, tuple[float, float]] = {
+    "face_width": (0.84, 1.16),
+    "face_height": (0.90, 1.10),
+    "eye_size": (0.97, 1.02),
+    "eye_spacing": (-5.0, 5.0),
+    "eye_height": (-6.0, 6.0),
+    "brow_height": (-2.0, 4.0),
+    "nose_width": (0.80, 1.28),
+    "nose_length": (0.78, 1.24),
+    "mouth_width": (0.94, 1.04),
+    "mouth_height": (0.88, 1.06),
+    "mouth_y": (-4.0, 4.0),
+    "ear_size": (0.86, 1.14),
+    "neck_thickness": (0.97, 1.03),
+    "shoulder_width": (0.93, 1.09),
+}
+_LOCKED_EYE_SIZE = DEFAULT_SHAPE_RANGES["eye_size"]
+
+
 def _c(v: float, lo: float, hi: float) -> float:
     """Map a normalized 0..1 param onto a physical range."""
     return lo + (hi - lo) * min(1.0, max(0.0, v))
 
 
-def _global_face(shape: dict[str, float]) -> Xform:
+def _range_for(ranges: dict[str, tuple[float, float]] | None, key: str) -> tuple[float, float]:
+    if ranges and key in ranges:
+        lo, hi = ranges[key]
+        return (float(lo), float(hi))
+    return DEFAULT_SHAPE_RANGES[key]
+
+
+def _global_face(shape: dict[str, float], ranges: dict[str, tuple[float, float]] | None = None) -> Xform:
+    fw = _range_for(ranges, "face_width")
+    fh = _range_for(ranges, "face_height")
     return Xform(
-        scale_x=_c(shape["face_width"], 0.84, 1.16),
-        scale_y=_c(shape["face_height"], 0.90, 1.10),
+        scale_x=_c(shape["face_width"], fw[0], fw[1]),
+        scale_y=_c(shape["face_height"], fh[0], fh[1]),
     )
 
 
-def _local_xform(category: str, shape: dict[str, float], mirrored: bool = False) -> Xform:
+def _local_xform(
+    category: str,
+    shape: dict[str, float],
+    mirrored: bool = False,
+    ranges: dict[str, tuple[float, float]] | None = None,
+) -> Xform:
     """Per-feature affine driven by the continuous identity parameters.
 
     Ranges are the main tuning knob for "do all riders look like the same
@@ -140,42 +176,57 @@ def _local_xform(category: str, shape: dict[str, float], mirrored: bool = False)
     """
     asym = shape.get("asymmetry", 0.0)
     if category == "eyes":
+        # Locked: owner rejected both billboard-wide and shocked-open eyes.
+        sx0, sx1 = _LOCKED_EYE_SIZE
+        ex = DEFAULT_SHAPE_RANGES["eye_spacing"]
+        ey = DEFAULT_SHAPE_RANGES["eye_height"]
         return Xform(
-            scale_x=_c(shape["eye_size"], 0.97, 1.02),
-            scale_y=_c(shape["eye_size"], 0.97, 1.02),
-            dx=_c(shape["eye_spacing"], -5.0, 5.0),
-            dy=_c(shape["eye_height"], -6.0, 6.0) + (asym * 1.1 if mirrored else 0.0),
+            scale_x=_c(shape["eye_size"], sx0, sx1),
+            scale_y=_c(shape["eye_size"], sx0, sx1),
+            dx=_c(shape["eye_spacing"], ex[0], ex[1]),
+            dy=_c(shape["eye_height"], ey[0], ey[1]) + (asym * 1.1 if mirrored else 0.0),
         )
     if category == "eyebrows":
+        bh = _range_for(ranges, "brow_height")
+        ex = DEFAULT_SHAPE_RANGES["eye_spacing"]
+        ey = DEFAULT_SHAPE_RANGES["eye_height"]
         return Xform(
             scale_x=_c(shape["eye_size"], 0.94, 1.10),
-            dx=_c(shape["eye_spacing"], -5.0, 5.0),
-            dy=_c(shape["eye_height"], -6.0, 6.0)
-            + _c(shape["brow_height"], -2.0, 4.0)
+            dx=_c(shape["eye_spacing"], ex[0], ex[1]),
+            dy=_c(shape["eye_height"], ey[0], ey[1])
+            + _c(shape["brow_height"], bh[0], bh[1])
             + (asym * 1.6 if mirrored else 0.0),
         )
     if category == "nose":
+        nw = _range_for(ranges, "nose_width")
+        nl = _range_for(ranges, "nose_length")
         return Xform(
-            scale_x=_c(shape["nose_width"], 0.80, 1.28),
-            scale_y=_c(shape["nose_length"], 0.78, 1.24),
+            scale_x=_c(shape["nose_width"], nw[0], nw[1]),
+            scale_y=_c(shape["nose_length"], nl[0], nl[1]),
             dx=asym * 1.0,
         )
     if category == "mouth":
+        mw = _range_for(ranges, "mouth_width")
+        mh = _range_for(ranges, "mouth_height")
+        my = _range_for(ranges, "mouth_y")
         return Xform(
-            scale_x=_c(shape["mouth_width"], 0.94, 1.04),
-            scale_y=_c(shape["mouth_height"], 0.88, 1.06),
+            scale_x=_c(shape["mouth_width"], mw[0], mw[1]),
+            scale_y=_c(shape["mouth_height"], mh[0], mh[1]),
             dx=asym * 1.6,
-            dy=_c(shape.get("mouth_y", 0.5), -4.0, 4.0),
+            dy=_c(shape.get("mouth_y", 0.5), my[0], my[1]),
         )
     if category == "ears":
+        es = _range_for(ranges, "ear_size")
         return Xform(
-            scale_x=_c(shape["ear_size"], 0.86, 1.14),
-            scale_y=_c(shape["ear_size"], 0.86, 1.14),
+            scale_x=_c(shape["ear_size"], es[0], es[1]),
+            scale_y=_c(shape["ear_size"], es[0], es[1]),
         )
     if category == "neck":
-        return Xform(scale_x=_c(shape["neck_thickness"], 0.97, 1.03))
+        nt = _range_for(ranges, "neck_thickness")
+        return Xform(scale_x=_c(shape["neck_thickness"], nt[0], nt[1]))
     if category == "jersey":
-        return Xform(scale_x=_c(shape["shoulder_width"], 0.93, 1.09))
+        sw = _range_for(ranges, "shoulder_width")
+        return Xform(scale_x=_c(shape["shoulder_width"], sw[0], sw[1]))
     return Xform()
 
 
@@ -414,7 +465,8 @@ def _part_opacity(part: Part, app: Appearance) -> float:
 def render(app: Appearance, pack: Pack) -> Image.Image:
     canvas = pack.manifest.canvas
     pivot = (float(canvas.get("center_x", CENTER_X)), float(canvas.get("eye_line_y", EYE_Y)))
-    g = _global_face(app.shape)
+    ranges = pack.manifest.shape_ranges
+    g = _global_face(app.shape, ranges)
     dst_rgb = np.zeros((SIZE, SIZE, 3), dtype=np.float32)
     dst_a = np.zeros((SIZE, SIZE), dtype=np.float32)
     tints: dict[str | None, tuple[float, float, float] | None] = {}
@@ -427,7 +479,7 @@ def render(app: Appearance, pack: Pack) -> Image.Image:
         anchor = asset.anchor
         if mirrored:
             anchor = (SIZE - 1 - anchor[0], anchor[1])
-        local = _local_xform(asset.category, app.shape, mirrored)
+        local = _local_xform(asset.category, app.shape, mirrored, ranges)
         # hair recedes upward/backward with the hairline; helmet/glasses stay put
         if asset.category == "hair":
             rec = app.mutable.get("hairline_recession", 0.0)

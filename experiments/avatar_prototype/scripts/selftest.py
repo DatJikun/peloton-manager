@@ -45,6 +45,12 @@ def main() -> int:
         rep = validate.validate(path)
         check(rep.ok, f"{path.name} passes validation ({rep.checked_files} files)")
 
+    if STYLE == "poster":
+        print("default pack lock")
+        check(m.look == "", "default poster pack has no look overlay")
+        check(not m.shape_ranges, "default poster keeps baked 0.15.0 affine ranges")
+        check(m.asset_pack_version == "0.15.0-placeholder", "default poster pack version stays 0.15.0-placeholder")
+
     print("determinism")
     rider = Rider(rider_id=99, age=26, region="east_europe", discipline="climber", team_id="team_01_azure")
     a = generate(rider, m)

@@ -111,8 +111,15 @@ Three mechanisms create variety from ~120 assets:
 cd experiments/avatar_prototype
 python3 scripts/bake_pack.py poster      # or `all` for every style, ~30 s per style
 python3 scripts/validate_pack.py         # size / alpha / alignment / manifest rules
-python3 scripts/selftest.py poster       # 36 behavioural assertions
+python3 scripts/selftest.py poster       # behavioural assertions
 python3 scripts/render_demo.py poster    # review sheets into out/demo/
+```
+
+Optional cousin-face skill comparison (does **not** rebake or restyle `poster`):
+
+```bash
+python3 scripts/apply_looks.py           # hardlink PNGs + remap weights/affines
+python3 scripts/render_look_compare.py   # teraz | kształt | znak | archetyp
 ```
 
 Never hand over a pack that fails `validate_pack.py`, and never claim a visual result
@@ -290,6 +297,15 @@ To add a look the owner asked for, append recipes in `pack.py`. Do not silently 
   to the 0.8.0 slits. Same `iris_r` (~11) and pupil fraction (0.42) on every
   recipe makes the peloton one sticker; vary both (`iris_r` 8.6–12.4, `pupil`
   0.28–0.56) without opening the lids back up.
+- **Cousin-face look overlays.** If the peloton still reads as cousins after a
+  pack pass, compare *skills* as weight + affine remaps (`avatarlab/bake/looks.py`)
+  instead of restyling `poster` or bumping `seed_version`. `scripts/apply_looks.py`
+  copies `pack_poster` into `pack_poster_<look>` and
+  `scripts/render_look_compare.py` draws the same rider ids in four columns:
+  teraz / kształt (3-read shape language) / znak (one loud identity mark) /
+  archetyp (ActorMIXER families). Do not promote a look into the default pack
+  until the owner picks a column. Do not restore retired heart / lantern /
+  mullet / bowl / pompadour heads to win a silhouette test.
 - **A nose without a silhouette is invisible.** Multiply ticks at the nostrils do not
   carry width, length or hook. Give the nose a skin mask and a keyline.
 - **Same-polygon brows stay identical.** Changing only `th` by 2 px does not read; move

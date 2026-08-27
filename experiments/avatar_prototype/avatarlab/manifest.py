@@ -53,6 +53,8 @@ class Manifest:
     assets: tuple[Asset, ...]
     palettes: dict[str, dict[str, list[int]]]
     teams: dict[str, dict[str, Any]]
+    look: str = ""
+    shape_ranges: dict[str, tuple[float, float]] = field(default_factory=dict)
 
     def by_category(self, category: str) -> list[Asset]:
         return [a for a in self.assets if a.category == category]
@@ -105,6 +107,8 @@ def load(path: str | Path) -> Manifest:
         assets=tuple(_asset_from_json(a) for a in data["assets"]),
         palettes=data["palettes"],
         teams=data["teams"],
+        look=str(data.get("look", "") or ""),
+        shape_ranges={k: (float(v[0]), float(v[1])) for k, v in data.get("shape_ranges", {}).items()},
     )
 
 
