@@ -16,7 +16,7 @@
 After Simulate or Watch, show the committed official result and a short knowledge-bounded debrief. Do not rerun the race. Do not expose Spy truth.
 
 ### Status
-On branch `cursor/race-next-hub-action-babe`. `RaceResultProjection` is available only in `RaceResultsFlow` (calendar title, winner, fixture-label finish order, `routeId`) from `World.LastRace` plus the completed calendar entry. `RaceDebriefProjection` is available only in `RaceDebriefFlow` (confirmed prep objective plus 1–3 actor/fixture notes, or `sztab nie ma pewności`). Prep checkpoint stays through Results/Debrief and clears on `CompleteRaceDebrief`; it is not World state. SchemaVersion remains 1. SimRunner `day --through-results` acknowledges results and prints `state=`, `result=`, and `debrief=` without impersonating Hub Advance Day / Race next. `--through-races` and the 10-season runner keep the same World behavior. Godot Watch and owner §49 still remain open. `D-032` remains deferred.
+On branch `cursor/race-next-hub-action-babe`. `RaceResultProjection` is available only in `RaceResultsFlow` (calendar title, winner, fixture-label finish order, `routeId`) from `World.LastRace` plus the completed calendar entry. `RaceDebriefProjection` is available only in `RaceDebriefFlow`: confirmed prep objective plus facts already on the committed result (`LastRace` / calendar `OfficialResult`), or `sztab nie ma pewności`. It does not read `TacticalPlans` or invent stage history. Prep checkpoint stays through Results/Debrief and clears on `CompleteRaceDebrief`; it is not World state. SchemaVersion remains 1. SimRunner `day --through-results` prints `state=`, `result=`, and `debrief=` without impersonating Hub Advance Day / Race next. `--through-races` and the 10-season runner keep the same World behavior. Godot Watch and owner §49 still remain open. `D-032` remains deferred.
 
 ## What works now
 - [x] High-level game design v0.7
@@ -50,7 +50,7 @@ On branch `cursor/race-next-hub-action-babe`. `RaceResultProjection` is availabl
 - [x] Race preparation projection and Cancel / Confirm / Watch / Simulate commands; Simulate uses the canonical engine, seed derivation, and delegated defaults
 - [x] Confirmed prep plan round-trips in the application checkpoint at SQLite SchemaVersion 1
 - [x] Headless Watch supervising clock with rate control, decision pause/resume, and RNG-neutral focal-rider motion projection
-- [x] Race result and debrief projections after Simulate/Watch; prep checkpoint survives Results/Debrief until CompleteRaceDebrief
+- [x] Race result and debrief projections after Simulate/Watch; debrief uses committed LastRace facts, not TacticalPlans
 - [x] Career calendar entries (domain system of record) and inbox query (race-due + race-result); archive cannot dismiss race deadlines
 - [x] Headless domain/application/persistence/architecture tests
 

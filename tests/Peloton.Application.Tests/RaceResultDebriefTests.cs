@@ -15,11 +15,9 @@ public sealed class RaceResultDebriefTests
 {
     private const string PrototypeRaceScenarioId = "race-scenario.peloton.prototype-v0";
     private const long GateSeed = 91234;
-    private static readonly string[] ActorObservationNotes =
+    private static readonly string[] CommittedResultNotes =
     {
-        "Widoczny rozjazd.",
-        "Lider w paśmie Front.",
-        "Zasoby ocenione jako Strong.",
+        "Oficjalny zwycięzca: rider.race-prototype.beta-leader.",
     };
     private static readonly string[] UncertainStaffNotes =
     {
@@ -96,7 +94,7 @@ public sealed class RaceResultDebriefTests
     }
 
     [Fact]
-    public void RaceDebriefProjectionUsesConfirmedPrepObjectiveAndFixtureObservations()
+    public void RaceDebriefProjectionUsesConfirmedPrepObjectiveAndCommittedResultFacts()
     {
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", GateSeed)).Succeeded);
@@ -111,13 +109,19 @@ public sealed class RaceResultDebriefTests
         RaceDebriefProjection debrief = Assert.IsType<RaceDebriefProjection>(application.RaceDebrief);
         Assert.Equal("StageWin", debrief.Objective);
         Assert.InRange(debrief.Notes.Count, 1, 3);
-        Assert.Equal(ActorObservationNotes, debrief.Notes);
+        Assert.Equal(CommittedResultNotes, debrief.Notes);
+        Assert.Equal(application.World!.LastRace!.WinnerId, application.World.LastRace.FinishOrder[0]);
+        Assert.DoesNotContain(debrief.Notes, note => note.Contains("Widoczny rozjazd", StringComparison.Ordinal));
+        Assert.DoesNotContain(debrief.Notes, note => note.Contains("LeaderPositionBand", StringComparison.Ordinal));
+        Assert.DoesNotContain(debrief.Notes, note => note.Contains("ResourceEstimate", StringComparison.Ordinal));
+        Assert.DoesNotContain(debrief.Notes, note => note.Contains("pasmo", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(debrief.Notes, note => note.Contains("zasoby", StringComparison.OrdinalIgnoreCase));
         Assert.DoesNotContain(debrief.Notes, note => note.Contains("WPrime", StringComparison.OrdinalIgnoreCase));
         Assert.DoesNotContain(debrief.Notes, note => note.Contains("durability", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
-    public void DebriefWithoutActorOrFixtureBasisReportsStaffUncertainty()
+    public void DebriefWithoutCommittedResultReportsStaffUncertainty()
     {
         RaceDebriefProjection debrief = RaceOutcomeQueries.BuildDebrief(
             world: null,

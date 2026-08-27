@@ -58,27 +58,9 @@ public static class RaceOutcomeQueries
     {
         ArgumentNullException.ThrowIfNull(raceScenarioCatalog);
         List<string> notes = new();
-        RaceScenario? scenario = TryResolve(racePreparation, raceScenarioCatalog);
-        if (scenario is not null && scenario.Riders.Count > 0)
+        if (world?.LastRace is not null)
         {
-            WorldEntityId playerOrganizationId = new(
-                scenario.Riders.Min(rider => rider.OrganizationId.Value));
-            RaceTacticalPlan? plan = scenario.TacticalPlans
-                .FirstOrDefault(item => item.Observation.OrganizationId == playerOrganizationId);
-            if (plan is not null)
-            {
-                if (plan.Observation.VisibleSplit)
-                {
-                    notes.Add("Widoczny rozjazd.");
-                }
-
-                notes.Add($"Lider w paśmie {plan.Observation.LeaderPositionBand}.");
-                notes.Add($"Zasoby ocenione jako {plan.Observation.ResourceEstimate}.");
-            }
-        }
-
-        if (notes.Count == 0 && world?.LastRace is not null)
-        {
+            RaceScenario? scenario = TryResolve(racePreparation, raceScenarioCatalog);
             notes.Add($"Oficjalny zwycięzca: {Label(scenario, world.LastRace.WinnerId)}.");
         }
 

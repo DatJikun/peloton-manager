@@ -350,10 +350,12 @@ public sealed class SimRunnerContractTests
         Assert.Contains("routeId=race-route.peloton.synthetic-proof-v0", stdout, StringComparison.Ordinal);
         Assert.Contains("finishOrder=rider.race-prototype.beta-leader", stdout, StringComparison.Ordinal);
         Assert.Contains("state=RaceDebriefFlow", stdout, StringComparison.Ordinal);
-        Assert.Contains(
-            "debrief=objective=StageWin notes=Widoczny rozjazd. Lider w paśmie Front. Zasoby ocenione jako Strong.",
-            stdout,
-            StringComparison.Ordinal);
+        Assert.Contains("debrief=objective=StageWin notes=Oficjalny zwycięzca: rider.race-prototype.beta-leader.", stdout, StringComparison.Ordinal);
+        Assert.DoesNotContain("Widoczny rozjazd", stdout, StringComparison.Ordinal);
+        Assert.DoesNotContain("LeaderPositionBand", stdout, StringComparison.Ordinal);
+        Assert.DoesNotContain("ResourceEstimate", stdout, StringComparison.Ordinal);
+        Assert.DoesNotContain("pasmo", stdout, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("zasoby", stdout, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("state=RaceLive", stdout, StringComparison.Ordinal);
         Assert.DoesNotContain("WPrime", stdout, StringComparison.OrdinalIgnoreCase);
         string afterResults = stdout[
