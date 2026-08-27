@@ -141,8 +141,8 @@ def _local_xform(category: str, shape: dict[str, float], mirrored: bool = False)
     asym = shape.get("asymmetry", 0.0)
     if category == "eyes":
         return Xform(
-            scale_x=_c(shape["eye_size"], 0.86, 1.14),
-            scale_y=_c(shape["eye_size"], 0.86, 1.14),
+            scale_x=_c(shape["eye_size"], 0.97, 1.02),
+            scale_y=_c(shape["eye_size"], 0.94, 1.06),
             dx=_c(shape["eye_spacing"], -9.0, 9.0),
             dy=_c(shape["eye_height"], -6.0, 6.0) + (asym * 1.1 if mirrored else 0.0),
         )
