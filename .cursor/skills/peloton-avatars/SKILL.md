@@ -245,7 +245,9 @@ To add a look the owner asked for, append recipes in `pack.py`. Do not silently 
   stroke overlaps neighbouring layers and drifts when a continuous parameter scales.
   Feature keyline scale **0.55** (eyes/nose) melts the part into skin at 48 px; use
   ~0.90 on eyes/nose/mouth envelope and ~0.95 on ears. Head/hair/jersey stay at 1.0.
-  Do not answer "parts blend" by changing `poster` `StyleProfile`.
+  Do not answer "parts blend" by changing `poster` `StyleProfile`. The contour part
+  is named `keyline`, never `line`: a later lip seam or nostril tick also called
+  `line` silently overwrites the PNG and the face parts melt together again.
 - **A ring is jewellery.** A full collar ellipse around the neck reads as a necklace; keep
   the front arc only.
 - **Small dark shapes near the lips read as an open mouth.** A moustache must be wider

@@ -105,17 +105,21 @@ def _styled(shade: Image.Image, outline: Image.Image | None) -> Image.Image:
     return out
 
 
-def keyline(mask: Image.Image, width_scale: float = 1.0) -> list[tuple[str, Image.Image, dict[str, Any]]]:
+def keyline(
+    mask: Image.Image, width_scale: float = 1.0, part: str = "keyline"
+) -> list[tuple[str, Image.Image, dict[str, Any]]]:
     """Ink contour drawn INSIDE the silhouette.
 
     Inside, not centred on the edge, because an outer stroke would overlap the
     neighbouring layers and could drift when a continuous parameter scales the
-    feature. Returns a list so callers can splice it into their part list.
+    feature. The part name defaults to ``keyline`` so a later nostril tick or
+    lip seam named ``line`` cannot overwrite the contour PNG. Returns a list
+    so callers can splice it into their part list.
     """
     w = st().line_art * width_scale
     if w <= 0.0:
         return []
-    return [("line", solid_layer(INK_RGB, harden_edges(scale_l(rim(mask, w, 0.5), 1.7))), {"blend": "normal"})]
+    return [(part, solid_layer(INK_RGB, harden_edges(scale_l(rim(mask, w, 0.5), 1.7))), {"blend": "normal"})]
 
 
 def outline_of(mask: Image.Image) -> Image.Image | None:
@@ -203,9 +207,13 @@ class PackBuilder:
         region_weights: dict[str, float] | None = None,
     ) -> None:
         part_defs = []
+        seen_parts: set[str] = set()
         for name, img, meta in parts:
             if img.getchannel("A").getextrema()[1] <= 2:
                 continue  # empty or below the validator's visible-alpha floor
+            if name in seen_parts:
+                raise ValueError(f"{asset_id}: duplicate part name {name!r} would overwrite the PNG")
+            seen_parts.add(name)
             rel = self.save(category, asset_id, name, img)
             part_defs.append({"file": rel, **meta})
         if not part_defs:
@@ -1268,7 +1276,7 @@ def bake_mouth(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, An
         parts.append(("teeth", solid_layer(TEETH_RGB, scale_l(teeth_mask, 0.95)), {"blend": "normal"}))
     parts.append(("lips", lips_layer, {"blend": "normal", "color_slot": "lip"}))
     parts += keyline(envelope, 0.90)
-    parts += keyline(opening, 0.65)
+    parts += keyline(opening, 0.65, part="inner_keyline")
     return parts
 
 
