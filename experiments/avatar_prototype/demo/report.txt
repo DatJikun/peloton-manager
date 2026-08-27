@@ -1,6 +1,6 @@
 === pack ===
-pack_id=peloton_placeholder asset_pack_version=0.11.0-placeholder schema=1 seed_version=1
-assets=319 png_parts=1027
+pack_id=peloton_placeholder asset_pack_version=0.12.0-placeholder schema=1 seed_version=1
+assets=319 png_parts=1054
 assets per category: ears=18, eyebrows=27, eyes=52, facial_hair=11, glasses=5, hair=40, hair_color=7, head=18, helmet=4, iris_color=6, jersey=5, jersey_overlay=2, mouth=74, neck=5, nose=34, skin_details=10, wrinkles=1
 
 === determinism ===
@@ -9,10 +9,10 @@ same appearance rendered twice -> identical pixels: True
 after transfer + 6 birthdays -> identity block unchanged: True
                              -> shape block unchanged:    True
                              -> mutable block changed:    True
-cache key before/after: ba0caeff00b4e756 -> c4abc6fb2e26d30e
+cache key before/after: 713bf5d99238637e -> e46fc897a25b402b
 
 === duplicate prevention on a 20000 rider pool ===
-generate_pool: 31.81s total, 1.590 ms per rider
+generate_pool: 31.77s total, 1.588 ms per rider
 riders=20000 rerolled=0 unresolved_clones=0
 distinct similarity keys=20000 distinct identity cores=20000
 identity-core collisions remaining: 0 (0.00%)
@@ -28,6 +28,6 @@ hair: 02_crop 6.7%, 17_fringe 6.5%, 03_side_part 5.5%, 04_messy_short 5.3%, 01_b
 facial_hair: None 70.7%, 01_stubble_light 6.7%, 02_stubble_heavy 5.0%, 03_beard_short 3.7%, 05_goatee 2.5%, 06_chinstrap 2.3%
 
 === render performance (single thread, Pillow + numpy) ===
-200 portraits in 5.59s -> 28.0 ms each, 36 portraits/s
-extrapolated cold render of 20000 portraits: 559s single threaded
-cache hit read: 2.56 ms each
+200 portraits in 5.55s -> 27.8 ms each, 36 portraits/s
+extrapolated cold render of 20000 portraits: 555s single threaded
+cache hit read: 2.52 ms each
