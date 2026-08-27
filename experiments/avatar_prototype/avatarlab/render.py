@@ -143,13 +143,13 @@ def _local_xform(category: str, shape: dict[str, float], mirrored: bool = False)
         return Xform(
             scale_x=_c(shape["eye_size"], 0.97, 1.02),
             scale_y=_c(shape["eye_size"], 0.94, 1.06),
-            dx=_c(shape["eye_spacing"], -9.0, 9.0),
+            dx=_c(shape["eye_spacing"], -5.0, 5.0),
             dy=_c(shape["eye_height"], -6.0, 6.0) + (asym * 1.1 if mirrored else 0.0),
         )
     if category == "eyebrows":
         return Xform(
             scale_x=_c(shape["eye_size"], 0.94, 1.10),
-            dx=_c(shape["eye_spacing"], -8.0, 8.0),
+            dx=_c(shape["eye_spacing"], -5.0, 5.0),
             dy=_c(shape["eye_height"], -6.0, 6.0)
             + _c(shape["brow_height"], -9.0, 5.0)
             + (asym * 1.6 if mirrored else 0.0),
