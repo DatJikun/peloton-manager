@@ -107,3 +107,24 @@ When practical, bugs receive a reproducible failing test/scenario before root-ca
 The canonical game-state machine contains exactly: `MainMenu`, `NewGameFlow`, `LoadingWorld`, `Management`, `PreSeasonPlanningFlow`, `RacePreparationFlow`, `RaceLive`, `RaceResultsFlow`, and `RaceDebriefFlow`.
 
 Scheduler idle/processing/deterministic-pause status is runtime, not a GameState or World State. Employment, settings, open modals, season review, employment change, and other presentation flows do not add game states. They run inside the applicable canonical state unless a later owner decision changes the list.
+
+## D-032 — Failed designated leader may become support
+W wieloetapowym wyścigu, gdy wyznaczony lider nie ma już realistycznych szans na główny cel zespołu (zazwyczaj GC), zespół może przekierować go do wsparcia kolegi z najlepszymi pozostałymi szansami.
+
+Ocena szans jest knowledge-bounded: wynika z obserwacji, klasyfikacji, formy i pewności sztabu, nie z ukrytego truth fizjologii. Human i AI używają tej samej decyzji. Jakość oceny i gotowość do porzucenia pierwotnego planu leadership zależą od cech i staffu (np. `formSensitivity`, `leaderLoyalty`, analog rider/teamwork). Dobre i złe decyzje są legalnym gameplayem, nie bugiem.
+
+Implementacja jest deferred do wieloetapowego/virtual GC. Obecny jednodniowy race prototype tego nie buduje.
+
+## D-033 — Supervising watch clock, smooth simulation
+Oglądanie nie jest 1:1 z godzinami etapu, ale też nie jest skokiem „1s oglądania = 100s fizyki”.
+
+Zegar oglądania (Watch Race) jest nadzorujący: gracz wybiera tempo (np. ×1 / ×2 / ×5 / ×20). Symulacja dostosowuje się do tego zegara i pozostaje płynna. Gdyby na mapie trasy stały ikony kluczowych zawodników, ich pozycja ma wynikać z aktualnej prędkości, gapu, shelteru i terenu w danej chwili — bez teleportów.
+
+Fizyka zostaje kanoniczna (`R-001`). Prototype `dt = 1s` to krok referencyjny silnika, nie klatka filmu. Renderer może interpolować pozycje między krokami. `DecisionRequest` pauzuje zegar oglądania. Renderer nie steruje fizyką.
+
+Headless komenda `watch` jest na razie skrótem decyzji (start / pauza / meta), nie modelem Watch Race.
+
+## D-034 — Race next is the Hub primary on race day
+On a race-due day the Hub primary time-progress control relabels to **Race next** and enters `RacePreparationFlow`. Inbox remains a queue of items and does not launch the race.
+
+Normal Hub primary action stays **Advance Day** (D-006). The `AdvanceDay` command still cannot skip a due race. Race next only opens preparation; starting the race remains a later prep-menu command.

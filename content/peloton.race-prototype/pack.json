@@ -1,0 +1,12 @@
+{
+  "packId": "peloton.race-prototype",
+  "packVersion": "1.0.0",
+  "contentSchemaVersion": 1,
+  "resources": [
+    {
+      "kind": "racePrototypeScenarios",
+      "path": "race-prototype.json"
+    }
+  ],
+  "dependencies": []
+}

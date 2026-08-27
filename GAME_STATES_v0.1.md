@@ -16,7 +16,7 @@
 
 **Last reviewed:** 2026-08-25
 
-**Related decisions/ADRs:** D-004, D-005, D-006, D-008, D-009, D-013, D-014, D-031; OPEN - Hotseat RaceLive resolution
+**Related decisions/ADRs:** D-004, D-005, D-006, D-008, D-009, D-013, D-014, D-031, D-034; OPEN - Hotseat RaceLive resolution
 
 ---
 
@@ -257,6 +257,8 @@ Illegal transitions fail with a stable reason code and relevant entity/command I
 ## 6. Advance Day and scheduler runtime
 
 `AdvanceDay` is legal only in `Management`. It starts deterministic scheduler processing but does not change the GameState.
+
+When a race is due, the Hub primary control is **Race next** (D-034): it enters `RacePreparationFlow` instead of issuing `AdvanceDay`. `AdvanceDay` remains rejected until the race is completed. Inbox items do not launch this transition.
 
 ```text
 GameState = Management

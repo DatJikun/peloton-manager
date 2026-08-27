@@ -1316,6 +1316,9 @@ Target categories for the first playable important races:
 
 3. **Objective switch**
    - abandon sprint plan, protect GC, back breakaway rider, switch leader.
+   - later multi-stage: if the designated leader no longer has a realistic
+     knowledge-bounded chance at the team objective, redirect that rider to
+     support the teammate with the best remaining chance (`D-032`).
 
 4. **Two-card strategy**
    - preserve second leader / use as satellite / call back.
@@ -1418,10 +1421,12 @@ There is one canonical race engine.
 
 ### Watch Race
 
-- renderer receives race ViewState,
+- renderer receives race ViewState (route, rider positions, speeds, observed gaps),
 - simulation can pause on human DecisionRequest,
-- speeds may include ×1 / ×2 / ×5 / ×20,
-- renderer does not drive physics.
+- speeds may include ×1 / ×2 / ×5 / ×20 (`D-033`): the watch clock is supervisory
+  and simulation stays continuous so map icons follow actual speed,
+- renderer may interpolate between physics steps for smoothness,
+- renderer does not drive physics and must not teleport riders across quiet time.
 
 ### Fast / background simulation
 
@@ -1789,9 +1794,13 @@ Explicitly deferred from Race Engine v0 prototype:
 - advanced TT optimizer,
 - sprint train micro-positioning,
 - race-neutral-service detail,
-- historical era-specific communication implementations.
+- historical era-specific communication implementations,
+- multi-stage GC leadership transfer: a failing designated leader becoming
+  support for the teammate with the best remaining chance (`D-032`).
 
-Their future place in the architecture is reserved.
+Their future place in the architecture is reserved. The current prototype does
+not evaluate virtual GC, remaining-stage probability, or teamwork/loyalty
+policy for that switch.
 
 ---
 

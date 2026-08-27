@@ -40,6 +40,7 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
             VerifySqlite(candidatePath);
             WorldCheckpoint verified = Load(candidatePath);
             if (verified.GameState != checkpoint.GameState ||
+                verified.RacePreparation != checkpoint.RacePreparation ||
                 !string.Equals(
                     WorldChecksum.Compute(verified.World),
                     WorldChecksum.Compute(checkpoint.World),
@@ -108,7 +109,7 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                     $"Save world checksum does not match its snapshot. Expected {expectedChecksum}, actual {actualChecksum}.");
             }
 
-            return new WorldCheckpoint(snapshot.GameState, world);
+            return new WorldCheckpoint(snapshot.GameState, world, snapshot.RacePreparation);
         }
         catch (SqliteException exception)
         {
@@ -150,7 +151,10 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         WriteMetadata(connection, transaction, "rules_identity", checkpoint.World.RulesIdentity);
         WriteMetadata(connection, transaction, "world_checksum", WorldChecksum.Compute(checkpoint.World));
 
-        SaveSnapshotDto snapshot = new(checkpoint.GameState, WorldSnapshotDto.FromDomain(checkpoint.World));
+        SaveSnapshotDto snapshot = new(
+            checkpoint.GameState,
+            WorldSnapshotDto.FromDomain(checkpoint.World),
+            checkpoint.RacePreparation);
         using (SqliteCommand insert = connection.CreateCommand())
         {
             insert.Transaction = transaction;
@@ -243,7 +247,10 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         return options;
     }
 
-    private sealed record SaveSnapshotDto(GameState GameState, WorldSnapshotDto World);
+    private sealed record SaveSnapshotDto(
+        GameState GameState,
+        WorldSnapshotDto World,
+        RacePreparationCheckpoint? RacePreparation = null);
 
     private sealed record OrganizationDto(
         WorldEntityId Id,
@@ -254,12 +261,23 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         public Organization ToDomain() => new(Id, OriginDefinitionId, Name, DaysSimulated);
     }
 
-    private sealed record StubRaceDto(
+    private sealed record RaceDto(
         string RouteId,
         WorldEntityId WinnerId,
         IReadOnlyList<WorldEntityId> FinishOrder)
     {
-        public StubRaceSummary ToDomain() => new(RouteId, WinnerId, FinishOrder);
+        public RaceSummary ToDomain() => new(RouteId, WinnerId, FinishOrder);
+    }
+
+    private sealed record CalendarEntryDto(
+        WorldEntityId Id,
+        int DayNumber,
+        CalendarEntryKind Kind,
+        string Title,
+        string? OfficialResult = null,
+        bool ResultAcknowledged = false)
+    {
+        public CalendarEntry ToDomain() => new(Id, DayNumber, Kind, Title, OfficialResult, ResultAcknowledged);
     }
 
     private sealed record WorldSnapshotDto(
@@ -277,7 +295,11 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         IReadOnlyList<OrganizationDto> Organizations,
         IReadOnlyList<DecisionAuthority> DecisionAuthorities,
         int RaceCount,
-        StubRaceDto? LastRace)
+        RaceDto? LastRace,
+        int CalendarPeriodDays,
+        int LastCompletedRaceDay,
+        IReadOnlyList<string> LastDayNotes,
+        IReadOnlyList<CalendarEntryDto>? CalendarEntries = null)
     {
         public static WorldSnapshotDto FromDomain(WorldState world)
         {
@@ -304,10 +326,22 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                 world.RaceCount,
                 world.LastRace is null
                     ? null
-                    : new StubRaceDto(
+                    : new RaceDto(
                         world.LastRace.RouteId,
                         world.LastRace.WinnerId,
-                        world.LastRace.FinishOrder));
+                        world.LastRace.FinishOrder),
+                world.CalendarPeriodDays,
+                world.LastCompletedRaceDay,
+                world.LastDayNotes.ToArray(),
+                world.CalendarEntries
+                    .Select(entry => new CalendarEntryDto(
+                        entry.Id,
+                        entry.DayNumber,
+                        entry.Kind,
+                        entry.Title,
+                        entry.OfficialResult,
+                        entry.ResultAcknowledged))
+                    .ToArray());
         }
 
         public WorldState ToDomain()
@@ -327,7 +361,12 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                 Organizations.Select(organization => organization.ToDomain()),
                 DecisionAuthorities,
                 RaceCount,
-                LastRace?.ToDomain());
+                LastRace?.ToDomain(),
+                CalendarPeriodDays > 0 ? CalendarPeriodDays : 12,
+                LastCompletedRaceDay,
+                LastDayNotes ?? Array.Empty<string>(),
+                (CalendarEntries ?? Array.Empty<CalendarEntryDto>())
+                    .Select(entry => entry.ToDomain()));
         }
     }
 }

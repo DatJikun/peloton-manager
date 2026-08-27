@@ -8,5 +8,6 @@
     <ProjectReference Include="../../src/Peloton.Content/Peloton.Content.csproj" />
     <ProjectReference Include="../../src/Peloton.Infrastructure/Peloton.Infrastructure.csproj" />
     <ProjectReference Include="../../src/Peloton.Persistence/Peloton.Persistence.csproj" />
+    <ProjectReference Include="../../tools/Peloton.SimRunner/Peloton.SimRunner.csproj" />
   </ItemGroup>
 </Project>

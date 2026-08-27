@@ -204,14 +204,16 @@ Przykład:
 Wpływa na:
 - zmianę zaplanowanego lidera przed wyścigiem,
 - wybór składu,
-- skłonność do skracania długoterminowego planu po słabych wynikach.
+- skłonność do skracania długoterminowego planu po słabych wynikach,
+- w wieloetapowym wyścigu: wcześniejsze uznanie, że wyznaczony lider nie ma już realistycznych szans (`D-032`).
 
 ### `leaderLoyalty`
 
 Wpływa na:
 - utrzymanie leadership promise,
 - liczbę szans po słabszych występach,
-- reakcję na eksplozję formy drugiego lidera.
+- reakcję na eksplozję formy drugiego lidera,
+- opór przed przekształceniem słabnącego GC lidera w wsparcie dla kolegi z lepszymi pozostałymi szansami (`D-032`).
 
 ### `dataReliance`
 

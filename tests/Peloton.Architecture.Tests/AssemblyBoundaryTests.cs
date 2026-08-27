@@ -62,4 +62,14 @@ public sealed class AssemblyBoundaryTests
                 reference => reference.Name?.Contains("Godot", StringComparison.OrdinalIgnoreCase) == true);
         }
     }
+
+    [Fact]
+    public void GameplayAssembliesContainNoStubRaceEngineType()
+    {
+        IEnumerable<Type> forbidden = GameplayAssemblies
+            .SelectMany(assembly => assembly.GetTypes())
+            .Where(type => type.Name == "StubRaceEngine");
+
+        Assert.Empty(forbidden);
+    }
 }

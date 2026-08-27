@@ -21,13 +21,14 @@ public sealed record RulesModuleIdentity(
     int ContractVersion,
     string ParameterIdentity);
 
-public sealed record StubRaceSummary(
+public sealed record RaceSummary(
     string RouteId,
     WorldEntityId WinnerId,
     IReadOnlyList<WorldEntityId> FinishOrder);
 
 public sealed class WorldState
 {
+    private readonly List<string> lastDayNotes;
     private readonly WorldEntityIdAllocator entityIdAllocator;
     private readonly List<Person> persons;
     private readonly List<ManagerCareer> managerCareers;
@@ -35,6 +36,7 @@ public sealed class WorldState
     private readonly List<Organization> organizations;
     private readonly List<DecisionAuthority> decisionAuthorities;
     private readonly List<RulesModuleIdentity> rulesModules;
+    private readonly List<CalendarEntry> calendarEntries;
 
     public WorldState(
         string worldId,
@@ -51,7 +53,11 @@ public sealed class WorldState
         IEnumerable<Organization> organizations,
         IEnumerable<DecisionAuthority> decisionAuthorities,
         int raceCount = 0,
-        StubRaceSummary? lastRace = null)
+        RaceSummary? lastRace = null,
+        int calendarPeriodDays = 12,
+        int lastCompletedRaceDay = 0,
+        IEnumerable<string>? lastDayNotes = null,
+        IEnumerable<CalendarEntry>? calendarEntries = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(worldId);
         ArgumentNullException.ThrowIfNull(contentIdentity);
@@ -59,6 +65,8 @@ public sealed class WorldState
 
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(rngContractVersion);
         ArgumentOutOfRangeException.ThrowIfNegative(raceCount);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(calendarPeriodDays);
+        ArgumentOutOfRangeException.ThrowIfNegative(lastCompletedRaceDay);
 
         WorldId = worldId;
         MasterSeed = masterSeed;
@@ -75,6 +83,10 @@ public sealed class WorldState
         this.decisionAuthorities = decisionAuthorities.OrderBy(authority => authority.Id.Value).ToList();
         RaceCount = raceCount;
         LastRace = lastRace;
+        CalendarPeriodDays = calendarPeriodDays;
+        LastCompletedRaceDay = lastCompletedRaceDay;
+        this.lastDayNotes = (lastDayNotes ?? Array.Empty<string>()).ToList();
+        this.calendarEntries = SortCalendarEntries(calendarEntries ?? Array.Empty<CalendarEntry>());
     }
 
     public string WorldId { get; }
@@ -105,7 +117,35 @@ public sealed class WorldState
 
     public int RaceCount { get; private set; }
 
-    public StubRaceSummary? LastRace { get; private set; }
+    public RaceSummary? LastRace { get; private set; }
+
+    public int CalendarPeriodDays { get; }
+
+    public int LastCompletedRaceDay { get; private set; }
+
+    public IReadOnlyList<string> LastDayNotes => lastDayNotes;
+
+    public IReadOnlyList<CalendarEntry> CalendarEntries => calendarEntries;
+
+    public bool IsRaceDue =>
+        CurrentDate.DayNumber > 0 &&
+        CurrentDate.DayNumber % CalendarPeriodDays == 0 &&
+        LastCompletedRaceDay != CurrentDate.DayNumber;
+
+    public int NextRaceDayNumber
+    {
+        get
+        {
+            if (IsRaceDue)
+            {
+                return CurrentDate.DayNumber;
+            }
+
+            return ((CurrentDate.DayNumber / CalendarPeriodDays) + 1) * CalendarPeriodDays;
+        }
+    }
+
+    public int DaysUntilNextRace => NextRaceDayNumber - CurrentDate.DayNumber;
 
     public WorldEntityId AllocateEntityId() => entityIdAllocator.Allocate();
 
@@ -119,10 +159,101 @@ public sealed class WorldState
         CurrentDate = CurrentDate.NextDay();
     }
 
-    public void RecordStubRace(StubRaceSummary result)
+    public void RecordRace(RaceSummary result)
     {
         ArgumentNullException.ThrowIfNull(result);
         LastRace = result;
         RaceCount = checked(RaceCount + 1);
+        LastCompletedRaceDay = CurrentDate.DayNumber;
+
+        string officialResult = string.Create(
+            System.Globalization.CultureInfo.InvariantCulture,
+            $"Winner {result.WinnerId.Value}");
+        int entryIndex = calendarEntries.FindIndex(entry =>
+            entry.DayNumber == CurrentDate.DayNumber && entry.Kind == CalendarEntryKind.Race);
+        if (entryIndex >= 0)
+        {
+            CalendarEntry existing = calendarEntries[entryIndex];
+            calendarEntries[entryIndex] = new CalendarEntry(
+                existing.Id,
+                existing.DayNumber,
+                existing.Kind,
+                existing.Title,
+                officialResult,
+                ResultAcknowledged: false);
+        }
+
+        EnsureUpcomingRaceEntry();
+    }
+
+    public bool AcknowledgeRaceResult(WorldEntityId entryId)
+    {
+        int entryIndex = calendarEntries.FindIndex(entry => entry.Id == entryId);
+        if (entryIndex < 0)
+        {
+            return false;
+        }
+
+        CalendarEntry existing = calendarEntries[entryIndex];
+        if (existing.OfficialResult is null || existing.ResultAcknowledged)
+        {
+            return false;
+        }
+
+        calendarEntries[entryIndex] = existing with { ResultAcknowledged = true };
+        return true;
+    }
+
+    public void EnsureUpcomingRaceEntry()
+    {
+        int nextRaceDay = NextRaceDayNumber;
+        if (calendarEntries.Any(entry => entry.DayNumber == nextRaceDay))
+        {
+            return;
+        }
+
+        calendarEntries.Add(new CalendarEntry(
+            AllocateEntityId(),
+            nextRaceDay,
+            CalendarEntryKind.Race,
+            "Skeleton race"));
+        calendarEntries.Sort(CompareCalendarEntries);
+    }
+
+    private static List<CalendarEntry> SortCalendarEntries(IEnumerable<CalendarEntry> entries)
+    {
+        return entries.OrderBy(entry => entry.DayNumber).ThenBy(entry => entry.Id.Value).ToList();
+    }
+
+    private static int CompareCalendarEntries(CalendarEntry left, CalendarEntry right)
+    {
+        int dayComparison = left.DayNumber.CompareTo(right.DayNumber);
+        return dayComparison != 0 ? dayComparison : left.Id.Value.CompareTo(right.Id.Value);
+    }
+
+    public void CaptureDayNotes(AccessContext access)
+    {
+        lastDayNotes.Clear();
+        Organization? employer = access.CurrentOrganizationId is WorldEntityId orgId
+            ? organizations.FirstOrDefault(organization => organization.Id == orgId)
+            : null;
+        if (employer is null)
+        {
+            lastDayNotes.Add("You are unemployed.");
+        }
+        else
+        {
+            lastDayNotes.Add($"Your organization {employer.Name} worked the day.");
+        }
+
+        if (organizations.Count > 1)
+        {
+            lastDayNotes.Add("The rest of the world advanced.");
+        }
+
+        if (IsRaceDue)
+        {
+            lastDayNotes.Add("A race is due today.");
+        }
     }
 }

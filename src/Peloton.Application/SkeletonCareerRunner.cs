@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Linq;
 using Peloton.Domain;
 using Peloton.Simulation;
 
@@ -16,6 +15,7 @@ public sealed record SkeletonRunReport(
 public sealed class SkeletonCareerRunner
 {
     public const int DaysPerSeason = 12;
+    private const string PrototypeRaceScenarioId = "race-scenario.peloton.prototype-v0";
 
     private readonly GameApplication application;
 
@@ -40,13 +40,23 @@ public sealed class SkeletonCareerRunner
                 }
 
                 Ensure(application.Execute(new PrepareRaceCommand()));
-                WorldEntityId[] startList = application.World!.Persons.Select(person => person.Id).ToArray();
+                Ensure(application.Execute(new ConfirmRacePreparationPlanCommand()));
                 string autosavePath = Path.Combine(autosaveDirectory, $"season-{season}-pre-race.peloton");
                 Ensure(application.Execute(new StartRaceCommand(
                     autosavePath,
-                    "route.skeleton.flat",
-                    startList)));
-                Ensure(application.Execute(new CompleteStubRaceCommand()));
+                    PrototypeRaceScenarioId)));
+                while (application.State == GameState.RaceLive)
+                {
+                    Ensure(application.Execute(new AdvanceRaceCommand()));
+                    if (application.PendingRaceDecision is PendingRaceDecision decision)
+                    {
+                        Ensure(application.Execute(new RespondToRaceDecisionCommand(
+                            decision.RequestId,
+                            decision.AuthorityId,
+                            decision.DelegatedDefaultOption)));
+                    }
+                }
+
                 Ensure(application.Execute(new AcknowledgeRaceResultsCommand()));
                 Ensure(application.Execute(new CompleteRaceDebriefCommand()));
             }

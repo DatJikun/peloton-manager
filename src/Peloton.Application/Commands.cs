@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Peloton.Domain;
 
 namespace Peloton.Application;
@@ -13,16 +12,34 @@ public sealed record LoadGameCommand(string Path);
 
 public sealed record PrepareRaceCommand;
 
+public sealed record CancelRacePreparationCommand;
+
+public sealed record ConfirmRacePreparationPlanCommand;
+
+public sealed record FollowHubPrimaryActionCommand;
+
 public sealed record StartRaceCommand(
     string PreRaceAutosavePath,
-    string RouteId,
-    IReadOnlyList<WorldEntityId> StartList);
+    string RaceScenarioId);
 
-public sealed record CompleteStubRaceCommand;
+public sealed record SimulateRaceCommand(string RaceScenarioId);
+
+public sealed record AdvanceRaceCommand;
+
+public sealed record BeginRaceWatchCommand(int Rate);
+
+public sealed record AdvanceRaceWatchCommand;
+
+public sealed record RespondToRaceDecisionCommand(
+    RaceDecisionRequestId RequestId,
+    WorldEntityId AuthorityId,
+    RaceDecisionOption SelectedOption);
 
 public sealed record AcknowledgeRaceResultsCommand;
 
 public sealed record CompleteRaceDebriefCommand;
+
+public sealed record ArchiveInboxItemCommand(string Identity);
 
 public sealed record CommandResult(bool Succeeded, string ReasonCode)
 {

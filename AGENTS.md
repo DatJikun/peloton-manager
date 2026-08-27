@@ -5,14 +5,15 @@
 ### What this repository currently is
 This is a **pre-production** repository for *Peloton Manager* (a deterministic
 cycling-management game). Design docs remain the source of contracts. Milestone 0
-(Architecture Skeleton) now exists as a headless .NET 8 solution: `PelotonManager.sln`,
-`dotnet test`, and `tools/Peloton.SimRunner`. There is still **no playable game UI**.
-Godot is a compile stub only. `StubRaceEngine` is not the real race engine — see
-`KNOWN_DIFFERENCE_FROM_CODE.md`. Several docs are written in Polish.
+(Architecture Skeleton) exists as a headless .NET 8 solution: `PelotonManager.sln`,
+`dotnet test`, and `tools/Peloton.SimRunner`. The race prototype (`PrototypeRaceEngine`)
+is the official result path; it is still below `RACE_ENGINE_DESIGN_v0.2.md` — see
+`KNOWN_DIFFERENCE_FROM_CODE.md`. There is still **no playable game UI**.
+Godot is a compile stub only. Several docs are written in Polish.
 
 Do not fabricate build/test/run results. After the skeleton, run the real commands in
-`HANDOFF.md`. Do not expand the race stub into `RACE_ENGINE_DESIGN_v0.2.md` without a
-separately scoped task.
+`HANDOFF.md`. Do not treat the race prototype as a passed fun gate, and do not restore
+`StubRaceEngine` as official results.
 
 Start reading from `README_FOR_EXTERNAL_AI.md` → `VISION.md` → `DECISIONS.md` →
 `HANDOFF.md` → `DOCS.md`. `DOCS.md` is the canonical index. Pre-code contracts exist as
@@ -35,7 +36,11 @@ exists, run from the repo root:
 - `dotnet format --verify-no-changes`  (lint/format check)
 - `dotnet build`
 - `dotnet test`
-- `dotnet run --project tools/Peloton.SimRunner -- <scenario>`  (headless sim check)
+- `dotnet run --project tools/Peloton.SimRunner -- run --scenario scenario.peloton.skeleton --years 10 --seed 91234`
+- `dotnet run --project tools/Peloton.SimRunner -- race --scenario race-scenario.peloton.prototype-v0 --seed 91234`
+- `dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13`
+- `dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --follow-hub`
+- `dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --through-races`
 
 `HANDOFF.md` and `CODEBASE_MAP.md` already list the real skeleton commands and projects.
 Keep them current when the layout changes.

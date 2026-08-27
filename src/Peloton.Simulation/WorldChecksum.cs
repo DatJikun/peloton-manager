@@ -82,6 +82,26 @@ public static class WorldChecksum
                     writer.Write(rider.Value);
                 }
             }
+
+            writer.Write(world.CalendarPeriodDays);
+            writer.Write(world.LastCompletedRaceDay);
+            writer.Write(world.LastDayNotes.Count);
+            foreach (string note in world.LastDayNotes)
+            {
+                writer.Write(note);
+            }
+
+            foreach (CalendarEntry entry in world.CalendarEntries
+                         .OrderBy(entry => entry.DayNumber)
+                         .ThenBy(entry => entry.Id.Value))
+            {
+                writer.Write(entry.Id.Value);
+                writer.Write(entry.DayNumber);
+                writer.Write((int)entry.Kind);
+                writer.Write(entry.Title);
+                writer.Write(entry.OfficialResult ?? string.Empty);
+                writer.Write(entry.ResultAcknowledged);
+            }
         }
 
         return Convert.ToHexString(SHA256.HashData(buffer.ToArray()));

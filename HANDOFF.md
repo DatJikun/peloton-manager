@@ -10,13 +10,13 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`Milestone 0 — Architecture Skeleton`
+`Career Watch uses supervising clock`
 
 ### Goal
-Bootstrap headless C# world with deterministic time, identity, content/rules identity, GameState isolation, SQLite save/load, and repeatable skeleton seasons.
+After Confirm, the career Watch path uses the same RaceLive session, `session.Step`, and D-033 supervising clock (`×1` / `×2` / `×5` / `×20`, pause on `DecisionRequest`).
 
 ### Status
-`ON MAIN` — Architecture Skeleton merged (`#9`).
+Career loop is on this tree together with the HTML UI lab (`08e` / `10` / `12` / `14-race.html` at repo root; rejected variants in `archive/`). SimRunner `day --watch-from-prep --rate <n>` follows Hub, confirms prep, `StartRace`s into `RaceLive`, and drives `RaceWatchClock` on that session. CLI prints `state=RaceLive`, `rate=`, `watchSecond=`, `simSecond=`, `paused=` on decisions, then `state=RaceResultsFlow` and `result=` from `LastRace`. It does not Simulate and does not impersonate Hub Advance Day during RaceLive. Standalone `watch`, Simulate, and `--through-races` keep their previous behavior. Debrief still uses committed result facts, not `TacticalPlans`. SchemaVersion remains 1. Godot Watch and owner §49 still remain open. `D-032` remains deferred.
 
 ## What works now
 - [x] High-level game design v0.7
@@ -44,7 +44,15 @@ Bootstrap headless C# world with deterministic time, identity, content/rules ide
 - [x] Versioned seed derivation and deterministic checksum
 - [x] SQLite SchemaVersion 1 save/load with content/rules identity
 - [x] Pre-race autosave, RaceLive save rejection, and crash recovery
-- [x] Deterministic race stub and 10-season SimRunner
+- [x] Prototype race engine (physics, groups, chase decisions, Race Spy) and 10-season SimRunner
+- [x] Thin career day loop: Hub projection, race-due Advance Day block, SimRunner `day`
+- [x] Hub primary action: Advance Day on normal days, Race next on race-due days; `FollowHubPrimaryActionCommand` enters preparation
+- [x] Race preparation projection and Cancel / Confirm / Watch / Simulate commands; Simulate uses the canonical engine, seed derivation, and delegated defaults
+- [x] Confirmed prep plan round-trips in the application checkpoint at SQLite SchemaVersion 1
+- [x] Headless Watch supervising clock with rate control, decision pause/resume, and RNG-neutral focal-rider motion projection
+- [x] Race result and debrief projections after Simulate/Watch; debrief uses committed LastRace facts, not TacticalPlans
+- [x] Career Watch from prep uses the D-033 supervising clock on the live RaceLive session
+- [x] Career calendar entries (domain system of record) and inbox query (race-due + race-result); archive cannot dismiss race deadlines
 - [x] Headless domain/application/persistence/architecture tests
 
 ## What is currently being changed
@@ -65,7 +73,7 @@ Bootstrap headless C# world with deterministic time, identity, content/rules ide
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task
-`Wybierz jedno osobno scoped następne zadanie (race prototype albo cienki core loop). Nie rozbudowuj StubRaceEngine do prawdziwego Race Engine bez osobnego taska i playtest gate.`
+`Watch Race on Godot (D-033). Do not close §49 with automations. Do not implement D-032.`
 
 ## Known blockers
 - None.
@@ -120,9 +128,14 @@ dostał powiadomienie.
 - `2026-08-25` — Rules transitions są effective-dated i wymagają jawnego grandfathering, conversion, validation oraz repair policy.
 - `2026-08-25` — TESTING_v0.1.md jest kontraktem warstw, goldenów i gate'ów; nie implementuje testów.
 - `2026-08-25` — Kanoniczna ścieżka developmentu/testów to Dynamic + Advanced + Guessed. Trzy osie New Game zostają niezależnymi polami scenariusza, nie 27 osobnymi grami.
+- `2026-08-26` — W wieloetapowym wyścigu słaby wyznaczony lider, który nie ma już realistycznych szans, powinien wspierać kolegę z najlepszymi pozostałymi szansami. Ocena knowledge-bounded; AI też podejmuje tę decyzję, czasem dobrze, czasem źle, zależnie od cech (np. teamwork / `formSensitivity` / `leaderLoyalty`). `D-032`, deferred poza obecnym race prototype.
+- `2026-08-26` — Wstępny playtest §49: decyzje prototypu „póki co chyba tak”, jeśli oglądanie nie jest godzinami 1:1. Doprecyzowanie: zegar oglądania nadzoruje, symulacja jest płynna (mapa/ikony z prędkości), nie skok 1s=100s. `D-033`. Gate niezamknięty (brak UI).
+- `2026-08-26` — Skrzynka nie otwiera wyścigu. Na dniu wyścigu główny guzik postępu (Advance Day) zmienia nazwę na Race next i wchodzi w menu przygotowania. `D-034`.
 
 ## Owner feedback / project experience
 Wcześniejszy Ping-Pong Manager był rozwijany przez miesiące z AI i technicznie osiągnął sporo, ale ostatecznie główny gameplay okazał się nudny, ponieważ w trakcie meczu brakowało ciekawych decyzji. W Peloton Managerze jest to jawna lekcja projektowa: nie budować kolejnych warstw na pętli, która nie przeszła ręcznego testu fun/decision density.
+
+2026-08-26: właściciel uznał dwie decyzje prototypu (pościg vs czekanie na rywali) za wstępnie ciekawe. Oglądanie ma być płynnym filmem z nadzorującym zegarem i ikonami według prędkości, nie highlightem ze skokami czasu. Nie zamyka to §49.
 
 ## Relevant docs
 ```text
@@ -160,10 +173,22 @@ dotnet format --verify-no-changes
 dotnet build PelotonManager.sln
 dotnet test PelotonManager.sln
 dotnet run --project tools/Peloton.SimRunner -- run --scenario scenario.peloton.skeleton --years 10 --seed 91234
+dotnet run --project tools/Peloton.SimRunner -- race --scenario race-scenario.peloton.prototype-v0 --seed 91234
+dotnet run --project tools/Peloton.SimRunner -- watch --scenario race-scenario.peloton.prototype-v0 --seed 91234
+dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13
+dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --follow-hub
+dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --through-races
+dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --simulate-from-prep
+dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --simulate-from-prep --through-results
+dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --watch-from-prep --rate 5
 ```
 
+`race --scenario race.prototype.gate` is an alias for the same fixture.
+
 ## Things the next AI must NOT do
-- Nie traktuj `StubRaceEngine` jako implementacji `RACE_ENGINE_DESIGN_v0.2.md`; przeczytaj `KNOWN_DIFFERENCE_FROM_CODE.md`.
+- Nie traktuj race prototype jako ukończonego `RACE_ENGINE_DESIGN_v0.2.md`; przeczytaj `KNOWN_DIFFERENCE_FROM_CODE.md`.
+- Nie twierdź, że §49 fun gate przeszedł; jest tylko wstępny werdykt z 2026-08-26, bez UI, pod warunkiem D-033.
+- Nie przywracaj `StubRaceEngine` jako źródła oficjalnych wyników.
 - Nie przenoś logiki gameplayowej do Godot UI.
 - Nie twórz `new Random()` w systemach gameplayowych.
 - Nie zmieniaj schema save/content bez migration planu.
@@ -172,11 +197,11 @@ dotnet run --project tools/Peloton.SimRunner -- run --scenario scenario.peloton.
 - Nie zamykaj OQ-TS-001 ani OQ-DM-001 na podstawie checksumy lub allocatora szkieletowego.
 
 ## Handoff summary
-Milestone 0 now has a working headless .NET 8 skeleton. A JSON scenario creates one world with recorded content/rules identity; Application owns the nine GameStates and Commands; Advance Day advances every organization; SQLite SchemaVersion 1 preserves the minimal career checkpoint and rejects invalid/corrupt loads; RaceLive requires a pre-race autosave and blocks manual save; SimRunner completes deterministic short seasons without Godot. `StubRaceEngine` is explicitly below the accepted Race Engine contract. Full physics, Knowledge, AI managers, DecisionTrace/Spy, and gameplay systems remain unimplemented.
+Milestone 0 still supplies the headless .NET 8 spine. The race prototype on this branch is now the official result path: `PrototypeRaceEngine` plus `content/peloton.race-prototype`, Application commands `StartRaceCommand` / `AdvanceRaceCommand` / `RespondToRaceDecisionCommand`, and SimRunner `race`. A pending DecisionRequest stays in `RaceLive`. SimRunner `watch` and career `day --watch-from-prep` use the D-033 supervising clock over sequential one-second physics while preserving the official result. After Simulate/Watch, `RaceResultProjection` and `RaceDebriefProjection` present the committed result and a knowledge-bounded debrief without a second `RunBatch`. Spy OFF/ON must match checksum and finish order. `StubRaceEngine` is gone from production assemblies. SQLite `SchemaVersion` remains 1. Owner §49 remains `NOT VERIFIED`; Godot Watch is still the next task. `D-032` (failed GC leader becoming support) is deferred.
 
-The paragraph below preserves the pre-bootstrap design context and owner lessons; implementation status is given above and in `CODEBASE_MAP.md`.
+This tree joins that career loop onto `main` without dropping the HTML UI lab. The paragraph below preserves the pre-bootstrap design context and owner lessons; implementation status is given above and in `CODEBASE_MAP.md`.
 
-Peloton Manager jest na etapie pre-production. Celem jest modularny, deterministyczny manager kolarstwa z matematyczną symulacją i emergent history. Epoki składają się z niezależnych modułów content/rules. Race gameplay jest krytycznym ryzykiem: wcześniejszy projekt managerski właściciela okazał się nudny przez brak ciekawych decyzji w trakcie meczu, więc realizm nie może usprawiedliwiać pasywnej rozgrywki. RNG musi być izolowany per domena, aby kosmetyczne zmiany nie wpływały na gameplay. Truth należy do Simulation, natomiast Knowledge do konkretnych organizacji. Human i AI używają tych samych Application Commands oraz rynku; AI nie posiada magicznego dostępu do ukrytych atrybutów. Wyniki są evidence, a nie bezpośrednim odczytem ability. Dossier jest sprawą rekrutacyjną z kontaktem z agentem, a nie paskiem postępu. UI Godota nie może posiadać logiki świata. Advance Day jest jedyną podstawową jednostką postępu UX, ale scheduler pozostaje event-driven i symuluje cały świat niezależnie od gracza. AI managerowie korzystają z tych samych Commands co człowiek; ich różnorodność wynika z traits, skills, knowledge, staffu, identity organizacji i kontekstu rulesetu. Efektywność cech managerów jest mierzona przez batchowe i 100-letnie symulacje w wielu epokach. Stable IDs nigdy nie są ponownie używane, a stare encje są kompaktowane zamiast kasowane z historii. UI Sitemap, Game States, minimalny Data Model, Content Format, Rulesets, Save Format i Testing są w DRAFT i czekają na owner review. Content resolution zapisuje dokładną tożsamość packów, dependencies i overrides. Rules modules składają świat bez globalnego przełącznika epoki, a ich przejścia są effective-dated. Save jest kontraktem pliku SQLite z wersją schematu, obowiązkową migracją, recovery i dokładną content/rules identity; nie zawiera mid-race snapshotu ani scheduler runtime jako World State. Testing definiuje warstwy, golden families, kanoniczny przepis Dynamic+Advanced+Guessed i gate Milestone 0; nie zamyka fun gate'u automatami. Race research został przełożony na RACE_ENGINE_DESIGN_v0.2, ale gameplay coding i race spike nie należą do bieżącego gate'u.
+Peloton Manager jest na etapie pre-production. Celem jest modularny, deterministyczny manager kolarstwa z matematyczną symulacją i emergent history. Epoki składają się z niezależnych modułów content/rules. Race gameplay jest krytycznym ryzykiem: wcześniejszy projekt managerski właściciela okazał się nudny przez brak ciekawych decyzji w trakcie meczu, więc realizm nie może usprawiedliwiać pasywnej rozgrywki. RNG musi być izolowany per domena, aby kosmetyczne zmiany nie wpływały na gameplay. Truth należy do Simulation, natomiast Knowledge do konkretnych organizacji. Human i AI używają tych samych Application Commands oraz rynku; AI nie posiada magicznego dostępu do ukrytych atrybutów. Wyniki są evidence, a nie bezpośrednim odczytem ability. Dossier jest sprawą rekrutacyjną z kontaktem z agentem, a nie paskiem postępu. UI Godota nie może posiadać logiki świata. Advance Day jest jedyną podstawową jednostką postępu UX, ale scheduler pozostaje event-driven i symuluje cały świat niezależnie od gracza. AI managerowie korzystają z tych samych Commands co człowiek; ich różnorodność wynika z traits, skills, knowledge, staffu, identity organizacji i kontekstu rulesetu. Efektywność cech managerów jest mierzona przez batchowe i 100-letnie symulacje w wielu epokach. Stable IDs nigdy nie są ponownie używane, a stare encje są kompaktowane zamiast kasowane z historii. UI Sitemap, Game States, minimalny Data Model, Content Format, Rulesets, Save Format i Testing są w DRAFT i czekają na owner review. Content resolution zapisuje dokładną tożsamość packów, dependencies i overrides. Rules modules składają świat bez globalnego przełącznika epoki, a ich przejścia są effective-dated. Save jest kontraktem pliku SQLite z wersją schematu, obowiązkową migracją, recovery i dokładną content/rules identity; nie zawiera mid-race snapshotu ani scheduler runtime jako World State. Testing definiuje warstwy, golden families, kanoniczny przepis Dynamic+Advanced+Guessed i gate Milestone 0; nie zamyka fun gate'u automatami. Race prototype v0 jest oficjalną ścieżką wyników, ale nadal poniżej pełnego kontraktu `RACE_ENGINE_DESIGN_v0.2.md`; §49 pozostaje do ręcznego playtestu właściciela.
 
 - `2026-08-25` — Race Spy jest obowiązkowym, RNG-neutral narzędziem debugowym od pierwszego headless race spike; porównuje truth z actor knowledge i generuje reprodukowalne raporty decyzji.
 
@@ -193,3 +218,4 @@ Peloton Manager jest na etapie pre-production. Celem jest modularny, determinist
 - `2026-08-26` — Avatar prototype: właściciel zaakceptował styl `poster` i odrzucił `09-avatar-lab.html` (usunięty). Dodany skill `.cursor/skills/peloton-avatars/SKILL.md` — instrukcja obsługi dla innych agentów (zamknięte decyzje o guście, niezmienny kadr, tabele przepisów, profile stylu, obowiązkowa bramka bake/validate/selftest/render_demo, pułapki rysunkowe). Przy okazji naprawiony realny błąd kontraktowy: dobór assetów po sumie wag przesuwał twarze istniejących zawodników po każdym dodaniu assetu. Teraz jest wyścig wykładniczy na hashach per asset z logarytmem stałoprzecinkowym (bez libm, identycznie w C#): dodanie assetu o wadze w przenosi tylko w/(W+w) puli i wyłącznie na nowy asset, zero przetasowań; wycofanie assetu (`weight: 0`) rusza tylko tych, którzy go mieli. Docelowo dodatkowo materializacja bloków `identity`/`shape` w save.
 
 - `2026-08-26` — Skill `peloton-avatars` przetestowany na obcym agencie (dodanie fryzury wyłącznie z instrukcji). Test wykrył realny defekt: literówka w kluczu przepisu (`excludes_tags` zamiast `excludes`) przechodziła całą bramkę i publikowała asset bez reguły blokującej. Naprawione: `check_recipe` odrzuca nieznane klucze, nieznane style i nieznane tagi z podpowiedzią; doszedł `scripts/asset_usage.py` (udział assetu w puli + licznik naruszeń blokady); `asset_pack_version` dostaje odcisk liczony ze stylu, tabeli assetów i bajtów wszystkich PNG (wcześniej `flat` i `flat_outline` miały tę samą wersję, czyli kolizję cache), a `asset_table_hash` pilnuje, żeby plansza porównania stylów nie mieszała świeżych i nieświeżych pakietów. Self-test: 45 asercji.
+- `2026-08-27` — Właściciel kazał złączyć pętlę kariery z `main`. Jedno drzewo: PrototypeRaceEngine + Hub/inbox/prep/Watch razem z HTML labem (`08e` / `10` / `12` / `14-race.html`). Godot Watch i §49 nadal otwarte.

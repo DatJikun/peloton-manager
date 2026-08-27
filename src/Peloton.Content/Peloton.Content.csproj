@@ -3,5 +3,6 @@
     <ProjectReference Include="../Peloton.Application/Peloton.Application.csproj" />
     <ProjectReference Include="../Peloton.Domain/Peloton.Domain.csproj" />
     <ProjectReference Include="../Peloton.Rules/Peloton.Rules.csproj" />
+    <ProjectReference Include="../Peloton.Simulation/Peloton.Simulation.csproj" />
   </ItemGroup>
 </Project>
