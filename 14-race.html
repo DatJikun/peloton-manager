@@ -1,29 +1,16 @@
 <!doctype html>
 <!--
-  12 — DASHBOARD · TEAM COLOR+ · więcej barwy zespołu (Peloton Manager)
-  Kierunek właściciela: koncept 08e (plakat czerwień/czerń/papier, ukośna oś, stack typu).
-  Prototyp UI/UX, sterowanie myszką. Interakcje: lista 5 nadchodzących wyścigów
-  przełącza panel wyścigu (profil trasy PŁYNNIE MORPHUJE między parcoursami —
-  interpolacja punktów SVG), skład sortuje się kliknięciem nagłówka, Ustawienia
-  otwierają modal (zapis / wczytanie / tryb jasny-ciemny / prędkość symulacji).
-  Sidebar: Biurko, Skład, Sztab, Kalendarz, Wyścigi, Sponsorzy, Finanse,
-  Skauting, Historia, Pomoc; na dole Ustawienia nad kartą managera (kariera
-  i osiągnięcia). Cel wyścigu usunięty z panelu na prośbę właściciela.
-
-  Rodowód: 08e-constructivist-desk.html (Forever: constructivism/08-type-stack +
-  constructivism/04-black-square) rozszerzony do pełnego dashboardu.
-  Zastosowane reguły (skill ui-ux-pro-max): jeden główny CTA na ekran (Advance Day),
-  nawigacja sidebar z ikonami SVG (nie emoji) i wyróżnionym stanem aktywnym, skala
-  typografii 11/12/14/17/28/44, rytm odstępów 4/8px, tabularne liczby w danych,
-  kontrasty AA na papierze, stany focus widoczne, ruch 150–400 ms tylko transform/
-  opacity, prefers-reduced-motion. Bez hero-metrics, bez rekomendacji sztabu,
-  bez workload %.
+  14 — WYŚCIG · karta wyścigu (Peloton Manager)
+  Sekcja „Wyścigi" w ustalonym systemie: konstruktywizm (08e), gęstość koloru
+  zespołu 12, tło Pasma. Wejście z biurka: link „trasa ›" w panelu wyścigu;
+  powrót: „← Biurko". Profil trasy rysowany z punktów km — docelowo z silnika.
+  Sterowanie myszką. Zawartość poglądowa.
 -->
 <html lang="pl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>12 — Dashboard Team Color+ · Peloton Manager</title>
+<title>14 — Wyścig: Milano–Torino · Peloton Manager</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=PT+Sans:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -330,7 +317,6 @@ body.dark .bg-bar{opacity:.55}
 .panel-h .no{color:var(--team-on); opacity:.75}
 .panel-h .more{color:var(--team-on); opacity:.75}
 .panel-h .more:hover{color:var(--team-on); opacity:1}
-.panel-h a.more{text-decoration:none; color:inherit}
 
 @media (max-width:1080px){
   .app{grid-template-columns:1fr}
@@ -343,6 +329,57 @@ body.dark .bg-bar{opacity:.55}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important; transition:none!important}
 }
+
+
+/* ── karta wyścigu (14) ── */
+.crumb-strip{margin-top:14px; font:700 11px/1 var(--body); letter-spacing:.14em; text-transform:uppercase; color:var(--gray)}
+.crumb-strip b{color:var(--black)}
+.crumb-ed{margin-left:12px; color:var(--team)}
+.r-hero{grid-column:1/8}
+.r-us{grid-column:8/13; display:flex}
+.r-start{grid-column:1/8}
+.r-hist{grid-column:8/13}
+.bigprofile{border:2.5px solid var(--black); background:var(--paper); padding:10px 10px 4px}
+.bigprofile svg{display:block; width:100%; height:auto; min-height:230px}
+.kv2 dt{font-size:12px}
+.kv2 dd{font-size:14px}
+.squad-mini{display:flex; flex-direction:column}
+.sq-row{display:flex; align-items:baseline; gap:10px; padding:7px 2px; border-bottom:1.5px solid var(--hair); font-size:13.5px}
+.sq-row:last-child{border-bottom:0}
+.sq-row .fname{flex:0 0 10.5em; font-weight:700}
+.sq-row .frole{flex:1; color:var(--gray); font-size:12px}
+.sq-row .stars{font-size:13px}
+.prep-cta{display:flex; gap:10px; margin-top:auto; padding-top:14px}
+.btn-ghost{
+  flex:1; text-align:center; font:700 12px/1 var(--body); letter-spacing:.12em; text-transform:uppercase;
+  padding:13px 12px; border:2.5px solid var(--black); color:var(--black); text-decoration:none;
+  transition:background .15s, color .15s;
+}
+.btn-ghost:hover{background:var(--black); color:var(--paper)}
+.btn-solid{
+  flex:1.4; text-align:center; font:400 13px/1 var(--disp); letter-spacing:.1em; text-transform:uppercase;
+  padding:14px 12px 12px; border:3px solid var(--black); background:var(--black); color:var(--paper);
+  text-decoration:none; box-shadow:4px 4px 0 var(--team);
+  transition:transform .12s var(--hard), box-shadow .12s var(--hard), background .15s;
+}
+.btn-solid:hover{background:var(--team); color:var(--team-on)}
+.btn-solid:active{transform:translate(4px,4px); box-shadow:0 0 0 var(--team)}
+.startlist{display:grid; grid-template-columns:1fr 1fr; gap:0 18px}
+.sl-row{display:flex; gap:8px; align-items:baseline; padding:6px 2px; border-bottom:1.5px solid var(--hair); font-size:13px}
+.sl-team{flex:1; font-weight:700}
+.sl-lead{color:var(--gray); font-size:12px}
+.sl-row.mine{
+  background:var(--black); color:var(--paper); padding:6px 8px; margin:0 -8px;
+  border-left:6px solid var(--team); border-bottom-color:var(--black);
+}
+.sl-row.mine .sl-lead{color:var(--gray)}
+.hist-row{display:flex; gap:10px; align-items:baseline; padding:8px 2px; border-bottom:1.5px solid var(--hair); font-size:13.5px}
+.hist-row:last-child{border-bottom:0}
+.hist-y{font:400 14px/1 var(--disp); min-width:3em}
+.hist-w{flex:1}
+.hist-t{color:var(--gray); font-size:12px; font-variant-numeric:tabular-nums}
+.hist-note{margin-top:10px; font-size:12.5px; color:var(--gray); font-style:italic; border-top:2px solid var(--hair); padding-top:10px}
+@media (max-width:1080px){.r-hero,.r-us,.r-start,.r-hist{grid-column:1/13}}
 </style>
 </head>
 <body>
@@ -351,8 +388,6 @@ body.dark .bg-bar{opacity:.55}
 <div class="bg-forms" aria-hidden="true"><span class="bg-bar"></span><span class="bg-square"></span></div>
 
 <div class="app">
-
-  <!-- ── sidebar ─────────────────────────────────────────── -->
   <aside class="side">
     <div class="crest">
       <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
@@ -367,7 +402,7 @@ body.dark .bg-bar{opacity:.55}
     </div>
 
     <nav class="nav" aria-label="Nawigacja główna">
-      <button class="nav-item active" aria-current="page">
+      <button class="nav-item">
         <svg viewBox="0 0 18 18" fill="none" stroke-width="2"><path d="M2 7 L9 2 L16 7 V16 H2 Z"/><path d="M7 16 V11 H11 V16"/></svg>
         Biurko <span class="badge">3</span>
       </button>
@@ -383,7 +418,7 @@ body.dark .bg-bar{opacity:.55}
         <svg viewBox="0 0 18 18" fill="none" stroke-width="2"><rect x="2" y="3" width="14" height="13"/><path d="M2 7 H16 M6 1 V4 M12 1 V4"/></svg>
         Kalendarz
       </button>
-      <button class="nav-item">
+      <button class="nav-item active" aria-current="page">
         <svg viewBox="0 0 18 18" fill="none" stroke-width="2"><path d="M4 16 V2"/><path d="M4 3 H14 L11 6.5 L14 10 H4"/></svg>
         Wyścigi
       </button>
@@ -423,7 +458,7 @@ body.dark .bg-bar{opacity:.55}
     </button>
   </aside>
 
-  <!-- ── main ────────────────────────────────────────────── -->
+
   <main class="main">
     <div class="topbar">
       <div class="date-slab" aria-label="Środa, 11 marca 2026">
@@ -460,141 +495,80 @@ body.dark .bg-bar{opacity:.55}
       <button class="main-btn" type="button"><span class="lbl">Advance Day</span></button>
     </div>
 
+
+    <div class="crumb-strip">Biurko&nbsp;›&nbsp;Wyścigi&nbsp;›&nbsp;<b>Milano–Torino</b><span class="crumb-ed">107. edycja · 1.Pro</span></div>
+
     <div class="grid">
 
-      <!-- 01 nadchodzące wyścigi — klikalna lista -->
-      <section class="panel p-list" aria-labelledby="hList">
-        <h2 class="panel-h" id="hList"><span class="no">01</span> Nadchodzące wyścigi <span class="more">pełny kalendarz ›</span></h2>
-        <div class="panel-b" style="padding:8px" id="raceList"></div>
-      </section>
-
-      <!-- 02 wyścig — info + profil z morphingiem -->
-      <section class="panel p-raceinfo" aria-labelledby="hRace">
-        <h2 class="panel-h" id="hRace"><span class="no">02</span> Wyścig <a class="more" href="14-race.html">trasa ›</a></h2>
-        <div class="panel-b" id="raceInfo" aria-live="polite">
-          <div class="race-head">
-            <div class="race-name" id="riName"></div>
-            <div class="race-meta" id="riMeta"></div>
-          </div>
-          <div class="profile">
-            <svg viewBox="0 0 300 76" style="min-height:170px" aria-label="Profil trasy wybranego wyścigu">
-              <path id="routeFill" style="fill:var(--hair)" fill-opacity=".55" stroke="none"/>
-              <path id="routeLine" fill="none" style="stroke:var(--black)" stroke-width="3" stroke-linejoin="round"/>
-              <line id="keyLine" x1="262" y1="10" x2="262" y2="64" style="stroke:var(--team)" stroke-width="1.5" stroke-dasharray="3 3"/>
-              <text id="keyLabel" x="262" y="72" font-family="PT Sans" font-size="8.5" style="fill:var(--team)" text-anchor="middle">SUPERGA</text>
-              <text x="4" y="72" font-family="PT Sans" font-size="8.5" style="fill:var(--gray)">0 KM</text>
-              <text id="distLabel" x="296" y="72" font-family="PT Sans" font-size="8.5" style="fill:var(--gray)" text-anchor="end">177 KM</text>
-            </svg>
-          </div>
-          <dl class="kv" id="riKv"></dl>
-          <div class="tagrow" id="riTags"></div>
-        </div>
-      </section>
-
-      <!-- 03 inbox -->
-      <section class="panel p-inbox" aria-labelledby="hInbox">
-        <h2 class="panel-h" id="hInbox"><span class="no">03</span> inbox · 3 sprawy <span class="more">wszystkie ›</span></h2>
+      <!-- 01 trasa -->
+      <section class="panel r-hero" aria-labelledby="hRoute">
+        <h2 class="panel-h" id="hRoute"><span class="no">01</span> Trasa <span class="more">mapa ›</span></h2>
         <div class="panel-b">
-          <article class="mail urgent">
-            <div class="mail-head">
-              <span class="mail-idx">01</span>
-              <span class="mail-subj">Odprawa sztabu — dziś 16:00</span>
-              <span class="mail-meta">dziś</span>
-            </div>
-            <div class="mail-body">
-              <span class="from">Od: DS Marek Sowa</span>
-              Agenda: skład na Milano–Torino, plan na finał pod Supergą, podział zadań w peletonie. Proszę o punktualność.
-            </div>
-          </article>
-          <article class="mail">
-            <div class="mail-head">
-              <span class="mail-idx">02</span>
-              <span class="mail-subj">Wynik do odłożenia: GP Primavera — Rutka 12.</span>
-              <span class="mail-meta">wczoraj</span>
-            </div>
-          </article>
-          <article class="mail">
-            <div class="mail-head">
-              <span class="mail-idx">03</span>
-              <span class="mail-subj">Media: prośba o krótki komentarz przed startem</span>
-              <span class="mail-meta">wczoraj</span>
-            </div>
-          </article>
+          <div class="race-name">Milano–Torino <span class="cls">1.Pro</span></div>
+          <div class="race-meta">
+            <span>Data <b>jutro · czw 12.03</b></span>
+            <span>Start <b>11:35 · Milano</b></span>
+            <span>Meta <b>Turyn · Superga</b></span>
+            <span>Dystans <b>177 km</b></span>
+          </div>
+          <div class="bigprofile">
+            <svg id="routeSvg" viewBox="0 0 600 122" role="img" aria-label="Profil: płasko z Milano, dwa wjazdy na Supergę pod koniec, meta na szczycie"></svg>
+          </div>
+          <dl class="kv kv2">
+            <dt>Przewyższenie</dt><dd>~1 850 m</dd>
+            <dt>Decydujący punkt</dt><dd>Superga — 2 wjazdy (km 143 i 168), meta na szczycie</dd>
+            <dt>Finał</dt><dd>krótki zjazd, ostatnie 300 m pod górę</dd>
+            <dt>Pogoda</dt><dd>14°C · sucho · wiatr 12 km/h N</dd>
+          </dl>
+          <div class="tagrow">
+            <span class="tag red">Wyścig jutro</span>
+            <span class="tag">Finał pod górę</span>
+            <span class="tag inv">1.Pro</span>
+            <span class="tag">Klasyk od 1876</span>
+          </div>
         </div>
       </section>
 
-      <!-- 04 skład — ocena w gwiazdkach, sortowanie myszką -->
-      <section class="panel p-form" aria-labelledby="hForm">
-        <h2 class="panel-h" id="hForm"><span class="no">04</span> Skład — ocena <span class="more">pełny skład ›</span></h2>
-        <div class="panel-b" style="padding-top:4px">
-          <table class="form-table">
-            <thead>
-              <tr>
-                <th class="sortable" data-key="name">Zawodnik <span class="arr"></span></th>
-                <th class="sortable" data-key="role">Rola <span class="arr"></span></th>
-                <th class="sortable" data-key="rate">Ocena <span class="arr"></span></th>
-                <th class="sortable" data-key="trend">Trend <span class="arr"></span></th>
-                <th class="sortable" data-key="statusK">Status <span class="arr"></span></th>
-              </tr>
-            </thead>
-            <tbody id="squadBody"></tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- 05 ostatnie wyniki -->
-      <section class="panel p-results" aria-labelledby="hRes">
-        <h2 class="panel-h" id="hRes"><span class="no">05</span> Ostatnie wyniki <span class="more">archiwum ›</span></h2>
-        <div class="panel-b" style="padding-top:6px">
-          <div class="res"><span class="res-pos">12.</span><span class="res-race">GP Primavera <small>1.1 · niedziela 08.03</small></span><span class="res-who">Rutka</span></div>
-          <div class="res"><span class="res-pos">18.</span><span class="res-race">GP Primavera <small>1.1 · niedziela 08.03</small></span><span class="res-who">Kowalczyk</span></div>
-          <div class="res"><span class="res-pos top">4.</span><span class="res-race">Klasyk Śląski <small>1.2 · 01.03</small></span><span class="res-who">Malinowski</span></div>
-          <div class="res"><span class="res-pos top">2.</span><span class="res-race">Puchar Ziemi <small>1.2 · 22.02</small></span><span class="res-who">Dudek</span></div>
-        </div>
-      </section>
-
-      <!-- 06 ranking -->
-      <section class="panel p-rank" aria-labelledby="hRank">
-        <h2 class="panel-h" id="hRank"><span class="no">06</span> Ranking <span class="more">pełny ›</span></h2>
-        <div class="panel-b" style="padding-top:6px">
-          <table class="rank-table">
-            <tbody>
-              <tr><td class="rank-pos">5</td><td>Veltrix Pro</td><td class="rank-pts">812</td></tr>
-              <tr><td class="rank-pos">6</td><td>Andromeda CT</td><td class="rank-pts">790</td></tr>
-              <tr class="mine"><td class="rank-pos">7</td><td>Beskid–Vetter ProTeam</td><td class="rank-pts">655</td></tr>
-              <tr><td class="rank-pos">8</td><td>Fala–Karpaty</td><td class="rank-pts">601</td></tr>
-              <tr><td class="rank-pos">9</td><td>Delta Nord</td><td class="rank-pts">588</td></tr>
-            </tbody>
-          </table>
-          <p class="rank-cap">UCI Europe Tour · ranking zespołów · po 08.03</p>
-        </div>
-      </section>
-
-      <!-- 07 finanse -->
-      <section class="panel p-fin" aria-labelledby="hFin">
-        <h2 class="panel-h" id="hFin"><span class="no">07</span> Finanse · tydzień <span class="more">księga ›</span></h2>
-        <div class="panel-b" style="padding-top:6px">
-          <div class="fin-row"><span class="fin-label">Payroll (zawodnicy + sztab)</span><span class="fin-val neg">−96 000 zł</span></div>
-          <div class="fin-row"><span class="fin-label">Logistyka wyścigu (Turyn)</span><span class="fin-val neg">−38 500 zł</span></div>
-          <div class="fin-row"><span class="fin-label">Sponsoring — rata tygodniowa</span><span class="fin-val">+120 000 zł</span></div>
-          <div class="fin-sum"><span>Bilans tygodnia</span><b>−14 500 zł</b></div>
-          <div class="fin-sum" style="border-top:1.5px dashed var(--hair); font-size:12px"><span>Budżet sezonu</span><b>+412 300 zł</b></div>
-        </div>
-      </section>
-
-      <!-- 08 notatki -->
-      <section class="panel p-notes" aria-labelledby="hNotes">
-        <h2 class="panel-h" id="hNotes"><span class="no">08</span> Notatki sztabu</h2>
+      <!-- 02 dla nas -->
+      <section class="panel r-us" aria-labelledby="hUs">
+        <h2 class="panel-h" id="hUs"><span class="no">02</span> Dla nas</h2>
         <div class="panel-b">
-          <div class="note red"><span class="who">DS Sowa · dziś 09:12</span>Superga wjeżdża się dwa razy — pozycja przy drugim wjeździe przesądza o finale.</div>
-          <div class="note"><span class="who">Mechanik · dziś 08:40</span>Zapasowe koła poszły z autokarem; rowery Kowalczyka i Rutki po serwisie.</div>
-          <div class="note"><span class="who">Doktor · wczoraj</span>Barski: stłuczenie kolana bez obrzęku, decyzja o starcie jutro rano.</div>
+          <dl class="kv">
+            <dt>Status</dt><dd>zgłoszonych 7/7</dd>
+            <dt>Odprawa</dt><dd>dziś, 16:00</dd>
+            <dt>Autokar</dt><dd>jutro, 8:10 spod hotelu</dd>
+          </dl>
+          <div class="squad-mini" id="squadMini"></div>
+          <div class="prep-cta">
+            <a class="btn-ghost" href="12-dashboard-team-mid.html">← Biurko</a>
+            <a class="btn-solid" href="#">Przygotowanie ›</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- 03 start-lista -->
+      <section class="panel r-start" aria-labelledby="hStart">
+        <h2 class="panel-h" id="hStart"><span class="no">03</span> Start-lista · 24 zespoły <span class="more">pełna ›</span></h2>
+        <div class="panel-b">
+          <div class="startlist" id="startList"></div>
+        </div>
+      </section>
+
+      <!-- 04 historia edycji -->
+      <section class="panel r-hist" aria-labelledby="hHist">
+        <h2 class="panel-h" id="hHist"><span class="no">04</span> Historia edycji</h2>
+        <div class="panel-b" style="padding-top:6px">
+          <div class="hist-row"><span class="hist-y">2025</span><span class="hist-w">L. Vermeersch</span><span class="hist-t">Andromeda CT · 4:12:36</span></div>
+          <div class="hist-row"><span class="hist-y">2024</span><span class="hist-w">T. Ghibli</span><span class="hist-t">Veltrix Pro · 4:09:58</span></div>
+          <div class="hist-row"><span class="hist-y">2023</span><span class="hist-w">M. Anconi</span><span class="hist-t">Fala–Karpaty · 4:15:11</span></div>
+          <div class="hist-row"><span class="hist-y">—</span><span class="hist-w">Nasze najlepsze: 8. P. Kowalczyk</span><span class="hist-t">2024</span></div>
+          <p class="hist-note">1876 — pierwsza edycja; jeden z najstarszych klasyków w kalendarzu.</p>
         </div>
       </section>
 
     </div>
 
-    <p class="foot">Peloton Manager · prototyp 12 · wariant: Team Color+ · zawartość poglądowa</p>
+    <p class="foot">Peloton Manager · prototyp 14 · karta wyścigu · zawartość poglądowa</p>
   </main>
 </div>
 
@@ -634,144 +608,14 @@ body.dark .bg-bar{opacity:.55}
   </div>
 </div>
 
+
+
 <script>
 (function(){
 "use strict";
 var reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
 
-/* ── dane: 5 nadchodzących wyścigów; profile = 12 punktów wysokości ── */
-var RACES=[
-  {id:"mila-torino", date:"CZW 12.03", name:"Milano–Torino", cat:"1.Pro", dist:177,
-   route:"Milano → Turyn (Superga)", weather:"14°C · sucho · wiatr 12 km/h",
-   squad:"7/7 zgłoszonych", when:"jutro",
-   points:[4,4,5,4,5,6,5,6,14,6,18,5], keyX:0.87, keyLabel:"SUPERGA ×2",
-   goal:"Cel: dowieźć Kowalczyka w pierwszej grupie pod ostatni wjazd na Supergę — realny wynik to miejsca 5–10.",
-   tags:[["red","Wyścig jutro"],["","Finał pod górę"],["inv","1.Pro"]]},
-  {id:"msr", date:"SOB 21.03", name:"Milano–Sanremo", cat:"Monument", dist:289,
-   route:"Milano → Sanremo", weather:"prognoza za 10 dni",
-   squad:"wstępna lista do 18.03", when:"za 10 dni",
-   points:[4,4,4,5,4,4,5,4,8,6,10,4], keyX:0.88, keyLabel:"POGGIO",
-   goal:"Cel: przetrwać 280 km z Zielińskim przy Kowalczyku — gramy finał tylko, gdy pod Poggio zostanie grupa ≤40.",
-   tags:[["inv","Monument"],["","Najdłuższy"],["","Cipressa + Poggio"]]},
-  {id:"e3", date:"PT 27.03", name:"E3 Saxo Classic", cat:"1.WT", dist:204,
-   route:"Harelbeke → Harelbeke", weather:"prognoza za 2 tygodnie",
-   squad:"zgłoszenie za 9 dni", when:"za 16 dni",
-   points:[5,9,4,10,5,12,5,11,4,9,5,6], keyX:0.8, keyLabel:"PATERBERG",
-   goal:"Cel: Rutka i Osmański kryją ucieczki na hellingenach, Kowalczyka oszczędzamy na niedzielę.",
-   tags:[["","Bruki"],["","Hellingeny"],["inv","1.WT"]]},
-  {id:"gw", date:"NIE 29.03", name:"Gent–Wevelgem", cat:"1.WT", dist:253,
-   route:"Gent → Wevelgem", weather:"prognoza za 2,5 tygodnia",
-   squad:"zgłoszenie za 11 dni", when:"za 18 dni",
-   points:[4,4,5,4,5,4,13,5,12,4,5,4], keyX:0.62, keyLabel:"KEMMELBERG",
-   goal:"Cel: Dudek do ucieczki dnia; jeśli dojedzie grupa — prowadzimy Malinowskiego do sprintu.",
-   tags:[["","Wiatr"],["","Kemmelberg"],["inv","1.WT"]]},
-  {id:"rvv", date:"NIE 05.04", name:"Ronde van Vlaanderen", cat:"Monument", dist:272,
-   route:"Antwerpia → Oudenaarde", weather:"prognoza za 3,5 tygodnia",
-   squad:"zgłoszenie za 18 dni", when:"za 25 dni",
-   points:[6,12,5,14,6,15,5,13,8,16,6,5], keyX:0.83, keyLabel:"OUDE KWAREMONT",
-   goal:"Cel sezonu: trójka w pierwszej grupie przy drugim Kwaremoncie, potem Kowalczyk gra finał.",
-   tags:[["red","Cel sezonu"],["","Bruki + bergi"],["inv","Monument"]]}
-];
-var N=12, XS=[]; for(var i=0;i<N;i++)XS.push(4+i*(292/(N-1)));
-function yOf(h){return 52-h*1.9;}
-
-function lineD(pts){return "M "+pts.map(function(h,i){return XS[i].toFixed(1)+" "+yOf(h).toFixed(1);}).join(" L ");}
-function fillD(pts){return lineD(pts)+" L 296 60 L 4 60 Z";}
-function spark(points){
-  var pts=points.map(function(h,i){return (i*(64/(N-1))).toFixed(1)+","+(20-h*0.9).toFixed(1);}).join(" ");
-  return '<svg class="rr-spark" viewBox="0 0 64 20" aria-hidden="true"><polyline points="'+pts+'"/></svg>';
-}
-
-/* ── lista ────────────────────────────────────────────────── */
-var listEl=document.getElementById("raceList");
-function renderList(activeId){
-  listEl.innerHTML=RACES.map(function(r,i){
-    var active=r.id===activeId;
-    return '<button class="race-row'+(active?" active":"")+'" type="button" data-race="'+r.id+'" aria-pressed="'+active+'">'
-      +'<span class="rr-date">'+r.date+'</span>'
-      +'<span><span class="rr-name">'+r.name+'</span><br>'
-      +'<span class="rr-meta">'+r.cat+' · '+r.dist+' km · '+r.when+'</span></span>'
-      +spark(r.points)
-      +'</button>';
-  }).join("");
-}
-
-/* ── panel info + morph profilu ───────────────────────────── */
-var infoEl=document.getElementById("raceInfo");
-var lineEl=document.getElementById("routeLine"), fillEl=document.getElementById("routeFill");
-var keyLine=document.getElementById("keyLine"), keyLabel=document.getElementById("keyLabel"), distLabel=document.getElementById("distLabel");
-var cur=RACES[0].points.slice(), curKeyX=RACES[0].keyX;
-var raf=0;
-
-function easeInOut(t){return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;}
-function morphTo(target,keyX,label,dist){
-  if(reduce){
-    cur=target.slice(); lineEl.setAttribute("d",lineD(cur)); fillEl.setAttribute("d",fillD(cur));
-    setKey(keyX,label); distLabel.textContent=dist+" KM"; return;
-  }
-  cancelAnimationFrame(raf);
-  var from=cur.slice(), fromX=curKeyX, t0=performance.now(), dur=520;
-  keyLine.style.opacity=0; keyLabel.style.opacity=0;
-  function frame(now){
-    var t=Math.min(1,(now-t0)/dur), e=easeInOut(t);
-    cur=from.map(function(h,i){return h+(target[i]-h)*e;});
-    lineEl.setAttribute("d",lineD(cur)); fillEl.setAttribute("d",fillD(cur));
-    var x=fromX+(keyX-fromX)*e; setKeyX(x);
-    if(t<1){raf=requestAnimationFrame(frame);}
-    else{keyLabel.textContent=label; distLabel.textContent=dist+" KM";
-         keyLine.style.opacity=1; keyLabel.style.opacity=1;}
-  }
-  raf=requestAnimationFrame(frame);
-}
-function setKeyX(fx){
-  var x=(4+fx*292).toFixed(1);
-  keyLine.setAttribute("x1",x); keyLine.setAttribute("x2",x); keyLabel.setAttribute("x",x);
-}
-function setKey(fx,label){setKeyX(fx); keyLabel.textContent=label;}
-
-function renderInfo(r){
-  document.getElementById("riName").innerHTML=r.name+' <span class="cls">'+r.cat+'</span>';
-  document.getElementById("riMeta").innerHTML=
-    "<span>Data <b>"+r.when+" · "+r.date.toLowerCase()+"</b></span>"
-    +"<span>Dystans <b>"+r.dist+" km</b></span>"
-    +"<span>Trasa <b>"+r.route+"</b></span>";
-  document.getElementById("riKv").innerHTML=
-    "<dt>Pogoda</dt><dd>"+r.weather+"</dd><dt>Skład</dt><dd>"+r.squad+"</dd>";
-  document.getElementById("riTags").innerHTML=r.tags.map(function(t){
-    return '<span class="tag'+(t[0]?" "+t[0]:"")+'">'+t[1]+'</span>';
-  }).join("");
-}
-
-function selectRace(id){
-  var r=RACES.filter(function(x){return x.id===id;})[0];
-  if(!r)return;
-  renderList(id);
-  if(reduce){renderInfo(r);morphTo(r.points,r.keyX,r.keyLabel,r.dist);return;}
-  infoEl.classList.add("fading");
-  setTimeout(function(){
-    renderInfo(r);
-    infoEl.classList.remove("fading");
-  },180);
-  morphTo(r.points,r.keyX,r.keyLabel,r.dist); // linia trasy płynnie przechodzi w nowy profil
-}
-
-listEl.addEventListener("click",function(e){
-  var b=e.target.closest("[data-race]");
-  if(b)selectRace(b.dataset.race);
-});
-
-/* ── skład: gwiazdki + sortowanie myszką (wzorzec th z Ping-Pong Managera) ── */
-var SQUAD=[
-  {name:"P. Kowalczyk", role:"kapitan",   roleK:0, rate:4, pot:5, trend:1,  status:"<b>zdrowy</b>",                 statusK:1},
-  {name:"M. Zieliński", role:"pomocnik",  roleK:1, rate:3, pot:4, trend:0,  status:"<b>zdrowy</b>",                 statusK:1},
-  {name:"T. Barski",    role:"pomocnik",  roleK:1, rate:2, pot:3, trend:-1, status:"stłuczone kolano — <b>2 dni</b>", statusK:0},
-  {name:"D. Rutka",     role:"pomocnik",  roleK:1, rate:3, pot:3, trend:0,  status:"<b>zdrowy</b>",                 statusK:1},
-  {name:"J. Malinowski",role:"pomocnik",  roleK:1, rate:4, pot:4, trend:1,  status:"<b>zdrowy</b>",                 statusK:1},
-  {name:"K. Osmański",  role:"pomocnik",  roleK:1, rate:2, pot:4, trend:0,  status:"<b>zdrowy</b>",                 statusK:1},
-  {name:"S. Dudek",     role:"ucieczki",  roleK:2, rate:3, pot:5, trend:1,  status:"<b>zdrowy</b>",                 statusK:1}
-];
-var squadSort={key:"rate",dir:-1};
-
+/* ── gwiazdki (wzór ustalony na biurku) ───────────────────── */
 function starsHtml(rate,pot){
   return '<span class="stars" role="img" aria-label="Ocena '+rate+' na 5, potencjał '+pot+' na 5">'
     +'<span class="b">☆☆☆☆☆</span>'
@@ -779,36 +623,63 @@ function starsHtml(rate,pot){
     +'<span class="r" style="width:'+(rate/5*100)+'%" aria-hidden="true">★★★★★</span>'
     +'</span>';
 }
-function trendHtml(t){
-  return t>0?'<span class="fstat up">rosnąca</span>':t<0?'<span class="fstat down">spadkowa</span>':'<span class="fstat flat">stabilna</span>';
-}
-function renderSquad(){
-  var rows=SQUAD.slice().sort(function(a,b){
-    var x=a[squadSort.key], y=b[squadSort.key];
-    var cmp=typeof x==="string"?x.localeCompare(y,"pl"):(x-y);
-    return cmp*squadSort.dir;
-  });
-  document.getElementById("squadBody").innerHTML=rows.map(function(p){
-    return '<tr><td class="fname">'+p.name+'</td><td class="frole">'+p.role+'</td>'
-      +'<td>'+starsHtml(p.rate,p.pot)+'</td>'
-      +'<td>'+trendHtml(p.trend)+'</td>'
-      +'<td class="favail">'+p.status+'</td></tr>';
-  }).join("");
-  document.querySelectorAll(".form-table th.sortable").forEach(function(th){
-    var on=th.dataset.key===squadSort.key;
-    th.classList.toggle("srt",on);
-    th.querySelector(".arr").textContent=on?(squadSort.dir>0?"▲":"▼"):"";
-    th.setAttribute("aria-sort",on?(squadSort.dir>0?"ascending":"descending"):"none");
-  });
-}
-document.querySelector(".form-table thead").addEventListener("click",function(e){
-  var th=e.target.closest("th.sortable");
-  if(!th)return;
-  var k=th.dataset.key;
-  if(squadSort.key===k){squadSort.dir=-squadSort.dir;}
-  else{squadSort.key=k; squadSort.dir=(k==="name"||k==="role")?1:-1;}
-  renderSquad();
+var SQUAD=[
+  ["P. Kowalczyk","kapitan",4,5],
+  ["M. Zieliński","pomocnik",3,4],
+  ["T. Barski","pomocnik",2,3],
+  ["D. Rutka","pomocnik",3,3],
+  ["J. Malinowski","pomocnik",4,4],
+  ["K. Osmański","pomocnik",2,4],
+  ["S. Dudek","ucieczki",3,5]
+];
+document.getElementById("squadMini").innerHTML=SQUAD.map(function(p){
+  return '<div class="sq-row"><span class="fname">'+p[0]+'</span><span class="frole">'+p[1]+'</span>'+starsHtml(p[2],p[3])+'</div>';
+}).join("");
+
+/* ── profil trasy: punkty [km, wysokość względna] ─────────── */
+var PTS=[[0,3],[16,3],[32,4],[48,3],[64,4],[80,5],[88,4],[96,5],[104,7],[112,6],[120,5],[128,8],[136,6],[143,22],[150,8],[157,6],[163,7],[168,26],[172,7],[177,5]];
+var MARKS=[
+  {km:143,label:"SUPERGA 4,9 KM @ 9,1%",key:true},
+  {km:168,label:"SUPERGA · META",key:true},
+  {km:92,label:"BUFET",key:false}
+];
+var TICKS=[0,44,88,133,177];
+var W=600,X0=4,X1=596,Y0=100,YSC=2.6;
+function px(km){return X0+km/177*(X1-X0);}
+function py(h){return Y0-h*YSC;}
+var svg=document.getElementById("routeSvg");
+var team=getComputedStyle(document.documentElement).getPropertyValue("--team").trim()||"#2050c8";
+var ink=getComputedStyle(document.documentElement).getPropertyValue("--black").trim()||"#0c0c0d";
+var gray=getComputedStyle(document.documentElement).getPropertyValue("--gray").trim()||"#6f6f72";
+var d="M "+PTS.map(function(p){return px(p[0]).toFixed(1)+" "+py(p[1]).toFixed(1);}).join(" L ");
+var html='<path d="'+d+' L '+X1+' 112 L '+X0+' 112 Z" style="fill:var(--hair)" fill-opacity=".55"/>'
+  +'<path d="'+d+'" fill="none" style="stroke:var(--black)" stroke-width="3.5" stroke-linejoin="round"/>';
+TICKS.forEach(function(km){
+  html+='<text x="'+px(km)+'" y="119" font-family="PT Sans" font-size="8.5" style="fill:var(--gray)" text-anchor="middle">'+km+'</text>';
 });
+MARKS.forEach(function(m){
+  var x=px(m.km);
+  html+='<line x1="'+x+'" y1="12" x2="'+x+'" y2="110" stroke="'+(m.key?team:gray)+'" stroke-width="1.6" stroke-dasharray="4 3"/>'
+    +'<text x="'+x+'" y="10" font-family="PT Sans" font-size="8.5" font-weight="700" fill="'+(m.key?team:gray)+'" text-anchor="middle">'+m.label+'</text>';
+});
+html+='<text x="'+(X0+2)+'" y="119" font-family="PT Sans" font-size="8.5" style="fill:var(--gray)">KM</text>';
+svg.innerHTML=html;
+
+/* ── start-lista: 24 zespoły, nasz wyróżniony ─────────────── */
+var TEAMS=[
+  ["Andromeda CT","L. Vermeersch"],["Veltrix Pro","T. Ghibli"],["Fala–Karpaty","M. Anconi"],
+  ["Delta Nord","J. Kragh"],["Alcaruna","D. Selva"],["MotoWelt Racing","F. Ackermann"],
+  ["Sirocco Pro","A. Duarte"],["Nordkap CT","E. Lindqvist"],["Terra Nova","R. Bellini"],
+  ["Cassiopeia","V. Marek"],["Helios–Dynamo","K. Brandt"],["Pulsar Cycling","S. Okafor"],
+  ["Beskid–Vetter ProTeam","P. Kowalczyk"],["Zenith–Routens","C. Fabre"],["Koga–Mint","B. Vandenberg"],
+  ["Ost-Wind","P. Nowak"],["Col de Lys","G. Roche"],["Sierra Madre CT","I. Cuevas"],
+  ["Blauw–Goud","L. Peeters"],["Fenrir Racing","H. Olsen"],["Tivoli–Mercer","J. Whitfield"],
+  ["Auriga Pro","N. Costa"],["Burevestnik","A. Sokolov"],["Lanterna","E. Riva"]
+];
+document.getElementById("startList").innerHTML=TEAMS.map(function(t){
+  var mine=t[0]==="Beskid–Vetter ProTeam";
+  return '<div class="sl-row'+(mine?" mine":"")+'"><span class="sl-team">'+t[0]+'</span><span class="sl-lead">'+t[1]+'</span></div>';
+}).join("");
 
 /* ── ustawienia: modal, tryb jasny/ciemny, prędkość (demo) ── */
 var scrim=document.getElementById("scrim");
@@ -965,11 +836,7 @@ document.addEventListener("visibilitychange",function(){
 });
 fxSet(reduce?"off":"bands"); // domyślnie: pasma (wybór właściciela)
 
-renderList(RACES[0].id);
-renderInfo(RACES[0]);
-lineEl.setAttribute("d",lineD(cur)); fillEl.setAttribute("d",fillD(cur));
-setKey(RACES[0].keyX,RACES[0].keyLabel);
-renderSquad();
+
 })();
 </script>
 </body>
