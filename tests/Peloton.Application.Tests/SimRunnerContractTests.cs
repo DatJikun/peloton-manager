@@ -319,6 +319,51 @@ public sealed class SimRunnerContractTests
     }
 
     [Fact]
+    public void DayCommandThroughResultsPrintsResultAndDebriefWithoutHubPrimaryAction()
+    {
+        using StringWriter output = new();
+        using StringWriter error = new();
+
+        int exitCode = Program.Run(
+            [
+                "day",
+                "--scenario",
+                "scenario.peloton.skeleton",
+                "--seed",
+                "91234",
+                "--days",
+                "13",
+                "--simulate-from-prep",
+                "--through-results",
+                "--content-root",
+                TestApplication.ContentRoot,
+            ],
+            output,
+            error);
+
+        string stdout = output.ToString().Replace("\r\n", "\n", StringComparison.Ordinal);
+        Assert.Equal(0, exitCode);
+        Assert.Contains("state=RaceResultsFlow", stdout, StringComparison.Ordinal);
+        Assert.Contains("winner=1006", stdout, StringComparison.Ordinal);
+        Assert.Contains("result=title=Skeleton race", stdout, StringComparison.Ordinal);
+        Assert.Contains("winnerLabel=rider.race-prototype.beta-leader", stdout, StringComparison.Ordinal);
+        Assert.Contains("routeId=race-route.peloton.synthetic-proof-v0", stdout, StringComparison.Ordinal);
+        Assert.Contains("finishOrder=rider.race-prototype.beta-leader", stdout, StringComparison.Ordinal);
+        Assert.Contains("state=RaceDebriefFlow", stdout, StringComparison.Ordinal);
+        Assert.Contains(
+            "debrief=objective=StageWin notes=Widoczny rozjazd. Lider w paśmie Front. Zasoby ocenione jako Strong.",
+            stdout,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain("state=RaceLive", stdout, StringComparison.Ordinal);
+        Assert.DoesNotContain("WPrime", stdout, StringComparison.OrdinalIgnoreCase);
+        string afterResults = stdout[
+            stdout.IndexOf("state=RaceResultsFlow", StringComparison.Ordinal)..];
+        Assert.DoesNotContain("primaryAction=", afterResults, StringComparison.Ordinal);
+        Assert.DoesNotContain("primaryLabel=", afterResults, StringComparison.Ordinal);
+        Assert.True(string.IsNullOrWhiteSpace(error.ToString()));
+    }
+
+    [Fact]
     public void DayCommandCanConfirmAndSimulateDirectlyFromPreparation()
     {
         using StringWriter output = new();

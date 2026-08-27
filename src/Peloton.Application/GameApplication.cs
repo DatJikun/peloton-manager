@@ -81,7 +81,7 @@ public sealed class GameApplication
     {
         get
         {
-            if (World is null)
+            if (World is null || State != GameState.Management)
             {
                 return null;
             }
@@ -117,6 +117,32 @@ public sealed class GameApplication
                 World.RaceCount,
                 primaryAction,
                 primaryLabel);
+        }
+    }
+
+    public RaceResultProjection? RaceResult
+    {
+        get
+        {
+            if (State != GameState.RaceResultsFlow || World is null)
+            {
+                return null;
+            }
+
+            return RaceOutcomeQueries.BuildResult(World, racePreparation, raceScenarioCatalog);
+        }
+    }
+
+    public RaceDebriefProjection? RaceDebrief
+    {
+        get
+        {
+            if (State != GameState.RaceDebriefFlow)
+            {
+                return null;
+            }
+
+            return RaceOutcomeQueries.BuildDebrief(World, racePreparation, raceScenarioCatalog);
         }
     }
 
@@ -333,7 +359,6 @@ public sealed class GameApplication
             RaceScenario scenario = raceScenarioCatalog.Resolve(command.RaceScenarioId);
             RaceResult result = raceEngine.RunBatch(scenario, DeriveRaceSeed(World, scenario));
             World.RecordRace(new RaceSummary(result.RouteId, result.WinnerId, result.FinishOrder));
-            racePreparation = null;
             activeRaceSession = null;
             State = GameState.RaceResultsFlow;
             return CommandResult.Success;
@@ -369,7 +394,6 @@ public sealed class GameApplication
                         ?? throw new InvalidOperationException("A completed race step must carry its result.");
                     World.RecordRace(new RaceSummary(result.RouteId, result.WinnerId, result.FinishOrder));
                     activeRaceSession = null;
-                    racePreparation = null;
                     State = GameState.RaceResultsFlow;
                 }
 
@@ -438,6 +462,7 @@ public sealed class GameApplication
             return CommandResult.Reject("GAME_STATE_INVALID");
         }
 
+        racePreparation = null;
         State = GameState.Management;
         return CommandResult.Success;
     }

@@ -20,8 +20,10 @@ public sealed class RaceRiderProfile
         double baseCrr,
         double positioning,
         double handling,
-        double tacticalAwareness)
+        double tacticalAwareness,
+        string contentId = "")
     {
+        ArgumentNullException.ThrowIfNull(contentId);
         RequirePositive(criticalPowerW, nameof(criticalPowerW));
         RequirePositive(wPrimeCapacityJ, nameof(wPrimeCapacityJ));
         RequirePositive(peakPowerW, nameof(peakPowerW));
@@ -57,9 +59,12 @@ public sealed class RaceRiderProfile
         Positioning = positioning;
         Handling = handling;
         TacticalAwareness = tacticalAwareness;
+        ContentId = contentId;
     }
 
     public WorldEntityId RiderId { get; }
+
+    public string ContentId { get; }
 
     public WorldEntityId OrganizationId { get; }
 

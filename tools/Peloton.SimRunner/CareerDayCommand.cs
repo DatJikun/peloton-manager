@@ -15,7 +15,8 @@ public sealed record CareerDayOptions(
     string ContentRoot,
     bool ThroughRaces,
     bool FollowHub,
-    bool SimulateFromPrep)
+    bool SimulateFromPrep,
+    bool ThroughResults)
 {
     public static CareerDayOptions Parse(string[] args)
     {
@@ -23,6 +24,7 @@ public sealed record CareerDayOptions(
         bool throughRaces = false;
         bool followHub = false;
         bool simulateFromPrep = false;
+        bool throughResults = false;
         for (int index = 1; index < args.Length; index++)
         {
             string option = args[index];
@@ -73,6 +75,12 @@ public sealed record CareerDayOptions(
                 continue;
             }
 
+            if (string.Equals(option, "--through-results", StringComparison.Ordinal))
+            {
+                throughResults = true;
+                continue;
+            }
+
             if (index + 1 >= args.Length)
             {
                 throw new ArgumentException($"Option '{option}' requires a value.", nameof(args));
@@ -120,7 +128,8 @@ public sealed record CareerDayOptions(
             Path.GetFullPath(contentRoot),
             throughRaces,
             followHub,
-            simulateFromPrep);
+            simulateFromPrep,
+            throughResults);
     }
 
     private static string Required(Dictionary<string, string> values, string key)
@@ -182,7 +191,8 @@ public static class CareerDayCommand
                     WriteHub(output, application);
                     if (string.Equals(advanced.ReasonCode, "RACE_DAY_PENDING", StringComparison.Ordinal))
                     {
-                        if ((options.FollowHub || options.SimulateFromPrep) && !options.ThroughRaces)
+                        if ((options.FollowHub || options.SimulateFromPrep || options.ThroughResults) &&
+                            !options.ThroughRaces)
                         {
                             CommandResult follow = application.Execute(new FollowHubPrimaryActionCommand());
                             if (!follow.Succeeded)
@@ -192,8 +202,7 @@ public static class CareerDayCommand
 
                             output.WriteLine($"state={application.State}");
                             WritePreparation(output, application);
-                            WriteHub(output, application);
-                            if (options.SimulateFromPrep)
+                            if (options.SimulateFromPrep || options.ThroughResults)
                             {
                                 CommandResult confirm = application.Execute(new ConfirmRacePreparationPlanCommand());
                                 if (!confirm.Succeeded)
@@ -209,7 +218,19 @@ public static class CareerDayCommand
                                 }
 
                                 output.WriteLine($"state={application.State}");
+                                WriteResult(output, application);
                                 output.WriteLine($"winner={application.World!.LastRace!.WinnerId.Value.ToString(CultureInfo.InvariantCulture)}");
+                                if (options.ThroughResults)
+                                {
+                                    CommandResult acknowledge = application.Execute(new AcknowledgeRaceResultsCommand());
+                                    if (!acknowledge.Succeeded)
+                                    {
+                                        return 1;
+                                    }
+
+                                    output.WriteLine($"state={application.State}");
+                                    WriteDebrief(output, application);
+                                }
                             }
                         }
 
@@ -275,6 +296,32 @@ public static class CareerDayCommand
         string squad = string.Join(",", prep.Squad.Select(id => id.Value.ToString(CultureInfo.InvariantCulture)));
         output.WriteLine(
             $"prep=title={prep.Title} objective={prep.Objective} squad={squad} planConfirmed={prep.PlanConfirmed.ToString().ToLowerInvariant()} canStart={prep.CanStart.ToString().ToLowerInvariant()} canSimulate={prep.CanSimulate.ToString().ToLowerInvariant()}");
+    }
+
+    private static void WriteResult(TextWriter output, GameApplication application)
+    {
+        RaceResultProjection? result = application.RaceResult;
+        if (result is null)
+        {
+            return;
+        }
+
+        string finishOrder = string.Join(",", result.FinishOrder.Select(place => place.Label));
+        output.WriteLine(
+            string.Create(
+                CultureInfo.InvariantCulture,
+                $"result=title={result.Title} winner={result.WinnerId.Value} winnerLabel={result.WinnerLabel} routeId={result.RouteId} finishOrder={finishOrder}"));
+    }
+
+    private static void WriteDebrief(TextWriter output, GameApplication application)
+    {
+        RaceDebriefProjection? debrief = application.RaceDebrief;
+        if (debrief is null)
+        {
+            return;
+        }
+
+        output.WriteLine($"debrief=objective={debrief.Objective} notes={string.Join(" ", debrief.Notes)}");
     }
 
     private static void WriteHub(TextWriter output, GameApplication application)

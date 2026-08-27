@@ -431,7 +431,8 @@ public sealed class JsonRacePrototypeCatalog : IRaceScenarioCatalog
                 rider.BaseCrr,
                 rider.Positioning,
                 rider.Handling,
-                rider.TacticalAwareness))
+                rider.TacticalAwareness,
+                rider.Id!))
             .ToArray();
         IReadOnlyList<string> startingOrder = source.StartingOrder!;
         RaceStartingPosition[] startingPositions = startingOrder

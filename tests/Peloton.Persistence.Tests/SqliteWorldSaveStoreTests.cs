@@ -132,6 +132,8 @@ public sealed class SqliteWorldSaveStoreTests
         WorldCheckpoint loaded = new SqliteWorldSaveStore().Load(savePath);
         Assert.Equivalent(source.World!.LastRace, loaded.World.LastRace, strict: true);
         Assert.Equal(1, loaded.World.RaceCount);
+        Assert.True(loaded.RacePreparation!.PlanConfirmed);
+        Assert.Equal("race-scenario.peloton.prototype-v0", loaded.RacePreparation.RaceScenarioId);
     }
 
     [Fact]
