@@ -163,7 +163,7 @@ def _local_xform(category: str, shape: dict[str, float], mirrored: bool = False)
     if category == "mouth":
         return Xform(
             scale_x=_c(shape["mouth_width"], 0.98, 1.02),
-            scale_y=_c(shape["mouth_height"], 0.99, 1.04),
+            scale_y=_c(shape["mouth_height"], 0.98, 1.02),
             dx=asym * 1.6,
             dy=_c(shape.get("mouth_y", 0.5), -3.0, 3.0),
         )

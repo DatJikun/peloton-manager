@@ -160,9 +160,9 @@ uses `"requires": ("hairline_receded",)`.
 ~0.75, jaw_w above ~1.16, chin_len beyond ±12) read as caricature; soften in place
 (pack version bump), do not add a more extreme head.
 
-**Eyes** (`EYE_RECIPES`): keep a **neutral-open** cluster as the common weight. Live `hw` is **21.6–22.0** (baker cap 22). Aperture sits **just under** the 0.11.0 mid: live **th 11.3–14.0 / bh 9.6–11.7** — a small relax from the remaining shocked look, not a return to the 0.8.0 slits. Do **not** floor every recipe to the tall band — that made the whole peloton look startled. Outer lid ~0.76 `th`. Brows sit on `BROW_Y` (raised brows read as surprise). Default `iris_dy` **2.0** so the lid covers the top of the iris. Affine `scale_x` 0.97–1.02, `scale_y` **0.97–1.02**, pair `dx` ±5. Vary lid / tilt / iris within that band. Feature keyline scale **0.90** (not 0.55 — thin ink melts into skin at 48 px). Retired ids keep `weight: 0`.
+**Eyes** (`EYE_RECIPES`): keep a **neutral-open** cluster as the common weight. Live `hw` is **21.6–22.0** (baker cap 22). Aperture sits **just under** the 0.11.0 mid: live **th 11.3–14.0 / bh 9.6–11.7** — a small relax from the remaining shocked look, not a return to the 0.8.0 slits. Do **not** floor every recipe to the tall band — that made the whole peloton look startled. Outer lid ~0.76 `th`. Brows sit on `BROW_Y` (raised brows read as surprise). Default `iris_dy` **2.0** so the lid covers the top of the iris. Affine `scale_x` 0.97–1.02, `scale_y` **0.97–1.02**, pair `dx` ±5. **Iris and pupil must differ:** live `iris_r` **8.6–12.4**, `pupil` fraction **0.28–0.56** (baker clamps 8.4–12.6 / 0.26–0.58). A peloton of 11.0 irises with pupil 0.42 reads as one sticker. Feature keyline scale **0.90**. Retired ids keep `weight: 0`.
 
-**Mouths** (`MOUTH_RECIPES`): corners sit **under the pupils** (`hw` around `EYE_DX` = 47, never above it). Lip thickness sits **halfway** between a thread and a sausage: baker scale ~1.16 / 1.18, ~20% meat at the corners. Lip fill must still contrast with skin (`lip_rgb`). Variety is bow, smile, open/laugh, lift, skew, and upper/lower ratio, not more length. Open mouths still wrap the opening in lip meat. Closed-lip keyline scale **0.92**, open envelope / opening **0.90 / 0.65**. Retired ids keep `weight: 0`. Do not ship thread-wide mouths (`hw` above ~47, or closed `upper`/`lower` under ~10/12) or sausage mouths (baker scale above ~1.2 with 40% blunt corners).
+**Mouths** (`MOUTH_RECIPES`): corners sit **under the pupils** (`hw` around `EYE_DX` = 47, never above it). Lip thickness sits **a step under** the 0.12 midpoint: baker scale ~1.12 / 1.14, ~18% meat at the corners. Not a thread (1.0) and not a sausage (1.32). Affine `scale_y` **0.98–1.02**. Lip fill must still contrast with skin (`lip_rgb`). Variety is bow, smile, open/laugh, lift, skew, and upper/lower ratio, not more length. Open mouths still wrap the opening in lip meat. Closed-lip keyline scale **0.92**, open envelope / opening **0.90 / 0.65**. Retired ids keep `weight: 0`. Do not ship thread-wide mouths (`hw` above ~47, or closed `upper`/`lower` under ~10/12) or sausage mouths (baker scale above ~1.2 with 40% blunt corners).
 
 **Brows** (`BROW_RECIPES`): recipes must differ in **inner gap, length, thickness taper,
 arch and peak**, not just `th`/`arch` on the same polygon. `bake_brow` takes `inner` /
@@ -267,7 +267,9 @@ To add a look the owner asked for, append recipes in `pack.py`. Do not silently 
   the lid covers the iris. Shocked leftover is too much sclera above the iris /
   too little `iris_dy`, not a missing slit. Do not answer "too wide" by collapsing
   into slits, "too flat" by stretching `hw`, or "too shocked" by shrinking back
-  to the 0.8.0 slits.
+  to the 0.8.0 slits. Same `iris_r` (~11) and pupil fraction (0.42) on every
+  recipe makes the peloton one sticker; vary both (`iris_r` 8.6–12.4, `pupil`
+  0.28–0.56) without opening the lids back up.
 - **A nose without a silhouette is invisible.** Multiply ticks at the nostrils do not
   carry width, length or hook. Give the nose a skin mask and a keyline.
 - **Same-polygon brows stay identical.** Changing only `th` by 2 px does not read; move
