@@ -126,8 +126,8 @@ def _c(v: float, lo: float, hi: float) -> float:
 
 def _global_face(shape: dict[str, float]) -> Xform:
     return Xform(
-        scale_x=_c(shape["face_width"], 0.87, 1.13),
-        scale_y=_c(shape["face_height"], 0.92, 1.08),
+        scale_x=_c(shape["face_width"], 0.84, 1.16),
+        scale_y=_c(shape["face_height"], 0.90, 1.10),
     )
 
 
@@ -156,16 +156,16 @@ def _local_xform(category: str, shape: dict[str, float], mirrored: bool = False)
         )
     if category == "nose":
         return Xform(
-            scale_x=_c(shape["nose_width"], 0.88, 1.20),
-            scale_y=_c(shape["nose_length"], 0.88, 1.16),
+            scale_x=_c(shape["nose_width"], 0.80, 1.28),
+            scale_y=_c(shape["nose_length"], 0.78, 1.24),
             dx=asym * 1.0,
         )
     if category == "mouth":
         return Xform(
-            scale_x=_c(shape["mouth_width"], 0.98, 1.02),
-            scale_y=_c(shape["mouth_height"], 0.98, 1.02),
+            scale_x=_c(shape["mouth_width"], 0.94, 1.04),
+            scale_y=_c(shape["mouth_height"], 0.88, 1.06),
             dx=asym * 1.6,
-            dy=_c(shape.get("mouth_y", 0.5), -3.0, 3.0),
+            dy=_c(shape.get("mouth_y", 0.5), -4.0, 4.0),
         )
     if category == "ears":
         return Xform(

@@ -921,40 +921,48 @@ def bake_brow(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any
 # --------------------------------------------------------------------------- #
 
 NOSE_RECIPES = [
-    ("nose_01_straight", 0.07, {"bridge": 1.0, "tip": 1.0, "flare": 1.0}),
-    ("nose_02_long_narrow", 0.05, {"len": 8.0, "bridge": 0.86, "tip": 0.88, "flare": 0.90}),
-    ("nose_03_wide", 0.06, {"tip": 1.18, "bridge": 1.14, "flare": 1.18, "len": -1.0}),
-    ("nose_04_short", 0.05, {"len": -8.0, "tip": 1.08, "flare": 1.08}),
-    ("nose_05_aquiline", 0.05, {"hook": 4.5, "len": 6.0, "bridge": 0.94, "tip": 0.98}),
-    ("nose_06_upturned", 0.05, {"upturn": 5.0, "len": -5.0, "tip": 1.06, "flare": 1.08}),
-    ("nose_07_broad_flat", 0.04, {"tip": 1.22, "bridge": 1.18, "flare": 1.24, "depth": 0.90, "len": -3.0}),
-    ("nose_08_narrow", 0.04, {"tip": 0.84, "bridge": 0.82, "flare": 0.86, "len": 3.0}),
-    ("nose_09_bulbous", 0.04, {"tip": 1.14, "bulb": 0.9, "len": 1.0, "flare": 1.12}),
-    ("nose_10_thin_bridge", 0.04, {"bridge": 0.78, "tip": 0.98, "len": 4.0, "flare": 0.96}),
-    ("nose_11_snub", 0.04, {"len": -8.0, "tip": 1.12, "upturn": 4.5, "flare": 1.10, "bulb": 0.4}),
-    ("nose_12_hawk", 0.04, {"hook": 5.5, "len": 7.0, "bridge": 0.88, "tip": 0.94, "flare": 0.94}),
-    ("nose_13_roman", 0.05, {"hook": 3.2, "len": 6.0, "bridge": 1.08, "tip": 1.10, "flare": 1.06}),
-    ("nose_14_button", 0.04, {"len": -8.0, "tip": 1.04, "bulb": 0.7, "upturn": 3.5, "flare": 1.04}),
-    ("nose_15_long_straight", 0.04, {"len": 10.0, "bridge": 0.92, "tip": 0.92, "flare": 0.94}),
+    ("nose_01_straight", 0.03, {"bridge": 1.0, "tip": 1.0, "flare": 1.0}),
+    ("nose_02_long_narrow", 0.07, {"len": 10.0, "bridge": 0.80, "tip": 0.82, "flare": 0.86}),
+    ("nose_03_wide", 0.08, {"tip": 1.22, "bridge": 1.16, "flare": 1.22, "len": -2.0}),
+    ("nose_04_short", 0.06, {"len": -10.0, "tip": 1.12, "flare": 1.12}),
+    ("nose_05_aquiline", 0.07, {"hook": 5.5, "len": 8.0, "bridge": 0.90, "tip": 0.96}),
+    ("nose_06_upturned", 0.07, {"upturn": 6.0, "len": -7.0, "tip": 1.10, "flare": 1.12}),
+    ("nose_07_broad_flat", 0.06, {"tip": 1.24, "bridge": 1.20, "flare": 1.24, "depth": 0.88, "len": -4.0}),
+    ("nose_08_narrow", 0.06, {"tip": 0.78, "bridge": 0.76, "flare": 0.80, "len": 4.0}),
+    ("nose_09_bulbous", 0.05, {"tip": 1.18, "bulb": 1.1, "len": 2.0, "flare": 1.16}),
+    ("nose_10_thin_bridge", 0.05, {"bridge": 0.72, "tip": 0.96, "len": 5.0, "flare": 0.92}),
+    ("nose_11_snub", 0.06, {"len": -10.0, "tip": 1.16, "upturn": 5.5, "flare": 1.14, "bulb": 0.55}),
+    ("nose_12_hawk", 0.06, {"hook": 6.5, "len": 9.0, "bridge": 0.84, "tip": 0.90, "flare": 0.90}),
+    ("nose_13_roman", 0.07, {"hook": 4.0, "len": 8.0, "bridge": 1.12, "tip": 1.12, "flare": 1.08}),
+    ("nose_14_button", 0.06, {"len": -10.0, "tip": 1.08, "bulb": 0.9, "upturn": 4.5, "flare": 1.08}),
+    ("nose_15_long_straight", 0.06, {"len": 12.0, "bridge": 0.88, "tip": 0.88, "flare": 0.90}),
     ("nose_16_flared", 0.0, {"flare": 1.22, "tip": 1.16, "bridge": 1.10}),  # retired: cartoon flare
-    ("nose_17_droop", 0.04, {"len": 6.0, "upturn": -3.5, "tip": 1.10, "hook": 1.8, "flare": 1.08}),
+    ("nose_17_droop", 0.06, {"len": 8.0, "upturn": -4.5, "tip": 1.14, "hook": 2.4, "flare": 1.12}),
     ("nose_18_pinched", 0.0, {"bridge": 0.78, "tip": 0.82, "flare": 0.84, "len": 3.0}),  # retired: pinched slit
-    ("nose_19_wide_short", 0.04, {"len": -6.0, "tip": 1.18, "bridge": 1.14, "flare": 1.16, "bulb": 0.4}),
-    ("nose_20_long_hook", 0.04, {"len": 9.0, "hook": 4.5, "bridge": 0.90, "tip": 1.00, "flare": 0.98}),
-    ("nose_21_soft_round", 0.05, {"len": -3.0, "tip": 1.12, "bulb": 0.8, "bridge": 1.08, "flare": 1.10}),
-    ("nose_22_even", 0.07, {"bridge": 1.02, "tip": 1.04, "flare": 1.04}),
-    ("nose_23_even_short", 0.05, {"len": -5.0, "tip": 1.08, "bridge": 1.02, "flare": 1.06}),
-    ("nose_24_even_long", 0.05, {"len": 6.0, "bridge": 0.96, "tip": 0.98, "flare": 1.00}),
-    ("nose_25_mild_wide", 0.05, {"tip": 1.14, "flare": 1.12, "bridge": 1.08}),
-    ("nose_26_mild_narrow", 0.05, {"tip": 0.90, "bridge": 0.90, "flare": 0.92, "len": 2.0}),
-    ("nose_27_mild_hook", 0.04, {"hook": 3.0, "len": 4.0, "bridge": 0.96, "tip": 1.00}),
-    ("nose_28_mild_up", 0.04, {"upturn": 3.5, "len": -4.0, "tip": 1.06, "flare": 1.06}),
-    ("nose_29_straight_plus", 0.05, {"bridge": 1.06, "tip": 1.08, "flare": 1.06}),
-    ("nose_30_soft_bulb", 0.04, {"bulb": 0.55, "tip": 1.10, "bridge": 1.04, "flare": 1.08}),
-    ("nose_31_mid_roman", 0.04, {"hook": 2.4, "len": 5.0, "bridge": 1.04, "tip": 1.06}),
-    ("nose_32_short_straight", 0.04, {"len": -5.0, "bridge": 1.00, "tip": 1.02, "flare": 1.02}),
-    ("nose_33_long_mild", 0.04, {"len": 8.0, "bridge": 0.94, "tip": 0.96, "flare": 0.96}),
-    ("nose_34_even_flare", 0.04, {"flare": 1.10, "tip": 1.08, "bridge": 1.04}),
+    ("nose_19_wide_short", 0.05, {"len": -8.0, "tip": 1.22, "bridge": 1.16, "flare": 1.20, "bulb": 0.5}),
+    ("nose_20_long_hook", 0.06, {"len": 11.0, "hook": 5.5, "bridge": 0.86, "tip": 0.96, "flare": 0.94}),
+    ("nose_21_soft_round", 0.03, {"len": -3.0, "tip": 1.12, "bulb": 0.8, "bridge": 1.08, "flare": 1.10}),
+    ("nose_22_even", 0.02, {"bridge": 1.02, "tip": 1.04, "flare": 1.04}),
+    ("nose_23_even_short", 0.02, {"len": -5.0, "tip": 1.08, "bridge": 1.02, "flare": 1.06}),
+    ("nose_24_even_long", 0.02, {"len": 6.0, "bridge": 0.96, "tip": 0.98, "flare": 1.00}),
+    ("nose_25_mild_wide", 0.02, {"tip": 1.14, "flare": 1.12, "bridge": 1.08}),
+    ("nose_26_mild_narrow", 0.02, {"tip": 0.90, "bridge": 0.90, "flare": 0.92, "len": 2.0}),
+    ("nose_27_mild_hook", 0.02, {"hook": 3.0, "len": 4.0, "bridge": 0.96, "tip": 1.00}),
+    ("nose_28_mild_up", 0.02, {"upturn": 3.5, "len": -4.0, "tip": 1.06, "flare": 1.06}),
+    ("nose_29_straight_plus", 0.02, {"bridge": 1.06, "tip": 1.08, "flare": 1.06}),
+    ("nose_30_soft_bulb", 0.03, {"bulb": 0.55, "tip": 1.10, "bridge": 1.04, "flare": 1.08}),
+    ("nose_31_mid_roman", 0.03, {"hook": 2.4, "len": 5.0, "bridge": 1.04, "tip": 1.06}),
+    ("nose_32_short_straight", 0.02, {"len": -5.0, "bridge": 1.00, "tip": 1.02, "flare": 1.02}),
+    ("nose_33_long_mild", 0.02, {"len": 8.0, "bridge": 0.94, "tip": 0.96, "flare": 0.96}),
+    ("nose_34_even_flare", 0.02, {"flare": 1.10, "tip": 1.08, "bridge": 1.04}),
+    ("nose_35_long_thin", 0.06, {"len": 13.0, "bridge": 0.76, "tip": 0.78, "flare": 0.80}),
+    ("nose_36_short_wide", 0.06, {"len": -12.0, "tip": 1.22, "bridge": 1.18, "flare": 1.22, "bulb": 0.6}),
+    ("nose_37_hook_long", 0.06, {"hook": 6.5, "len": 11.0, "bridge": 0.84, "tip": 0.90, "flare": 0.88}),
+    ("nose_38_button_wide", 0.05, {"len": -11.0, "tip": 1.18, "bulb": 1.0, "upturn": 5.0, "flare": 1.16}),
+    ("nose_39_roman_high", 0.06, {"hook": 4.8, "len": 9.0, "bridge": 1.14, "tip": 1.10, "flare": 1.06}),
+    ("nose_40_narrow_long", 0.06, {"len": 12.0, "bridge": 0.72, "tip": 0.76, "flare": 0.78}),
+    ("nose_41_droop_wide", 0.05, {"len": 8.0, "upturn": -5.0, "tip": 1.18, "flare": 1.16, "hook": 2.6}),
+    ("nose_42_up_short", 0.06, {"upturn": 7.0, "len": -8.0, "tip": 1.12, "flare": 1.14, "bulb": 0.4}),
 ]
 
 
@@ -963,7 +971,7 @@ def nose_contour(p: dict[str, float]) -> list[tuple[float, float]]:
 
     Earlier recipes only painted multiply ticks, so every nose looked the same.
     """
-    tip_y = NOSE_TIP_Y + p.get("len", 0.0) * 0.55
+    tip_y = NOSE_TIP_Y + p.get("len", 0.0) * 0.82
     up = p.get("upturn", 0.0)
     hook = p.get("hook", 0.0)
     bw = 7.6 * p.get("bridge", 1.0)
@@ -977,22 +985,22 @@ def nose_contour(p: dict[str, float]) -> list[tuple[float, float]]:
     return [
         (CX - root_w, bridge_top),
         (CX - bw * 0.72, mid_y - 10),
-        (CX - bw - hook * 0.12, mid_y + hook * 0.55),
+        (CX - bw - hook * 0.18, mid_y + hook * 0.70),
         (CX - tw * 0.52, tip - 12),
         (CX - ala, tip - 3),
-        (CX - tw * 0.20, tip + 5.0 + bulb * 3.0),
-        (CX, tip + 6.5 + bulb * 4.0),
-        (CX + tw * 0.20, tip + 5.0 + bulb * 3.0),
+        (CX - tw * 0.20, tip + 5.0 + bulb * 3.6),
+        (CX, tip + 6.5 + bulb * 5.0),
+        (CX + tw * 0.20, tip + 5.0 + bulb * 3.6),
         (CX + ala, tip - 3),
         (CX + tw * 0.52, tip - 12),
-        (CX + bw + hook * 0.55, mid_y + hook * 0.85),
+        (CX + bw + hook * 0.70, mid_y + hook * 1.05),
         (CX + bw * 0.72, mid_y - 10),
         (CX + root_w, bridge_top),
     ]
 
 
 def bake_nose(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]]]:
-    tip_y = NOSE_TIP_Y + p.get("len", 0.0) * 0.55
+    tip_y = NOSE_TIP_Y + p.get("len", 0.0) * 0.82
     bw = 8.5 * p.get("bridge", 1.0)
     tw = 19.0 * p.get("tip", 1.0)
     depth = p.get("depth", 1.0)
@@ -1108,80 +1116,86 @@ def bake_nose(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any
 # Closed lips need real meat (upper ~10+, lower ~13+); the baker used to collapse
 # the philtrum to a thread even when the recipe asked for thickness.
 MOUTH_RECIPES = [
-    ("mouth_01_medium", 0.04, {"hw": 44.0, "upper": 11.0, "lower": 13.6, "smile": 3.0}),
+    ("mouth_01_medium", 0.04, {"hw": 44.0, "upper": 10.4, "lower": 12.6, "smile": 3.0}),
     ("mouth_02_wide_thin", 0.0, {"hw": 45.0, "upper": 11.0, "lower": 13.2, "smile": 2.4}),  # retired: thread-wide
-    ("mouth_03_full", 0.04, {"hw": 45.0, "upper": 13.2, "lower": 16.0, "smile": 3.0}),
-    ("mouth_04_narrow", 0.03, {"hw": 39.0, "upper": 10.8, "lower": 13.2, "smile": 2.4}),
-    ("mouth_05_downturned", 0.03, {"hw": 43.0, "upper": 11.0, "lower": 13.4, "droop": 3.5, "smile": 0.6}),
-    ("mouth_06_thin_upper", 0.03, {"hw": 44.0, "upper": 9.8, "lower": 14.8, "smile": 2.6}),
-    ("mouth_07_bow", 0.04, {"hw": 42.0, "bow": 3.4, "upper": 12.0, "lower": 13.2, "smile": 2.6}),
-    ("mouth_08_flat", 0.03, {"hw": 44.0, "bow": 0.3, "upper": 10.8, "lower": 13.0, "smile": 1.6}),
-    ("mouth_09_smiling", 0.04, {"hw": 45.0, "smile": 6.2, "upper": 11.2, "lower": 13.8}),
-    ("mouth_10_wide_smile", 0.03, {"hw": 47.0, "smile": 6.4, "upper": 11.2, "lower": 13.8}),
+    ("mouth_03_full", 0.02, {"hw": 45.0, "upper": 12.0, "lower": 14.4, "smile": 3.0}),
+    ("mouth_04_narrow", 0.04, {"hw": 39.0, "upper": 10.2, "lower": 12.4, "smile": 2.4}),
+    ("mouth_05_downturned", 0.03, {"hw": 43.0, "upper": 10.4, "lower": 12.6, "droop": 3.5, "smile": 0.6}),
+    ("mouth_06_thin_upper", 0.04, {"hw": 44.0, "upper": 9.6, "lower": 13.6, "smile": 2.6}),
+    ("mouth_07_bow", 0.04, {"hw": 42.0, "bow": 3.4, "upper": 11.0, "lower": 12.4, "smile": 2.6}),
+    ("mouth_08_flat", 0.04, {"hw": 44.0, "bow": 0.3, "upper": 10.2, "lower": 12.2, "smile": 1.6}),
+    ("mouth_09_smiling", 0.04, {"hw": 45.0, "smile": 6.2, "upper": 10.4, "lower": 12.8}),
+    ("mouth_10_wide_smile", 0.03, {"hw": 47.0, "smile": 6.4, "upper": 10.4, "lower": 12.8}),
     ("mouth_11_very_wide", 0.0, {"hw": 47.0, "smile": 3.2, "upper": 11.0, "lower": 13.4}),  # retired: billboard mouth
     ("mouth_12_tiny", 0.0, {"hw": 40.0, "upper": 10.6, "lower": 13.0, "smile": 2.2}),  # retired: stamp mouth
-    ("mouth_13_heart", 0.03, {"hw": 41.0, "bow": 4.0, "upper": 12.4, "lower": 13.0, "smile": 2.4}),
-    ("mouth_14_wide_full", 0.04, {"hw": 47.0, "upper": 13.0, "lower": 15.8, "smile": 3.2}),
+    ("mouth_13_heart", 0.03, {"hw": 41.0, "bow": 4.0, "upper": 11.2, "lower": 12.2, "smile": 2.4}),
+    ("mouth_14_wide_full", 0.02, {"hw": 47.0, "upper": 11.6, "lower": 14.0, "smile": 3.2}),
     ("mouth_15_thin_line", 0.0, {"hw": 44.0, "upper": 10.8, "lower": 13.2, "smile": 2.6, "bow": 0.6}),  # retired: thread
-    ("mouth_16_soft_smile", 0.04, {"hw": 44.0, "smile": 5.0, "upper": 11.0, "lower": 13.4}),
-    ("mouth_17_cupid", 0.03, {"hw": 41.0, "bow": 3.6, "upper": 12.0, "lower": 12.6, "smile": 2.4}),
+    ("mouth_16_soft_smile", 0.04, {"hw": 44.0, "smile": 5.0, "upper": 10.4, "lower": 12.6}),
+    ("mouth_17_cupid", 0.03, {"hw": 41.0, "bow": 3.6, "upper": 11.0, "lower": 12.0, "smile": 2.4}),
     ("mouth_18_broad_thin", 0.0, {"hw": 46.0, "upper": 11.0, "lower": 13.2, "smile": 2.2}),  # retired: wide thread
-    ("mouth_19_neutral", 0.04, {"hw": 44.0, "upper": 11.4, "lower": 14.0, "smile": 2.4, "bow": 1.8}),
-    ("mouth_20_full_wide", 0.04, {"hw": 46.0, "upper": 13.4, "lower": 16.2, "smile": 3.2, "bow": 1.8}),
-    ("mouth_21_open_full", 0.04, {"hw": 45.0, "upper": 10.8, "lower": 13.0, "smile": 4.8, "open": 8.0, "teeth": 1.0}),
-    ("mouth_22_laugh", 0.04, {"hw": 46.0, "upper": 10.4, "lower": 12.6, "smile": 7.6, "open": 10.5, "teeth": 1.0}),
-    ("mouth_23_grin", 0.04, {"hw": 45.0, "upper": 10.2, "lower": 12.4, "smile": 6.8, "open": 9.0, "teeth": 1.0}),
-    ("mouth_24_open_narrow", 0.03, {"hw": 39.0, "upper": 10.2, "lower": 12.2, "smile": 3.4, "open": 7.0, "teeth": 1.0}),
-    ("mouth_25_high", 0.03, {"hw": 43.0, "upper": 11.2, "lower": 13.6, "smile": 3.0, "lift": -6.0}),
-    ("mouth_26_low", 0.03, {"hw": 44.0, "upper": 11.2, "lower": 13.8, "smile": 2.6, "lift": 6.0}),
-    ("mouth_27_thick", 0.04, {"hw": 44.0, "upper": 14.0, "lower": 16.8, "smile": 2.8, "bow": 1.2}),
+    ("mouth_19_neutral", 0.04, {"hw": 44.0, "upper": 10.6, "lower": 12.8, "smile": 2.4, "bow": 1.8}),
+    ("mouth_20_full_wide", 0.02, {"hw": 46.0, "upper": 12.0, "lower": 14.4, "smile": 3.2, "bow": 1.8}),
+    ("mouth_21_open_full", 0.04, {"hw": 45.0, "upper": 10.2, "lower": 12.2, "smile": 4.8, "open": 8.0, "teeth": 1.0}),
+    ("mouth_22_laugh", 0.04, {"hw": 46.0, "upper": 10.0, "lower": 12.0, "smile": 7.6, "open": 10.5, "teeth": 1.0}),
+    ("mouth_23_grin", 0.04, {"hw": 45.0, "upper": 10.0, "lower": 12.0, "smile": 6.8, "open": 9.0, "teeth": 1.0}),
+    ("mouth_24_open_narrow", 0.03, {"hw": 39.0, "upper": 10.0, "lower": 12.0, "smile": 3.4, "open": 7.0, "teeth": 1.0}),
+    ("mouth_25_high", 0.03, {"hw": 43.0, "upper": 10.4, "lower": 12.6, "smile": 3.0, "lift": -6.0}),
+    ("mouth_26_low", 0.03, {"hw": 44.0, "upper": 10.4, "lower": 12.8, "smile": 2.6, "lift": 6.0}),
+    ("mouth_27_thick", 0.02, {"hw": 44.0, "upper": 12.4, "lower": 14.8, "smile": 2.8, "bow": 1.2}),
     ("mouth_28_thin_high", 0.0, {"hw": 44.0, "upper": 11.0, "lower": 13.4, "smile": 2.8, "lift": -5.0}),  # retired: thin high
-    ("mouth_29_laugh_wide", 0.03, {"hw": 47.0, "upper": 10.6, "lower": 12.8, "smile": 7.4, "open": 9.5, "teeth": 1.0}),
-    ("mouth_30_open_low", 0.03, {"hw": 44.0, "upper": 10.4, "lower": 12.6, "smile": 4.0, "open": 7.5, "teeth": 1.0, "lift": 5.5}),
-    ("mouth_31_toothy", 0.03, {"hw": 45.0, "upper": 10.0, "lower": 12.2, "smile": 5.8, "open": 10.5, "teeth": 1.0}),
-    ("mouth_32_high_full", 0.03, {"hw": 44.0, "upper": 13.0, "lower": 15.6, "smile": 3.0, "lift": -5.5}),
-    ("mouth_33_low_wide", 0.03, {"hw": 46.0, "upper": 11.2, "lower": 13.8, "smile": 2.4, "lift": 5.5}),
-    ("mouth_34_smirk", 0.03, {"hw": 44.0, "upper": 11.0, "lower": 13.4, "smile": 3.2, "skew": 4.2}),
-    ("mouth_35_small_open", 0.03, {"hw": 41.0, "upper": 10.2, "lower": 12.2, "smile": 3.6, "open": 5.5, "teeth": 1.0}),
-    ("mouth_36_even", 0.035, {"hw": 43.0, "upper": 11.2, "lower": 13.6, "smile": 2.6}),
-    ("mouth_37_even_wide", 0.035, {"hw": 47.0, "upper": 11.4, "lower": 14.0, "smile": 2.8}),
-    ("mouth_38_even_narrow", 0.03, {"hw": 40.0, "upper": 11.0, "lower": 13.4, "smile": 2.6}),
-    ("mouth_39_soft_full", 0.04, {"hw": 44.0, "upper": 12.6, "lower": 15.0, "smile": 3.0}),
-    ("mouth_40_quiet", 0.03, {"hw": 43.0, "upper": 10.8, "lower": 13.2, "smile": 2.0, "bow": 1.2}),
-    ("mouth_41_gentle_open", 0.04, {"hw": 44.0, "upper": 10.6, "lower": 12.8, "smile": 3.8, "open": 5.5, "teeth": 1.0}),
-    ("mouth_42_half_smile", 0.04, {"hw": 45.0, "smile": 4.8, "upper": 11.2, "lower": 13.6}),
-    ("mouth_43_compact", 0.03, {"hw": 40.0, "upper": 11.4, "lower": 13.8, "smile": 2.8}),
-    ("mouth_44_medium_bow", 0.03, {"hw": 43.0, "bow": 2.8, "upper": 11.8, "lower": 13.4, "smile": 2.6}),
-    ("mouth_45_slight_open", 0.04, {"hw": 44.0, "upper": 10.6, "lower": 12.8, "smile": 3.4, "open": 6.5, "teeth": 1.0}),
-    ("mouth_46_high_neutral", 0.03, {"hw": 44.0, "upper": 11.2, "lower": 13.6, "smile": 2.8, "lift": -4.5}),
-    ("mouth_47_low_neutral", 0.03, {"hw": 44.0, "upper": 11.2, "lower": 13.6, "smile": 2.6, "lift": 4.5}),
-    ("mouth_48_full_smile", 0.04, {"hw": 45.0, "smile": 5.6, "upper": 12.2, "lower": 14.8}),
-    ("mouth_49_small_full", 0.03, {"hw": 40.0, "upper": 12.4, "lower": 14.8, "smile": 2.6}),
-    ("mouth_50_open_smile", 0.04, {"hw": 45.0, "upper": 10.6, "lower": 12.8, "smile": 5.4, "open": 7.0, "teeth": 1.0}),
-    ("mouth_51_even_open", 0.04, {"hw": 44.0, "upper": 10.6, "lower": 12.8, "smile": 4.2, "open": 7.0, "teeth": 1.0}),
-    ("mouth_52_closed_wide", 0.03, {"hw": 47.0, "upper": 11.6, "lower": 14.2, "smile": 3.0}),
-    ("mouth_53_closed_short", 0.03, {"hw": 39.0, "upper": 11.2, "lower": 13.6, "smile": 2.8}),
-    ("mouth_54_plump", 0.04, {"hw": 43.0, "upper": 13.0, "lower": 15.6, "smile": 2.6}),
-    ("mouth_55_lift_smile", 0.03, {"hw": 44.0, "smile": 4.8, "upper": 11.2, "lower": 13.6, "lift": -4.0}),
-    ("mouth_56_drop_smile", 0.03, {"hw": 45.0, "smile": 3.8, "upper": 11.2, "lower": 13.6, "lift": 4.0}),
-    ("mouth_57_soft_grin", 0.04, {"hw": 45.0, "upper": 10.4, "lower": 12.6, "smile": 6.0, "open": 8.0, "teeth": 1.0}),
-    ("mouth_58_quiet_open", 0.03, {"hw": 42.0, "upper": 10.2, "lower": 12.4, "smile": 3.0, "open": 5.0, "teeth": 1.0}),
-    ("mouth_59_square", 0.04, {"hw": 44.0, "bow": 0.2, "upper": 11.6, "lower": 13.8, "smile": 1.8}),
-    ("mouth_60_heavy_lower", 0.04, {"hw": 44.0, "upper": 10.2, "lower": 16.6, "smile": 2.6}),
-    ("mouth_61_even_full", 0.04, {"hw": 45.0, "upper": 12.8, "lower": 15.2, "smile": 2.8, "bow": 1.4}),
-    ("mouth_62_cupid_full", 0.03, {"hw": 42.0, "bow": 3.4, "upper": 12.2, "lower": 13.2, "smile": 2.4}),
-    ("mouth_63_open_bow", 0.03, {"hw": 44.0, "bow": 2.8, "upper": 10.8, "lower": 12.8, "smile": 4.0, "open": 6.5, "teeth": 1.0}),
-    ("mouth_64_tight_smile", 0.03, {"hw": 40.0, "smile": 5.6, "upper": 11.2, "lower": 13.4}),
-    ("mouth_65_eye_width", 0.04, {"hw": 47.0, "upper": 11.4, "lower": 14.0, "smile": 3.0}),
-    ("mouth_66_drop_full", 0.03, {"hw": 44.0, "upper": 12.2, "lower": 15.0, "smile": 2.4, "lift": 5.5}),
-    ("mouth_67_open_meaty", 0.04, {"hw": 45.0, "upper": 11.2, "lower": 13.4, "smile": 4.6, "open": 7.5, "teeth": 1.0}),
-    ("mouth_68_heart_full", 0.03, {"hw": 41.0, "bow": 4.2, "upper": 12.6, "lower": 13.0, "smile": 2.2}),
-    ("mouth_69_smirk_full", 0.03, {"hw": 44.0, "upper": 11.2, "lower": 13.6, "smile": 3.4, "skew": 5.0}),
-    ("mouth_70_low_meaty", 0.03, {"hw": 45.0, "upper": 11.4, "lower": 14.2, "smile": 2.6, "lift": 6.0}),
-    ("mouth_71_high_meaty", 0.03, {"hw": 44.0, "upper": 11.4, "lower": 13.8, "smile": 2.8, "lift": -5.5}),
-    ("mouth_72_laugh_meaty", 0.04, {"hw": 46.0, "upper": 10.8, "lower": 13.0, "smile": 7.4, "open": 10.0, "teeth": 1.0}),
-    ("mouth_73_narrow_full", 0.03, {"hw": 39.0, "upper": 12.0, "lower": 14.6, "smile": 2.6}),
-    ("mouth_74_soft_square", 0.03, {"hw": 45.0, "bow": 0.5, "upper": 10.8, "lower": 13.2, "smile": 1.6}),
+    ("mouth_29_laugh_wide", 0.03, {"hw": 47.0, "upper": 10.2, "lower": 12.2, "smile": 7.4, "open": 9.5, "teeth": 1.0}),
+    ("mouth_30_open_low", 0.03, {"hw": 44.0, "upper": 10.2, "lower": 12.2, "smile": 4.0, "open": 7.5, "teeth": 1.0, "lift": 5.5}),
+    ("mouth_31_toothy", 0.03, {"hw": 45.0, "upper": 10.0, "lower": 12.0, "smile": 5.8, "open": 10.5, "teeth": 1.0}),
+    ("mouth_32_high_full", 0.02, {"hw": 44.0, "upper": 11.6, "lower": 13.8, "smile": 3.0, "lift": -5.5}),
+    ("mouth_33_low_wide", 0.03, {"hw": 46.0, "upper": 10.4, "lower": 12.8, "smile": 2.4, "lift": 5.5}),
+    ("mouth_34_smirk", 0.03, {"hw": 44.0, "upper": 10.4, "lower": 12.6, "smile": 3.2, "skew": 4.2}),
+    ("mouth_35_small_open", 0.03, {"hw": 41.0, "upper": 10.0, "lower": 12.0, "smile": 3.6, "open": 5.5, "teeth": 1.0}),
+    ("mouth_36_even", 0.03, {"hw": 43.0, "upper": 10.4, "lower": 12.6, "smile": 2.6}),
+    ("mouth_37_even_wide", 0.03, {"hw": 47.0, "upper": 10.6, "lower": 12.8, "smile": 2.8}),
+    ("mouth_38_even_narrow", 0.03, {"hw": 40.0, "upper": 10.2, "lower": 12.4, "smile": 2.6}),
+    ("mouth_39_soft_full", 0.02, {"hw": 44.0, "upper": 11.4, "lower": 13.6, "smile": 3.0}),
+    ("mouth_40_quiet", 0.04, {"hw": 43.0, "upper": 10.2, "lower": 12.4, "smile": 2.0, "bow": 1.2}),
+    ("mouth_41_gentle_open", 0.04, {"hw": 44.0, "upper": 10.2, "lower": 12.2, "smile": 3.8, "open": 5.5, "teeth": 1.0}),
+    ("mouth_42_half_smile", 0.04, {"hw": 45.0, "smile": 4.8, "upper": 10.4, "lower": 12.6}),
+    ("mouth_43_compact", 0.03, {"hw": 40.0, "upper": 10.6, "lower": 12.8, "smile": 2.8}),
+    ("mouth_44_medium_bow", 0.03, {"hw": 43.0, "bow": 2.8, "upper": 10.8, "lower": 12.6, "smile": 2.6}),
+    ("mouth_45_slight_open", 0.04, {"hw": 44.0, "upper": 10.2, "lower": 12.2, "smile": 3.4, "open": 6.5, "teeth": 1.0}),
+    ("mouth_46_high_neutral", 0.03, {"hw": 44.0, "upper": 10.4, "lower": 12.6, "smile": 2.8, "lift": -4.5}),
+    ("mouth_47_low_neutral", 0.03, {"hw": 44.0, "upper": 10.4, "lower": 12.6, "smile": 2.6, "lift": 4.5}),
+    ("mouth_48_full_smile", 0.02, {"hw": 45.0, "smile": 5.6, "upper": 11.2, "lower": 13.4}),
+    ("mouth_49_small_full", 0.02, {"hw": 40.0, "upper": 11.2, "lower": 13.4, "smile": 2.6}),
+    ("mouth_50_open_smile", 0.04, {"hw": 45.0, "upper": 10.2, "lower": 12.2, "smile": 5.4, "open": 7.0, "teeth": 1.0}),
+    ("mouth_51_even_open", 0.04, {"hw": 44.0, "upper": 10.2, "lower": 12.2, "smile": 4.2, "open": 7.0, "teeth": 1.0}),
+    ("mouth_52_closed_wide", 0.03, {"hw": 47.0, "upper": 10.6, "lower": 13.0, "smile": 3.0}),
+    ("mouth_53_closed_short", 0.03, {"hw": 39.0, "upper": 10.4, "lower": 12.6, "smile": 2.8}),
+    ("mouth_54_plump", 0.02, {"hw": 43.0, "upper": 11.6, "lower": 13.8, "smile": 2.6}),
+    ("mouth_55_lift_smile", 0.03, {"hw": 44.0, "smile": 4.8, "upper": 10.4, "lower": 12.6, "lift": -4.0}),
+    ("mouth_56_drop_smile", 0.03, {"hw": 45.0, "smile": 3.8, "upper": 10.4, "lower": 12.6, "lift": 4.0}),
+    ("mouth_57_soft_grin", 0.04, {"hw": 45.0, "upper": 10.0, "lower": 12.0, "smile": 6.0, "open": 8.0, "teeth": 1.0}),
+    ("mouth_58_quiet_open", 0.03, {"hw": 42.0, "upper": 10.0, "lower": 12.0, "smile": 3.0, "open": 5.0, "teeth": 1.0}),
+    ("mouth_59_square", 0.04, {"hw": 44.0, "bow": 0.2, "upper": 10.6, "lower": 12.8, "smile": 1.8}),
+    ("mouth_60_heavy_lower", 0.03, {"hw": 44.0, "upper": 10.0, "lower": 14.4, "smile": 2.6}),
+    ("mouth_61_even_full", 0.02, {"hw": 45.0, "upper": 11.4, "lower": 13.6, "smile": 2.8, "bow": 1.4}),
+    ("mouth_62_cupid_full", 0.02, {"hw": 42.0, "bow": 3.4, "upper": 11.2, "lower": 12.4, "smile": 2.4}),
+    ("mouth_63_open_bow", 0.03, {"hw": 44.0, "bow": 2.8, "upper": 10.4, "lower": 12.2, "smile": 4.0, "open": 6.5, "teeth": 1.0}),
+    ("mouth_64_tight_smile", 0.03, {"hw": 40.0, "smile": 5.6, "upper": 10.4, "lower": 12.4}),
+    ("mouth_65_eye_width", 0.04, {"hw": 47.0, "upper": 10.6, "lower": 12.8, "smile": 3.0}),
+    ("mouth_66_drop_full", 0.02, {"hw": 44.0, "upper": 11.2, "lower": 13.4, "smile": 2.4, "lift": 5.5}),
+    ("mouth_67_open_meaty", 0.02, {"hw": 45.0, "upper": 10.6, "lower": 12.6, "smile": 4.6, "open": 7.5, "teeth": 1.0}),
+    ("mouth_68_heart_full", 0.02, {"hw": 41.0, "bow": 4.2, "upper": 11.4, "lower": 12.2, "smile": 2.2}),
+    ("mouth_69_smirk_full", 0.03, {"hw": 44.0, "upper": 10.4, "lower": 12.6, "smile": 3.4, "skew": 5.0}),
+    ("mouth_70_low_meaty", 0.02, {"hw": 45.0, "upper": 10.6, "lower": 13.0, "smile": 2.6, "lift": 6.0}),
+    ("mouth_71_high_meaty", 0.02, {"hw": 44.0, "upper": 10.6, "lower": 12.8, "smile": 2.8, "lift": -5.5}),
+    ("mouth_72_laugh_meaty", 0.02, {"hw": 46.0, "upper": 10.4, "lower": 12.4, "smile": 7.4, "open": 10.0, "teeth": 1.0}),
+    ("mouth_73_narrow_full", 0.02, {"hw": 39.0, "upper": 11.0, "lower": 13.2, "smile": 2.6}),
+    ("mouth_74_soft_square", 0.04, {"hw": 45.0, "bow": 0.5, "upper": 10.2, "lower": 12.4, "smile": 1.6}),
+    ("mouth_75_slim", 0.05, {"hw": 42.0, "upper": 10.0, "lower": 12.0, "smile": 2.6, "bow": 1.0}),
+    ("mouth_76_slim_wide", 0.04, {"hw": 46.0, "upper": 10.2, "lower": 12.2, "smile": 2.8}),
+    ("mouth_77_slim_bow", 0.04, {"hw": 41.0, "bow": 3.2, "upper": 10.4, "lower": 12.0, "smile": 2.4}),
+    ("mouth_78_slim_smile", 0.04, {"hw": 44.0, "smile": 5.2, "upper": 10.2, "lower": 12.2}),
+    ("mouth_79_slim_open", 0.04, {"hw": 44.0, "upper": 10.0, "lower": 12.0, "smile": 4.0, "open": 6.0, "teeth": 1.0}),
+    ("mouth_80_razor", 0.04, {"hw": 43.0, "upper": 10.0, "lower": 12.0, "smile": 2.2, "bow": 0.4}),
 ]
 
 
@@ -1217,11 +1231,11 @@ def bake_mouth(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, An
     # Corners past the pupils read as a billboard; a ribbon that tapers to a
     # point reads as a thread even when upper/lower are large.
     hw = min(float(p.get("hw", 44.0)), EYE_DX - 2.0)
-    # A step thinner than the 0.12 midpoint (1.16 / 1.18), not back to the
-    # thread pass (1.0). Sausage was 1.32 / 1.36. 1.12 was only ~1 px and
-    # did not read; 1.08 / 1.10 is the smallest drop that shows at card size.
-    up = float(p.get("upper", 11.0)) * 1.08
-    lo = float(p.get("lower", 13.6)) * 1.10
+    # Thinner than 0.13 (1.08 / 1.10) without collapsing to the thread pass.
+    # Thread was baker 1.0 plus philtrum 0.22 plus pointed corners. Keep the
+    # philtrum meat (0.84) and only drop the global scale plus corner bluntness.
+    up = float(p.get("upper", 11.0)) * 1.00
+    lo = float(p.get("lower", 13.6)) * 1.02
     bow = p.get("bow", 1.6)
     # a fully straight closed mouth still reads sullen; open/laugh are identity
     # variants the owner asked for, not a second emotion system.
@@ -1233,8 +1247,9 @@ def bake_mouth(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, An
     show_teeth = p.get("teeth", 1.0 if gap >= 5.0 else 0.0) > 0.5
 
     if gap < 2.0:
-        # Slightly less blunt than the 0.12 sausage-leaning corners.
-        cu, cl = up * 0.16, lo * 0.18
+        # Sharper corners so the lip is a ribbon, not a sausage. Thread pass
+        # tapered to a point (pad_up * 0.22); 10% still has meat at the corner.
+        cu, cl = up * 0.10, lo * 0.12
         upper_pts = [
             (CX - hw, y + ldroop - cu),
             (CX - hw * 0.70, y - up * 0.70),
@@ -1484,19 +1499,19 @@ def hair_polygon(t: float, hl_f: float, side_f: float, style: str) -> list[tuple
         inner_right[4] = (CX + 0.16 * hw, hl_y - 16.0)
         inner_right[5] = (CX, hl_y - 12.0)
     elif style == "fringe":
-        # hair falls forward onto the forehead
-        inner_right[2] = (CX + 0.74 * hw, hl_y + 34.0)
-        inner_right[3] = (CX + 0.48 * hw, hl_y + 30.0)
-        inner_right[4] = (CX + 0.20 * hw, hl_y + 22.0)
-        inner_right[5] = (CX, hl_y + 26.0)
+        # hair falls forward onto the forehead — must read vs a crop
+        inner_right[2] = (CX + 0.74 * hw, hl_y + 38.0)
+        inner_right[3] = (CX + 0.48 * hw, hl_y + 40.0)
+        inner_right[4] = (CX + 0.20 * hw, hl_y + 34.0)
+        inner_right[5] = (CX, hl_y + 38.0)
     elif style == "undercut":
         # narrow, nearly shaved sides with volume on top
-        outer_right[2] = (CX + 0.92 * hw + t * 0.7, hy(0.16))
-        outer_right[3] = (CX + 0.84 * hw, hy(0.30))
-        outer_right[4] = (CX + 0.80 * hw, hy(0.40))
-        outer_right[5] = (CX + 0.78 * hw, side_y)
-        inner_right[0] = (CX + 0.72 * hw, side_y - 6.0)
-        inner_right[1] = (CX + 0.70 * hw, hl_y + 30.0)
+        outer_right[2] = (CX + 0.88 * hw + t * 0.7, hy(0.16))
+        outer_right[3] = (CX + 0.78 * hw, hy(0.30))
+        outer_right[4] = (CX + 0.72 * hw, hy(0.40))
+        outer_right[5] = (CX + 0.70 * hw, side_y)
+        inner_right[0] = (CX + 0.64 * hw, side_y - 6.0)
+        inner_right[1] = (CX + 0.62 * hw, hl_y + 30.0)
     elif style == "mid_part":
         inner_right[4] = (CX + 0.18 * hw, hl_y - 8.0)
         inner_right[5] = (CX + 0.03 * hw, hl_y + 16.0)
@@ -1569,14 +1584,14 @@ def wobble(mask: Image.Image, kind: str, amount: float, seed: int) -> Image.Imag
 
 
 HAIR_RECIPES: list[dict[str, Any]] = [
-    {"id": "hair_01_buzz", "w": 0.11, "t": 5.0, "hl": 0.25, "side": 0.52, "style": "straight"},
-    {"id": "hair_02_crop", "w": 0.16, "t": 10.0, "hl": 0.24, "side": 0.51, "style": "straight"},
-    {"id": "hair_03_side_part", "w": 0.13, "t": 14.0, "hl": 0.23, "side": 0.50, "style": "swept", "part": True},
-    {"id": "hair_04_messy_short", "w": 0.13, "t": 13.0, "hl": 0.24, "side": 0.51, "style": "straight", "wob": ("spike", 5.0)},
-    {"id": "hair_05_swept_medium", "w": 0.08, "t": 18.0, "hl": 0.21, "side": 0.53, "style": "swept"},
+    {"id": "hair_01_buzz", "w": 0.09, "t": 4.0, "hl": 0.26, "side": 0.52, "style": "straight"},
+    {"id": "hair_02_crop", "w": 0.12, "t": 10.0, "hl": 0.24, "side": 0.51, "style": "straight"},
+    {"id": "hair_03_side_part", "w": 0.12, "t": 15.0, "hl": 0.21, "side": 0.50, "style": "swept", "part": True},
+    {"id": "hair_04_messy_short", "w": 0.10, "t": 13.0, "hl": 0.24, "side": 0.51, "style": "straight", "wob": ("spike", 5.0)},
+    {"id": "hair_05_swept_medium", "w": 0.10, "t": 18.0, "hl": 0.20, "side": 0.54, "style": "swept"},
     {
         "id": "hair_06_curly_short",
-        "w": 0.08,
+        "w": 0.09,
         "t": 14.0,
         "hl": 0.26,
         "side": 0.51,
@@ -1586,7 +1601,7 @@ HAIR_RECIPES: list[dict[str, Any]] = [
     },
     {
         "id": "hair_07_curly_medium",
-        "w": 0.05,
+        "w": 0.06,
         "t": 17.0,
         "hl": 0.25,
         "side": 0.54,
@@ -1596,7 +1611,7 @@ HAIR_RECIPES: list[dict[str, Any]] = [
     },
     {
         "id": "hair_08_dense_short",
-        "w": 0.05,
+        "w": 0.06,
         "t": 17.0,
         "hl": 0.28,
         "side": 0.50,
@@ -1605,20 +1620,20 @@ HAIR_RECIPES: list[dict[str, Any]] = [
         "region_weights": {"*": 1.0, "west_africa": 2.4, "east_africa": 2.2, "north_america": 1.2, "east_asia": 0.4, "scandinavia": 0.5},
     },
     {"id": "hair_09_spiky", "w": 0.0, "t": 15.0, "hl": 0.24, "side": 0.49, "style": "straight", "wob": ("spike", 11.0), "max_age": 32},  # retired: cartoon spikes
-    {"id": "hair_10_slicked", "w": 0.06, "t": 11.0, "hl": 0.19, "side": 0.51, "style": "swept", "part": True},
+    {"id": "hair_10_slicked", "w": 0.08, "t": 11.0, "hl": 0.17, "side": 0.51, "style": "swept", "part": True},
     {"id": "hair_11_thinning", "w": 0.06, "t": 8.0, "hl": 0.185, "side": 0.51, "style": "m_shape", "requires": ("hairline_thinning",)},
     {"id": "hair_12_receded", "w": 0.07, "t": 8.0, "hl": 0.13, "side": 0.52, "style": "m_shape", "requires": ("hairline_receded",)},
     {"id": "hair_13_horseshoe", "w": 0.0, "t": 6.0, "hl": 0.05, "side": 0.53, "style": "m_shape", "requires": ("hairline_receded",), "min_age": 30},  # retired: horseshoe
     {"id": "hair_14_longer", "w": 0.0, "t": 19.0, "hl": 0.23, "side": 0.70, "style": "straight"},  # retired: too long
-    {"id": "hair_15_flat_helmet", "w": 0.07, "t": 9.0, "hl": 0.24, "side": 0.52, "style": "straight"},
-    {"id": "hair_16_quiff", "w": 0.07, "t": 11.0, "hl": 0.20, "side": 0.48, "style": "quiff"},
-    {"id": "hair_17_fringe", "w": 0.15, "t": 15.0, "hl": 0.18, "side": 0.51, "style": "fringe"},
-    {"id": "hair_18_undercut", "w": 0.07, "t": 17.0, "hl": 0.21, "side": 0.50, "style": "undercut"},
-    {"id": "hair_19_textured_spikes", "w": 0.11, "t": 15.0, "hl": 0.23, "side": 0.50, "style": "quiff", "wob": ("spike", 5.0)},
-    {"id": "hair_20_wavy_medium", "w": 0.06, "t": 19.0, "hl": 0.22, "side": 0.55, "style": "swept", "wob": ("curl", 6.0)},
-    {"id": "hair_21_crew_cut", "w": 0.09, "t": 7.0, "hl": 0.235, "side": 0.49, "style": "round"},
-    {"id": "hair_22_high_fade", "w": 0.07, "t": 14.0, "hl": 0.22, "side": 0.42, "style": "undercut"},
-    {"id": "hair_23_mid_part", "w": 0.05, "t": 17.0, "hl": 0.20, "side": 0.52, "style": "mid_part"},
+    {"id": "hair_15_flat_helmet", "w": 0.04, "t": 9.0, "hl": 0.24, "side": 0.52, "style": "straight"},
+    {"id": "hair_16_quiff", "w": 0.08, "t": 12.0, "hl": 0.19, "side": 0.47, "style": "quiff"},
+    {"id": "hair_17_fringe", "w": 0.14, "t": 16.0, "hl": 0.16, "side": 0.51, "style": "fringe"},
+    {"id": "hair_18_undercut", "w": 0.09, "t": 17.0, "hl": 0.20, "side": 0.46, "style": "undercut"},
+    {"id": "hair_19_textured_spikes", "w": 0.07, "t": 15.0, "hl": 0.22, "side": 0.50, "style": "quiff", "wob": ("spike", 5.0)},
+    {"id": "hair_20_wavy_medium", "w": 0.08, "t": 19.0, "hl": 0.21, "side": 0.56, "style": "swept", "wob": ("curl", 6.0)},
+    {"id": "hair_21_crew_cut", "w": 0.07, "t": 7.0, "hl": 0.235, "side": 0.49, "style": "round"},
+    {"id": "hair_22_high_fade", "w": 0.09, "t": 14.0, "hl": 0.21, "side": 0.36, "style": "undercut"},
+    {"id": "hair_23_mid_part", "w": 0.07, "t": 17.0, "hl": 0.19, "side": 0.52, "style": "mid_part"},
     {
         "id": "hair_24_curly_tall",
         "w": 0.0,  # retired: afro puff / too tall
@@ -1629,18 +1644,18 @@ HAIR_RECIPES: list[dict[str, Any]] = [
         "wob": ("curl", 15.0),
         "region_weights": {"*": 1.0, "west_africa": 2.2, "east_africa": 2.0, "latin_america": 1.3, "east_asia": 0.3, "scandinavia": 0.4},
     },
-    {"id": "hair_25_shaved", "w": 0.05, "t": 3.0, "hl": 0.26, "side": 0.52, "style": "round"},
+    {"id": "hair_25_shaved", "w": 0.06, "t": 2.5, "hl": 0.27, "side": 0.52, "style": "round"},
     {"id": "hair_26_short_wave", "w": 0.06, "t": 13.0, "hl": 0.22, "side": 0.50, "style": "swept", "wob": ("curl", 5.0), "excludes": ("hairline_receded",)},
     {"id": "hair_27_bowl", "w": 0.0, "t": 16.0, "hl": 0.20, "side": 0.50, "style": "bowl", "excludes": ("hairline_receded",)},  # retired: bowl
-    {"id": "hair_28_curtains", "w": 0.05, "t": 18.0, "hl": 0.19, "side": 0.54, "style": "curtain", "excludes": ("hairline_receded",)},
+    {"id": "hair_28_curtains", "w": 0.07, "t": 18.0, "hl": 0.18, "side": 0.54, "style": "curtain", "excludes": ("hairline_receded",)},
     {"id": "hair_29_mullet", "w": 0.0, "t": 12.0, "hl": 0.23, "side": 0.74, "style": "mullet", "max_age": 34, "excludes": ("hairline_receded",)},  # retired: mullet
-    {"id": "hair_30_caesar", "w": 0.06, "t": 8.0, "hl": 0.22, "side": 0.48, "style": "caesar"},
+    {"id": "hair_30_caesar", "w": 0.07, "t": 8.0, "hl": 0.20, "side": 0.48, "style": "caesar"},
     {"id": "hair_31_pompadour", "w": 0.0, "t": 16.0, "hl": 0.19, "side": 0.47, "style": "pompadour", "max_age": 34, "excludes": ("hairline_receded",)},  # retired: pompadour
     {"id": "hair_32_combover", "w": 0.05, "t": 9.0, "hl": 0.12, "side": 0.52, "style": "swept", "part": True, "requires": ("hairline_receded",)},
-    {"id": "hair_33_side_fringe", "w": 0.05, "t": 15.0, "hl": 0.20, "side": 0.51, "style": "fringe", "part": True},
+    {"id": "hair_33_side_fringe", "w": 0.07, "t": 16.0, "hl": 0.18, "side": 0.51, "style": "fringe", "part": True},
     {
         "id": "hair_34_coils",
-        "w": 0.04,
+        "w": 0.05,
         "t": 16.0,
         "hl": 0.27,
         "side": 0.52,
@@ -1649,22 +1664,26 @@ HAIR_RECIPES: list[dict[str, Any]] = [
         "excludes": ("hairline_receded",),
         "region_weights": {"*": 1.0, "west_africa": 2.4, "east_africa": 2.1, "latin_america": 1.2, "east_asia": 0.3, "scandinavia": 0.35},
     },
-    {"id": "hair_35_taper", "w": 0.06, "t": 11.0, "hl": 0.23, "side": 0.40, "style": "undercut"},
+    {"id": "hair_35_taper", "w": 0.08, "t": 11.0, "hl": 0.23, "side": 0.36, "style": "undercut"},
     {"id": "hair_36_wavy_crop", "w": 0.06, "t": 11.0, "hl": 0.24, "side": 0.50, "style": "round", "wob": ("curl", 4.5)},
     {"id": "hair_37_long_swept", "w": 0.0, "t": 20.0, "hl": 0.21, "side": 0.68, "style": "swept", "excludes": ("hairline_receded",)},  # retired: too long
-    {"id": "hair_38_widow_peak", "w": 0.05, "t": 14.0, "hl": 0.21, "side": 0.50, "style": "widow", "excludes": ("hairline_receded",)},
+    {"id": "hair_38_widow_peak", "w": 0.06, "t": 14.0, "hl": 0.20, "side": 0.50, "style": "widow", "excludes": ("hairline_receded",)},
     {"id": "hair_39_flat_top", "w": 0.0, "t": 18.0, "hl": 0.24, "side": 0.46, "style": "flat_top", "max_age": 36, "excludes": ("hairline_receded",)},  # retired: flat top
-    {"id": "hair_40_perm_short", "w": 0.04, "t": 16.0, "hl": 0.25, "side": 0.52, "style": "round", "wob": ("curl", 11.0), "excludes": ("hairline_receded",)},
-    {"id": "hair_41_soft_crop", "w": 0.10, "t": 8.0, "hl": 0.24, "side": 0.50, "style": "straight"},
-    {"id": "hair_42_low_fade", "w": 0.08, "t": 10.0, "hl": 0.23, "side": 0.46, "style": "undercut"},
-    {"id": "hair_43_tidy_quiff", "w": 0.08, "t": 9.0, "hl": 0.21, "side": 0.48, "style": "quiff"},
-    {"id": "hair_44_round_crop", "w": 0.08, "t": 8.0, "hl": 0.24, "side": 0.50, "style": "round"},
-    {"id": "hair_45_soft_undercut", "w": 0.07, "t": 12.0, "hl": 0.22, "side": 0.48, "style": "undercut"},
+    {"id": "hair_40_perm_short", "w": 0.05, "t": 16.0, "hl": 0.25, "side": 0.52, "style": "round", "wob": ("curl", 11.0), "excludes": ("hairline_receded",)},
+    {"id": "hair_41_soft_crop", "w": 0.04, "t": 8.0, "hl": 0.24, "side": 0.50, "style": "straight"},
+    {"id": "hair_42_low_fade", "w": 0.08, "t": 11.0, "hl": 0.22, "side": 0.34, "style": "undercut"},
+    {"id": "hair_43_tidy_quiff", "w": 0.07, "t": 13.0, "hl": 0.19, "side": 0.46, "style": "quiff"},
+    {"id": "hair_44_round_crop", "w": 0.04, "t": 9.0, "hl": 0.25, "side": 0.50, "style": "round"},
+    {"id": "hair_45_soft_undercut", "w": 0.07, "t": 15.0, "hl": 0.21, "side": 0.44, "style": "undercut"},
     {"id": "hair_46_thin_crop", "w": 0.06, "t": 6.0, "hl": 0.19, "side": 0.50, "style": "straight", "requires": ("hairline_thinning",)},
-    {"id": "hair_47_short_part", "w": 0.08, "t": 11.0, "hl": 0.23, "side": 0.50, "style": "swept", "part": True},
-    {"id": "hair_48_low_wave", "w": 0.07, "t": 12.0, "hl": 0.23, "side": 0.51, "style": "swept", "wob": ("curl", 4.0), "excludes": ("hairline_receded",)},
-    {"id": "hair_49_neat_fringe", "w": 0.08, "t": 12.0, "hl": 0.19, "side": 0.50, "style": "fringe"},
-    {"id": "hair_50_soft_caesar", "w": 0.07, "t": 7.0, "hl": 0.22, "side": 0.49, "style": "caesar"},
+    {"id": "hair_47_short_part", "w": 0.07, "t": 12.0, "hl": 0.20, "side": 0.50, "style": "swept", "part": True},
+    {"id": "hair_48_low_wave", "w": 0.06, "t": 14.0, "hl": 0.22, "side": 0.52, "style": "swept", "wob": ("curl", 5.0), "excludes": ("hairline_receded",)},
+    {"id": "hair_49_neat_fringe", "w": 0.08, "t": 15.0, "hl": 0.16, "side": 0.50, "style": "fringe"},
+    {"id": "hair_50_soft_caesar", "w": 0.05, "t": 7.0, "hl": 0.21, "side": 0.48, "style": "caesar"},
+    {"id": "hair_51_high_forehead", "w": 0.08, "t": 9.0, "hl": 0.15, "side": 0.50, "style": "straight"},
+    {"id": "hair_52_heavy_fringe", "w": 0.08, "t": 17.0, "hl": 0.15, "side": 0.52, "style": "fringe", "excludes": ("hairline_receded",)},
+    {"id": "hair_53_skin_fade", "w": 0.08, "t": 10.0, "hl": 0.22, "side": 0.32, "style": "undercut"},
+    {"id": "hair_54_curl_halo", "w": 0.06, "t": 13.0, "hl": 0.27, "side": 0.52, "style": "round", "wob": ("curl", 8.0), "region_weights": {"*": 1.0, "west_africa": 2.0, "east_africa": 1.8, "latin_america": 1.3, "east_asia": 0.4}},
 ]
 
 
@@ -2015,7 +2034,7 @@ TEAMS: dict[str, dict[str, Any]] = {
 # --------------------------------------------------------------------------- #
 
 
-def bake(root: str | Path, style: str = "flat", pack_version: str = "0.14.0-placeholder") -> Path:
+def bake(root: str | Path, style: str = "flat", pack_version: str = "0.15.0-placeholder") -> Path:
     """Bake one placeholder pack in one style. The recipes are shared; only the
     StyleProfile changes, which is how the same peloton can be shown in several
     art directions without touching game code."""

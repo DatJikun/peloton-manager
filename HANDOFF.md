@@ -215,3 +215,5 @@ Peloton Manager jest na etapie pre-production. Celem jest modularny, determinist
 - `2026-08-27` — Avatar prototype: usta odrobinę chudsze (skala pieca 1.08 / 1.10, nie nitka); tęczówki i źrenice zróżnicowane rozmiarem (`iris_r` 8.6–12.4, `pupil` 0.28–0.56). Pakiet `0.13.0-placeholder`. Styl `poster` bez zmian.
 
 - `2026-08-27` — Avatar prototype: cieńszy tusz (głowa/włosy 0.82, oczy/nos 0.76, nie 0.55); więcej łagodnych głów (`head_19`…`head_26`), bez serca/latarni/bloku; więcej krótkich fryzur pelotonu, bez miski/mulleta/pompadoura. Pakiet `0.14.0-placeholder`. Styl `poster` bez zmian.
+
+- `2026-08-27` — Avatar prototype: cieńsze usta (piec 1.00 / 1.02, ostre kąciki, nie nitka); nosy rozjechane (długi/wąski, krótki/szeroki, orli, zadarty) zamiast klastra `even`; fryzury różne sylwetką (grzywka, fade, wysokie czoło, quiff), nie dziesięć cropów. Pakiet `0.15.0-placeholder`. Styl `poster` bez zmian.
