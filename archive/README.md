@@ -20,4 +20,4 @@ Nic stąd nie jest aktualnym UI ani kodem kariery. Możesz otworzyć plik w prze
 
 ## Gałęzie Gita
 
-Stare etykiety gałęzi też są przenoszone na nazwy `archive/…`, żeby nie zaśmiecać listy. Commity zostają.
+Stare etykiety gałęzi są przeniesione na nazwy `archive/…` (lista w `BRANCHES.md`). Commity zostają.
