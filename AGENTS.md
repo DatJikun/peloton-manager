@@ -46,6 +46,16 @@ document in `DOCS.md` resolves to a real file. Older superseded names may still 
 in architecture prose. When editing docs, respect `DOCS_GOVERNANCE.md` (hierarchy of
 truth, statuses, no silent design drift).
 
+### Skills in this repository
+Repo-local skills live in `.cursor/skills/<name>/SKILL.md`. Read the relevant one before
+touching the area it covers.
+
+- `peloton-avatars` — the rider avatar system in `experiments/avatar_prototype/`
+ (deterministic layered portraits, `poster` art style, asset recipes, jersey overrides,
+ style profiles, validation gate). Use it whenever avatars, avatar assets, avatar style
+ or the trait generator are involved. It records the owner's taste decisions, so do not
+ re-litigate them from scratch.
+
 ### Collaboration roles (owner lock)
 Default split when this repo is developed with a main Cloud Agent plus Composer 2.5
 subagents:
