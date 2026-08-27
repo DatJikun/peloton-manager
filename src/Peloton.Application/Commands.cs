@@ -26,6 +26,10 @@ public sealed record SimulateRaceCommand(string RaceScenarioId);
 
 public sealed record AdvanceRaceCommand;
 
+public sealed record BeginRaceWatchCommand(int Rate);
+
+public sealed record AdvanceRaceWatchCommand;
+
 public sealed record RespondToRaceDecisionCommand(
     RaceDecisionRequestId RequestId,
     WorldEntityId AuthorityId,

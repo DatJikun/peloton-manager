@@ -10,13 +10,13 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`Race result and debrief projections`
+`Career Watch uses supervising clock`
 
 ### Goal
-After Simulate or Watch, show the committed official result and a short knowledge-bounded debrief. Do not rerun the race. Do not expose Spy truth.
+After Confirm, the career Watch path uses the same RaceLive session, `session.Step`, and D-033 supervising clock (`×1` / `×2` / `×5` / `×20`, pause on `DecisionRequest`).
 
 ### Status
-On branch `cursor/race-next-hub-action-babe`. `RaceResultProjection` is available only in `RaceResultsFlow` (calendar title, winner, fixture-label finish order, `routeId`) from `World.LastRace` plus the completed calendar entry. `RaceDebriefProjection` is available only in `RaceDebriefFlow`: confirmed prep objective plus facts already on the committed result (`LastRace` / calendar `OfficialResult`), or `sztab nie ma pewności`. It does not read `TacticalPlans` or invent stage history. Prep checkpoint stays through Results/Debrief and clears on `CompleteRaceDebrief`; it is not World state. SchemaVersion remains 1. SimRunner `day --through-results` prints `state=`, `result=`, and `debrief=` without impersonating Hub Advance Day / Race next. `--through-races` and the 10-season runner keep the same World behavior. Godot Watch and owner §49 still remain open. `D-032` remains deferred.
+On branch `cursor/race-next-hub-action-babe`. SimRunner `day --watch-from-prep --rate <n>` follows Hub, confirms prep, `StartRace`s into `RaceLive`, and drives `RaceWatchClock` on that session. CLI prints `state=RaceLive`, `rate=`, `watchSecond=`, `simSecond=`, `paused=` on decisions, then `state=RaceResultsFlow` and `result=` from `LastRace`. It does not Simulate and does not impersonate Hub Advance Day during RaceLive. Standalone `watch`, Simulate, and `--through-races` keep their previous behavior. Debrief still uses committed result facts, not `TacticalPlans`. SchemaVersion remains 1. Godot Watch and owner §49 still remain open. `D-032` remains deferred.
 
 ## What works now
 - [x] High-level game design v0.7
@@ -51,6 +51,7 @@ On branch `cursor/race-next-hub-action-babe`. `RaceResultProjection` is availabl
 - [x] Confirmed prep plan round-trips in the application checkpoint at SQLite SchemaVersion 1
 - [x] Headless Watch supervising clock with rate control, decision pause/resume, and RNG-neutral focal-rider motion projection
 - [x] Race result and debrief projections after Simulate/Watch; debrief uses committed LastRace facts, not TacticalPlans
+- [x] Career Watch from prep uses the D-033 supervising clock on the live RaceLive session
 - [x] Career calendar entries (domain system of record) and inbox query (race-due + race-result); archive cannot dismiss race deadlines
 - [x] Headless domain/application/persistence/architecture tests
 
@@ -172,6 +173,7 @@ dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.
 dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --through-races
 dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --simulate-from-prep
 dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --simulate-from-prep --through-results
+dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --watch-from-prep --rate 5
 ```
 
 `race --scenario race.prototype.gate` is an alias for the same fixture.
@@ -188,7 +190,7 @@ dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.
 - Nie zamykaj OQ-TS-001 ani OQ-DM-001 na podstawie checksumy lub allocatora szkieletowego.
 
 ## Handoff summary
-Milestone 0 still supplies the headless .NET 8 spine. The race prototype on this branch is now the official result path: `PrototypeRaceEngine` plus `content/peloton.race-prototype`, Application commands `StartRaceCommand` / `AdvanceRaceCommand` / `RespondToRaceDecisionCommand`, and SimRunner `race`. A pending DecisionRequest stays in `RaceLive`. SimRunner `watch` now adds the headless D-033 supervising clock and public motion projection while preserving sequential one-second physics and the official result. After Simulate/Watch, `RaceResultProjection` and `RaceDebriefProjection` present the committed result and a knowledge-bounded debrief without a second `RunBatch`. Spy OFF/ON must match checksum and finish order. `StubRaceEngine` is gone from production assemblies. SQLite `SchemaVersion` remains 1. Owner §49 remains `NOT VERIFIED`; Godot Watch is still the next task. `D-032` (failed GC leader becoming support) is deferred.
+Milestone 0 still supplies the headless .NET 8 spine. The race prototype on this branch is now the official result path: `PrototypeRaceEngine` plus `content/peloton.race-prototype`, Application commands `StartRaceCommand` / `AdvanceRaceCommand` / `RespondToRaceDecisionCommand`, and SimRunner `race`. A pending DecisionRequest stays in `RaceLive`. SimRunner `watch` and career `day --watch-from-prep` use the D-033 supervising clock over sequential one-second physics while preserving the official result. After Simulate/Watch, `RaceResultProjection` and `RaceDebriefProjection` present the committed result and a knowledge-bounded debrief without a second `RunBatch`. Spy OFF/ON must match checksum and finish order. `StubRaceEngine` is gone from production assemblies. SQLite `SchemaVersion` remains 1. Owner §49 remains `NOT VERIFIED`; Godot Watch is still the next task. `D-032` (failed GC leader becoming support) is deferred.
 
 The paragraph below preserves the pre-bootstrap design context and owner lessons; implementation status is given above and in `CODEBASE_MAP.md`.
 

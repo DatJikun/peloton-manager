@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Peloton.Application;
 using Peloton.Infrastructure;
+using Peloton.Simulation.Race;
 
 namespace Peloton.SimRunner;
 
@@ -16,7 +17,9 @@ public sealed record CareerDayOptions(
     bool ThroughRaces,
     bool FollowHub,
     bool SimulateFromPrep,
-    bool ThroughResults)
+    bool ThroughResults,
+    bool WatchFromPrep,
+    int WatchRate)
 {
     public static CareerDayOptions Parse(string[] args)
     {
@@ -25,6 +28,7 @@ public sealed record CareerDayOptions(
         bool followHub = false;
         bool simulateFromPrep = false;
         bool throughResults = false;
+        bool watchFromPrep = false;
         for (int index = 1; index < args.Length; index++)
         {
             string option = args[index];
@@ -81,6 +85,12 @@ public sealed record CareerDayOptions(
                 continue;
             }
 
+            if (string.Equals(option, "--watch-from-prep", StringComparison.Ordinal))
+            {
+                watchFromPrep = true;
+                continue;
+            }
+
             if (index + 1 >= args.Length)
             {
                 throw new ArgumentException($"Option '{option}' requires a value.", nameof(args));
@@ -121,6 +131,14 @@ public sealed record CareerDayOptions(
         string contentRoot = values.TryGetValue("--content-root", out string? configuredRoot)
             ? configuredRoot
             : Path.Combine(Environment.CurrentDirectory, "content");
+        int watchRate = 5;
+        if (values.TryGetValue("--rate", out string? configuredRate) &&
+            (!int.TryParse(configuredRate, NumberStyles.None, CultureInfo.InvariantCulture, out watchRate) ||
+             (watchRate != 1 && watchRate != 2 && watchRate != 5 && watchRate != 20)))
+        {
+            throw new ArgumentException("--rate must be 1, 2, 5, or 20.", nameof(args));
+        }
+
         return new CareerDayOptions(
             scenario,
             seed,
@@ -129,7 +147,9 @@ public sealed record CareerDayOptions(
             throughRaces,
             followHub,
             simulateFromPrep,
-            throughResults);
+            throughResults,
+            watchFromPrep,
+            watchRate);
     }
 
     private static string Required(Dictionary<string, string> values, string key)
@@ -191,7 +211,10 @@ public static class CareerDayCommand
                     WriteHub(output, application);
                     if (string.Equals(advanced.ReasonCode, "RACE_DAY_PENDING", StringComparison.Ordinal))
                     {
-                        if ((options.FollowHub || options.SimulateFromPrep || options.ThroughResults) &&
+                        if ((options.FollowHub ||
+                             options.SimulateFromPrep ||
+                             options.ThroughResults ||
+                             options.WatchFromPrep) &&
                             !options.ThroughRaces)
                         {
                             CommandResult follow = application.Execute(new FollowHubPrimaryActionCommand());
@@ -202,6 +225,11 @@ public static class CareerDayCommand
 
                             output.WriteLine($"state={application.State}");
                             WritePreparation(output, application);
+                            if (options.WatchFromPrep)
+                            {
+                                return WatchFromPreparation(application, options, autosaveDirectory, output);
+                            }
+
                             if (options.SimulateFromPrep || options.ThroughResults)
                             {
                                 CommandResult confirm = application.Execute(new ConfirmRacePreparationPlanCommand());
@@ -283,6 +311,95 @@ public static class CareerDayCommand
         }
 
         return application.Execute(new CompleteRaceDebriefCommand());
+    }
+
+    private static int WatchFromPreparation(
+        GameApplication application,
+        CareerDayOptions options,
+        string autosaveDirectory,
+        TextWriter output)
+    {
+        CommandResult confirm = application.Execute(new ConfirmRacePreparationPlanCommand());
+        if (!confirm.Succeeded)
+        {
+            return 1;
+        }
+
+        Directory.CreateDirectory(autosaveDirectory);
+        CommandResult start = application.Execute(new StartRaceCommand(
+            Path.Combine(autosaveDirectory, "watch-pre-race.peloton"),
+            PrototypeRaceScenarioId));
+        if (!start.Succeeded)
+        {
+            return 1;
+        }
+
+        CommandResult beginWatch = application.Execute(new BeginRaceWatchCommand(options.WatchRate));
+        if (!beginWatch.Succeeded)
+        {
+            return 1;
+        }
+
+        output.WriteLine($"state={application.State}");
+        output.WriteLine($"rate={options.WatchRate.ToString(CultureInfo.InvariantCulture)}");
+        WriteWatchFrame(output, application);
+        while (application.State == GameState.RaceLive)
+        {
+            if (application.PendingRaceDecision is PendingRaceDecision decision)
+            {
+                WriteWatchFrame(output, application);
+                CommandResult responded = application.Execute(new RespondToRaceDecisionCommand(
+                    decision.RequestId,
+                    decision.AuthorityId,
+                    decision.DelegatedDefaultOption));
+                if (!responded.Succeeded)
+                {
+                    return 1;
+                }
+
+                continue;
+            }
+
+            CommandResult advanced = application.Execute(new AdvanceRaceWatchCommand());
+            if (!advanced.Succeeded)
+            {
+                return 1;
+            }
+
+            if (application.State == GameState.RaceLive)
+            {
+                RaceWatchFrame? frame = application.RaceWatch;
+                if (frame is not null &&
+                    (frame.Paused || frame.WatchSecond == 0 || frame.WatchSecond % 60 == 0))
+                {
+                    WriteWatchFrame(output, application);
+                }
+            }
+        }
+
+        output.WriteLine($"watchSecond={application.LastWatchSecond.ToString(CultureInfo.InvariantCulture)}");
+        output.WriteLine($"simSecond={application.LastSimSecond.ToString(CultureInfo.InvariantCulture)}");
+        output.WriteLine($"state={application.State}");
+        WriteResult(output, application);
+        output.WriteLine($"winner={application.World!.LastRace!.WinnerId.Value.ToString(CultureInfo.InvariantCulture)}");
+        if (!string.IsNullOrWhiteSpace(application.LastOfficialChecksum))
+        {
+            output.WriteLine($"checksum={application.LastOfficialChecksum}");
+        }
+
+        return 0;
+    }
+
+    private static void WriteWatchFrame(TextWriter output, GameApplication application)
+    {
+        RaceWatchFrame? frame = application.RaceWatch;
+        if (frame is null)
+        {
+            return;
+        }
+
+        output.WriteLine(
+            $"frame rate={frame.Rate.ToString(CultureInfo.InvariantCulture)} watchSecond={frame.WatchSecond.ToString(CultureInfo.InvariantCulture)} simSecond={frame.RaceSecond.ToString(CultureInfo.InvariantCulture)} paused={frame.Paused.ToString().ToLowerInvariant()}");
     }
 
     private static void WritePreparation(TextWriter output, GameApplication application)

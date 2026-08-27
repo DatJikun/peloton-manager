@@ -117,6 +117,7 @@ public sealed class SimRunnerContractTests
     [InlineData("race", "--scenario", RacePrototypeCommand.CanonicalScenarioId, "--seed", "1", "--seed", "2")]
     [InlineData("watch", "--scenario", RacePrototypeCommand.CanonicalScenarioId, "--seed", "1", "--rate", "0")]
     [InlineData("watch", "--scenario", RacePrototypeCommand.CanonicalScenarioId, "--seed", "1", "--rate", "100")]
+    [InlineData("day", "--scenario", "scenario.peloton.skeleton", "--seed", "1", "--days", "1", "--watch-from-prep", "--rate", "0")]
     public void MalformedRaceOptionsReturnUsageExitCode(params string[] args)
     {
         using StringWriter output = new();
@@ -366,6 +367,71 @@ public sealed class SimRunnerContractTests
     }
 
     [Fact]
+    public void DayCommandWatchFromPrepUsesSupervisingClockAndCommittedResult()
+    {
+        using StringWriter output = new();
+        using StringWriter error = new();
+        int exitCode = Program.Run(
+            [
+                "day",
+                "--scenario",
+                "scenario.peloton.skeleton",
+                "--seed",
+                "91234",
+                "--days",
+                "13",
+                "--watch-from-prep",
+                "--rate",
+                "5",
+                "--content-root",
+                TestApplication.ContentRoot,
+            ],
+            output,
+            error);
+
+        string stdout = output.ToString().Replace("\r\n", "\n", StringComparison.Ordinal);
+        Assert.Equal(0, exitCode);
+        Assert.Contains("state=RaceLive", stdout, StringComparison.Ordinal);
+        Assert.Contains("rate=5", stdout, StringComparison.Ordinal);
+        Assert.Contains("watchSecond=", stdout, StringComparison.Ordinal);
+        Assert.Contains("simSecond=", stdout, StringComparison.Ordinal);
+        Assert.Contains("paused=true", stdout, StringComparison.Ordinal);
+        Assert.Contains("state=RaceResultsFlow", stdout, StringComparison.Ordinal);
+        Assert.Contains("result=title=Skeleton race", stdout, StringComparison.Ordinal);
+        Assert.Contains("winner=1006", stdout, StringComparison.Ordinal);
+        Assert.Contains("winnerLabel=rider.race-prototype.beta-leader", stdout, StringComparison.Ordinal);
+        Assert.DoesNotContain("state=RaceDebriefFlow", stdout, StringComparison.Ordinal);
+        Assert.DoesNotContain("Widoczny rozjazd", stdout, StringComparison.Ordinal);
+        Assert.DoesNotContain("WPrime", stdout, StringComparison.OrdinalIgnoreCase);
+        string afterLive = stdout[stdout.IndexOf("state=RaceLive", StringComparison.Ordinal)..];
+        Assert.DoesNotContain("primaryAction=", afterLive, StringComparison.Ordinal);
+        Assert.DoesNotContain("primaryLabel=", afterLive, StringComparison.Ordinal);
+        Assert.True(string.IsNullOrWhiteSpace(error.ToString()));
+    }
+
+    [Fact]
+    public void DayCommandWatchFromPrepRateOneAndTwentyShareOfficialResult()
+    {
+        (int ExitCode, string Output, string Error) rateOne = RunCareerWatch(rate: 1);
+        (int ExitCode, string Output, string Error) rateTwenty = RunCareerWatch(rate: 20);
+
+        Assert.Equal(0, rateOne.ExitCode);
+        Assert.Equal(0, rateTwenty.ExitCode);
+        Assert.Equal(ParseTextKey(rateOne.Output, "winner"), ParseTextKey(rateTwenty.Output, "winner"));
+        Assert.Equal(ParseTextKey(rateOne.Output, "checksum"), ParseTextKey(rateTwenty.Output, "checksum"));
+        Assert.Equal("1006", ParseTextKey(rateOne.Output, "winner"));
+        Assert.Equal(
+            ParseTextKey(rateOne.Output, "result"),
+            ParseTextKey(rateTwenty.Output, "result"));
+        Assert.True(ParseKey(rateOne.Output, "watchSecond") > ParseKey(rateTwenty.Output, "watchSecond"));
+        Assert.Contains("paused=true", rateOne.Output, StringComparison.Ordinal);
+        Assert.Contains("paused=true", rateTwenty.Output, StringComparison.Ordinal);
+        Assert.DoesNotContain("Widoczny rozjazd", rateOne.Output, StringComparison.Ordinal);
+        Assert.True(string.IsNullOrWhiteSpace(rateOne.Error));
+        Assert.True(string.IsNullOrWhiteSpace(rateTwenty.Error));
+    }
+
+    [Fact]
     public void DayCommandCanConfirmAndSimulateDirectlyFromPreparation()
     {
         using StringWriter output = new();
@@ -496,6 +562,30 @@ public sealed class SimRunnerContractTests
                 RacePrototypeCommand.CanonicalScenarioId,
                 "--seed",
                 GateSeed.ToString(CultureInfo.InvariantCulture),
+                "--rate",
+                rate.ToString(CultureInfo.InvariantCulture),
+                "--content-root",
+                TestApplication.ContentRoot,
+            ],
+            output,
+            error);
+        return (exitCode, output.ToString(), error.ToString());
+    }
+
+    private static (int ExitCode, string Output, string Error) RunCareerWatch(int rate)
+    {
+        using StringWriter output = new();
+        using StringWriter error = new();
+        int exitCode = Program.Run(
+            [
+                "day",
+                "--scenario",
+                "scenario.peloton.skeleton",
+                "--seed",
+                "91234",
+                "--days",
+                "13",
+                "--watch-from-prep",
                 "--rate",
                 rate.ToString(CultureInfo.InvariantCulture),
                 "--content-root",

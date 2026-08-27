@@ -15,7 +15,9 @@ public sealed class GameApplication
     private readonly IWorldSaveStore saveStore;
     private readonly IRaceEngine raceEngine;
     private RaceSession? activeRaceSession;
+    private RaceWatchClock? watchClock;
     private RacePreparationCheckpoint? racePreparation;
+    private string? lastOfficialChecksum;
 
     public GameApplication(
         IScenarioCatalog scenarioCatalog,
@@ -76,6 +78,15 @@ public sealed class GameApplication
                     request.DelegatedDefaultOption);
         }
     }
+
+    public RaceWatchFrame? RaceWatch =>
+        State == GameState.RaceLive && watchClock is not null ? watchClock.Current : null;
+
+    public string? LastOfficialChecksum => lastOfficialChecksum;
+
+    public int LastWatchSecond { get; private set; }
+
+    public int LastSimSecond { get; private set; }
 
     public CareerDayProjection? CareerDay
     {
@@ -166,6 +177,10 @@ public sealed class GameApplication
             WorldRecipe recipe = scenarioCatalog.Resolve(command.ScenarioId);
             World = CreateWorld(recipe, command.Seed);
             racePreparation = null;
+            watchClock = null;
+            lastOfficialChecksum = null;
+            LastWatchSecond = 0;
+            LastSimSecond = 0;
             State = GameState.Management;
             return CommandResult.Success;
         }
@@ -236,6 +251,10 @@ public sealed class GameApplication
             World = checkpoint.World;
             State = checkpoint.GameState;
             activeRaceSession = null;
+            watchClock = null;
+            lastOfficialChecksum = null;
+            LastWatchSecond = 0;
+            LastSimSecond = 0;
             racePreparation = checkpoint.RacePreparation;
             return CommandResult.Success;
         }
@@ -330,6 +349,7 @@ public sealed class GameApplication
             RaceScenario scenario = raceScenarioCatalog.Resolve(command.RaceScenarioId);
             long raceSeed = DeriveRaceSeed(World, scenario);
             activeRaceSession = raceEngine.CreateSession(scenario, raceSeed);
+            watchClock = null;
             State = GameState.RaceLive;
             return CommandResult.Success;
         }
@@ -358,9 +378,7 @@ public sealed class GameApplication
         {
             RaceScenario scenario = raceScenarioCatalog.Resolve(command.RaceScenarioId);
             RaceResult result = raceEngine.RunBatch(scenario, DeriveRaceSeed(World, scenario));
-            World.RecordRace(new RaceSummary(result.RouteId, result.WinnerId, result.FinishOrder));
-            activeRaceSession = null;
-            State = GameState.RaceResultsFlow;
+            CommitOfficialResult(result);
             return CommandResult.Success;
         }
         catch (Exception exception) when (
@@ -392,13 +410,58 @@ public sealed class GameApplication
                 {
                     RaceResult result = step.Result
                         ?? throw new InvalidOperationException("A completed race step must carry its result.");
-                    World.RecordRace(new RaceSummary(result.RouteId, result.WinnerId, result.FinishOrder));
-                    activeRaceSession = null;
-                    State = GameState.RaceResultsFlow;
+                    CommitOfficialResult(result);
                 }
 
                 return CommandResult.Success;
             }
+        }
+        catch (InvalidOperationException)
+        {
+            return CommandResult.Reject("RACE_ADVANCE_FAILED");
+        }
+    }
+
+    public CommandResult Execute(BeginRaceWatchCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.RaceLive || activeRaceSession is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        try
+        {
+            watchClock = new RaceWatchClock(activeRaceSession, command.Rate);
+            CaptureWatch(watchClock.Current);
+            return CommandResult.Success;
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return CommandResult.Reject("WATCH_RATE_INVALID");
+        }
+    }
+
+    public CommandResult Execute(AdvanceRaceWatchCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.RaceLive || World is null || activeRaceSession is null || watchClock is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        try
+        {
+            watchClock.AdvanceOneWatchSecond();
+            CaptureWatch(watchClock.Current);
+            if (activeRaceSession.IsCompleted)
+            {
+                RaceResult result = activeRaceSession.Result
+                    ?? throw new InvalidOperationException("A completed watch step must carry its result.");
+                CommitOfficialResult(result);
+            }
+
+            return CommandResult.Success;
         }
         catch (InvalidOperationException)
         {
@@ -517,6 +580,22 @@ public sealed class GameApplication
             employment?.OrganizationId,
             authority?.Id,
             employment is null ? "PublicPersonal" : "CurrentOrganization");
+    }
+
+    private void CaptureWatch(RaceWatchFrame frame)
+    {
+        LastWatchSecond = frame.WatchSecond;
+        LastSimSecond = frame.RaceSecond;
+    }
+
+    private void CommitOfficialResult(RaceResult result)
+    {
+        ArgumentNullException.ThrowIfNull(World);
+        World.RecordRace(new RaceSummary(result.RouteId, result.WinnerId, result.FinishOrder));
+        lastOfficialChecksum = result.Checksum;
+        activeRaceSession = null;
+        watchClock = null;
+        State = GameState.RaceResultsFlow;
     }
 
     private static bool IsLegalSaveState(GameState state)
