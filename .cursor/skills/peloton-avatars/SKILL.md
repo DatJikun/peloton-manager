@@ -160,7 +160,7 @@ uses `"requires": ("hairline_receded",)`.
 ~0.75, jaw_w above ~1.16, chin_len beyond ±12) read as caricature; soften in place
 (pack version bump), do not add a more extreme head.
 
-**Eyes** (`EYE_RECIPES`): keep a **neutral-open** cluster as the common weight. Billboard eyes (`hw` above ~22, affine `scale_x` past ~1.03, or pair spacing past ±5 px) read as too wide. Live `hw` is **21.6–22.0**, baker cap **22.0**, so one eye is about as wide as the gap between them. Flattened lids (`th` under ~13, `bh` under ~11, or an outer lid at 0.66 `th`) read as slits — the owner asked to open them **up and down**, not sideways. Live aperture is **th 13.2–16.2 / bh 11.0–13.6**. Brows bake 8 px above `BROW_Y` so the lid has room (do not move the master `BROW_Y` constant). Affine `scale_x` is 0.97–1.02; `scale_y` is **1.00–1.10** (never squash); pair `dx` is ±5 px. Vary **lid** (`peak`, `hood`, `flat`, `lash`), **tilt / inner_y / outer_y**, **aperture** within that tall band, and **iris**. Retired ids keep `weight: 0`.
+**Eyes** (`EYE_RECIPES`): keep a **neutral-open** cluster as the common weight. Live `hw` is **21.6–22.0** (baker cap 22). Aperture sits **between** the flat 0.8.0 slits and the shocked 0.9.0 ovals: live **th 11.4–14.9 / bh 9.8–12.6**. Do **not** floor every recipe to the tall band — that made the whole peloton look startled. Outer lid ~0.76 `th`. Brows sit on `BROW_Y` (raised brows read as surprise). Default `iris_dy` 0.7 so the lid covers the top of the iris. Affine `scale_x` 0.97–1.02, `scale_y` **0.97–1.04**, pair `dx` ±5. Vary lid / tilt / iris within that mid band. Retired ids keep `weight: 0`.
 
 **Mouths** (`MOUTH_RECIPES`): corners sit **under the pupils** (`hw` around `EYE_DX` = 47, never above it). Lip thickness sits **halfway** between a thread and a sausage: baker scale ~1.16 / 1.18, ~20% meat at the corners. Lip fill must still contrast with skin (`lip_rgb`). Variety is bow, smile, open/laugh, lift, skew, and upper/lower ratio, not more length. Open mouths still wrap the opening in lip meat. Retired ids keep `weight: 0`. Do not ship thread-wide mouths (`hw` above ~47, or closed `upper`/`lower` under ~10/12) or sausage mouths (baker scale above ~1.2 with 40% blunt corners).
 
@@ -248,9 +248,12 @@ To add a look the owner asked for, append recipes in `pack.py`. Do not silently 
   reads as a thread no matter what the recipe says. Eye `hw` above ~22, or an affine
   that stretches `scale_x` past 1.03 / pushes the pair ±9 px toward the temples, also
   reads as a billboard. A compact `hw` with `th`/`bh` under ~12/10 reads as a
-  flattened slot, which the owner rejected after the width pass. Open the aperture
-  up and down; do not answer "too wide" by collapsing `th`/`bh` into slits, and do
-  not answer "too flat" by stretching `hw`.
+  flattened slot, which the owner rejected after the width pass. Opening `th`/`bh`
+  into the 15–16 band, raising the brows 8 px, and flooring every recipe to that
+  tall band makes the whole peloton look startled. Meet in the middle: mid
+  aperture, brows on `BROW_Y`, a little `iris_dy` so the lid covers the iris.
+  Do not answer "too wide" by collapsing into slits, "too flat" by stretching
+  `hw`, or "too shocked" by shrinking back to the 0.8.0 slits.
 - **A nose without a silhouette is invisible.** Multiply ticks at the nostrils do not
   carry width, length or hook. Give the nose a skin mask and a keyline.
 - **Same-polygon brows stay identical.** Changing only `th` by 2 px does not read; move
