@@ -1210,9 +1210,10 @@ def bake_mouth(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, An
     # point reads as a thread even when upper/lower are large.
     hw = min(float(p.get("hw", 44.0)), EYE_DX - 2.0)
     # A step thinner than the 0.12 midpoint (1.16 / 1.18), not back to the
-    # thread pass (1.0). Sausage was 1.32 / 1.36.
-    up = float(p.get("upper", 11.0)) * 1.12
-    lo = float(p.get("lower", 13.6)) * 1.14
+    # thread pass (1.0). Sausage was 1.32 / 1.36. 1.12 was only ~1 px and
+    # did not read; 1.08 / 1.10 is the smallest drop that shows at card size.
+    up = float(p.get("upper", 11.0)) * 1.08
+    lo = float(p.get("lower", 13.6)) * 1.10
     bow = p.get("bow", 1.6)
     # a fully straight closed mouth still reads sullen; open/laugh are identity
     # variants the owner asked for, not a second emotion system.
@@ -1225,7 +1226,7 @@ def bake_mouth(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, An
 
     if gap < 2.0:
         # Slightly less blunt than the 0.12 sausage-leaning corners.
-        cu, cl = up * 0.18, lo * 0.20
+        cu, cl = up * 0.16, lo * 0.18
         upper_pts = [
             (CX - hw, y + ldroop - cu),
             (CX - hw * 0.70, y - up * 0.70),
