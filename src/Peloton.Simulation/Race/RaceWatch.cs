@@ -7,57 +7,99 @@ using Peloton.Domain;
 
 namespace Peloton.Simulation.Race;
 
-// Decision digest for headless playtest. This is not Watch Race playback (D-033):
-// playback is a supervising clock with continuous, speed-based rider motion.
+public sealed record RaceWatchRiderFrame(
+    WorldEntityId RiderId,
+    double DistanceM,
+    double GapM,
+    double SpeedMps);
 
-public sealed record RaceWatchBeat(
+public sealed record RaceWatchFrame(
     int WatchSecond,
-    int SimulationSecond,
-    string Kind,
-    string Headline,
-    IReadOnlyList<string> Options,
-    string? Selected);
+    int RaceSecond,
+    int Rate,
+    bool Paused,
+    IReadOnlyList<RaceWatchRiderFrame> FocalRiders);
 
 public sealed record RaceWatchReport(
-    IReadOnlyList<RaceWatchBeat> Beats,
-    RaceResult Result);
+    IReadOnlyList<RaceWatchFrame> Frames,
+    RaceResult Result)
+{
+    public int WatchSeconds => Frames.Count == 0 ? 0 : Frames[^1].WatchSecond;
+}
+
+public sealed class RaceWatchClock
+{
+    private static readonly HashSet<int> SupportedRates = new() { 1, 2, 5, 20 };
+
+    private readonly RaceSession session;
+    private readonly int rate;
+    private int watchSecond;
+
+    public RaceWatchClock(RaceSession session, int rate = 5)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+        if (!SupportedRates.Contains(rate))
+        {
+            throw new ArgumentOutOfRangeException(nameof(rate), "Watch rate must be 1, 2, 5, or 20.");
+        }
+
+        this.session = session;
+        this.rate = rate;
+    }
+
+    public RaceDecisionRequest? PendingDecision => session.PendingDecision;
+
+    public RaceWatchFrame Current => RaceWatchProjector.ProjectFrame(session, watchSecond, rate);
+
+    public RaceWatchFrame AdvanceOneWatchSecond()
+    {
+        if (session.IsCompleted || session.PendingDecision is not null)
+        {
+            return Current;
+        }
+
+        watchSecond++;
+        for (int step = 0; step < rate; step++)
+        {
+            RaceStepResult result = session.Step();
+            if (result.Status != RaceStepStatus.Advanced)
+            {
+                break;
+            }
+        }
+
+        return Current;
+    }
+
+    public void Respond(RaceDecisionResolution resolution)
+    {
+        session.ResolveDecision(resolution);
+    }
+}
 
 public static class RaceWatchProjector
 {
-    public static RaceWatchReport Project(RaceScenario scenario, long seed)
+    public static RaceWatchReport Project(RaceScenario scenario, long seed, int rate = 5)
     {
         ArgumentNullException.ThrowIfNull(scenario);
         RaceSession session = new PrototypeRaceEngine().CreateSession(
             scenario,
             seed,
             NullWorldSpySink.Instance);
-        List<RaceWatchBeat> beats = new()
-        {
-            new(0, 0, "start", "Race start", Array.Empty<string>(), null),
-        };
-        int watchSecond = 0;
+        RaceWatchClock clock = new(session, rate);
+        List<RaceWatchFrame> frames = new() { clock.Current };
         while (!session.IsCompleted)
         {
-            RaceStepResult step = session.Step();
-            if (step.Status != RaceStepStatus.DecisionRequired)
+            RaceWatchFrame frame = clock.AdvanceOneWatchSecond();
+            frames.Add(frame);
+            if (!frame.Paused)
             {
                 continue;
             }
 
-            RaceDecisionRequest request = session.PendingDecision
+            RaceDecisionRequest request = clock.PendingDecision
                 ?? throw new InvalidOperationException("Decision pause did not expose a request.");
-            watchSecond++;
-            string[] options = request.DefensibleOptions
-                .Select(option => option.ToString())
-                .ToArray();
-            beats.Add(new RaceWatchBeat(
-                watchSecond,
-                request.RaceSecond,
-                "decision",
-                request.Trigger,
-                options,
-                request.DelegatedDefaultOption.ToString()));
-            session.ResolveDecision(new RaceDecisionResolution(
+            clock.Respond(new RaceDecisionResolution(
                 request.Id,
                 request.AuthorityId,
                 request.DelegatedDefaultOption));
@@ -65,48 +107,56 @@ public static class RaceWatchProjector
 
         RaceResult result = session.Result
             ?? throw new InvalidOperationException("Watch projection completed without an official result.");
-        watchSecond++;
-        beats.Add(new RaceWatchBeat(
+        return new RaceWatchReport(frames, result);
+    }
+
+    internal static RaceWatchFrame ProjectFrame(RaceSession session, int watchSecond, int rate)
+    {
+        RaceMotionSnapshot motion = session.GetMotionSnapshot();
+        RaceRiderMotion[] focal = motion.Riders
+            .OrderByDescending(rider => rider.DistanceM)
+            .ThenBy(rider => rider.RiderId.Value)
+            .Take(3)
+            .ToArray();
+        double leaderDistanceM = focal.Length == 0 ? 0.0 : focal[0].DistanceM;
+        RaceWatchRiderFrame[] riders = focal
+            .Select(rider => new RaceWatchRiderFrame(
+                rider.RiderId,
+                rider.DistanceM,
+                Math.Max(0.0, leaderDistanceM - rider.DistanceM),
+                rider.SpeedMps))
+            .ToArray();
+        return new RaceWatchFrame(
             watchSecond,
-            session.SimulationSecond,
-            "finish",
-            $"Winner {result.WinnerId.Value.ToString(CultureInfo.InvariantCulture)}",
-            Array.Empty<string>(),
-            null));
-        return new RaceWatchReport(beats, result);
+            motion.RaceSecond,
+            rate,
+            session.PendingDecision is not null,
+            riders);
     }
 
     public static string ExportMarkdown(RaceWatchReport report)
     {
         ArgumentNullException.ThrowIfNull(report);
         StringBuilder markdown = new();
-        markdown.AppendLine("# Race decision digest");
+        markdown.AppendLine("# Headless Watch clock");
         markdown.AppendLine();
         markdown.AppendLine(
             CultureInfo.InvariantCulture,
             $"Official winner {report.Result.WinnerId.Value}; checksum `{report.Result.Checksum}`.");
         markdown.AppendLine(
-            "This listing is an index of pauses, not Watch Race playback. Playback is a supervising clock with continuous speed-based motion.");
+            "The supervising clock advances sequential one-second physics steps and pauses on decisions.");
         markdown.AppendLine();
-        foreach (RaceWatchBeat beat in report.Beats)
+        foreach (RaceWatchFrame frame in report.Frames)
         {
             markdown.AppendLine(
                 CultureInfo.InvariantCulture,
-                $"## Watch {beat.WatchSecond}s / sim {beat.SimulationSecond}s — {beat.Kind}");
-            markdown.AppendLine();
-            markdown.AppendLine(beat.Headline);
-            if (beat.Options.Count > 0)
+                $"- watchSecond={frame.WatchSecond} simSecond={frame.RaceSecond} rate={frame.Rate} paused={frame.Paused.ToString().ToLowerInvariant()}");
+            foreach (RaceWatchRiderFrame rider in frame.FocalRiders)
             {
-                markdown.AppendLine();
                 markdown.AppendLine(
                     CultureInfo.InvariantCulture,
-                    $"Options: {string.Join(", ", beat.Options)}");
-                markdown.AppendLine(
-                    CultureInfo.InvariantCulture,
-                    $"Selected: {beat.Selected}");
+                    $"  - rider={rider.RiderId.Value} distanceM={rider.DistanceM:F2} gapM={rider.GapM:F2} speedMps={rider.SpeedMps:F2}");
             }
-
-            markdown.AppendLine();
         }
 
         return markdown.ToString();

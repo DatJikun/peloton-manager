@@ -115,6 +115,8 @@ public sealed class SimRunnerContractTests
     [InlineData("race", "--scenario", RacePrototypeCommand.CanonicalScenarioId)]
     [InlineData("race", "--scenario", RacePrototypeCommand.CanonicalScenarioId, "--seed", "not-a-number")]
     [InlineData("race", "--scenario", RacePrototypeCommand.CanonicalScenarioId, "--seed", "1", "--seed", "2")]
+    [InlineData("watch", "--scenario", RacePrototypeCommand.CanonicalScenarioId, "--seed", "1", "--rate", "0")]
+    [InlineData("watch", "--scenario", RacePrototypeCommand.CanonicalScenarioId, "--seed", "1", "--rate", "100")]
     public void MalformedRaceOptionsReturnUsageExitCode(params string[] args)
     {
         using StringWriter output = new();
@@ -156,7 +158,7 @@ public sealed class SimRunnerContractTests
     }
 
     [Fact]
-    public void WatchCommandCompressesQuietTimeAndMatchesOfficialRaceChecksum()
+    public void WatchCommandDefaultsToRateFiveAndMatchesOfficialRaceChecksum()
     {
         RacePrototypeReport official = Execute(RacePrototypeCommand.CanonicalScenarioId, GateSeed);
         using StringWriter output = new();
@@ -179,16 +181,39 @@ public sealed class SimRunnerContractTests
         Assert.Equal(0, exitCode);
         Assert.Contains($"checksum={official.Checksum}", stdout, StringComparison.Ordinal);
         Assert.Contains($"winner={official.Winner}", stdout, StringComparison.Ordinal);
-        Assert.Contains("kind=start", stdout, StringComparison.Ordinal);
-        Assert.Contains("kind=decision", stdout, StringComparison.Ordinal);
-        Assert.Contains("kind=finish", stdout, StringComparison.Ordinal);
+        Assert.Contains("rate=5", stdout, StringComparison.Ordinal);
+        Assert.Contains("watchSecond=", stdout, StringComparison.Ordinal);
+        Assert.Contains("simSecond=", stdout, StringComparison.Ordinal);
+        Assert.Contains("paused=true", stdout, StringComparison.Ordinal);
+        Assert.Contains("rider=", stdout, StringComparison.Ordinal);
+        Assert.DoesNotContain("WPrime", stdout, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("spyNeutral=true", stdout, StringComparison.Ordinal);
         Assert.True(string.IsNullOrWhiteSpace(error.ToString()));
 
-        int watchBeats = ParseKey(stdout, "watchBeats");
+        int watchSeconds = ParseKey(stdout, "watchSecond");
         int simulationSeconds = ParseKey(stdout, "simulationSeconds");
-        Assert.True(watchBeats < simulationSeconds);
-        Assert.True(watchBeats >= 3);
+        Assert.True(watchSeconds < simulationSeconds);
+    }
+
+    [Fact]
+    public void WatchRateOneAndTwentyDifferOnlyInSupervisingTime()
+    {
+        (int ExitCode, string Output, string Error) rateOne = RunWatch(rate: 1);
+        (int ExitCode, string Output, string Error) rateTwenty = RunWatch(rate: 20);
+
+        Assert.Equal(0, rateOne.ExitCode);
+        Assert.Equal(0, rateTwenty.ExitCode);
+        Assert.Equal(ParseTextKey(rateOne.Output, "winner"), ParseTextKey(rateTwenty.Output, "winner"));
+        Assert.Equal(ParseTextKey(rateOne.Output, "checksum"), ParseTextKey(rateTwenty.Output, "checksum"));
+        Assert.Equal("1006", ParseTextKey(rateOne.Output, "winner"));
+        Assert.Equal(
+            "5A35E88103E2FBB40325EA8BEF15AAAC2F2E1AB70F4E6DE2BBCE584EC7EE6721",
+            ParseTextKey(rateOne.Output, "checksum"));
+        Assert.True(ParseKey(rateOne.Output, "watchSecond") > ParseKey(rateTwenty.Output, "watchSecond"));
+        Assert.Contains("paused=true", rateOne.Output, StringComparison.Ordinal);
+        Assert.Contains("paused=true", rateTwenty.Output, StringComparison.Ordinal);
+        Assert.True(string.IsNullOrWhiteSpace(rateOne.Error));
+        Assert.True(string.IsNullOrWhiteSpace(rateTwenty.Error));
     }
 
     [Fact]
@@ -217,8 +242,8 @@ public sealed class SimRunnerContractTests
         Assert.Equal(0, exitCode);
         Assert.True(File.Exists(markdownPath));
         string markdown = File.ReadAllText(markdownPath);
-        Assert.Contains("Race decision digest", markdown, StringComparison.Ordinal);
-        Assert.Contains("index of pauses", markdown, StringComparison.Ordinal);
+        Assert.Contains("Headless Watch clock", markdown, StringComparison.Ordinal);
+        Assert.Contains("supervising clock", markdown, StringComparison.Ordinal);
         Assert.DoesNotContain("WPrime", markdown, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -400,5 +425,37 @@ public sealed class SimRunnerContractTests
             .FirstOrDefault(item => item.StartsWith(prefix, StringComparison.Ordinal));
         Assert.False(string.IsNullOrWhiteSpace(line));
         return int.Parse(line.AsSpan(prefix.Length), NumberStyles.Integer, CultureInfo.InvariantCulture);
+    }
+
+    private static string ParseTextKey(string stdout, string key)
+    {
+        string prefix = key + "=";
+        string? line = stdout
+            .Replace("\r\n", "\n", StringComparison.Ordinal)
+            .Split('\n')
+            .FirstOrDefault(item => item.StartsWith(prefix, StringComparison.Ordinal));
+        Assert.False(string.IsNullOrWhiteSpace(line));
+        return line[prefix.Length..];
+    }
+
+    private static (int ExitCode, string Output, string Error) RunWatch(int rate)
+    {
+        using StringWriter output = new();
+        using StringWriter error = new();
+        int exitCode = Program.Run(
+            [
+                "watch",
+                "--scenario",
+                RacePrototypeCommand.CanonicalScenarioId,
+                "--seed",
+                GateSeed.ToString(CultureInfo.InvariantCulture),
+                "--rate",
+                rate.ToString(CultureInfo.InvariantCulture),
+                "--content-root",
+                TestApplication.ContentRoot,
+            ],
+            output,
+            error);
+        return (exitCode, output.ToString(), error.ToString());
     }
 }

@@ -5,6 +5,15 @@ using Peloton.Domain;
 
 namespace Peloton.Simulation.Race;
 
+public sealed record RaceRiderMotion(
+    WorldEntityId RiderId,
+    double DistanceM,
+    double SpeedMps);
+
+public sealed record RaceMotionSnapshot(
+    int RaceSecond,
+    IReadOnlyList<RaceRiderMotion> Riders);
+
 public sealed class RaceSession
 {
     public const int PhysicsContractVersion = 1;
@@ -55,6 +64,18 @@ public sealed class RaceSession
     public int SimulationSecond => simulationSecond;
 
     public RaceDecisionRequest? PendingDecision => pendingDecisionContext?.Request;
+
+    public RaceMotionSnapshot GetMotionSnapshot()
+    {
+        RaceRiderMotion[] motion = riders
+            .OrderBy(rider => rider.Profile.RiderId.Value)
+            .Select(rider => new RaceRiderMotion(
+                rider.Profile.RiderId,
+                rider.DistanceM,
+                rider.SpeedMps))
+            .ToArray();
+        return new RaceMotionSnapshot(simulationSecond, motion);
+    }
 
     public RaceStepResult Step()
     {

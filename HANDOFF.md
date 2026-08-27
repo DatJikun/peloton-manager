@@ -10,13 +10,13 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`Race preparation actions`
+`Headless Watch clock (D-033 data path)`
 
 ### Goal
-Complete the headless Race Preparation flow: Cancel, Confirm, Watch, and Simulate, with the plan stored in the application checkpoint rather than World State.
+Provide a supervising headless Watch clock over the canonical one-second race physics, with selectable pace, decision pauses, and renderer-ready public rider motion.
 
 ### Status
-On branch `cursor/race-next-hub-action-babe`. Prep uses the prototype fixture squad, requires Confirm before Watch or Simulate, and keeps SQLite `SchemaVersion = 1`. §49 watch still waits for Godot. `D-032` remains deferred.
+On branch `cursor/race-next-hub-action-babe`. SimRunner `watch` supports ×1 / ×2 / ×5 / ×20 (default ×5), pauses on `DecisionRequest`, and projects race/watch time plus focal-rider distance, gap, and speed without hidden physiology. The official result remains the canonical prototype result. Godot Watch and owner §49 still remain open. `D-032` remains deferred.
 
 ## What works now
 - [x] High-level game design v0.7
@@ -49,6 +49,7 @@ On branch `cursor/race-next-hub-action-babe`. Prep uses the prototype fixture sq
 - [x] Hub primary action: Advance Day on normal days, Race next on race-due days; `FollowHubPrimaryActionCommand` enters preparation
 - [x] Race preparation projection and Cancel / Confirm / Watch / Simulate commands; Simulate uses the canonical engine, seed derivation, and delegated defaults
 - [x] Confirmed prep plan round-trips in the application checkpoint at SQLite SchemaVersion 1
+- [x] Headless Watch supervising clock with rate control, decision pause/resume, and RNG-neutral focal-rider motion projection
 - [x] Career calendar entries (domain system of record) and inbox query (race-due + race-result); archive cannot dismiss race deadlines
 - [x] Headless domain/application/persistence/architecture tests
 
@@ -185,7 +186,7 @@ dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.
 - Nie zamykaj OQ-TS-001 ani OQ-DM-001 na podstawie checksumy lub allocatora szkieletowego.
 
 ## Handoff summary
-Milestone 0 still supplies the headless .NET 8 spine. The race prototype on this branch is now the official result path: `PrototypeRaceEngine` plus `content/peloton.race-prototype`, Application commands `StartRaceCommand` / `AdvanceRaceCommand` / `RespondToRaceDecisionCommand`, and SimRunner `race`. A pending DecisionRequest stays in `RaceLive`. Spy OFF/ON must match checksum and finish order. `StubRaceEngine` is gone from production assemblies. SQLite `SchemaVersion` remains 1. Owner §49 remains `NOT VERIFIED` as a closed gate. 2026-08-26 owner note: prototype decisions are provisionally interesting; Watch Race must be a supervising clock with smooth speed-based motion (`D-033`), not skipped beats. `D-032` (failed GC leader becoming support) is deferred.
+Milestone 0 still supplies the headless .NET 8 spine. The race prototype on this branch is now the official result path: `PrototypeRaceEngine` plus `content/peloton.race-prototype`, Application commands `StartRaceCommand` / `AdvanceRaceCommand` / `RespondToRaceDecisionCommand`, and SimRunner `race`. A pending DecisionRequest stays in `RaceLive`. SimRunner `watch` now adds the headless D-033 supervising clock and public motion projection while preserving sequential one-second physics and the official result. Spy OFF/ON must match checksum and finish order. `StubRaceEngine` is gone from production assemblies. SQLite `SchemaVersion` remains 1. Owner §49 remains `NOT VERIFIED`; Godot Watch is still the next task. `D-032` (failed GC leader becoming support) is deferred.
 
 The paragraph below preserves the pre-bootstrap design context and owner lessons; implementation status is given above and in `CODEBASE_MAP.md`.
 

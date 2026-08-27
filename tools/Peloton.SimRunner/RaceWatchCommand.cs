@@ -11,14 +11,14 @@ namespace Peloton.SimRunner;
 
 public static class RaceWatchCommand
 {
-    public static RaceWatchCliReport Execute(RacePrototypeOptions options)
+    public static RaceWatchCliReport Execute(RacePrototypeOptions options, int rate = 5)
     {
         ArgumentNullException.ThrowIfNull(options);
         try
         {
             string scenarioId = RacePrototypeCommand.ResolveScenarioId(options.ScenarioId);
             RaceScenario scenario = new JsonRacePrototypeCatalog(options.ContentRoot).Resolve(scenarioId);
-            RaceWatchReport watch = RaceWatchProjector.Project(scenario, options.Seed);
+            RaceWatchReport watch = RaceWatchProjector.Project(scenario, options.Seed, rate);
             RaceResult traced = new PrototypeRaceEngine().RunBatch(
                 scenario,
                 options.Seed,
@@ -68,10 +68,21 @@ public static class RaceWatchCommand
         ArgumentNullException.ThrowIfNull(report);
         if (report.Watch is not null)
         {
-            foreach (RaceWatchBeat beat in report.Watch.Beats)
+            output.WriteLine($"rate={report.Watch.Frames[0].Rate.ToString(CultureInfo.InvariantCulture)}");
+            RaceWatchFrame finalFrame = report.Watch.Frames[^1];
+            foreach (RaceWatchFrame frame in report.Watch.Frames.Where(
+                         frame => frame.WatchSecond == 0 ||
+                                  frame.WatchSecond % 60 == 0 ||
+                                  frame.Paused ||
+                                  ReferenceEquals(frame, finalFrame)))
             {
                 output.WriteLine(
-                    $"beat watchSecond={beat.WatchSecond.ToString(CultureInfo.InvariantCulture)} simSecond={beat.SimulationSecond.ToString(CultureInfo.InvariantCulture)} kind={beat.Kind} headline={beat.Headline}");
+                    $"frame rate={frame.Rate.ToString(CultureInfo.InvariantCulture)} watchSecond={frame.WatchSecond.ToString(CultureInfo.InvariantCulture)} simSecond={frame.RaceSecond.ToString(CultureInfo.InvariantCulture)} paused={frame.Paused.ToString().ToLowerInvariant()}");
+                foreach (RaceWatchRiderFrame rider in frame.FocalRiders)
+                {
+                    output.WriteLine(
+                        $"rider={rider.RiderId.Value.ToString(CultureInfo.InvariantCulture)} distanceM={rider.DistanceM.ToString("F2", CultureInfo.InvariantCulture)} gapM={rider.GapM.ToString("F2", CultureInfo.InvariantCulture)} speedMps={rider.SpeedMps.ToString("F2", CultureInfo.InvariantCulture)}");
+                }
             }
         }
 
@@ -80,14 +91,14 @@ public static class RaceWatchCommand
         output.WriteLine($"decisionCount={report.DecisionCount.ToString(CultureInfo.InvariantCulture)}");
         output.WriteLine($"spyNeutral={report.SpyNeutral.ToString().ToLowerInvariant()}");
         output.WriteLine($"crashed={report.Crashed.ToString().ToLowerInvariant()}");
-        int watchBeats = 0;
+        int watchSeconds = 0;
         int simulationSeconds = 0;
-        if (report.Watch is not null && report.Watch.Beats.Count > 0)
+        if (report.Watch is not null && report.Watch.Frames.Count > 0)
         {
-            watchBeats = report.Watch.Beats.Count;
-            simulationSeconds = report.Watch.Beats[^1].SimulationSecond;
+            watchSeconds = report.Watch.WatchSeconds;
+            simulationSeconds = report.Watch.Frames[^1].RaceSecond;
         }
-        output.WriteLine($"watchBeats={watchBeats.ToString(CultureInfo.InvariantCulture)}");
+        output.WriteLine($"watchSecond={watchSeconds.ToString(CultureInfo.InvariantCulture)}");
         output.WriteLine($"simulationSeconds={simulationSeconds.ToString(CultureInfo.InvariantCulture)}");
     }
 }

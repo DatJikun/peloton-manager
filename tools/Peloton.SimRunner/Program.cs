@@ -12,7 +12,7 @@ public static class Program
     internal const string UsageText =
         "Usage: peloton-sim run --scenario <id> --years <n> --seed <n> [--content-root <path>]"
         + "\n       peloton-sim race --scenario <id> --seed <n> [--trace-json <path>] [--trace-markdown <path>] [--content-root <path>]"
-        + "\n       peloton-sim watch --scenario <id> --seed <n> [--trace-markdown <path>] [--content-root <path>]"
+        + "\n       peloton-sim watch --scenario <id> --seed <n> [--rate <1|2|5|20>] [--trace-markdown <path>] [--content-root <path>]"
         + "\n       peloton-sim day --scenario <id> --seed <n> --days <n> [--through-races] [--follow-hub] [--simulate-from-prep] [--content-root <path>]";
 
     public static int Main(string[] args)
@@ -118,7 +118,7 @@ public static class Program
             options.Seed,
             options.ContentRoot,
             options.TraceJsonPath,
-            options.TraceMarkdownPath));
+            options.TraceMarkdownPath), options.WatchRate);
         RaceWatchCommand.Write(output, report);
         if (!string.IsNullOrWhiteSpace(report.FailureReason))
         {
@@ -191,7 +191,8 @@ public static class Program
         long Seed,
         string ContentRoot,
         string? TraceJsonPath,
-        string? TraceMarkdownPath)
+        string? TraceMarkdownPath,
+        int WatchRate)
     {
         public static RaceOptions Parse(string[] args)
         {
@@ -202,12 +203,21 @@ public static class Program
                 throw new ArgumentException("--seed must be a signed integer.", nameof(args));
             }
 
+            int rate = 5;
+            if (values.TryGetValue("--rate", out string? configuredRate) &&
+                (!int.TryParse(configuredRate, NumberStyles.None, CultureInfo.InvariantCulture, out rate) ||
+                 (rate != 1 && rate != 2 && rate != 5 && rate != 20)))
+            {
+                throw new ArgumentException("--rate must be 1, 2, 5, or 20.", nameof(args));
+            }
+
             return new RaceOptions(
                 scenario,
                 seed,
                 DefaultContentRoot(values),
                 OptionalPath(values, "--trace-json"),
-                OptionalPath(values, "--trace-markdown"));
+                OptionalPath(values, "--trace-markdown"),
+                rate);
         }
 
         private static string? OptionalPath(Dictionary<string, string> values, string key)

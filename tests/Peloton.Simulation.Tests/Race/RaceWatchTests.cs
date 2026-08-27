@@ -12,37 +12,86 @@ public sealed class RaceWatchTests
     private static readonly WorldEntityId TeamAAuthority = new(801);
 
     [Fact]
-    public void WatchCompressesQuietSecondsAndKeepsOfficialChecksum()
+    public void RateOneAndTwentyKeepOfficialResultButUseDifferentWatchTime()
     {
         RaceScenario scenario = ChaseScenario();
         PrototypeRaceEngine engine = new();
         RaceResult official = engine.RunBatch(scenario, 505);
-        RaceWatchReport watch = RaceWatchProjector.Project(scenario, 505);
+        RaceWatchReport rateOne = RaceWatchProjector.Project(scenario, 505, rate: 1);
+        RaceWatchReport rateTwenty = RaceWatchProjector.Project(scenario, 505, rate: 20);
 
-        Assert.Equal(official.Checksum, watch.Result.Checksum);
-        Assert.Equal(official.FinishOrder, watch.Result.FinishOrder);
-        Assert.Equal(official.DecisionCount, watch.Result.DecisionCount);
-        Assert.True(watch.Beats.Count < watch.Result.RiderMetrics.Max(rider => (int)rider.FinishTimeSeconds));
-        Assert.Equal("start", watch.Beats[0].Kind);
-        Assert.Contains(watch.Beats, beat => beat.Kind == "decision");
-        Assert.Equal("finish", watch.Beats[^1].Kind);
+        Assert.Equal(official.Checksum, rateOne.Result.Checksum);
+        Assert.Equal(official.FinishOrder, rateOne.Result.FinishOrder);
+        Assert.Equal(rateOne.Result.Checksum, rateTwenty.Result.Checksum);
+        Assert.Equal(rateOne.Result.FinishOrder, rateTwenty.Result.FinishOrder);
+        Assert.NotEqual(rateOne.WatchSeconds, rateTwenty.WatchSeconds);
+        Assert.True(rateOne.WatchSeconds > rateTwenty.WatchSeconds);
+        Assert.All(
+            rateTwenty.Frames.Zip(rateTwenty.Frames.Skip(1)),
+            pair => Assert.InRange(pair.Second.RaceSecond - pair.First.RaceSecond, 0, 20));
         Assert.DoesNotContain(
-            watch.Beats,
-            beat => beat.Headline.Contains("WPrime", StringComparison.OrdinalIgnoreCase)
-                || beat.Headline.Contains("Durability", StringComparison.OrdinalIgnoreCase));
+            RaceWatchProjector.ExportMarkdown(rateTwenty),
+            "WPrime",
+            StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
-    public void SameSeedProducesIdenticalWatchBeats()
+    public void DecisionRequestFreezesBothClocksUntilResponded()
     {
         RaceScenario scenario = ChaseScenario();
-        RaceWatchReport first = RaceWatchProjector.Project(scenario, 606);
-        RaceWatchReport second = RaceWatchProjector.Project(scenario, 606);
+        RaceSession session = new PrototypeRaceEngine().CreateSession(scenario, 606);
+        RaceWatchClock clock = new(session, rate: 5);
+        RaceWatchFrame paused;
+        do
+        {
+            paused = clock.AdvanceOneWatchSecond();
+        }
+        while (!paused.Paused);
 
-        Assert.Equal(first.Result.Checksum, second.Result.Checksum);
-        Assert.Equal(
-            first.Beats.Select(beat => (beat.WatchSecond, beat.SimulationSecond, beat.Kind, beat.Headline, beat.Selected)),
-            second.Beats.Select(beat => (beat.WatchSecond, beat.SimulationSecond, beat.Kind, beat.Headline, beat.Selected)));
+        RaceWatchFrame held = clock.AdvanceOneWatchSecond();
+
+        Assert.True(paused.Paused);
+        Assert.Equal(paused.WatchSecond, held.WatchSecond);
+        Assert.Equal(paused.RaceSecond, held.RaceSecond);
+        RaceDecisionRequest request = Assert.IsType<RaceDecisionRequest>(clock.PendingDecision);
+        clock.Respond(new RaceDecisionResolution(
+            request.Id,
+            request.AuthorityId,
+            request.DelegatedDefaultOption));
+        Assert.False(clock.Current.Paused);
+
+        RaceWatchFrame resumed = clock.AdvanceOneWatchSecond();
+
+        Assert.True(resumed.WatchSecond > held.WatchSecond);
+        Assert.True(resumed.RaceSecond > held.RaceSecond);
+    }
+
+    [Fact]
+    public void ProjectionContainsOnlySmoothPublicMotionForFocalRiders()
+    {
+        RaceScenario scenario = ChaseScenario();
+        RaceSession session = new PrototypeRaceEngine().CreateSession(scenario, 707);
+        RaceWatchClock clock = new(session, rate: 2);
+
+        RaceWatchFrame first = clock.Current;
+        RaceWatchFrame second = clock.AdvanceOneWatchSecond();
+
+        Assert.Equal(2, second.RaceSecond);
+        Assert.InRange(second.FocalRiders.Count, 2, 3);
+        Assert.Equal(0.0, second.FocalRiders[0].GapM, precision: 8);
+        Assert.All(second.FocalRiders, rider =>
+        {
+            Assert.True(rider.DistanceM >= 0.0);
+            Assert.True(rider.GapM >= 0.0);
+            Assert.True(rider.SpeedMps >= 0.0);
+        });
+        Assert.All(
+            second.FocalRiders.Join(
+                first.FocalRiders,
+                current => current.RiderId,
+                previous => previous.RiderId,
+                (current, previous) => current.DistanceM - previous.DistanceM),
+            distanceDelta => Assert.InRange(distanceDelta, 0.0, 40.0));
     }
 
     private static RaceScenario ChaseScenario()
