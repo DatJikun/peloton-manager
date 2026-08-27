@@ -672,64 +672,64 @@ def bake_ear(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]
 # --------------------------------------------------------------------------- #
 # Width is locked: live hw 21.6–22.0, baker cap 22.0. Geometry: EYE_DX=47 and
 # feature_boost=1.10 put one eye about as wide as the gap between the pair.
-# Aperture is open: live th 12.0–14.6 / bh 10.2–12.4 so the lids are ovals,
-# not flat slits. Variety is lid / tilt / iris, not hw. Affine scale_x 0.97–1.02
-# and eye_spacing dx ±5 (render.py) must not stretch this back into a billboard.
-# Affine scale_y is 1.00–1.10 so the compositor never squashes the opening.
+# Aperture is open: live th 13.2–16.2 / bh 11.0–13.6 so the lids are ovals,
+# not flat slits. Upper-lid outer height stays at ~0.88 th (not 0.66).
+# Brows bake 8 px above BROW_Y so the taller lid has room. Variety is lid /
+# tilt / iris, not hw. Affine scale_x 0.97–1.02, scale_y 1.00–1.10, pair dx ±5.
 
 EYE_RECIPES = [
-    ("eyes_01_almond", 0.05, {"hw": 22.0, "th": 13.4, "bh": 10.7, "iris_r": 11.8, "peak": 0.22}),
-    ("eyes_02_wide", 0.035, {"hw": 22.0, "th": 14.6, "bh": 11.9, "iris_r": 12.0, "peak": 0.12}),
-    ("eyes_03_narrow", 0.04, {"hw": 21.6, "th": 12.0, "bh": 10.2, "iris_r": 11.2, "peak": 0.28}),
-    ("eyes_04_hooded", 0.06, {"hw": 22.0, "th": 12.7, "bh": 10.4, "hood": 3.5, "lash": 1.2, "iris_r": 11.6, "iris_dy": 1.2}),
-    ("eyes_05_downturned", 0.055, {"hw": 22.0, "th": 13.2, "bh": 10.4, "tilt": 2.2, "iris_r": 11.6, "outer_y": 2.4}),
-    ("eyes_06_upturned", 0.055, {"hw": 22.0, "th": 13.2, "bh": 10.4, "tilt": -2.4, "iris_r": 11.6, "peak": 0.34}),
-    ("eyes_07_deepset", 0.05, {"hw": 21.8, "th": 12.9, "bh": 10.2, "hood": 4.5, "crease": 12.0, "iris_r": 11.4, "iris_dy": 1.0}),
-    ("eyes_08_round", 0.06, {"hw": 21.6, "th": 14.6, "bh": 12.4, "iris_r": 12.2, "peak": 0.02}),
-    ("eyes_09_monolid", 0.06, {"hw": 22.0, "th": 12.7, "bh": 10.2, "hood": 3.0, "crease": 15.0, "crease_a": 0.10, "iris_r": 11.6}),
+    ("eyes_01_almond", 0.05, {"hw": 22.0, "th": 15.2, "bh": 12.3, "iris_r": 11.8, "peak": 0.22}),
+    ("eyes_02_wide", 0.035, {"hw": 22.0, "th": 16.2, "bh": 13.5, "iris_r": 12.0, "peak": 0.12}),
+    ("eyes_03_narrow", 0.04, {"hw": 21.6, "th": 13.8, "bh": 11.8, "iris_r": 11.2, "peak": 0.28}),
+    ("eyes_04_hooded", 0.06, {"hw": 22.0, "th": 14.5, "bh": 12.0, "hood": 3.5, "lash": 1.2, "iris_r": 11.6, "iris_dy": 1.2}),
+    ("eyes_05_downturned", 0.055, {"hw": 22.0, "th": 15.0, "bh": 12.0, "tilt": 2.2, "iris_r": 11.6, "outer_y": 2.4}),
+    ("eyes_06_upturned", 0.055, {"hw": 22.0, "th": 15.0, "bh": 12.0, "tilt": -2.4, "iris_r": 11.6, "peak": 0.34}),
+    ("eyes_07_deepset", 0.05, {"hw": 21.8, "th": 14.7, "bh": 11.8, "hood": 4.5, "crease": 13.5, "iris_r": 11.4, "iris_dy": 1.0}),
+    ("eyes_08_round", 0.06, {"hw": 21.6, "th": 16.2, "bh": 13.6, "iris_r": 12.2, "peak": 0.02}),
+    ("eyes_09_monolid", 0.06, {"hw": 22.0, "th": 14.5, "bh": 11.8, "hood": 3.0, "crease": 16.5, "crease_a": 0.10, "iris_r": 11.6}),
     ("eyes_10_close_small", 0.0, {"hw": 21.6, "th": 10.2, "bh": 8.0, "iris_r": 10.2}),  # retired: tiny slits
     ("eyes_11_huge_round", 0.0, {"hw": 23.0, "th": 12.2, "bh": 10.4, "iris_r": 11.6}),  # retired: cartoon round
-    ("eyes_12_sleepy", 0.05, {"hw": 22.0, "th": 12.0, "bh": 10.2, "tilt": 1.6, "lash": 0.85, "iris_r": 11.4, "iris_dy": 2.0}),
-    ("eyes_13_wide_open", 0.035, {"hw": 22.0, "th": 14.6, "bh": 11.7, "iris_r": 12.0, "peak": 0.10}),
-    ("eyes_14_small_iris", 0.04, {"hw": 22.0, "th": 13.4, "bh": 10.7, "iris_r": 10.0}),
-    ("eyes_15_sharp", 0.05, {"hw": 22.0, "th": 12.7, "bh": 10.2, "tilt": -1.8, "lash": 1.25, "iris_r": 11.6, "peak": 0.38}),
-    ("eyes_16_heavy_lid", 0.055, {"hw": 22.0, "th": 12.4, "bh": 10.4, "hood": 5.0, "crease": 10.5, "lash": 1.15, "iris_r": 11.6, "iris_dy": 1.6}),
-    ("eyes_17_neutral", 0.05, {"hw": 22.0, "th": 14.2, "bh": 11.4, "iris_r": 11.8, "peak": 0.08}),
-    ("eyes_18_full", 0.035, {"hw": 22.0, "th": 14.6, "bh": 12.4, "iris_r": 12.0}),
-    ("eyes_19_round_open", 0.05, {"hw": 21.6, "th": 14.6, "bh": 12.4, "iris_r": 12.2, "peak": 0.00}),
-    ("eyes_20_large_iris", 0.045, {"hw": 22.0, "th": 14.2, "bh": 11.4, "iris_r": 12.2}),
-    ("eyes_21_classic", 0.05, {"hw": 22.0, "th": 13.7, "bh": 10.9, "iris_r": 11.8, "peak": 0.16}),
-    ("eyes_22_classic_open", 0.05, {"hw": 22.0, "th": 14.6, "bh": 11.7, "iris_r": 12.0, "peak": 0.12}),
-    ("eyes_23_soft_hood", 0.05, {"hw": 22.0, "th": 13.2, "bh": 10.7, "hood": 2.8, "iris_r": 11.6, "iris_dy": 0.8}),
-    ("eyes_24_mild_round", 0.045, {"hw": 21.6, "th": 14.4, "bh": 12.4, "iris_r": 12.0, "peak": 0.04}),
-    ("eyes_25_mild_almond", 0.045, {"hw": 22.0, "th": 13.2, "bh": 10.7, "iris_r": 11.6, "peak": 0.30}),
-    ("eyes_26_even", 0.045, {"hw": 22.0, "th": 13.9, "bh": 11.2, "iris_r": 11.8, "peak": 0.14}),
-    ("eyes_27_even_wide", 0.03, {"hw": 22.0, "th": 14.2, "bh": 11.4, "iris_r": 11.8, "peak": 0.10}),
-    ("eyes_28_low_lid", 0.05, {"hw": 22.0, "th": 12.9, "bh": 10.9, "hood": 2.2, "iris_r": 11.6, "iris_dy": 1.4}),
-    ("eyes_29_bright", 0.045, {"hw": 22.0, "th": 14.6, "bh": 11.9, "iris_r": 12.0}),
-    ("eyes_30_soft_tilt", 0.045, {"hw": 22.0, "th": 13.7, "bh": 10.9, "tilt": -1.2, "iris_r": 11.6, "peak": 0.26}),
-    ("eyes_31_deep_neutral", 0.045, {"hw": 22.0, "th": 13.4, "bh": 10.7, "hood": 3.6, "crease": 12.0, "iris_r": 11.6}),
-    ("eyes_32_open_almond", 0.05, {"hw": 22.0, "th": 14.6, "bh": 11.7, "iris_r": 12.0, "peak": 0.24}),
-    ("eyes_33_fox", 0.055, {"hw": 22.0, "th": 13.2, "bh": 10.4, "peak": 0.44, "tilt": -2.8, "lash": 1.22, "iris_r": 11.6}),
-    ("eyes_34_inner_peak", 0.05, {"hw": 22.0, "th": 13.4, "bh": 10.7, "peak": -0.10, "tilt": 2.4, "iris_r": 11.6}),
-    ("eyes_35_tall_open", 0.055, {"hw": 21.8, "th": 14.6, "bh": 12.4, "iris_r": 12.0, "peak": 0.08}),
-    ("eyes_36_heavy_hood", 0.055, {"hw": 22.0, "th": 12.4, "bh": 10.4, "hood": 6.4, "crease": 9.2, "iris_dy": 2.0, "iris_r": 11.6}),
-    ("eyes_37_sleepy_drop", 0.05, {"hw": 22.0, "th": 12.0, "bh": 11.4, "tilt": 2.6, "iris_dy": 2.4, "lash": 0.78, "iris_r": 11.4}),
-    ("eyes_38_lid_cover", 0.05, {"hw": 22.0, "th": 12.7, "bh": 10.7, "hood": 5.6, "iris_dy": 2.8, "iris_r": 11.8}),
-    ("eyes_39_round_tall", 0.055, {"hw": 21.6, "th": 14.6, "bh": 12.4, "peak": 0.00, "iris_r": 12.4}),
-    ("eyes_40_flat_lid", 0.05, {"hw": 22.0, "th": 12.4, "bh": 10.2, "peak": 0.04, "flat": 0.85, "iris_r": 11.6}),
-    ("eyes_41_lashy", 0.05, {"hw": 22.0, "th": 13.7, "bh": 10.9, "lash": 1.60, "iris_r": 11.6, "peak": 0.18}),
-    ("eyes_42_bare_lid", 0.05, {"hw": 22.0, "th": 13.9, "bh": 10.9, "lash": 0.50, "crease": 14.5, "crease_a": 0.46, "iris_r": 11.6}),
-    ("eyes_43_iris_in", 0.045, {"hw": 22.0, "th": 13.7, "bh": 10.9, "iris_dx": -3.0, "iris_r": 11.6}),
-    ("eyes_44_iris_out", 0.045, {"hw": 22.0, "th": 13.7, "bh": 10.9, "iris_dx": 2.8, "iris_r": 11.6}),
-    ("eyes_45_iris_fill", 0.05, {"hw": 22.0, "th": 14.6, "bh": 12.4, "iris_r": 12.6}),
-    ("eyes_46_iris_dot", 0.045, {"hw": 22.0, "th": 14.2, "bh": 11.4, "iris_r": 9.0}),
-    ("eyes_47_outer_drop", 0.05, {"hw": 22.0, "th": 13.2, "bh": 10.7, "outer_y": 3.6, "tilt": 1.6, "iris_r": 11.6, "peak": 0.20}),
-    ("eyes_48_inner_drop", 0.05, {"hw": 22.0, "th": 13.2, "bh": 10.7, "inner_y": 3.6, "peak": 0.24, "iris_r": 11.6}),
-    ("eyes_49_high_inner", 0.05, {"hw": 22.0, "th": 13.7, "bh": 10.7, "inner_y": -0.8, "peak": 0.06, "iris_r": 11.6}),
-    ("eyes_50_fox_open", 0.055, {"hw": 22.0, "th": 14.6, "bh": 11.7, "peak": 0.42, "tilt": -2.4, "lash": 1.25, "iris_r": 11.8}),
-    ("eyes_51_deep_round", 0.05, {"hw": 21.8, "th": 14.6, "bh": 12.4, "hood": 4.2, "crease": 13.5, "iris_r": 12.2, "peak": 0.02}),
-    ("eyes_52_soft_fox", 0.05, {"hw": 22.0, "th": 13.4, "bh": 10.7, "peak": 0.34, "tilt": -1.6, "iris_r": 11.6}),
+    ("eyes_12_sleepy", 0.05, {"hw": 22.0, "th": 13.8, "bh": 11.8, "tilt": 1.6, "lash": 0.85, "iris_r": 11.4, "iris_dy": 2.0}),
+    ("eyes_13_wide_open", 0.035, {"hw": 22.0, "th": 16.2, "bh": 13.3, "iris_r": 12.0, "peak": 0.10}),
+    ("eyes_14_small_iris", 0.04, {"hw": 22.0, "th": 15.2, "bh": 12.3, "iris_r": 10.0}),
+    ("eyes_15_sharp", 0.05, {"hw": 22.0, "th": 14.5, "bh": 11.8, "tilt": -1.8, "lash": 1.25, "iris_r": 11.6, "peak": 0.38}),
+    ("eyes_16_heavy_lid", 0.055, {"hw": 22.0, "th": 14.2, "bh": 12.0, "hood": 5.0, "crease": 12.0, "lash": 1.15, "iris_r": 11.6, "iris_dy": 1.6}),
+    ("eyes_17_neutral", 0.05, {"hw": 22.0, "th": 16.0, "bh": 13.0, "iris_r": 11.8, "peak": 0.08}),
+    ("eyes_18_full", 0.035, {"hw": 22.0, "th": 16.2, "bh": 13.6, "iris_r": 12.0}),
+    ("eyes_19_round_open", 0.05, {"hw": 21.6, "th": 16.2, "bh": 13.6, "iris_r": 12.2, "peak": 0.00}),
+    ("eyes_20_large_iris", 0.045, {"hw": 22.0, "th": 16.0, "bh": 13.0, "iris_r": 12.2}),
+    ("eyes_21_classic", 0.05, {"hw": 22.0, "th": 15.5, "bh": 12.5, "iris_r": 11.8, "peak": 0.16}),
+    ("eyes_22_classic_open", 0.05, {"hw": 22.0, "th": 16.2, "bh": 13.3, "iris_r": 12.0, "peak": 0.12}),
+    ("eyes_23_soft_hood", 0.05, {"hw": 22.0, "th": 15.0, "bh": 12.3, "hood": 2.8, "iris_r": 11.6, "iris_dy": 0.8}),
+    ("eyes_24_mild_round", 0.045, {"hw": 21.6, "th": 16.2, "bh": 13.6, "iris_r": 12.0, "peak": 0.04}),
+    ("eyes_25_mild_almond", 0.045, {"hw": 22.0, "th": 15.0, "bh": 12.3, "iris_r": 11.6, "peak": 0.30}),
+    ("eyes_26_even", 0.045, {"hw": 22.0, "th": 15.7, "bh": 12.8, "iris_r": 11.8, "peak": 0.14}),
+    ("eyes_27_even_wide", 0.03, {"hw": 22.0, "th": 16.0, "bh": 13.0, "iris_r": 11.8, "peak": 0.10}),
+    ("eyes_28_low_lid", 0.05, {"hw": 22.0, "th": 14.7, "bh": 12.5, "hood": 2.2, "iris_r": 11.6, "iris_dy": 1.4}),
+    ("eyes_29_bright", 0.045, {"hw": 22.0, "th": 16.2, "bh": 13.5, "iris_r": 12.0}),
+    ("eyes_30_soft_tilt", 0.045, {"hw": 22.0, "th": 15.5, "bh": 12.5, "tilt": -1.2, "iris_r": 11.6, "peak": 0.26}),
+    ("eyes_31_deep_neutral", 0.045, {"hw": 22.0, "th": 15.2, "bh": 12.3, "hood": 3.6, "crease": 13.5, "iris_r": 11.6}),
+    ("eyes_32_open_almond", 0.05, {"hw": 22.0, "th": 16.2, "bh": 13.3, "iris_r": 12.0, "peak": 0.24}),
+    ("eyes_33_fox", 0.055, {"hw": 22.0, "th": 15.0, "bh": 12.0, "peak": 0.44, "tilt": -2.8, "lash": 1.22, "iris_r": 11.6}),
+    ("eyes_34_inner_peak", 0.05, {"hw": 22.0, "th": 15.2, "bh": 12.3, "peak": -0.10, "tilt": 2.4, "iris_r": 11.6}),
+    ("eyes_35_tall_open", 0.055, {"hw": 21.8, "th": 16.2, "bh": 13.6, "iris_r": 12.0, "peak": 0.08}),
+    ("eyes_36_heavy_hood", 0.055, {"hw": 22.0, "th": 14.2, "bh": 12.0, "hood": 6.4, "crease": 10.7, "iris_dy": 2.0, "iris_r": 11.6}),
+    ("eyes_37_sleepy_drop", 0.05, {"hw": 22.0, "th": 13.8, "bh": 13.0, "tilt": 2.6, "iris_dy": 2.4, "lash": 0.78, "iris_r": 11.4}),
+    ("eyes_38_lid_cover", 0.05, {"hw": 22.0, "th": 14.5, "bh": 12.3, "hood": 5.6, "iris_dy": 2.8, "iris_r": 11.8}),
+    ("eyes_39_round_tall", 0.055, {"hw": 21.6, "th": 16.2, "bh": 13.6, "peak": 0.00, "iris_r": 12.4}),
+    ("eyes_40_flat_lid", 0.05, {"hw": 22.0, "th": 14.2, "bh": 11.8, "peak": 0.04, "flat": 0.85, "iris_r": 11.6}),
+    ("eyes_41_lashy", 0.05, {"hw": 22.0, "th": 15.5, "bh": 12.5, "lash": 1.60, "iris_r": 11.6, "peak": 0.18}),
+    ("eyes_42_bare_lid", 0.05, {"hw": 22.0, "th": 15.7, "bh": 12.5, "lash": 0.50, "crease": 16.0, "crease_a": 0.46, "iris_r": 11.6}),
+    ("eyes_43_iris_in", 0.045, {"hw": 22.0, "th": 15.5, "bh": 12.5, "iris_dx": -3.0, "iris_r": 11.6}),
+    ("eyes_44_iris_out", 0.045, {"hw": 22.0, "th": 15.5, "bh": 12.5, "iris_dx": 2.8, "iris_r": 11.6}),
+    ("eyes_45_iris_fill", 0.05, {"hw": 22.0, "th": 16.2, "bh": 13.6, "iris_r": 12.6}),
+    ("eyes_46_iris_dot", 0.045, {"hw": 22.0, "th": 16.0, "bh": 13.0, "iris_r": 9.0}),
+    ("eyes_47_outer_drop", 0.05, {"hw": 22.0, "th": 15.0, "bh": 12.3, "outer_y": 3.6, "tilt": 1.6, "iris_r": 11.6, "peak": 0.20}),
+    ("eyes_48_inner_drop", 0.05, {"hw": 22.0, "th": 15.0, "bh": 12.3, "inner_y": 3.6, "peak": 0.24, "iris_r": 11.6}),
+    ("eyes_49_high_inner", 0.05, {"hw": 22.0, "th": 15.5, "bh": 12.3, "inner_y": -0.8, "peak": 0.06, "iris_r": 11.6}),
+    ("eyes_50_fox_open", 0.055, {"hw": 22.0, "th": 16.2, "bh": 13.3, "peak": 0.42, "tilt": -2.4, "lash": 1.25, "iris_r": 11.8}),
+    ("eyes_51_deep_round", 0.05, {"hw": 21.8, "th": 16.2, "bh": 13.6, "hood": 4.2, "crease": 15.0, "iris_r": 12.2, "peak": 0.02}),
+    ("eyes_52_soft_fox", 0.05, {"hw": 22.0, "th": 15.2, "bh": 12.3, "peak": 0.34, "tilt": -1.6, "iris_r": 11.6}),
 ]
 
 
@@ -737,16 +737,16 @@ def eye_shape(p: dict[str, float]) -> list[tuple[float, float]]:
     cx, cy = CX + EYE_DX, EYE_Y
     k = st().feature_boost
     hw = min(p.get("hw", 22.0), 22.0) * k
-    th = min(max(p.get("th", 13.4), 12.0), 14.6) * k
-    bh = min(max(p.get("bh", 10.7), 10.2), 12.4) * k
+    th = min(max(p.get("th", 14.2), 13.2), 16.2) * k
+    bh = min(max(p.get("bh", 12.0), 11.0), 13.6) * k
     tilt = p.get("tilt", 0.0)
     peak = p.get("peak", 0.15)
-    inner_y = p.get("inner_y", 1.5)
-    outer_y = p.get("outer_y", 1.0)
+    inner_y = p.get("inner_y", 0.4)
+    outer_y = p.get("outer_y", 0.5)
     flat = p.get("flat", 0.0)
-    th_in = th * (0.86 + 0.12 * flat)
-    th_out = th * (0.66 + 0.28 * flat)
-    th_pk = th * (1.0 - 0.12 * flat)
+    th_in = th * (0.92 + 0.08 * flat)
+    th_out = th * (0.88 + 0.10 * flat)
+    th_pk = th * (1.0 - 0.06 * flat)
     return [
         (cx - hw, cy + inner_y + tilt * 0.4),
         (cx - hw * 0.45, cy - th_in),
@@ -848,7 +848,7 @@ BROW_RECIPES = [
 def bake_brow(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]]]:
     inner_x = CX + p.get("inner", 0.14) * HEAD_HW
     outer_x = CX + p.get("outer", 0.72) * HEAD_HW + p.get("len", 0.0)
-    y = BROW_Y + p.get("drop", 0.0)
+    y = BROW_Y - 8.0 + p.get("drop", 0.0)
     th = p.get("th", 6.2) * (st().feature_boost + (0.18 if st().line_art > 0 else 0.0))
     arch = p.get("arch", 2.0)
     ang = p.get("angle", 0.0)

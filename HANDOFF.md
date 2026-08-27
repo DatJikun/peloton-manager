@@ -204,4 +204,4 @@ Peloton Manager jest na etapie pre-production. Celem jest modularny, determinist
 
 - `2026-08-27` — Avatar prototype: oczy zwężone w miejscu (`hw` 21.6–22.0, cap 22), para nie siada już na skroniach (affine `dx` ±5 zamiast ±9), szerokość nie jest już rozciągana o ±14%. Pakiet `0.8.0-placeholder`. Styl `poster` bez zmian.
 
-- `2026-08-27` — Avatar prototype: oczy otwarte w pionie (`th` 12.0–14.6 / `bh` 10.2–12.4), szerokość bez zmian; affine nie spłaszcza już `scale_y`. Pakiet `0.9.0-placeholder`. Styl `poster` bez zmian.
+- `2026-08-27` — Avatar prototype: oczy otwarte w pionie (`th` 13.2–16.2 / `bh` 11.0–13.6), brwi 8 px wyżej żeby powieka miała miejsce, szerokość bez zmian; affine nie spłaszcza już `scale_y`. Pakiet `0.9.0-placeholder`. Styl `poster` bez zmian.
