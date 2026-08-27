@@ -160,9 +160,9 @@ uses `"requires": ("hairline_receded",)`.
 ~0.75, jaw_w above ~1.16, chin_len beyond ±12) read as caricature; soften in place
 (pack version bump), do not add a more extreme head.
 
-**Eyes** (`EYE_RECIPES`): keep a **neutral-open** cluster as the common weight. Live `hw` is **21.6–22.0** (baker cap 22). Aperture sits **between** the flat 0.8.0 slits and the shocked 0.9.0 ovals: live **th 11.4–14.9 / bh 9.8–12.6**. Do **not** floor every recipe to the tall band — that made the whole peloton look startled. Outer lid ~0.76 `th`. Brows sit on `BROW_Y` (raised brows read as surprise). Default `iris_dy` 1.4 so the lid covers the top of the iris. Affine `scale_x` 0.97–1.02, `scale_y` **0.97–1.04**, pair `dx` ±5. Vary lid / tilt / iris within that mid band. Retired ids keep `weight: 0`.
+**Eyes** (`EYE_RECIPES`): keep a **neutral-open** cluster as the common weight. Live `hw` is **21.6–22.0** (baker cap 22). Aperture sits **just under** the 0.11.0 mid: live **th 11.3–14.0 / bh 9.6–11.7** — a small relax from the remaining shocked look, not a return to the 0.8.0 slits. Do **not** floor every recipe to the tall band — that made the whole peloton look startled. Outer lid ~0.76 `th`. Brows sit on `BROW_Y` (raised brows read as surprise). Default `iris_dy` **2.0** so the lid covers the top of the iris. Affine `scale_x` 0.97–1.02, `scale_y` **0.97–1.02**, pair `dx` ±5. Vary lid / tilt / iris within that band. Feature keyline scale **0.90** (not 0.55 — thin ink melts into skin at 48 px). Retired ids keep `weight: 0`.
 
-**Mouths** (`MOUTH_RECIPES`): corners sit **under the pupils** (`hw` around `EYE_DX` = 47, never above it). Lip thickness sits **halfway** between a thread and a sausage: baker scale ~1.16 / 1.18, ~20% meat at the corners. Lip fill must still contrast with skin (`lip_rgb`). Variety is bow, smile, open/laugh, lift, skew, and upper/lower ratio, not more length. Open mouths still wrap the opening in lip meat. Retired ids keep `weight: 0`. Do not ship thread-wide mouths (`hw` above ~47, or closed `upper`/`lower` under ~10/12) or sausage mouths (baker scale above ~1.2 with 40% blunt corners).
+**Mouths** (`MOUTH_RECIPES`): corners sit **under the pupils** (`hw` around `EYE_DX` = 47, never above it). Lip thickness sits **halfway** between a thread and a sausage: baker scale ~1.16 / 1.18, ~20% meat at the corners. Lip fill must still contrast with skin (`lip_rgb`). Variety is bow, smile, open/laugh, lift, skew, and upper/lower ratio, not more length. Open mouths still wrap the opening in lip meat. Closed-lip keyline scale **0.92**, open envelope / opening **0.90 / 0.65**. Retired ids keep `weight: 0`. Do not ship thread-wide mouths (`hw` above ~47, or closed `upper`/`lower` under ~10/12) or sausage mouths (baker scale above ~1.2 with 40% blunt corners).
 
 **Brows** (`BROW_RECIPES`): recipes must differ in **inner gap, length, thickness taper,
 arch and peak**, not just `th`/`arch` on the same polygon. `bake_brow` takes `inner` /
@@ -170,11 +170,14 @@ arch and peak**, not just `th`/`arch` on the same polygon. `bake_brow` takes `in
 High `drop` (negative) plus high `arch` plus affine `brow_height` of -9 px stacked into
 a surprised caricature with the eyes. Live recipes keep `drop` ≥ 0 and `arch` ≤ 8.5
 (baker clamps the same). Affine `brow_height` is **-2..+4** extra on top of following
-the eyes, biased toward sitting closer to the lid, not flying up the forehead.
+the eyes, biased toward sitting closer to the lid, not flying up the forehead. Soft fill
+stays `crisp=False`; a modest keyline on the crisp silhouette (scale **0.62**) keeps the
+brow from melting into the forehead.
 
 **Noses** (`NOSE_RECIPES`): bake a **skin silhouette** (`nose_contour`) plus keyline and
 nostril ticks. Multiply-only ticks all look identical at portrait size. Vary `bridge`,
-`tip`, `flare`, `len`, `hook`, `upturn`, `bulb`.
+`tip`, `flare`, `len`, `hook`, `upturn`, `bulb`. Feature keyline scale **0.90** so the
+nose does not dissolve into the head skin.
 
 **Necks** (`NECK_RECIPES`): five discrete widths, picked on stream `identity.neck` so
 other identity draws do not shift. Keep `neck_01` as the medium recipe. Continuous
@@ -240,6 +243,9 @@ To add a look the owner asked for, append recipes in `pack.py`. Do not silently 
   like scratches at portrait size; one deliberate second-tone shape reads as hair.
 - **Keylines go inside the silhouette** (`keyline()`), never centred on the edge: an outer
   stroke overlaps neighbouring layers and drifts when a continuous parameter scales.
+  Feature keyline scale **0.55** (eyes/nose) melts the part into skin at 48 px; use
+  ~0.90 on eyes/nose/mouth envelope and ~0.95 on ears. Head/hair/jersey stay at 1.0.
+  Do not answer "parts blend" by changing `poster` `StyleProfile`.
 - **A ring is jewellery.** A full collar ellipse around the neck reads as a necklace; keep
   the front arc only.
 - **Small dark shapes near the lips read as an open mouth.** A moustache must be wider
@@ -254,10 +260,12 @@ To add a look the owner asked for, append recipes in `pack.py`. Do not silently 
   reads as a billboard. A compact `hw` with `th`/`bh` under ~12/10 reads as a
   flattened slot, which the owner rejected after the width pass. Opening `th`/`bh`
   into the 15–16 band, raising the brows 8 px, and flooring every recipe to that
-  tall band makes the whole peloton look startled. Meet in the middle: mid
-  aperture, brows on `BROW_Y`, a little `iris_dy` so the lid covers the iris.
-  Do not answer "too wide" by collapsing into slits, "too flat" by stretching
-  `hw`, or "too shocked" by shrinking back to the 0.8.0 slits.
+  tall band makes the whole peloton look startled. Meet in the middle, then a
+  small further relax: mid-under aperture, brows on `BROW_Y`, `iris_dy` ~2.0 so
+  the lid covers the iris. Shocked leftover is too much sclera above the iris /
+  too little `iris_dy`, not a missing slit. Do not answer "too wide" by collapsing
+  into slits, "too flat" by stretching `hw`, or "too shocked" by shrinking back
+  to the 0.8.0 slits.
 - **A nose without a silhouette is invisible.** Multiply ticks at the nostrils do not
   carry width, length or hook. Give the nose a skin mask and a keyline.
 - **Same-polygon brows stay identical.** Changing only `th` by 2 px does not read; move

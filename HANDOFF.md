@@ -209,3 +209,5 @@ Peloton Manager jest na etapie pre-production. Celem jest modularny, determinist
 - `2026-08-27` — Avatar prototype: oczy w połowie drogi między spłaszczeniem a szokiem (`th` 11.4–14.9 / `bh` 9.8–12.6), brwi z powrotem na linii, powieka zasłania górę tęczówki. Pakiet `0.10.0-placeholder`. Styl `poster` bez zmian.
 
 - `2026-08-27` — Avatar prototype: brwi nie odlatują już od oczu (łagodniejszy łuk, `drop` ≥ 0, affine `brow_height` −2..+4 zamiast −9..+5). Pakiet `0.11.0-placeholder`. Styl `poster` bez zmian.
+
+- `2026-08-27` — Avatar prototype: oczy odrobinę spokojniejsze (powieka niżej na tęczówce, `iris_dy` 2.0; `th`/`bh` tuż pod środkiem 0.11.0), wyraźniejsza kreska wokół oczu/nosa/ust/uszu/brwi żeby części twarzy się nie zlewały. Pakiet `0.12.0-placeholder`. Styl `poster` bez zmian.
