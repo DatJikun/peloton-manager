@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HQ — Employed — Peloton Manager prototype</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-variant="employed" data-start-date="2027-03-05">
+  <div class="app">
+    <nav class="sidebar" aria-label="Main navigation">
+      <div class="sidebar-brand">
+        <p class="game-title">Peloton Manager</p>
+        <p class="screen-title">HQ</p>
+        <a class="proto-index-link" href="index.html">All variants</a>
+      </div>
+      <ul class="nav-list">
+        <li class="is-current"><a href="hub-employed.html">HQ</a></li>
+        <li><button type="button" class="nav-link" data-nav="inbox">Inbox</button></li>
+        <li><button type="button" class="nav-link" data-nav="calendar">Calendar</button></li>
+        <li><button type="button" class="nav-link" data-nav="squad">Squad</button></li>
+        <li><button type="button" class="nav-link" data-nav="recruitment">Recruitment</button></li>
+        <li><button type="button" class="nav-link" data-nav="organization">Organization</button></li>
+        <li><button type="button" class="nav-link" data-nav="world">World</button></li>
+        <li><button type="button" class="nav-link" data-nav="manager">Manager</button></li>
+        <li><button type="button" class="nav-link" data-nav="settings">Settings</button></li>
+      </ul>
+    </nav>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="topbar-meta">
+          <div class="topbar-item">
+            <span class="label">World date</span>
+            <span class="value date" id="world-date">Fri 5 Mar 2027</span>
+          </div>
+          <div class="topbar-item">
+            <span class="label">Organization</span>
+            <span class="value">Équipe Nordique · WorldTour</span>
+          </div>
+          <div class="topbar-item">
+            <span class="label">Manager</span>
+            <span class="value">Elena Varga</span>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <button type="button" class="inbox-btn" id="inbox-top-btn" aria-label="Inbox, 3 unread">
+            Inbox <span class="inbox-badge">3</span>
+          </button>
+          <button type="button" class="btn-ghost" disabled title="Save/Load not prototyped — not RaceLive">Save</button>
+          <button type="button" class="btn-ghost" disabled title="Save/Load not prototyped — not RaceLive">Load</button>
+        </div>
+      </header>
+
+      <div class="season-rail-wrap">
+        <p class="season-rail-label">Season context</p>
+        <div class="season-rail" role="img" aria-label="Season rail: TODAY in Spring before Giro">
+          <div class="season-phase">
+            <div class="phase-dot"></div>
+            <div class="phase-name">Pre-season</div>
+          </div>
+          <div class="season-phase is-active">
+            <div class="phase-dot"></div>
+            <div class="phase-name">Spring</div>
+          </div>
+          <div class="season-phase">
+            <div class="phase-dot"></div>
+            <div class="phase-name">Giro</div>
+          </div>
+          <div class="season-phase">
+            <div class="phase-dot"></div>
+            <div class="phase-name">Tour</div>
+          </div>
+          <div class="season-phase">
+            <div class="phase-dot"></div>
+            <div class="phase-name">Vuelta</div>
+          </div>
+          <div class="season-phase">
+            <div class="phase-dot"></div>
+            <div class="phase-name">Worlds</div>
+          </div>
+          <div class="season-phase">
+            <div class="phase-dot"></div>
+            <div class="phase-name">Off-season</div>
+          </div>
+          <div class="today-marker">
+            <span class="arrow" aria-hidden="true"></span>
+            <span class="today-label">TODAY</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="advance-wrap">
+        <button type="button" class="btn-advance" id="advance-day">ADVANCE DAY</button>
+      </div>
+
+      <div class="content">
+        <section class="finance-strip" aria-labelledby="finance-heading">
+          <h2 id="finance-heading">Finance · cash ≠ budget</h2>
+          <div class="finance-grid">
+            <div class="finance-metric">
+              <div class="metric-label">Cash</div>
+              <div class="metric-value">€1.8m</div>
+            </div>
+            <div class="finance-metric">
+              <div class="metric-label">Committed costs</div>
+              <div class="metric-value">€1.1m</div>
+            </div>
+            <div class="finance-metric">
+              <div class="metric-label">Free operating budget</div>
+              <div class="metric-value">€0.4m</div>
+            </div>
+            <div class="finance-metric">
+              <div class="metric-label">Payroll commitment</div>
+              <div class="metric-value warn">82%</div>
+            </div>
+          </div>
+          <div class="finance-context">
+            <div class="swf-line"><span class="swf-tag">STATE</span> Payroll commitment 82% · free operating budget €0.4m available.</div>
+            <div class="swf-line"><span class="swf-tag">WHY</span> 3 renewals awaiting board sign-off plus guaranteed sponsor instalments.</div>
+            <div class="swf-line"><span class="swf-tag">FORECAST</span> Signing listed rider J. Mercier → payroll commitment 91%.</div>
+          </div>
+        </section>
+
+        <div id="inbox-local-panel" class="inbox-panel hidden" aria-live="polite">
+          <h2>Inbox (presentation layer)</h2>
+          <p>Messages reflect system state — deleting mail does not remove deadlines.</p>
+          <div class="inbox-item"><strong>Paris–Nice briefing</strong> — awaiting your confirmation</div>
+          <div class="inbox-item"><strong>Sponsor pipeline</strong> — Commercial Director status report</div>
+          <div class="inbox-item"><strong>Scout dossier</strong> — U23 climber update arrived</div>
+        </div>
+
+        <div class="columns">
+          <section class="panel" aria-labelledby="problems-heading">
+            <h2 class="panel-header" id="problems-heading">Problems &amp; risks</h2>
+            <div class="panel-body">
+              <button type="button" class="card-item severity-high" data-detail="sponsor-search">
+                <div class="card-title">Sponsor search inactive</div>
+                <div class="card-summary">Owner: Commercial Director Marc Dupont · consequence: primary slot exposure</div>
+                <div class="swf-mini">
+                  <span><strong>STATE</strong> No active search process</span>
+                  <span><strong>WHY</strong> Cycle not relaunched after January review</span>
+                  <span><strong>FORECAST</strong> Critical risk by 18 Mar if unchanged</span>
+                </div>
+              </button>
+              <button type="button" class="card-item severity-med" data-detail="recruitment-load">
+                <div class="card-title">Recruitment workload high</div>
+                <div class="card-summary">Head of Recruitment · throughput at risk</div>
+                <div class="swf-mini">
+                  <span><strong>STATE</strong> <span id="recruitment-load-pct">86%</span> department load</span>
+                  <span><strong>WHY</strong> 4 active cases (renewals + targets)</span>
+                  <span><strong>FORECAST</strong> New case → overload, slower responses</span>
+                </div>
+              </button>
+            </div>
+          </section>
+
+          <section class="panel" aria-labelledby="deadlines-heading">
+            <h2 class="panel-header" id="deadlines-heading">Next events &amp; deadlines</h2>
+            <div class="panel-body">
+              <button type="button" class="card-item deadline-soon" data-detail="paris-nice">
+                <div class="card-title">Paris–Nice</div>
+                <div class="card-summary" id="deadline-days">Starts in 2 days · briefing not confirmed</div>
+                <div class="swf-mini">
+                  <span><strong>WHY</strong> Calendar commitment from 12 Feb; DS owes pre-race briefing</span>
+                </div>
+              </button>
+            </div>
+          </section>
+
+          <section class="panel" aria-labelledby="staff-heading">
+            <h2 class="panel-header" id="staff-heading">Staff recommendations</h2>
+            <div class="panel-body">
+              <div class="staff-rec">
+                <p class="rec-text">Confirm Paris–Nice race roster and leadership plan before departure window.</p>
+                <p class="rec-meta">Source: <strong>Sporting Director</strong> · Confidence: high · based on calendar + form knowledge</p>
+                <button type="button" class="btn-dismiss-rec">Dismiss (visual only)</button>
+              </div>
+              <div class="staff-rec">
+                <p class="rec-text">Prioritise sponsor search briefing with Commercial Director this week.</p>
+                <p class="rec-meta">Source: <strong>General Manager (staff council)</strong> · Confidence: medium</p>
+                <button type="button" class="btn-dismiss-rec">Dismiss (visual only)</button>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <section class="panel feed-panel" aria-labelledby="feed-heading">
+          <h2 class="panel-header" id="feed-heading">
+            Feed
+            <span class="feed-disclaimer">Notification projections — not system of record</span>
+          </h2>
+          <ul class="feed-list" id="feed-list">
+            <li class="feed-item">
+              <span class="feed-tag projection">Public result</span>
+              Rival squad VeloStar take stage win at UAE Tour — public world result, not your roster.
+              <time>Fri 5 Mar 2027 · projection timestamp</time>
+            </li>
+            <li class="feed-item">
+              <span class="feed-tag notification">Scout report</span>
+              Scout report arrived: U23 climber dossier update — staff interpretation, verify in Recruitment.
+              <time>Fri 5 Mar 2027 · projection timestamp</time>
+            </li>
+            <li class="feed-item">
+              <span class="feed-tag rumor">Transfer rumor</span>
+              World transfer rumor: sprinter linked to continental move — agent-sourced, unverified.
+              <time>Tue 4 Mar 2027 · projection timestamp</time>
+            </li>
+          </ul>
+        </section>
+      </div>
+
+      <footer class="site-footer">Static HTML prototype — not simulation truth</footer>
+    </div>
+  </div>
+
+  <div class="drawer-overlay" id="drawer-overlay"></div>
+  <aside class="drawer" id="detail-drawer" aria-labelledby="drawer-title">
+    <div class="drawer-header">
+      <h2 id="drawer-title">Detail</h2>
+      <button type="button" class="drawer-close" id="drawer-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="drawer-body">
+      <div id="drawer-body-content"></div>
+      <div class="drawer-cta">
+        <button type="button" class="btn-primary" id="drawer-cta">Action</button>
+        <p class="drawer-note" id="drawer-note"></p>
+      </div>
+    </div>
+  </aside>
+
+  <div id="toast-container" class="toast-container"></div>
+  <script src="hub.js"></script>
+</body>
+</html>

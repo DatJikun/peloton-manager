@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Peloton Manager — Forever + Impeccable</title>
+  <link rel="stylesheet" href="prototype-shell.css">
+  <script src="prototype-shell.js" defer></script>
+</head>
+<body>
+<style>
+  .board { max-width: 820px; margin: 0 auto; color: var(--foreground); }
+  .board-head { border-bottom: 2px solid var(--foreground); padding-bottom: 14px; margin-bottom: 22px; }
+  .board-head h2 { margin: 4px 0 8px; }
+  .board-head p { margin: 0; color: var(--muted-foreground); line-height: 1.55; }
+  .src { padding: 18px 0; border-bottom: 1px solid var(--border); }
+  .src .n { font: 500 12px/1 monospace; color: var(--muted-foreground); }
+  .src h3 { margin: 8px 0 8px; }
+  .src p { margin: 0 0 10px; color: var(--muted-foreground); line-height: 1.55; }
+  .src a { color: inherit; }
+  .src ul { margin: 0 0 0 18px; padding: 0; line-height: 1.55; }
+  .rule { margin-top: 22px; border-top: 2px solid var(--foreground); padding-top: 14px; }
+  .rule p { margin: 0; line-height: 1.55; }
+  .no { margin-top: 16px; color: var(--muted-foreground); font-size: 14px; line-height: 1.55; }
+</style>
+
+<div class="board">
+  <div class="board-head">
+    <div class="label">Peloton Manager · UI lab 07</div>
+    <h2>Nowe źródła: Forever i Impeccable</h2>
+    <p>To nie jest kolejny dashboard. To dwa narzędzia dla Codexu: skąd brać gotowe kawałki UI i czego nigdy nie rysować.</p>
+  </div>
+
+  <div class="src">
+    <span class="n">SOURCE 01</span>
+    <h3>Forever Infinite</h3>
+    <p><a href="https://forever-components.vercel.app/infinite/" target="_blank" rel="noreferrer">forever-components.vercel.app/infinite</a></p>
+    <p>Płótno 600+ pojedynczych komponentów HTML (CSS / Canvas / SVG, zero zależności). Agent ma szukać i składać, nie wymyślać „ładnego AI UI” od zera.</p>
+    <ul>
+      <li>indeks: <code>https://raw.githubusercontent.com/isas1/forever-ai-components/main/infinite/components.index.json</code></li>
+      <li>wejście agenta: <code>https://raw.githubusercontent.com/isas1/forever-ai-components/main/agents.json</code></li>
+      <li>filtruj w kodzie; nie wklejaj całego indeksu do kontekstu</li>
+      <li>preferuj <code>perfTier: cheap</code>, mobile-ready, accessible; unikaj expensive motion</li>
+    </ul>
+  </div>
+
+  <div class="src">
+    <span class="n">SOURCE 02</span>
+    <h3>Impeccable slop</h3>
+    <p><a href="https://impeccable.style/slop/" target="_blank" rel="noreferrer">impeccable.style/slop</a></p>
+    <p>Lista rozpoznań „AI look”. Każdy nowy prototyp ma przejść tę checklistę. Jeśli reguła strzela — poprawiasz, nie bronisz.</p>
+    <ul>
+      <li>fioletowe gradienty, glassmorphism, neon glow, blur orbs</li>
+      <li>side-tab card (gruba kolorowa krawędź z boku zaokrąglonej karty)</li>
+      <li>karty w kartach, hero-metric, identyczne siatki ikona+nagłówek</li>
+      <li>Inter / Geist / Space Grotesk / Instrument Serif na wszystko</li>
+      <li>gradient text, pulsing dots, bounce easing, eyebrow/kicker nad H1</li>
+    </ul>
+  </div>
+
+  <div class="rule">
+    <p><b>Jak tego używamy.</b> Forever = skąd brać. Impeccable = czego nie wypuszczać. DNA gry zostaje z tablicy 02 (Football Manager / Motorsport Manager / PCM) i z locków: Advance Day, na dniu wyścigu guzik <b>Race next</b> wchodzi w przygotowanie. Skrzynka jest kolejką spraw, nie drzwiami do wyścigu. Żadnego KPI dashboardu jak w odrzuconym Career Hub.</p>
+  </div>
+  <p class="no">Zadanie dla Codexu jest w <code>CODEX_BRIEF.md</code>. Ten plik tylko kotwiczy źródła.</p>
+</div>
+</body>
+</html>

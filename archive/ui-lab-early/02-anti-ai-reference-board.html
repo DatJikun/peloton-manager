@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Peloton Manager — Anti-AI Reference Board</title>
+  <link rel="stylesheet" href="prototype-shell.css">
+  <script src="prototype-shell.js" defer></script>
+</head>
+<body>
+<style>
+  .board { max-width:1180px; margin:0 auto; color:var(--foreground); }
+  .board-head { border-bottom:2px solid var(--foreground); padding-bottom:14px; margin-bottom:18px; }
+  .board-head h2 { margin:4px 0 7px; }
+  .diagnosis { display:grid; grid-template-columns:150px 1fr; gap:14px; padding:10px 0; border-bottom:1px solid var(--border); }
+  .diagnosis b { font-size:12px; }
+  .diagnosis span { color:var(--muted-foreground); font-size:13px; line-height:1.5; }
+  .ref-list { margin-top:24px; }
+  .ref { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr); gap:18px; padding:18px 0; border-top:1px solid var(--border); cursor:pointer; }
+  .ref:first-child { border-top:2px solid var(--foreground); }
+  .ref.selected { background:color-mix(in srgb,var(--primary) 7%,transparent); }
+  .ref:focus-visible { outline:3px solid var(--ring); outline-offset:3px; }
+  .shot { background:#111; overflow:hidden; aspect-ratio:16/9; }
+  .shot img { display:block; width:100%; height:100%; object-fit:cover; }
+  .ref-copy { padding:2px 6px 0 0; }
+  .ref-copy .n { font:500 12px/1 monospace; color:var(--muted-foreground); }
+  .ref-copy h3 { margin:7px 0 9px; font-size:19px; }
+  .ref-copy p { margin:0 0 10px; color:var(--muted-foreground); font-size:13px; line-height:1.5; }
+  .ref-copy ul { margin:8px 0 0 18px; padding:0; font-size:13px; line-height:1.55; }
+  .ref-copy a { font-size:11px; }
+  .rule { margin-top:22px; border-top:2px solid var(--foreground); padding-top:14px; display:grid; grid-template-columns:150px 1fr; gap:14px; }
+  .rule strong { font-size:13px; }
+  .rule p { margin:0; font-size:14px; line-height:1.55; }
+  .instruction { margin:22px 0 0; padding:12px 0; border-top:1px solid var(--border); color:var(--muted-foreground); font-size:13px; }
+  @media (max-width:760px){ .ref{grid-template-columns:1fr}.diagnosis,.rule{grid-template-columns:1fr}.shot{aspect-ratio:16/10} }
+</style>
+
+<div class="board">
+  <div class="board-head">
+    <div class="label">Peloton Manager · anti-AI reset</div>
+    <h2>Najpierw prawdziwe produkty, potem projekt</h2>
+    <p class="subtitle">Poprzednie makiety odrzucamy. Ich problemem nie był kolor, tylko sposób myślenia.</p>
+  </div>
+
+  <div class="diagnosis"><b>Równy grid kart</b><span>AI rozdzieliło ekran na estetycznie równe moduły, mimo że decyzja o składzie jest ważniejsza od budżetu i morale.</span></div>
+  <div class="diagnosis"><b>Rytualne KPI</b><span>Cztery duże liczby pojawiły się dlatego, że „dashboard powinien mieć KPI”, a nie dlatego, że manager musi je zobaczyć właśnie teraz.</span></div>
+  <div class="diagnosis"><b>Styl przed pracą</b><span>Roadbook, ledger i control room były kostiumami. Nie wynikały z faktycznego przepływu: wiadomość → analiza → decyzja → konsekwencja w świecie.</span></div>
+  <div class="diagnosis"><b>Idealne dane</b><span>Każdy tekst miał wygodną długość, każdy stan był kompletny. Prawdziwa gra musi wytrzymać długie nazwiska, braki wiedzy, 30 wiadomości i konfliktujące rekomendacje.</span></div>
+
+  <div class="ref-list" data-multiselect>
+    <div class="ref" data-choice="football-manager-dna" onclick="toggleSelect(this)" role="button" tabindex="0">
+      <div class="shot"><img src="https://cdn.mos.cms.futurecdn.net/Xc6KpmacBd5vCP6mdDv7i4.jpg" alt="Football Manager 2024 home screen"></div>
+      <div class="ref-copy"><span class="n">REFERENCE 01</span><h3>Football Manager</h3><p>Nie udaje lekkiej aplikacji. Gęstość informacji jest częścią fantazji o wykonywaniu zawodu.</p><ul><li>stała nawigacja jako infrastruktura;</li><li>jeden dominujący kontekst: następny mecz;</li><li>tabele i tekst mają pierwszeństwo przed dekoracją;</li><li>delegowanie złożoności, nie jej ukrywanie.</li></ul><a href="https://www.techradar.com/gaming/football-manager-24-review" target="_blank" rel="noreferrer">Źródło obrazu: TechRadar / Sports Interactive</a></div>
+    </div>
+
+    <div class="ref" data-choice="motorsport-manager-dna" onclick="toggleSelect(this)" role="button" tabindex="0">
+      <div class="shot"><img src="https://cdn.akamai.steamstatic.com/steam/apps/415200/ss_49297131e20d1919ecf867710d4c7723e823fde7.1920x1080.jpg?t=1603128727" alt="Motorsport Manager headquarters screen"></div>
+      <div class="ref-copy"><span class="n">REFERENCE 02</span><h3>Motorsport Manager</h3><p>Ekran nie jest abstrakcyjnym dashboardem — ma konkretny obiekt świata: bazę zespołu. UI objaśnia to, co gracz właśnie ogląda.</p><ul><li>duży obiekt świata zamiast ściany kart;</li><li>globalny czas, finanse i następny wyścig stale widoczne;</li><li>pełna, długa nawigacja nie jest traktowana jak błąd;</li><li>Continue jest częścią głównej pętli.</li></ul><a href="https://store.steampowered.com/app/415200/Motorsport_Manager/" target="_blank" rel="noreferrer">Źródło obrazu: Steam / Playsport Games</a></div>
+    </div>
+
+    <div class="ref" data-choice="pro-cycling-manager-dna" onclick="toggleSelect(this)" role="button" tabindex="0">
+      <div class="shot"><img src="https://web.cyanide-studio.com/games/cycling/2021/pcm/guide/career-manage/career_manage1_scr01.jpg" alt="Pro Cycling Manager career dashboard"></div>
+      <div class="ref-copy"><span class="n">REFERENCE 03</span><h3>Pro Cycling Manager</h3><p>Najbliższa domena. Dashboard jest operacyjną skrzynką dnia, z osią czasu sezonu i bez prób zamiany każdej informacji w osobny widget.</p><ul><li>data i Continue zamykają pętlę dnia;</li><li>wiadomości są roboczym strumieniem, nie ozdobnym modułem;</li><li>proste powierzchnie mieszczą dużo treści;</li><li>tożsamość kolarska wynika z danych i kontekstu.</li></ul><a href="https://web.cyanide-studio.com/games/cycling/2021/pcm/guide/career-manage/" target="_blank" rel="noreferrer">Źródło obrazu: Cyanide Studio</a></div>
+    </div>
+  </div>
+
+  <div class="rule"><strong>Zasada dla nowej serii</strong><p>Nie projektujemy „dashboardu”. Projektujemy <b>biurko managera w konkretnym dniu</b>. Każdy blok musi odpowiadać na pytanie: jaka praca jest wykonywana, skąd manager zna tę informację i jaka decyzja z niej wynika?</p></div>
+  <div class="instruction"><b>Wybierz referencje, których DNA ma dominować.</b> Możesz zaznaczyć kilka. Jeśli nic nie wybierzesz, przyjmę połączenie: struktura Football Managera + zakotwiczenie w świecie Motorsport Managera + domena Pro Cycling Managera.</div>
+</div>
+
+<script>
+  document.querySelectorAll('.ref').forEach(function(el){el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleSelect(el);}})});
+</script>
+</body>
+</html>

@@ -30,6 +30,12 @@ The skeleton calendar is deliberately short: one season is 12 calls to `AdvanceD
 
 `src/Peloton.Client.Godot` is an empty compile-time stub. Future Godot code will call Application Commands and Queries; it will not own World State or write SQLite. Godot was not used to implement or verify Milestone 0.
 
+## Prototypes and archive
+
+- Living HTML lab: `prototypes/ui/` (open `index.html`).
+- Parked / rejected HTML: `archive/` (read `archive/README.md` first).
+- Living avatar experiment: `experiments/avatar_prototype/`.
+
 ## Known difference from the race contract
 
 The race implementation is only deterministic seeded ordering from a start list and route ID. It does not implement physiology, drafting, crosswinds, tactics, information, DS decisions, or Race Spy and must not be treated as the `RACE_ENGINE_DESIGN_v0.2.md` prototype.
