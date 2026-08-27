@@ -152,17 +152,25 @@ height (smaller = higher forehead), `side` = how far down the sides reach, `styl
 ```
 
 Gate a style on state with `requires`/`excludes`/`min_age`/`max_age`, e.g. a receding cut
-uses `"requires": ("hairline_receded",)`.
+uses `"requires": ("hairline_receded",)`. Receded riders still need live hair
+(`hair_12_receded`, `hair_32_combover`) after horseshoe retirement. Short crops must
+dominate. Radical silhouettes (cartoon spikes, horseshoe, bowl, mullet, pompadour, flat
+top, long swept, afro puff) stay at `weight: 0`. Soften tall curls in place; do not
+retire every curl. Append mild peloton cuts (`hair_41`…`hair_50`) rather than restoring
+retired ids.
 
 **A head** (`HEAD_RECIPES`): multipliers around 1.0 on `cranium_w`, `temple_w`, `cheek_w`,
 `jaw_w`, `chin_w`, `crown_w`, plus `crown` and `chin_len` in px. Tag it `jaw_narrow` /
 `jaw_medium` / `jaw_wide` so beards and hair can react. Extreme values (chin_w below
 ~0.75, jaw_w above ~1.16, chin_len beyond ±12) read as caricature; soften in place
-(pack version bump), do not add a more extreme head.
+(pack version bump), do not add a more extreme head. Heart / diamond / lantern / block /
+oblong / squat / needle-chin recipes stay at `weight: 0`. Variety comes from **mild
+neighbours** (`head_19`…`head_26`: soft oval/square/round, narrow/wide/short/tall oval,
+soft angular), not from those caricatures. Live cluster stays around oval.
 
-**Eyes** (`EYE_RECIPES`): keep a **neutral-open** cluster as the common weight. Live `hw` is **21.6–22.0** (baker cap 22). Aperture sits **just under** the 0.11.0 mid: live **th 11.3–14.0 / bh 9.6–11.7** — a small relax from the remaining shocked look, not a return to the 0.8.0 slits. Do **not** floor every recipe to the tall band — that made the whole peloton look startled. Outer lid ~0.76 `th`. Brows sit on `BROW_Y` (raised brows read as surprise). Default `iris_dy` **2.0** so the lid covers the top of the iris. Affine `scale_x` 0.97–1.02, `scale_y` **0.97–1.02**, pair `dx` ±5. **Iris and pupil must differ:** live `iris_r` **8.6–12.4**, `pupil` fraction **0.28–0.56** (baker clamps 8.4–12.6 / 0.26–0.58). A peloton of 11.0 irises with pupil 0.42 reads as one sticker. Feature keyline scale **0.90**. Retired ids keep `weight: 0`.
+**Eyes** (`EYE_RECIPES`): keep a **neutral-open** cluster as the common weight. Live `hw` is **21.6–22.0** (baker cap 22). Aperture sits **just under** the 0.11.0 mid: live **th 11.3–14.0 / bh 9.6–11.7** — a small relax from the remaining shocked look, not a return to the 0.8.0 slits. Do **not** floor every recipe to the tall band — that made the whole peloton look startled. Outer lid ~0.76 `th`. Brows sit on `BROW_Y` (raised brows read as surprise). Default `iris_dy` **2.0** so the lid covers the top of the iris. Affine `scale_x` 0.97–1.02, `scale_y` **0.97–1.02**, pair `dx` ±5. **Iris and pupil must differ:** live `iris_r` **8.6–12.4**, `pupil` fraction **0.28–0.56** (baker clamps 8.4–12.6 / 0.26–0.58). A peloton of 11.0 irises with pupil 0.42 reads as one sticker. Feature keyline scale **0.76**. Retired ids keep `weight: 0`.
 
-**Mouths** (`MOUTH_RECIPES`): corners sit **under the pupils** (`hw` around `EYE_DX` = 47, never above it). Lip thickness sits **a step under** the 0.12 midpoint: baker scale ~1.08 / 1.10, ~16% meat at the corners. Not a thread (1.0) and not a sausage (1.32). Affine `scale_y` **0.98–1.02**. Lip fill must still contrast with skin (`lip_rgb`). Variety is bow, smile, open/laugh, lift, skew, and upper/lower ratio, not more length. Open mouths still wrap the opening in lip meat. Closed-lip keyline scale **0.92**, open envelope / opening **0.90 / 0.65**. Retired ids keep `weight: 0`. Do not ship thread-wide mouths (`hw` above ~47, or closed `upper`/`lower` under ~10/12) or sausage mouths (baker scale above ~1.2 with 40% blunt corners).
+**Mouths** (`MOUTH_RECIPES`): corners sit **under the pupils** (`hw` around `EYE_DX` = 47, never above it). Lip thickness sits **a step under** the 0.12 midpoint: baker scale ~1.08 / 1.10, ~16% meat at the corners. Not a thread (1.0) and not a sausage (1.32). Affine `scale_y` **0.98–1.02**. Lip fill must still contrast with skin (`lip_rgb`). Variety is bow, smile, open/laugh, lift, skew, and upper/lower ratio, not more length. Open mouths still wrap the opening in lip meat. Closed-lip keyline scale **0.78**, open envelope / opening **0.76 / 0.55**. Retired ids keep `weight: 0`. Do not ship thread-wide mouths (`hw` above ~47, or closed `upper`/`lower` under ~10/12) or sausage mouths (baker scale above ~1.2 with 40% blunt corners).
 
 **Brows** (`BROW_RECIPES`): recipes must differ in **inner gap, length, thickness taper,
 arch and peak**, not just `th`/`arch` on the same polygon. `bake_brow` takes `inner` /
@@ -171,12 +179,12 @@ High `drop` (negative) plus high `arch` plus affine `brow_height` of -9 px stack
 a surprised caricature with the eyes. Live recipes keep `drop` ≥ 0 and `arch` ≤ 8.5
 (baker clamps the same). Affine `brow_height` is **-2..+4** extra on top of following
 the eyes, biased toward sitting closer to the lid, not flying up the forehead. Soft fill
-stays `crisp=False`; a modest keyline on the crisp silhouette (scale **0.62**) keeps the
+stays `crisp=False`; a modest keyline on the crisp silhouette (scale **0.52**) keeps the
 brow from melting into the forehead.
 
 **Noses** (`NOSE_RECIPES`): bake a **skin silhouette** (`nose_contour`) plus keyline and
 nostril ticks. Multiply-only ticks all look identical at portrait size. Vary `bridge`,
-`tip`, `flare`, `len`, `hook`, `upturn`, `bulb`. Feature keyline scale **0.90** so the
+`tip`, `flare`, `len`, `hook`, `upturn`, `bulb`. Feature keyline scale **0.76** so the
 nose does not dissolve into the head skin.
 
 **Necks** (`NECK_RECIPES`): five discrete widths, picked on stream `identity.neck` so
@@ -243,11 +251,13 @@ To add a look the owner asked for, append recipes in `pack.py`. Do not silently 
   like scratches at portrait size; one deliberate second-tone shape reads as hair.
 - **Keylines go inside the silhouette** (`keyline()`), never centred on the edge: an outer
   stroke overlaps neighbouring layers and drifts when a continuous parameter scales.
-  Feature keyline scale **0.55** (eyes/nose) melts the part into skin at 48 px; use
-  ~0.90 on eyes/nose/mouth envelope and ~0.95 on ears. Head/hair/jersey stay at 1.0.
-  Do not answer "parts blend" by changing `poster` `StyleProfile`. The contour part
-  is named `keyline`, never `line`: a later lip seam or nostril tick also called
-  `line` silently overwrites the PNG and the face parts melt together again.
+  Feature keyline scale **0.55** (eyes/nose) melts the part into skin at 48 px; full
+  **1.0** after the 0.12 pass reads a bit heavy. Current poster scales: head / hair /
+  jersey / helmet **0.82**, ears **0.80**, eyes / nose / open envelope **0.76**, closed
+  mouth **0.78**, open inner **0.55**, brows **0.52**, neck **0.78**. Do not answer
+  "smaller contours" by changing `poster` `line_art`. The contour part is named
+  `keyline`, never `line`: a later lip seam or nostril tick also called `line`
+  silently overwrites the PNG and the face parts melt together again.
 - **A ring is jewellery.** A full collar ellipse around the neck reads as a necklace; keep
   the front arc only.
 - **Small dark shapes near the lips read as an open mouth.** A moustache must be wider

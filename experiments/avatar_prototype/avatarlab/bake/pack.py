@@ -281,24 +281,32 @@ class PackBuilder:
 # --------------------------------------------------------------------------- #
 
 HEAD_RECIPES: list[tuple[str, float, dict[str, float], tuple[str, ...]]] = [
-    ("head_01_oval", 0.15, {}, ("jaw_medium",)),
-    ("head_02_long", 0.11, {"cranium_w": 0.95, "temple_w": 0.96, "cheek_w": 0.95, "jaw_w": 0.92, "chin_len": 10.0}, ("jaw_narrow",)),
-    ("head_03_square", 0.12, {"jaw_w": 1.12, "chin_w": 1.18, "cheek_w": 1.04, "temple_w": 1.04, "chin_len": -6.0}, ("jaw_wide",)),
-    ("head_04_round", 0.11, {"cheek_w": 1.08, "jaw_w": 1.06, "chin_w": 1.08, "cranium_w": 1.04, "chin_len": -10.0}, ("jaw_medium",)),
-    ("head_05_angular", 0.11, {"temple_w": 1.05, "cheek_w": 1.02, "jaw_w": 0.94, "chin_w": 0.84, "chin_len": 6.0}, ("jaw_narrow",)),
-    ("head_06_broad", 0.10, {"cranium_w": 1.07, "temple_w": 1.07, "cheek_w": 1.09, "jaw_w": 1.07, "chin_w": 1.05, "chin_len": -4.0}, ("jaw_wide",)),
-    ("head_07_tapered", 0.09, {"cranium_w": 1.04, "temple_w": 1.02, "jaw_w": 0.90, "chin_w": 0.80, "chin_len": 5.0}, ("jaw_narrow",)),
-    ("head_08_heavy_jaw", 0.09, {"jaw_w": 1.12, "chin_w": 1.14, "crown_w": 0.96, "cheek_w": 1.02, "chin_len": 2.0}, ("jaw_wide",)),
-    ("head_09_high_crown", 0.07, {"crown": 8.0, "crown_w": 1.06, "cheek_w": 0.98, "jaw_w": 0.96, "chin_w": 0.92}, ("jaw_medium",)),
-    ("head_10_wide_short", 0.05, {"cranium_w": 1.06, "temple_w": 1.05, "cheek_w": 1.06, "jaw_w": 1.02, "chin_w": 1.00, "chin_len": -12.0}, ("jaw_medium",)),
-    ("head_11_heart", 0.06, {"crown_w": 1.08, "cranium_w": 1.06, "temple_w": 1.04, "cheek_w": 0.98, "jaw_w": 0.88, "chin_w": 0.78, "chin_len": 6.0}, ("jaw_narrow",)),
-    ("head_12_diamond", 0.05, {"crown_w": 0.92, "cranium_w": 0.94, "temple_w": 0.94, "cheek_w": 1.08, "jaw_w": 0.90, "chin_w": 0.82, "chin_len": 6.0}, ("jaw_narrow",)),
-    ("head_13_lantern", 0.06, {"crown_w": 0.94, "cranium_w": 0.98, "temple_w": 1.00, "cheek_w": 1.04, "jaw_w": 1.12, "chin_w": 1.14, "chin_len": -2.0}, ("jaw_wide",)),
-    ("head_14_pear", 0.05, {"crown_w": 0.92, "cranium_w": 0.94, "temple_w": 0.95, "cheek_w": 1.04, "jaw_w": 1.12, "chin_w": 1.10, "chin_len": 2.0}, ("jaw_wide",)),
-    ("head_15_compact", 0.05, {"crown": -4.0, "cranium_w": 0.97, "temple_w": 0.98, "cheek_w": 0.98, "jaw_w": 0.97, "chin_w": 0.96, "chin_len": -8.0}, ("jaw_medium",)),
-    ("head_16_oblong", 0.05, {"crown": 10.0, "cranium_w": 0.94, "temple_w": 0.95, "cheek_w": 0.94, "jaw_w": 0.90, "chin_w": 0.88, "chin_len": 10.0}, ("jaw_narrow",)),
-    ("head_17_block", 0.05, {"crown_w": 1.04, "cranium_w": 1.05, "temple_w": 1.06, "cheek_w": 1.08, "jaw_w": 1.12, "chin_w": 1.14, "chin_len": -6.0}, ("jaw_wide",)),
-    ("head_18_pointed_chin", 0.05, {"cranium_w": 1.00, "temple_w": 1.00, "cheek_w": 0.96, "jaw_w": 0.88, "chin_w": 0.78, "chin_len": 8.0}, ("jaw_narrow",)),
+    ("head_01_oval", 0.14, {}, ("jaw_medium",)),
+    ("head_02_long", 0.10, {"cranium_w": 0.96, "temple_w": 0.97, "cheek_w": 0.96, "jaw_w": 0.94, "chin_len": 8.0}, ("jaw_narrow",)),
+    ("head_03_square", 0.11, {"jaw_w": 1.10, "chin_w": 1.12, "cheek_w": 1.04, "temple_w": 1.03, "chin_len": -4.0}, ("jaw_wide",)),
+    ("head_04_round", 0.10, {"cheek_w": 1.06, "jaw_w": 1.05, "chin_w": 1.06, "cranium_w": 1.03, "chin_len": -6.0}, ("jaw_medium",)),
+    ("head_05_angular", 0.10, {"temple_w": 1.04, "cheek_w": 1.01, "jaw_w": 0.95, "chin_w": 0.88, "chin_len": 4.0}, ("jaw_narrow",)),
+    ("head_06_broad", 0.09, {"cranium_w": 1.05, "temple_w": 1.05, "cheek_w": 1.06, "jaw_w": 1.05, "chin_w": 1.04, "chin_len": -3.0}, ("jaw_wide",)),
+    ("head_07_tapered", 0.08, {"cranium_w": 1.03, "temple_w": 1.02, "jaw_w": 0.92, "chin_w": 0.86, "chin_len": 4.0}, ("jaw_narrow",)),
+    ("head_08_heavy_jaw", 0.08, {"jaw_w": 1.10, "chin_w": 1.10, "crown_w": 0.97, "cheek_w": 1.02, "chin_len": 1.0}, ("jaw_wide",)),
+    ("head_09_high_crown", 0.07, {"crown": 5.0, "crown_w": 1.04, "cheek_w": 0.99, "jaw_w": 0.97, "chin_w": 0.94}, ("jaw_medium",)),
+    ("head_10_wide_short", 0.0, {"cranium_w": 1.06, "temple_w": 1.05, "cheek_w": 1.06, "jaw_w": 1.02, "chin_w": 1.00, "chin_len": -12.0}, ("jaw_medium",)),  # retired: squat
+    ("head_11_heart", 0.0, {"crown_w": 1.08, "cranium_w": 1.06, "temple_w": 1.04, "cheek_w": 0.98, "jaw_w": 0.88, "chin_w": 0.78, "chin_len": 6.0}, ("jaw_narrow",)),  # retired: heart
+    ("head_12_diamond", 0.0, {"crown_w": 0.92, "cranium_w": 0.94, "temple_w": 0.94, "cheek_w": 1.08, "jaw_w": 0.90, "chin_w": 0.82, "chin_len": 6.0}, ("jaw_narrow",)),  # retired: diamond
+    ("head_13_lantern", 0.0, {"crown_w": 0.94, "cranium_w": 0.98, "temple_w": 1.00, "cheek_w": 1.04, "jaw_w": 1.12, "chin_w": 1.14, "chin_len": -2.0}, ("jaw_wide",)),  # retired: lantern
+    ("head_14_pear", 0.05, {"crown_w": 0.96, "cranium_w": 0.96, "temple_w": 0.97, "cheek_w": 1.03, "jaw_w": 1.08, "chin_w": 1.06, "chin_len": 2.0}, ("jaw_wide",)),
+    ("head_15_compact", 0.06, {"crown": -3.0, "cranium_w": 0.98, "temple_w": 0.98, "cheek_w": 0.99, "jaw_w": 0.98, "chin_w": 0.97, "chin_len": -5.0}, ("jaw_medium",)),
+    ("head_16_oblong", 0.0, {"crown": 10.0, "cranium_w": 0.94, "temple_w": 0.95, "cheek_w": 0.94, "jaw_w": 0.90, "chin_w": 0.88, "chin_len": 10.0}, ("jaw_narrow",)),  # retired: too long
+    ("head_17_block", 0.0, {"crown_w": 1.04, "cranium_w": 1.05, "temple_w": 1.06, "cheek_w": 1.08, "jaw_w": 1.12, "chin_w": 1.14, "chin_len": -6.0}, ("jaw_wide",)),  # retired: block
+    ("head_18_pointed_chin", 0.0, {"cranium_w": 1.00, "temple_w": 1.00, "cheek_w": 0.96, "jaw_w": 0.88, "chin_w": 0.78, "chin_len": 8.0}, ("jaw_narrow",)),  # retired: needle chin
+    ("head_19_soft_oval", 0.08, {"cranium_w": 0.98, "temple_w": 0.99, "cheek_w": 0.99, "jaw_w": 0.98, "chin_len": 3.0}, ("jaw_medium",)),
+    ("head_20_soft_square", 0.08, {"jaw_w": 1.06, "chin_w": 1.06, "cheek_w": 1.03, "temple_w": 1.02, "chin_len": -3.0}, ("jaw_wide",)),
+    ("head_21_soft_round", 0.08, {"cheek_w": 1.04, "jaw_w": 1.03, "chin_w": 1.04, "cranium_w": 1.02, "chin_len": -4.0}, ("jaw_medium",)),
+    ("head_22_narrow_oval", 0.07, {"cranium_w": 0.97, "temple_w": 0.97, "cheek_w": 0.96, "jaw_w": 0.94, "chin_w": 0.90, "chin_len": 4.0}, ("jaw_narrow",)),
+    ("head_23_wide_oval", 0.07, {"cranium_w": 1.04, "temple_w": 1.04, "cheek_w": 1.04, "jaw_w": 1.03, "chin_w": 1.02, "chin_len": -2.0}, ("jaw_wide",)),
+    ("head_24_short_oval", 0.06, {"crown": -2.0, "cranium_w": 1.01, "jaw_w": 1.00, "chin_w": 0.99, "chin_len": -5.0}, ("jaw_medium",)),
+    ("head_25_tall_oval", 0.06, {"crown": 4.0, "cranium_w": 0.97, "temple_w": 0.97, "jaw_w": 0.95, "chin_w": 0.93, "chin_len": 6.0}, ("jaw_narrow",)),
+    ("head_26_soft_angular", 0.06, {"temple_w": 1.03, "cheek_w": 1.00, "jaw_w": 0.96, "chin_w": 0.90, "chin_len": 3.0}, ("jaw_narrow",)),
 ]
 
 
@@ -338,7 +346,7 @@ def bake_head(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any
     shade = darken(shade, blur(ellipse_mask(CX, NOSE_TIP_Y + 11, 32, 9), 9), 0.10)
     shade = darken(shade, blur(ellipse_mask(CX, MOUTH_Y + 22, 28, 11), 10), 0.10)
     shade = darken(shade, ImageChops.multiply(blur(ellipse_mask(CX, chin_y + 0.03 * HEAD_H, 0.92 * HEAD_HW, 0.10 * HEAD_H), 16), mask), 0.16)
-    return [("skin", gray_layer(shade, mask, outline_of(mask)), {"blend": "normal", "color_slot": "skin"})] + keyline(mask)
+    return [("skin", gray_layer(shade, mask, outline_of(mask)), {"blend": "normal", "color_slot": "skin"})] + keyline(mask, 0.82)
 
 
 # --------------------------------------------------------------------------- #
@@ -489,7 +497,7 @@ def bake_jersey(template: str) -> list[tuple[str, Image.Image, dict[str, Any]]]:
         ("piping", shaded_color_layer((255, 255, 255), shade, piping), {"blend": "normal", "color_slot": "team_accent"}),
         ("seam", solid_layer(SHADOW_RGB, scale_l(blur(zip_line, 1.4), 0.32)), {"blend": "multiply"}),
         ("sheen", solid_layer(LIGHT_RGB, scale_l(ImageChops.multiply(blur(ellipse_mask(CX - 130, 496, 52, 30), 24), body), 0.14)), {"blend": "screen"}),
-    ] + keyline(body)
+    ] + keyline(body, 0.82)
 
 
 def bake_outfit(kind: str) -> list[tuple[str, Image.Image, dict[str, Any]]]:
@@ -672,7 +680,7 @@ def bake_ear(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]
     # contact shadow where the head overlaps the ear, otherwise the ear
     # disappears into the cheek once the head layer is drawn on top
     shade = darken(shade, ImageChops.multiply(mask, blur(ellipse_mask(x - 4, (top + bot) / 2, 10, (bot - top) * 0.7), 6)), 0.34)
-    return [("skin", gray_layer(shade, mask, outline_of(mask)), {"blend": "normal", "color_slot": "skin"})] + keyline(mask, 0.95)
+    return [("skin", gray_layer(shade, mask, outline_of(mask)), {"blend": "normal", "color_slot": "skin"})] + keyline(mask, 0.80)
 
 
 # --------------------------------------------------------------------------- #
@@ -820,7 +828,7 @@ def bake_eye(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any]
 
     return (
         [("under", under, {"blend": "normal"})]
-        + keyline(sclera, 0.90)
+        + keyline(sclera, 0.76)
         + [
             ("iris", iris, {"blend": "normal", "color_slot": "iris"}),
             ("pupil", pupil, {"blend": "normal"}),
@@ -904,7 +912,7 @@ def bake_brow(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any
     # keeps the brow from melting into the forehead at 48 px.
     return (
         [("hair", gray_layer(shade, scale_l(mask, 0.96), crisp=False), {"blend": "normal", "color_slot": "brow"})]
-        + keyline(body, 0.62)
+        + keyline(body, 0.52)
     )
 
 
@@ -1043,7 +1051,7 @@ def bake_nose(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, Any
     parts: list[tuple[str, Image.Image, dict[str, Any]]] = [
         ("skin", gray_layer(skin_shade, mask, outline_of(mask)), {"blend": "normal", "color_slot": "skin"}),
     ]
-    parts += keyline(mask, 0.90)
+    parts += keyline(mask, 0.76)
     parts += [
         ("shade", solid_layer(SHADOW_RGB, shadow), {"blend": "multiply"}),
         ("light", solid_layer(LIGHT_RGB, light), {"blend": "screen"}),
@@ -1270,7 +1278,7 @@ def bake_mouth(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, An
         )
         return (
             [("lips", lips_layer, {"blend": "normal", "color_slot": "lip"})]
-            + keyline(lips, 0.92)
+            + keyline(lips, 0.78)
             + [("line", solid_layer(SHADOW_RGB, line), {"blend": "multiply"})]
         )
 
@@ -1287,8 +1295,8 @@ def bake_mouth(p: dict[str, float]) -> list[tuple[str, Image.Image, dict[str, An
         teeth_mask = ImageChops.multiply(opening, ellipse_mask(CX, y - gap * 0.02, hw * 0.70, max(3.2, gap * 0.42)))
         parts.append(("teeth", solid_layer(TEETH_RGB, scale_l(teeth_mask, 0.95)), {"blend": "normal"}))
     parts.append(("lips", lips_layer, {"blend": "normal", "color_slot": "lip"}))
-    parts += keyline(envelope, 0.90)
-    parts += keyline(opening, 0.65, part="inner_keyline")
+    parts += keyline(envelope, 0.76)
+    parts += keyline(opening, 0.55, part="inner_keyline")
     return parts
 
 
@@ -1564,7 +1572,7 @@ HAIR_RECIPES: list[dict[str, Any]] = [
     {"id": "hair_01_buzz", "w": 0.11, "t": 5.0, "hl": 0.25, "side": 0.52, "style": "straight"},
     {"id": "hair_02_crop", "w": 0.16, "t": 10.0, "hl": 0.24, "side": 0.51, "style": "straight"},
     {"id": "hair_03_side_part", "w": 0.13, "t": 14.0, "hl": 0.23, "side": 0.50, "style": "swept", "part": True},
-    {"id": "hair_04_messy_short", "w": 0.13, "t": 13.0, "hl": 0.24, "side": 0.51, "style": "straight", "wob": ("spike", 7.0)},
+    {"id": "hair_04_messy_short", "w": 0.13, "t": 13.0, "hl": 0.24, "side": 0.51, "style": "straight", "wob": ("spike", 5.0)},
     {"id": "hair_05_swept_medium", "w": 0.08, "t": 18.0, "hl": 0.21, "side": 0.53, "style": "swept"},
     {
         "id": "hair_06_curly_short",
@@ -1579,11 +1587,11 @@ HAIR_RECIPES: list[dict[str, Any]] = [
     {
         "id": "hair_07_curly_medium",
         "w": 0.05,
-        "t": 21.0,
+        "t": 17.0,
         "hl": 0.25,
         "side": 0.54,
         "style": "round",
-        "wob": ("curl", 13.0),
+        "wob": ("curl", 9.0),
         "region_weights": {"*": 1.0, "west_africa": 1.8, "east_africa": 1.7, "latin_america": 1.3, "east_asia": 0.4},
     },
     {
@@ -1596,24 +1604,24 @@ HAIR_RECIPES: list[dict[str, Any]] = [
         "wob": ("curl", 7.0),
         "region_weights": {"*": 1.0, "west_africa": 2.4, "east_africa": 2.2, "north_america": 1.2, "east_asia": 0.4, "scandinavia": 0.5},
     },
-    {"id": "hair_09_spiky", "w": 0.05, "t": 15.0, "hl": 0.24, "side": 0.49, "style": "straight", "wob": ("spike", 11.0), "max_age": 32},
+    {"id": "hair_09_spiky", "w": 0.0, "t": 15.0, "hl": 0.24, "side": 0.49, "style": "straight", "wob": ("spike", 11.0), "max_age": 32},  # retired: cartoon spikes
     {"id": "hair_10_slicked", "w": 0.06, "t": 11.0, "hl": 0.19, "side": 0.51, "style": "swept", "part": True},
     {"id": "hair_11_thinning", "w": 0.06, "t": 8.0, "hl": 0.185, "side": 0.51, "style": "m_shape", "requires": ("hairline_thinning",)},
     {"id": "hair_12_receded", "w": 0.07, "t": 8.0, "hl": 0.13, "side": 0.52, "style": "m_shape", "requires": ("hairline_receded",)},
-    {"id": "hair_13_horseshoe", "w": 0.05, "t": 6.0, "hl": 0.05, "side": 0.53, "style": "m_shape", "requires": ("hairline_receded",), "min_age": 30},
-    {"id": "hair_14_longer", "w": 0.03, "t": 19.0, "hl": 0.23, "side": 0.70, "style": "straight"},
+    {"id": "hair_13_horseshoe", "w": 0.0, "t": 6.0, "hl": 0.05, "side": 0.53, "style": "m_shape", "requires": ("hairline_receded",), "min_age": 30},  # retired: horseshoe
+    {"id": "hair_14_longer", "w": 0.0, "t": 19.0, "hl": 0.23, "side": 0.70, "style": "straight"},  # retired: too long
     {"id": "hair_15_flat_helmet", "w": 0.07, "t": 9.0, "hl": 0.24, "side": 0.52, "style": "straight"},
-    {"id": "hair_16_quiff", "w": 0.07, "t": 13.0, "hl": 0.20, "side": 0.48, "style": "quiff"},
+    {"id": "hair_16_quiff", "w": 0.07, "t": 11.0, "hl": 0.20, "side": 0.48, "style": "quiff"},
     {"id": "hair_17_fringe", "w": 0.15, "t": 15.0, "hl": 0.18, "side": 0.51, "style": "fringe"},
     {"id": "hair_18_undercut", "w": 0.07, "t": 17.0, "hl": 0.21, "side": 0.50, "style": "undercut"},
-    {"id": "hair_19_textured_spikes", "w": 0.11, "t": 15.0, "hl": 0.23, "side": 0.50, "style": "quiff", "wob": ("spike", 8.0)},
+    {"id": "hair_19_textured_spikes", "w": 0.11, "t": 15.0, "hl": 0.23, "side": 0.50, "style": "quiff", "wob": ("spike", 5.0)},
     {"id": "hair_20_wavy_medium", "w": 0.06, "t": 19.0, "hl": 0.22, "side": 0.55, "style": "swept", "wob": ("curl", 6.0)},
     {"id": "hair_21_crew_cut", "w": 0.09, "t": 7.0, "hl": 0.235, "side": 0.49, "style": "round"},
     {"id": "hair_22_high_fade", "w": 0.07, "t": 14.0, "hl": 0.22, "side": 0.42, "style": "undercut"},
     {"id": "hair_23_mid_part", "w": 0.05, "t": 17.0, "hl": 0.20, "side": 0.52, "style": "mid_part"},
     {
         "id": "hair_24_curly_tall",
-        "w": 0.04,
+        "w": 0.0,  # retired: afro puff / too tall
         "t": 24.0,
         "hl": 0.26,
         "side": 0.51,
@@ -1623,30 +1631,40 @@ HAIR_RECIPES: list[dict[str, Any]] = [
     },
     {"id": "hair_25_shaved", "w": 0.05, "t": 3.0, "hl": 0.26, "side": 0.52, "style": "round"},
     {"id": "hair_26_short_wave", "w": 0.06, "t": 13.0, "hl": 0.22, "side": 0.50, "style": "swept", "wob": ("curl", 5.0), "excludes": ("hairline_receded",)},
-    {"id": "hair_27_bowl", "w": 0.05, "t": 16.0, "hl": 0.20, "side": 0.50, "style": "bowl", "excludes": ("hairline_receded",)},
+    {"id": "hair_27_bowl", "w": 0.0, "t": 16.0, "hl": 0.20, "side": 0.50, "style": "bowl", "excludes": ("hairline_receded",)},  # retired: bowl
     {"id": "hair_28_curtains", "w": 0.05, "t": 18.0, "hl": 0.19, "side": 0.54, "style": "curtain", "excludes": ("hairline_receded",)},
-    {"id": "hair_29_mullet", "w": 0.03, "t": 12.0, "hl": 0.23, "side": 0.74, "style": "mullet", "max_age": 34, "excludes": ("hairline_receded",)},
+    {"id": "hair_29_mullet", "w": 0.0, "t": 12.0, "hl": 0.23, "side": 0.74, "style": "mullet", "max_age": 34, "excludes": ("hairline_receded",)},  # retired: mullet
     {"id": "hair_30_caesar", "w": 0.06, "t": 8.0, "hl": 0.22, "side": 0.48, "style": "caesar"},
-    {"id": "hair_31_pompadour", "w": 0.04, "t": 16.0, "hl": 0.19, "side": 0.47, "style": "pompadour", "max_age": 34, "excludes": ("hairline_receded",)},
+    {"id": "hair_31_pompadour", "w": 0.0, "t": 16.0, "hl": 0.19, "side": 0.47, "style": "pompadour", "max_age": 34, "excludes": ("hairline_receded",)},  # retired: pompadour
     {"id": "hair_32_combover", "w": 0.05, "t": 9.0, "hl": 0.12, "side": 0.52, "style": "swept", "part": True, "requires": ("hairline_receded",)},
     {"id": "hair_33_side_fringe", "w": 0.05, "t": 15.0, "hl": 0.20, "side": 0.51, "style": "fringe", "part": True},
     {
         "id": "hair_34_coils",
         "w": 0.04,
-        "t": 20.0,
+        "t": 16.0,
         "hl": 0.27,
         "side": 0.52,
         "style": "round",
-        "wob": ("curl", 16.0),
+        "wob": ("curl", 10.0),
         "excludes": ("hairline_receded",),
         "region_weights": {"*": 1.0, "west_africa": 2.4, "east_africa": 2.1, "latin_america": 1.2, "east_asia": 0.3, "scandinavia": 0.35},
     },
     {"id": "hair_35_taper", "w": 0.06, "t": 11.0, "hl": 0.23, "side": 0.40, "style": "undercut"},
     {"id": "hair_36_wavy_crop", "w": 0.06, "t": 11.0, "hl": 0.24, "side": 0.50, "style": "round", "wob": ("curl", 4.5)},
-    {"id": "hair_37_long_swept", "w": 0.03, "t": 20.0, "hl": 0.21, "side": 0.68, "style": "swept", "excludes": ("hairline_receded",)},
+    {"id": "hair_37_long_swept", "w": 0.0, "t": 20.0, "hl": 0.21, "side": 0.68, "style": "swept", "excludes": ("hairline_receded",)},  # retired: too long
     {"id": "hair_38_widow_peak", "w": 0.05, "t": 14.0, "hl": 0.21, "side": 0.50, "style": "widow", "excludes": ("hairline_receded",)},
-    {"id": "hair_39_flat_top", "w": 0.04, "t": 18.0, "hl": 0.24, "side": 0.46, "style": "flat_top", "max_age": 36, "excludes": ("hairline_receded",)},
+    {"id": "hair_39_flat_top", "w": 0.0, "t": 18.0, "hl": 0.24, "side": 0.46, "style": "flat_top", "max_age": 36, "excludes": ("hairline_receded",)},  # retired: flat top
     {"id": "hair_40_perm_short", "w": 0.04, "t": 16.0, "hl": 0.25, "side": 0.52, "style": "round", "wob": ("curl", 11.0), "excludes": ("hairline_receded",)},
+    {"id": "hair_41_soft_crop", "w": 0.10, "t": 8.0, "hl": 0.24, "side": 0.50, "style": "straight"},
+    {"id": "hair_42_low_fade", "w": 0.08, "t": 10.0, "hl": 0.23, "side": 0.46, "style": "undercut"},
+    {"id": "hair_43_tidy_quiff", "w": 0.08, "t": 9.0, "hl": 0.21, "side": 0.48, "style": "quiff"},
+    {"id": "hair_44_round_crop", "w": 0.08, "t": 8.0, "hl": 0.24, "side": 0.50, "style": "round"},
+    {"id": "hair_45_soft_undercut", "w": 0.07, "t": 12.0, "hl": 0.22, "side": 0.48, "style": "undercut"},
+    {"id": "hair_46_thin_crop", "w": 0.06, "t": 6.0, "hl": 0.19, "side": 0.50, "style": "straight", "requires": ("hairline_thinning",)},
+    {"id": "hair_47_short_part", "w": 0.08, "t": 11.0, "hl": 0.23, "side": 0.50, "style": "swept", "part": True},
+    {"id": "hair_48_low_wave", "w": 0.07, "t": 12.0, "hl": 0.23, "side": 0.51, "style": "swept", "wob": ("curl", 4.0), "excludes": ("hairline_receded",)},
+    {"id": "hair_49_neat_fringe", "w": 0.08, "t": 12.0, "hl": 0.19, "side": 0.50, "style": "fringe"},
+    {"id": "hair_50_soft_caesar", "w": 0.07, "t": 7.0, "hl": 0.22, "side": 0.49, "style": "caesar"},
 ]
 
 
@@ -1713,7 +1731,7 @@ def bake_hair(r: dict[str, Any]) -> list[tuple[str, Image.Image, dict[str, Any]]
             ("cast_shadow", solid_layer(SHADOW_RGB, scale_l(cast, 0.16)), {"blend": "multiply"}),
             ("main", gray_layer(shade, mask, outline_of(mask)), {"blend": "normal", "color_slot": "hair"}),
         ]
-        + keyline(mask)
+        + keyline(mask, 0.82)
         + [("sheen", sheen, {"blend": "screen"})]
     )
 
@@ -1932,7 +1950,7 @@ def bake_helmet(r: dict[str, Any]) -> list[tuple[str, Image.Image, dict[str, Any
         ("vents", solid_layer((34, 34, 40), scale_l(vents, 0.62)), {"blend": "normal"}),
         ("strap", solid_layer((44, 44, 50), scale_l(straps, 0.66)), {"blend": "normal"}),
         ("glint", solid_layer((255, 255, 255), scale_l(glint, 0.20)), {"blend": "screen"}),
-    ] + keyline(shell)
+    ] + keyline(shell, 0.82)
 
 
 # --------------------------------------------------------------------------- #
@@ -1997,7 +2015,7 @@ TEAMS: dict[str, dict[str, Any]] = {
 # --------------------------------------------------------------------------- #
 
 
-def bake(root: str | Path, style: str = "flat", pack_version: str = "0.13.0-placeholder") -> Path:
+def bake(root: str | Path, style: str = "flat", pack_version: str = "0.14.0-placeholder") -> Path:
     """Bake one placeholder pack in one style. The recipes are shared; only the
     StyleProfile changes, which is how the same peloton can be shown in several
     art directions without touching game code."""
@@ -2020,7 +2038,7 @@ def bake(root: str | Path, style: str = "flat", pack_version: str = "0.13.0-plac
             "neck",
             asset_id,
             [("skin", neck, {"blend": "normal", "color_slot": "skin"})]
-            + keyline(neck_mask, 0.9)
+            + keyline(neck_mask, 0.78)
             + [("jaw_shadow", jaw_shadow, {"blend": "multiply"})],
             weight=weight,
             anchor=(CX, NECK_TOP),
