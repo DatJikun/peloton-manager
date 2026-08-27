@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Four-column skill comparison: teraz vs kształt vs znak vs archetyp.
+"""Skill comparison: typical peloton under teraz / kształt / znak / archetyp.
 
-Same rider_ids in every column so a row is one person under four mixes.
-Writes review sheets into out/demo/ and /opt/cursor/artifacts/.
+Each column (or row, on the lineup) is an independent sample from that look's
+mix — that is the cousin-face test. Same-rider-id strips are a second sheet
+because weighted picks are sticky and hide mix differences.
 
     python3 scripts/apply_looks.py
     python3 scripts/render_look_compare.py
@@ -25,6 +26,7 @@ from avatarlab.generate import Rider, generate
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "out" / "demo"
+DEMO = ROOT / "demo"
 ARTIFACTS = Path("/opt/cursor/artifacts")
 PAPER = (243, 237, 225)
 WHITE = (255, 253, 247)
@@ -73,8 +75,7 @@ def font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
     return ImageFont.truetype(FONT_BOLD if bold else FONT_PATH, size)
 
 
-def contact_rider(i: int) -> Rider:
-    rid = 500_000 + i * 13
+def rider_from_id(rid: int, i: int) -> Rider:
     rnd = random.Random(rid)
     return Rider(
         rider_id=rid,
@@ -85,6 +86,15 @@ def contact_rider(i: int) -> Rider:
         discipline=DISCIPLINES[i % len(DISCIPLINES)],
         team_id=TEAM_IDS[i % len(TEAM_IDS)],
     )
+
+
+def contact_rider(i: int) -> Rider:
+    return rider_from_id(500_000 + i * 13, i)
+
+
+def typical_rider(look_index: int, i: int) -> Rider:
+    """Disjoint id space per look so each column is a fresh peloton sample."""
+    return rider_from_id(700_000 + look_index * 50_000 + i * 17, i)
 
 
 def silhouette(img: Image.Image) -> Image.Image:
@@ -131,6 +141,17 @@ def grid(tiles: list[Image.Image], cols: int, pad: int = 6, header: str = "", su
     return sheet
 
 
+def stack(sheets: list[Image.Image], pad: int = 10) -> Image.Image:
+    width = max(s.width for s in sheets) + 2 * pad
+    height = pad + sum(s.height + pad for s in sheets)
+    out = Image.new("RGBA", (width, height), (*PAPER, 255))
+    y = pad
+    for sheet in sheets:
+        out.alpha_composite(sheet, ((width - sheet.width) // 2, y))
+        y += sheet.height + pad
+    return out
+
+
 def load_columns() -> list[tuple[str, str, render.Pack]]:
     out = []
     for key, label, path in COLUMNS:
@@ -140,35 +161,33 @@ def load_columns() -> list[tuple[str, str, render.Pack]]:
     return out
 
 
-def render_row_sheet(
-    columns: list[tuple[str, str, render.Pack]],
+def portrait(pack: render.Pack, rider: Rider, mode: str) -> tuple[Image.Image, str]:
+    app = generate(rider, pack.manifest)
+    img = render.render(app, pack)
+    if mode == "sil":
+        img = silhouette(img)
+    elif mode == "icon":
+        img = render.crop_head(img, pack)
+    hair = (app.mutable.get("hair") or "").replace("hair_", "")
+    sub = f"{app.identity['head'].replace('head_', '')}  {hair}"
+    return img, sub
+
+
+def pack_grid(
+    pack: render.Pack,
     riders: list[Rider],
     *,
     size: int,
     mode: str,
+    cols: int,
     header: str,
     sub: str,
 ) -> Image.Image:
-    tiles: list[Image.Image] = []
+    tiles = []
     for i, rider in enumerate(riders):
-        for col_i, (key, label, pack) in enumerate(columns):
-            app = generate(rider, pack.manifest)
-            img = render.render(app, pack)
-            if mode == "sil":
-                img = silhouette(img)
-            elif mode == "icon":
-                img = render.crop_head(img, pack)
-            hair = (app.mutable.get("hair") or "").replace("hair_", "")
-            tiles.append(
-                tile(
-                    img,
-                    size,
-                    f"#{rider.rider_id}  {label}",
-                    f"{app.identity['head'].replace('head_', '')}  {hair}",
-                    alt=(i + col_i) % 2 == 1,
-                )
-            )
-    return grid(tiles, cols=len(columns), header=header, sub=sub)
+        img, feat = portrait(pack, rider, mode)
+        tiles.append(tile(img, size, f"#{rider.rider_id}", feat, alt=i % 2 == 1))
+    return grid(tiles, cols=cols, header=header, sub=sub)
 
 
 def mix_report(columns: list[tuple[str, str, render.Pack]], n: int = 4000) -> str:
@@ -204,69 +223,96 @@ def mix_report(columns: list[tuple[str, str, render.Pack]], n: int = 4000) -> st
     return "\n".join(lines) + "\n"
 
 
-def save(img: Image.Image, name: str) -> Path:
+def save(img: Image.Image, name: str, *, also_demo: str | None = None) -> Path:
     OUT.mkdir(parents=True, exist_ok=True)
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     dest = OUT / name
     img.save(dest)
     art = ARTIFACTS / name
     img.save(art)
-    print(f"  wrote {dest}  and  {art}  ({img.size[0]}x{img.size[1]})")
+    if also_demo:
+        DEMO.mkdir(parents=True, exist_ok=True)
+        img.save(DEMO / also_demo)
+        print(f"  wrote {dest}  {art}  demo/{also_demo}  ({img.size[0]}x{img.size[1]})")
+    else:
+        print(f"  wrote {dest}  {art}  ({img.size[0]}x{img.size[1]})")
     return dest
 
 
 def main() -> int:
     columns = load_columns()
-    riders12 = [contact_rider(i) for i in range(12)]
-    riders24 = [contact_rider(i) for i in range(24)]
-    print("rendering skill comparison sheets")
+    n = 12
+    print("rendering typical-peloton skill comparison")
+    typical_sheets = []
+    for col_i, (key, label, pack) in enumerate(columns):
+        riders = [typical_rider(col_i, i) for i in range(n)]
+        blurb = LOOKS[key]["blurb"] if key in LOOKS else "locked poster 0.15.0 — current default"
+        typical_sheets.append(
+            pack_grid(
+                pack,
+                riders,
+                size=140,
+                mode="color",
+                cols=4,
+                header=label,
+                sub=blurb,
+            )
+        )
     save(
-        render_row_sheet(
-            columns,
-            riders12,
-            size=140,
-            mode="color",
-            header="Skill comparison — same rider_id in every column",
-            sub="teraz = locked poster 0.15.0   |   kształt = 3-read / circle-square-triangle   |   znak = one loud identity mark   |   archetyp = ActorMIXER families",
-        ),
-        "avatar_look_compare_skills.png",
+        stack(typical_sheets),
+        "avatar_look_skills_typical.png",
+        also_demo="11_look_skills_typical.png",
     )
+
+    lineup_tiles = []
+    for col_i, (key, label, pack) in enumerate(columns):
+        for i in range(n):
+            rider = typical_rider(col_i, i)
+            img, feat = portrait(pack, rider, "sil")
+            lineup_tiles.append(tile(img, 96, label, feat, alt=(col_i + i) % 2 == 1))
     save(
-        render_row_sheet(
-            columns,
-            riders12,
-            size=120,
-            mode="sil",
-            header="3-read silhouette test — can you tell them apart in black?",
-            sub="shape-language skill: if two columns still share a blob, the mix has not broken the cousin peloton",
+        grid(
+            lineup_tiles,
+            cols=n,
+            header="3-read lineup — one row per skill, 12 different riders",
+            sub="black silhouette only. If a row is one blob in twelve wigs, that skill has not broken the cousin peloton.",
         ),
-        "avatar_look_compare_silhouettes.png",
+        "avatar_look_skills_lineup.png",
+        also_demo="12_look_skills_lineup.png",
     )
+
+    icon_sheets = []
+    for col_i, (key, label, pack) in enumerate(columns):
+        riders = [typical_rider(col_i, i) for i in range(n)]
+        icon_sheets.append(
+            pack_grid(pack, riders, size=48, mode="icon", cols=6, header=label, sub="head_crop at 48 px")
+        )
     save(
-        render_row_sheet(
-            columns,
-            riders12,
-            size=48,
-            mode="icon",
-            header="48 px UI crop — does the look still read on a list icon?",
-            sub="head_crop then 48 px. The owner judges avatars at this size, not as portraits.",
-        ),
-        "avatar_look_compare_48px.png",
+        stack(icon_sheets),
+        "avatar_look_skills_48px.png",
+        also_demo="13_look_skills_48px.png",
     )
+
+    same_id = []
+    same_riders = [contact_rider(i) for i in range(8)]
+    for rider in same_riders:
+        for key, label, pack in columns:
+            img, feat = portrait(pack, rider, "color")
+            same_id.append(tile(img, 112, f"#{rider.rider_id}  {label}", feat))
     save(
-        render_row_sheet(
-            columns,
-            riders24,
-            size=96,
-            mode="color",
-            header="Denser peloton — 24 riders × 4 looks",
-            sub="same contact-sheet ids as 01_contact_sheet (500000 + i*13)",
+        grid(
+            same_id,
+            cols=4,
+            header="Same rider_id across looks (sticky picks — mix change is milder here)",
+            sub="weighted_pick often keeps the same hair on one seed. Judge cousin-ness on the typical peloton sheet, not this strip.",
         ),
-        "avatar_look_compare_peloton.png",
+        "avatar_look_skills_same_id.png",
     )
+
     report = mix_report(columns)
-    (OUT / "avatar_look_compare_report.txt").write_text(report, encoding="utf-8")
-    (ARTIFACTS / "avatar_look_compare_report.txt").write_text(report, encoding="utf-8")
+    (OUT / "avatar_look_skills_report.txt").write_text(report, encoding="utf-8")
+    (ARTIFACTS / "avatar_look_skills_report.txt").write_text(report, encoding="utf-8")
+    (DEMO / "11_look_skills_report.txt").write_text(report, encoding="utf-8")
     print(report)
     return 0
 

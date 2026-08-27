@@ -1,0 +1,31 @@
+=== mix over 4000 riders (same rider_ids per column) ===
+
+-- teraz (0.15.0)  pack=0.15.0-placeholder look=default --
+  head: 01_oval 8.8%, 03_square 6.7%, 02_long 6.6%, 04_round 6.3%, 06_broad 6.2%, 05_angular 5.8%
+  hair: 17_fringe 4.6%, 03_side_part 4.3%, 02_crop 4.2%, 05_swept_medium 3.3%, 06_curly_short 3.3%, 10_slicked 3.1%
+  nose: 03_wide 4.5%, 02_long_narrow 4.3%, 06_upturned 4.1%, 05_aquiline 3.7%, 40_narrow_long 3.6%, 39_roman_high 3.5%
+  mouth: 01_medium 2.2%, 77_slim_bow 2.1%, 75_slim 2.1%, 76_slim_wide 2.1%, 78_slim_smile 2.1%, 65_eye_width 2.0%
+
+-- kształt  pack=0.15.0-placeholder-look-shape look=shape --
+  head: 04_round 8.6%, 03_square 8.1%, 07_tapered 7.4%, 20_soft_square 7.3%, 05_angular 7.3%, 21_soft_round 7.2%
+  hair: 17_fringe 5.7%, 52_heavy_fringe 5.3%, 53_skin_fade 4.5%, 22_high_fade 4.5%, 06_curly_short 4.4%, 03_side_part 4.0%
+  nose: 03_wide 4.5%, 02_long_narrow 4.3%, 06_upturned 4.1%, 05_aquiline 3.7%, 40_narrow_long 3.6%, 39_roman_high 3.5%
+  mouth: 01_medium 2.2%, 77_slim_bow 2.1%, 75_slim 2.1%, 76_slim_wide 2.1%, 78_slim_smile 2.1%, 65_eye_width 2.0%
+  skill: character-design · 3-read rule, circle/square/triangle
+  src:   https://github.com/omer-metin/skills-for-antigravity/blob/main/skills/character-design/SKILL.md
+
+-- znak  pack=0.15.0-placeholder-look-landmark look=landmark --
+  head: 02_long 7.3%, 03_square 7.2%, 04_round 6.8%, 06_broad 6.6%, 05_angular 6.2%, 19_soft_oval 5.8%
+  hair: 17_fringe 4.9%, 52_heavy_fringe 4.7%, 22_high_fade 4.5%, 53_skin_fade 4.5%, 51_high_forehead 3.8%, 03_side_part 3.8%
+  nose: 03_wide 5.8%, 06_upturned 5.2%, 12_hawk 4.9%, 05_aquiline 4.9%, 08_narrow 4.8%, 37_hook_long 4.7%
+  mouth: 75_slim 4.2%, 76_slim_wide 3.9%, 80_razor 3.2%, 04_narrow 3.1%, 22_laugh 3.1%, 60_heavy_lower 2.8%
+  skill: character-design-sheet · identity anchor, inverted for a cast
+  src:   https://www.explainx.ai/skills/inference-sh/skills/character-design-sheet
+
+-- archetyp  pack=0.15.0-placeholder-look-archetype look=archetype --
+  head: 02_long 6.6%, 22_narrow_oval 6.1%, 08_heavy_jaw 6.1%, 09_high_crown 5.9%, 04_round 5.9%, 15_compact 5.8%
+  hair: 06_curly_short 4.5%, 03_side_part 4.4%, 17_fringe 4.4%, 05_swept_medium 4.3%, 18_undercut 4.1%, 20_wavy_medium 3.6%
+  nose: 08_narrow 4.9%, 05_aquiline 4.7%, 35_long_thin 4.5%, 13_roman 4.4%, 36_short_wide 4.3%, 07_broad_flat 4.3%
+  mouth: 01_medium 2.2%, 77_slim_bow 2.1%, 75_slim 2.1%, 76_slim_wide 2.1%, 78_slim_smile 2.1%, 65_eye_width 2.0%
+  skill: stylized-style + Average/Heroic/Brute/Grumpy/Heavy/Thin
+  src:   https://github.com/arjun988/blender-skills/blob/main/.claude/skills/stylized-style/SKILL.md
