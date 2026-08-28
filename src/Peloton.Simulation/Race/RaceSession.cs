@@ -71,7 +71,13 @@ public sealed class RaceSession
     public RaceWatchCourse Course => new(
         scenario.Definition.TotalLengthM,
         scenario.Definition.Segments
-            .Select(segment => new RaceWatchCourseSegment(segment.Id, segment.LengthM, segment.Gradient))
+            .Select(segment => new RaceWatchCourseSegment(
+                segment.Id,
+                segment.LengthM,
+                segment.Gradient,
+                segment.RoadWidthM,
+                segment.WindSpeedMps,
+                segment.WindYawDegrees))
             .ToArray());
 
     public RaceMotionSnapshot GetMotionSnapshot()

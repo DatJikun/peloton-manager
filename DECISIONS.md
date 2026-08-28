@@ -118,9 +118,11 @@ Implementacja jest deferred do wieloetapowego/virtual GC. Obecny jednodniowy rac
 ## D-033 — Supervising watch clock, smooth simulation
 Oglądanie nie jest 1:1 z godzinami etapu, ale też nie jest skokiem „1s oglądania = 100s fizyki”.
 
-Zegar oglądania (Watch Race) jest nadzorujący: gracz wybiera tempo (np. ×1 / ×2 / ×5 / ×20). Symulacja dostosowuje się do tego zegara i pozostaje płynna. Gdyby na mapie trasy stały ikony kluczowych zawodników, ich pozycja ma wynikać z aktualnej prędkości, gapu, shelteru i terenu w danej chwili — bez teleportów.
+Zegar oglądania (Watch Race) jest nadzorujący. W Godocie gracz wybiera **czas filmu** przeciętnego etapu (30 s / 1 min / 2 min / 3 min / 5 min; domyślnie 2 min). Aplikacja wylicza rate z estymaty `TotalLengthM / 6 m/s` i `clamp(round(estimate / target), 1, 120)`. Headless CLI nadal używa jawnego tempa ×1 / ×2 / ×5 / ×20 (`--rate`).
 
-Fizyka zostaje kanoniczna (`R-001`). Prototype `dt = 1s` to krok referencyjny silnika, nie klatka filmu. Renderer może interpolować pozycje między krokami. `DecisionRequest` pauzuje zegar oglądania. Renderer nie steruje fizyką.
+Symulacja dostosowuje się do tego zegara i pozostaje płynna. Gdyby na mapie trasy stały ikony kluczowych zawodników, ich pozycja ma wynikać z aktualnej prędkości, gapu, shelteru i terenu w danej chwili — bez teleportów.
+
+Fizyka zostaje kanoniczna (`R-001`). Prototype `dt = 1s` to krok referencyjny silnika, nie klatka filmu. Renderer może interpolować pozycje między krokami. `DecisionRequest` pauzuje zegar oglądania; pauza prezentacji i pauza na decyzji nie zjadają budżetu filmu. Renderer nie steruje fizyką.
 
 Headless komenda `watch` jest na razie skrótem decyzji (start / pauza / meta), nie modelem Watch Race.
 
