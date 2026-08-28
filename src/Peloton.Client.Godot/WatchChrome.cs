@@ -60,6 +60,13 @@ internal static class WatchChrome
         return button;
     }
 
+    public static Button MakeHeaderButton(string text, Action onPressed)
+    {
+        Button button = MakeButton(text, onPressed, Kind.Team);
+        button.CustomMinimumSize = new Vector2(168, 44);
+        return button;
+    }
+
     public static void ApplyKind(Button button, Kind kind, bool selected)
     {
         Color fill = kind switch

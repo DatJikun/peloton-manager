@@ -25,6 +25,7 @@ public sealed partial class WatchLiveHud : Control
     private InterpolatedWatchView? lastView;
     private int lastFilmSeconds;
     private bool lastPaused;
+    private bool lastDeciding;
     private bool showSquadGaps = true;
 
     public WatchLiveHud(Action onContinue, Action onExit)
@@ -45,18 +46,6 @@ public sealed partial class WatchLiveHud : Control
         Label liveTitle = WatchChrome.MakeLabel("RACE LIVE", 40, WatchChrome.Black, displayFace: true);
         top.AddChild(liveTitle);
 
-        livePill = WatchChrome.MakeLabel("WYŚCIG TRWA", 11, WatchChrome.Paper);
-        PanelContainer pill = new();
-        pill.AddThemeStyleboxOverride("panel", WatchChrome.HeaderBar());
-        MarginContainer pillPad = new();
-        pillPad.AddThemeConstantOverride("margin_left", 10);
-        pillPad.AddThemeConstantOverride("margin_right", 10);
-        pillPad.AddThemeConstantOverride("margin_top", 6);
-        pillPad.AddThemeConstantOverride("margin_bottom", 6);
-        pillPad.AddChild(livePill);
-        pill.AddChild(pillPad);
-        top.AddChild(pill);
-
         Control spacer = new();
         spacer.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         top.AddChild(spacer);
@@ -69,12 +58,13 @@ public sealed partial class WatchLiveHud : Control
         clockStack.AddChild(raceClock);
         top.AddChild(clockStack);
 
-        HeaderContinue = WatchChrome.MakeButton("Kontynuuj", onContinue, WatchChrome.Kind.Team);
-        HeaderContinue.CustomMinimumSize = new Vector2(160, 44);
-        top.AddChild(HeaderContinue);
-        HeaderExit = WatchChrome.MakeButton("Wyjdź", onExit, WatchChrome.Kind.Secondary);
-        HeaderExit.CustomMinimumSize = new Vector2(120, 44);
-        top.AddChild(HeaderExit);
+        HBoxContainer headerActions = new();
+        headerActions.AddThemeConstantOverride("separation", 8);
+        HeaderContinue = WatchChrome.MakeHeaderButton("Pauza", onContinue);
+        HeaderExit = WatchChrome.MakeHeaderButton("Wyjdź", onExit);
+        headerActions.AddChild(HeaderContinue);
+        headerActions.AddChild(HeaderExit);
+        top.AddChild(headerActions);
 
         HBoxContainer columns = new();
         columns.AddThemeConstantOverride("separation", 12);
@@ -91,7 +81,10 @@ public sealed partial class WatchLiveHud : Control
         profile.SizeFlagsVertical = SizeFlags.ExpandFill;
         profile.SizeFlagsStretchRatio = 1.45f;
         profileMeta = WatchChrome.MakeLabel(string.Empty, 11, WatchChrome.Paper);
+        livePill = WatchChrome.MakeLabel("WYŚCIG TRWA", 11, WatchChrome.Paper);
+        livePill.MouseFilter = MouseFilterEnum.Ignore;
         profile.HeaderTrail.AddChild(profileMeta);
+        profile.HeaderTrail.AddChild(livePill);
         Map = new WatchRaceMapView
         {
             DrawOuterFrame = false,
@@ -193,13 +186,14 @@ public sealed partial class WatchLiveHud : Control
         _ = maxElevationM;
     }
 
-    public void Bind(InterpolatedWatchView view, int expectedFilmSeconds, bool paused)
+    public void Bind(InterpolatedWatchView view, int expectedFilmSeconds, bool paused, bool deciding)
     {
         lastView = view;
         lastFilmSeconds = expectedFilmSeconds;
         lastPaused = paused;
+        lastDeciding = deciding;
         raceClock.Text = WatchFilmDuration.Clock(view.WatchSecond, expectedFilmSeconds);
-        livePill.Text = paused ? "PAUZA" : "WYŚCIG TRWA";
+        ApplyPlayback(paused, deciding);
         InterpolatedRiderView? leader = Leader(view);
         if (leader is not null)
         {
@@ -231,12 +225,24 @@ public sealed partial class WatchLiveHud : Control
         }
     }
 
+    private void ApplyPlayback(bool paused, bool deciding)
+    {
+        livePill.Text = paused || deciding ? "PAUZA" : "WYŚCIG TRWA";
+        HeaderContinue.Visible = !deciding;
+        HeaderContinue.Disabled = deciding;
+        HeaderContinue.MouseFilter = deciding ? MouseFilterEnum.Ignore : MouseFilterEnum.Stop;
+        HeaderContinue.Text = paused ? "KONTYNUUJ" : "PAUZA";
+        WatchChrome.ApplyKind(HeaderContinue, WatchChrome.Kind.Team, selected: false);
+        HeaderContinue.CustomMinimumSize = new Vector2(168, 44);
+        HeaderExit.CustomMinimumSize = new Vector2(168, 44);
+    }
+
     private void SetGapTab(bool squad)
     {
         showSquadGaps = squad;
         if (lastView is not null)
         {
-            Bind(lastView, lastFilmSeconds, lastPaused);
+            Bind(lastView, lastFilmSeconds, lastPaused, lastDeciding);
         }
     }
 

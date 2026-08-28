@@ -246,16 +246,8 @@ public sealed partial class WatchRaceScreen : Control
             return;
         }
 
-        bool paused = host.PresentationPaused || host.PendingDecision is not null;
-        liveHud.Bind(view, host.ExpectedFilmSeconds, paused);
-        string pauseCaption = paused ? "KONTYNUUJ" : "PAUZA";
-        if (liveHud.HeaderContinue.Text != pauseCaption)
-        {
-            liveHud.HeaderContinue.Text = pauseCaption;
-            WatchChrome.ApplyKind(liveHud.HeaderContinue, WatchChrome.Kind.Team, selected: paused);
-        }
-
-        liveHud.HeaderContinue.Disabled = host.PendingDecision is not null;
+        bool deciding = host.PendingDecision is not null;
+        liveHud.Bind(view, host.ExpectedFilmSeconds, host.PresentationPaused, deciding);
 
         RefreshDecision();
         RefreshResult();
