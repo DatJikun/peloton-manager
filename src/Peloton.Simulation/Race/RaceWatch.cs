@@ -7,17 +7,29 @@ using Peloton.Domain;
 
 namespace Peloton.Simulation.Race;
 
+public sealed record RaceWatchCourseSegment(
+    string Id,
+    double LengthM,
+    double Gradient);
+
+public sealed record RaceWatchCourse(
+    double TotalLengthM,
+    IReadOnlyList<RaceWatchCourseSegment> Segments);
+
 public sealed record RaceWatchRiderFrame(
     WorldEntityId RiderId,
     double DistanceM,
     double GapM,
-    double SpeedMps);
+    double SpeedMps,
+    double ShelterMultiplier,
+    double Gradient);
 
 public sealed record RaceWatchFrame(
     int WatchSecond,
     int RaceSecond,
     int Rate,
     bool Paused,
+    double RouteLengthM,
     IReadOnlyList<RaceWatchRiderFrame> FocalRiders);
 
 public sealed record RaceWatchReport(
@@ -124,13 +136,16 @@ public static class RaceWatchProjector
                 rider.RiderId,
                 rider.DistanceM,
                 Math.Max(0.0, leaderDistanceM - rider.DistanceM),
-                rider.SpeedMps))
+                rider.SpeedMps,
+                rider.ShelterMultiplier,
+                rider.Gradient))
             .ToArray();
         return new RaceWatchFrame(
             watchSecond,
             motion.RaceSecond,
             rate,
             session.PendingDecision is not null,
+            motion.RouteLengthM,
             riders);
     }
 
@@ -155,7 +170,7 @@ public static class RaceWatchProjector
             {
                 markdown.AppendLine(
                     CultureInfo.InvariantCulture,
-                    $"  - rider={rider.RiderId.Value} distanceM={rider.DistanceM:F2} gapM={rider.GapM:F2} speedMps={rider.SpeedMps:F2}");
+                    $"  - rider={rider.RiderId.Value} distanceM={rider.DistanceM:F2} gapM={rider.GapM:F2} speedMps={rider.SpeedMps:F2} shelter={rider.ShelterMultiplier:F2} gradient={rider.Gradient:F3}");
             }
         }
 

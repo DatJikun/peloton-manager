@@ -79,11 +79,14 @@ public sealed class RaceWatchTests
         Assert.Equal(2, second.RaceSecond);
         Assert.InRange(second.FocalRiders.Count, 2, 3);
         Assert.Equal(0.0, second.FocalRiders[0].GapM, precision: 8);
+        Assert.True(second.RouteLengthM > 0.0);
         Assert.All(second.FocalRiders, rider =>
         {
             Assert.True(rider.DistanceM >= 0.0);
             Assert.True(rider.GapM >= 0.0);
             Assert.True(rider.SpeedMps >= 0.0);
+            Assert.InRange(rider.ShelterMultiplier, 0.0, 1.0);
+            Assert.True(double.IsFinite(rider.Gradient));
         });
         Assert.All(
             second.FocalRiders.Join(
