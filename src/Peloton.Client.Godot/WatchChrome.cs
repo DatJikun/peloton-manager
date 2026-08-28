@@ -73,7 +73,7 @@ internal static class WatchChrome
         int padY = kind == Kind.Segment ? 8 : 12;
         int fontSize = kind == Kind.Segment ? 13 : kind == Kind.Primary ? 20 : 15;
 
-        button.AddThemeFontOverride("font", kind == Kind.Segment ? BodyBoldFont() : DisplayFont());
+        button.AddThemeFontOverride("font", BodyBoldFont());
         button.AddThemeFontSizeOverride("font_size", fontSize);
         button.AddThemeColorOverride("font_color", ink);
         button.AddThemeColorOverride("font_hover_color", hoverInk);
