@@ -22,12 +22,14 @@ public sealed partial class WatchRaceScreen : Control
     private Label? status;
     private Label? clock;
     private Label? observations;
+    private Label? board;
     private Label? result;
     private HBoxContainer? rateRow;
     private HBoxContainer? liveRow;
     private VBoxContainer? decisionBox;
     private Button? confirmButton;
     private Button? startButton;
+    private Button? autonomyButton;
     private Button? pauseButton;
     private Button? exitButton;
     private Button? continueButton;
@@ -79,9 +81,13 @@ public sealed partial class WatchRaceScreen : Control
 
         root.AddChild(rateRow);
 
+        autonomyButton = MakeButton("AUTONOMIA DS: NIE", OnToggleAutonomy, compact: true);
+        autonomyButton.CustomMinimumSize = new Vector2(220, 40);
+        root.AddChild(autonomyButton);
+
         map = new WatchRaceMapView
         {
-            CustomMinimumSize = new Vector2(0, 280),
+            CustomMinimumSize = new Vector2(0, 220),
             SizeFlagsVertical = SizeFlags.ExpandFill,
         };
         root.AddChild(map);
@@ -89,8 +95,12 @@ public sealed partial class WatchRaceScreen : Control
         clock = MakeLabel("zegar oglądania —", 15, Black);
         root.AddChild(clock);
 
-        observations = MakeLabel("Obserwacje sztabu pojawią się po starcie.", 15, Black);
-        observations.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        board = MakeLabel("Tablica sztabu pojawi się po starcie.", 14, Black);
+        board.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        root.AddChild(board);
+
+        observations = MakeLabel(string.Empty, 15, Black);
+        observations.Visible = false;
         root.AddChild(observations);
 
         liveRow = new HBoxContainer();
@@ -170,6 +180,17 @@ public sealed partial class WatchRaceScreen : Control
         RefreshFilmButtons();
     }
 
+    private void OnToggleAutonomy()
+    {
+        if (host is null)
+        {
+            return;
+        }
+
+        Apply(host.SelectDsAutonomy(!host.DsAutonomy));
+        RefreshAutonomyButton();
+    }
+
     private void OnStart()
     {
         if (host is null)
@@ -244,16 +265,20 @@ public sealed partial class WatchRaceScreen : Control
         confirmButton!.Visible = prep;
         startButton!.Visible = prep;
         rateRow!.Visible = prep || live;
+        autonomyButton!.Visible = prep || live;
         liveRow!.Visible = live;
         continueButton!.Visible = host.State is GameState.RaceResultsFlow or GameState.RaceDebriefFlow;
         continueButton.Text = host.State == GameState.RaceDebriefFlow ? "KONIEC" : "WYNIK ZATWIERDZONY";
         pauseButton!.Text = host.PresentationPaused ? "WZNÓW" : "PAUZA";
         RefreshFilmButtons();
+        RefreshAutonomyButton();
 
         if (prep)
         {
             title!.Text = "WATCH RACE";
-            status!.Text = $"Seed 91234 · film {WatchFilmDuration.Label(host.SelectedFilmSeconds)} · potwierdź plan i oglądaj.";
+            status!.Text = host.DsAutonomy
+                ? $"Seed 91234 · film {WatchFilmDuration.Label(host.SelectedFilmSeconds)} · DS sam podejmuje decyzje."
+                : $"Seed 91234 · film {WatchFilmDuration.Label(host.SelectedFilmSeconds)} · potwierdź plan i oglądaj.";
             clock!.Text = "zegar oglądania czeka na StartRace.";
         }
 
@@ -269,12 +294,15 @@ public sealed partial class WatchRaceScreen : Control
         {
             title!.Text = "RACE LIVE";
             status!.Text = host.PendingDecision is null
-                ? "Kariera zablokowana. Autosave przed startem. Bez zapisu w trakcie etapu."
+                ? host.DsAutonomy
+                    ? "Autonomia DS. Film jest przyspieszoną symulacją, bez pauzy na decyzjach."
+                    : "Kariera zablokowana. Autosave przed startem. Bez zapisu w trakcie etapu."
                 : "Pauza na decyzji. Fizyka stoi, aż sztab odpowie.";
             clock!.Text = string.Create(
                 CultureInfo.InvariantCulture,
                 $"film {WatchFilmDuration.Clock(view.WatchSecond, host.SelectedFilmSeconds)} · etap {view.RaceSecond}s{(view.Paused ? " · pauza" : string.Empty)}");
-            observations!.Text = FormatObservations(view);
+            board!.Text = FormatBoard(view);
+            board.Visible = true;
             map?.ShowView(view);
         }
 
@@ -298,16 +326,19 @@ public sealed partial class WatchRaceScreen : Control
 
         decisionBox.AddChild(MakeLabel("DECYZJA", 22, Red));
         decisionBox.AddChild(MakeLabel(pending.Trigger, 15, Black));
+        string dsCaption = WatchObservationText.DsAction(pending.DelegatedDefaultOption.ToString());
+        Button dsButton = MakeButton(dsCaption.ToUpperInvariant(), () => OnDecide(pending.DelegatedDefaultOption));
+        dsButton.CustomMinimumSize = new Vector2(420, 44);
+        decisionBox.AddChild(dsButton);
         foreach (RaceDecisionOption option in pending.LegalOptions)
         {
-            RaceDecisionOption captured = option;
-            bool delegated = captured == pending.DelegatedDefaultOption;
-            string caption = WatchObservationText.DecisionOption(captured.ToString());
-            if (delegated)
+            if (option == pending.DelegatedDefaultOption || option == RaceDecisionOption.TrustDs)
             {
-                caption += " · DS";
+                continue;
             }
 
+            RaceDecisionOption captured = option;
+            string caption = WatchObservationText.DecisionOption(captured.ToString());
             Button button = MakeButton(caption.ToUpperInvariant(), () => OnDecide(captured), compact: true);
             decisionBox.AddChild(button);
         }
@@ -338,6 +369,10 @@ public sealed partial class WatchRaceScreen : Control
             map?.ShowView(null);
             liveRow!.Visible = false;
             decisionBox!.Visible = false;
+            if (board is not null)
+            {
+                board.Visible = false;
+            }
             return;
         }
 
@@ -367,20 +402,33 @@ public sealed partial class WatchRaceScreen : Control
         }
     }
 
-    private static string FormatObservations(InterpolatedWatchView view)
+    private void RefreshAutonomyButton()
+    {
+        if (host is null || autonomyButton is null)
+        {
+            return;
+        }
+
+        autonomyButton.Text = host.DsAutonomy ? "AUTONOMIA DS: TAK" : "AUTONOMIA DS: NIE";
+        autonomyButton.Modulate = host.DsAutonomy ? Red : Colors.White;
+        autonomyButton.Disabled = host.State == GameState.RaceLive;
+    }
+
+    private static string FormatBoard(InterpolatedWatchView view)
     {
         if (view.Riders.Count == 0)
         {
-            return "Brak obserwowanych kolarzy.";
+            return "Brak zawodników w radiu sztabu.";
         }
 
-        string[] lines = new string[view.Riders.Count];
+        string[] lines = new string[view.Riders.Count + 1];
+        lines[0] = "#   zawodnik            km/h   strata     teren              radio";
         for (int index = 0; index < view.Riders.Count; index++)
         {
             InterpolatedRiderView rider = view.Riders[index];
-            lines[index] = string.Create(
+            lines[index + 1] = string.Create(
                 CultureInfo.InvariantCulture,
-                $"{rider.RiderId}  {WatchObservationText.Speed(rider.SpeedMps)}  {WatchObservationText.Gap(rider.GapM)}  {WatchObservationText.Shelter(rider.ShelterMultiplier)}  {WatchObservationText.Terrain(rider.Gradient)}");
+                $"{rider.Place,-3} {rider.Label,-18} {WatchObservationText.Speed(rider.SpeedMps),-7} {WatchObservationText.Gap(rider.GapM),-10} {WatchObservationText.Terrain(rider.Gradient),-18} {WatchObservationText.Radio(rider.SpeedMps, rider.ShelterMultiplier, rider.Gradient, rider.GapM)}");
         }
 
         return string.Join('\n', lines);
@@ -395,6 +443,7 @@ public sealed partial class WatchRaceScreen : Control
             "LOAD_FORBIDDEN_IN_RACE_LIVE" => "Wczytanie w trakcie etapu jest zablokowane.",
             "WATCH_FILM_LOCKED" => "Czas filmu ustala się przed startem.",
             "WATCH_FILM_INVALID" => "Wybierz 30 s, 1 min, 2 min, 3 min albo 5 min.",
+            "WATCH_AUTONOMY_LOCKED" => "Autonomię DS ustala się przed startem.",
             "WATCH_RATE_LOCKED" => "Tempo ustala się przed startem.",
             "GAME_STATE_INVALID" => "Ta akcja nie jest teraz dostępna.",
             _ => reasonCode,

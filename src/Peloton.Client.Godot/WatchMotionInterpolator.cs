@@ -7,6 +7,9 @@ namespace Peloton.Client.Godot;
 
 public sealed record InterpolatedRiderView(
     long RiderId,
+    long OrganizationId,
+    string Label,
+    int Place,
     double DistanceM,
     double GapM,
     double SpeedMps,
@@ -21,21 +24,25 @@ public sealed record InterpolatedWatchView(
     bool Paused,
     double RouteLengthM,
     double InterpolationT,
-    IReadOnlyList<InterpolatedRiderView> Riders);
+    IReadOnlyList<InterpolatedRiderView> Riders,
+    IReadOnlyList<InterpolatedRiderView> Field);
 
 public static class WatchMotionInterpolator
 {
     public static InterpolatedWatchView Project(
         RaceWatchFrame? previous,
         RaceWatchFrame current,
-        double interpolationT)
+        double interpolationT,
+        IReadOnlyCollection<long>? squadIds = null)
     {
         ArgumentNullException.ThrowIfNull(current);
         double t = current.Paused ? 1.0 : Math.Clamp(interpolationT, 0.0, 1.0);
         RaceWatchFrame from = previous ?? current;
-        InterpolatedRiderView[] riders = current.FocalRiders
+        IReadOnlyList<RaceWatchRiderFrame> source = current.Field.Count > 0 ? current.Field : current.FocalRiders;
+        InterpolatedRiderView[] field = source
             .Select(rider => InterpolateRider(from, rider, current.RouteLengthM, t))
             .ToArray();
+        InterpolatedRiderView[] riders = FilterSquad(field, squadIds);
         return new InterpolatedWatchView(
             current.WatchSecond,
             current.RaceSecond,
@@ -43,7 +50,25 @@ public static class WatchMotionInterpolator
             current.Paused,
             current.RouteLengthM,
             t,
-            riders);
+            riders,
+            field);
+    }
+
+    private static InterpolatedRiderView[] FilterSquad(
+        InterpolatedRiderView[] field,
+        IReadOnlyCollection<long>? squadIds)
+    {
+        if (squadIds is null || squadIds.Count == 0)
+        {
+            return field.Take(3).ToArray();
+        }
+
+        InterpolatedRiderView[] squad = field
+            .Where(rider => squadIds.Contains(rider.RiderId))
+            .OrderBy(rider => rider.Place)
+            .ThenBy(rider => rider.RiderId)
+            .ToArray();
+        return squad.Length == 0 ? field.Take(3).ToArray() : squad;
     }
 
     private static InterpolatedRiderView InterpolateRider(
@@ -52,8 +77,10 @@ public static class WatchMotionInterpolator
         double routeLengthM,
         double t)
     {
-        RaceWatchRiderFrame? prior = previous.FocalRiders.FirstOrDefault(
-            rider => rider.RiderId == current.RiderId);
+        IReadOnlyList<RaceWatchRiderFrame> priorSource = previous.Field.Count > 0
+            ? previous.Field
+            : previous.FocalRiders;
+        RaceWatchRiderFrame? prior = priorSource.FirstOrDefault(rider => rider.RiderId == current.RiderId);
         double distanceM = prior is null
             ? current.DistanceM
             : Lerp(prior.DistanceM, current.DistanceM, t);
@@ -66,6 +93,9 @@ public static class WatchMotionInterpolator
         double progress = routeLengthM <= 0.0 ? 0.0 : Math.Clamp(distanceM / routeLengthM, 0.0, 1.0);
         return new InterpolatedRiderView(
             current.RiderId.Value,
+            current.OrganizationId.Value,
+            current.Label,
+            current.Place,
             distanceM,
             Math.Max(0.0, gapM),
             Math.Max(0.0, speedMps),

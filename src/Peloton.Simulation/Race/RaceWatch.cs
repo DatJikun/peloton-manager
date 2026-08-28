@@ -21,6 +21,9 @@ public sealed record RaceWatchCourse(
 
 public sealed record RaceWatchRiderFrame(
     WorldEntityId RiderId,
+    WorldEntityId OrganizationId,
+    string Label,
+    int Place,
     double DistanceM,
     double GapM,
     double SpeedMps,
@@ -33,7 +36,8 @@ public sealed record RaceWatchFrame(
     int Rate,
     bool Paused,
     double RouteLengthM,
-    IReadOnlyList<RaceWatchRiderFrame> FocalRiders);
+    IReadOnlyList<RaceWatchRiderFrame> FocalRiders,
+    IReadOnlyList<RaceWatchRiderFrame> Field);
 
 public sealed record RaceWatchReport(
     IReadOnlyList<RaceWatchFrame> Frames,
@@ -131,28 +135,52 @@ public static class RaceWatchProjector
     internal static RaceWatchFrame ProjectFrame(RaceSession session, int watchSecond, int rate)
     {
         RaceMotionSnapshot motion = session.GetMotionSnapshot();
-        RaceRiderMotion[] focal = motion.Riders
+        RaceRiderMotion[] ordered = motion.Riders
             .OrderByDescending(rider => rider.DistanceM)
             .ThenBy(rider => rider.RiderId.Value)
-            .Take(3)
             .ToArray();
-        double leaderDistanceM = focal.Length == 0 ? 0.0 : focal[0].DistanceM;
-        RaceWatchRiderFrame[] riders = focal
-            .Select(rider => new RaceWatchRiderFrame(
+        double leaderDistanceM = ordered.Length == 0 ? 0.0 : ordered[0].DistanceM;
+        RaceWatchRiderFrame[] field = new RaceWatchRiderFrame[ordered.Length];
+        for (int index = 0; index < ordered.Length; index++)
+        {
+            RaceRiderMotion rider = ordered[index];
+            field[index] = new RaceWatchRiderFrame(
                 rider.RiderId,
+                rider.OrganizationId,
+                rider.Label,
+                index + 1,
                 rider.DistanceM,
                 Math.Max(0.0, leaderDistanceM - rider.DistanceM),
                 rider.SpeedMps,
                 rider.ShelterMultiplier,
-                rider.Gradient))
-            .ToArray();
+                rider.Gradient);
+        }
+
         return new RaceWatchFrame(
             watchSecond,
             motion.RaceSecond,
             rate,
             session.PendingDecision is not null,
             motion.RouteLengthM,
-            riders);
+            field.Take(3).ToArray(),
+            field);
+    }
+
+    public static string ShortLabel(string contentId, WorldEntityId riderId)
+    {
+        if (!string.IsNullOrWhiteSpace(contentId))
+        {
+            int lastDot = contentId.LastIndexOf('.');
+            string token = lastDot >= 0 && lastDot < contentId.Length - 1
+                ? contentId[(lastDot + 1)..]
+                : contentId;
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                return token;
+            }
+        }
+
+        return string.Create(CultureInfo.InvariantCulture, $"rider.{riderId.Value}");
     }
 
     public static string ExportMarkdown(RaceWatchReport report)

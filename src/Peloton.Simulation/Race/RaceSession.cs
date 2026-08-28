@@ -7,6 +7,8 @@ namespace Peloton.Simulation.Race;
 
 public sealed record RaceRiderMotion(
     WorldEntityId RiderId,
+    WorldEntityId OrganizationId,
+    string Label,
     double DistanceM,
     double SpeedMps,
     double ShelterMultiplier,
@@ -89,6 +91,8 @@ public sealed class RaceSession
                 RaceRouteSegment segment = scenario.Definition.SegmentAt(rider.DistanceM);
                 return new RaceRiderMotion(
                     rider.Profile.RiderId,
+                    rider.Profile.OrganizationId,
+                    RaceWatchProjector.ShortLabel(rider.Profile.ContentId, rider.Profile.RiderId),
                     rider.DistanceM,
                     rider.SpeedMps,
                     rider.ShelterMultiplier,

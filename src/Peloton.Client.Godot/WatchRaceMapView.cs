@@ -11,6 +11,10 @@ public sealed partial class WatchRaceMapView : Control
     private static readonly Color Black = new("0c0c0d");
     private static readonly Color Gray = new("6f6f72");
     private static readonly Color HairFill = new("d9d2c0", 0.55f);
+    private static readonly Color ClimbFill = new("d11f1f", 0.18f);
+    private static readonly Color ClimbStroke = new("d11f1f");
+    private static readonly Color FlatStroke = new("0c0c0d");
+    private static readonly Color DescentStroke = new("2050c8");
     private static readonly Color[] RiderFills =
     {
         Red,
@@ -58,7 +62,8 @@ public sealed partial class WatchRaceMapView : Control
                 new(screen[0].X, bottom + 12),
             };
             DrawColoredPolygon(fill.ToArray(), HairFill);
-            DrawPolyline(screen, Black, 3.5f, antialiased: true);
+            DrawClimbFills(screen, bottom);
+            DrawTerrainStroke(screen);
         }
 
         DrawAnnotations(left, right, top, bottom);
@@ -78,7 +83,7 @@ public sealed partial class WatchRaceMapView : Control
                 top,
                 bottom);
             Vector2 point = new((float)x, (float)y);
-            float radius = index == 0 ? 11f : 9f;
+            float radius = rider.Place == 1 ? 11f : 9f;
             Color fill = RiderFills[index % RiderFills.Length];
             DrawCircle(point, radius + 2f, Black);
             DrawCircle(point, radius, fill);
@@ -87,7 +92,7 @@ public sealed partial class WatchRaceMapView : Control
                 DrawArc(point, radius + 5f, 0, Mathf.Tau, 24, Red, 2f, antialiased: true);
             }
 
-            DrawCaption(point + new Vector2(12, -8), $"{rider.RiderId}", Black, 13);
+            DrawCaption(point + new Vector2(12, -8), rider.Label, Black, 12);
         }
     }
 
@@ -112,6 +117,54 @@ public sealed partial class WatchRaceMapView : Control
         }
 
         return screen;
+    }
+
+    private void DrawTerrainStroke(Vector2[] screen)
+    {
+        for (int index = 0; index < screen.Length - 1; index++)
+        {
+            double gradient = profile[index].Gradient;
+            Color color = gradient >= 0.03 ? ClimbStroke : gradient <= -0.03 ? DescentStroke : FlatStroke;
+            float width = gradient >= 0.03 ? 6.5f : 3.5f;
+            DrawLine(screen[index], screen[index + 1], color, width, antialiased: true);
+        }
+    }
+
+    private void DrawClimbFills(Vector2[] screen, float bottom)
+    {
+        int index = 0;
+        while (index < profile.Length)
+        {
+            if (profile[index].Gradient < 0.03)
+            {
+                index++;
+                continue;
+            }
+
+            int end = index;
+            while (end + 1 < profile.Length && profile[end + 1].Gradient >= 0.03)
+            {
+                end++;
+            }
+
+            if (end > index)
+            {
+                var fill = new List<Vector2>();
+                for (int point = index; point <= end && point < screen.Length; point++)
+                {
+                    fill.Add(screen[point]);
+                }
+
+                fill.Add(new Vector2(screen[System.Math.Min(end, screen.Length - 1)].X, bottom + 12));
+                fill.Add(new Vector2(screen[index].X, bottom + 12));
+                if (fill.Count >= 3)
+                {
+                    DrawColoredPolygon(fill.ToArray(), ClimbFill);
+                }
+            }
+
+            index = end + 1;
+        }
     }
 
     private void DrawAnnotations(float left, float right, float top, float bottom)

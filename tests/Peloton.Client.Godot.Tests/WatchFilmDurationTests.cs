@@ -21,7 +21,7 @@ public sealed class WatchFilmDurationTests
     public void ClockFormatsFilmBudgetWithoutRateMultiplier()
     {
         Assert.Equal("0:45 / 2:00", WatchFilmDuration.Clock(45, 120));
-        Assert.Equal("2 min", WatchFilmDuration.Label(WatchFilmDuration.DefaultSeconds));
+        Assert.Equal("5 min", WatchFilmDuration.Label(WatchFilmDuration.DefaultSeconds));
         Assert.False(WatchFilmDuration.IsChoice(90));
     }
 }

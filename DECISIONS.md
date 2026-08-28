@@ -118,9 +118,9 @@ Implementacja jest deferred do wieloetapowego/virtual GC. Obecny jednodniowy rac
 ## D-033 — Supervising watch clock, smooth simulation
 Oglądanie nie jest 1:1 z godzinami etapu, ale też nie jest skokiem „1s oglądania = 100s fizyki”.
 
-Zegar oglądania (Watch Race) jest nadzorujący. W Godocie gracz wybiera **czas filmu** przeciętnego etapu (30 s / 1 min / 2 min / 3 min / 5 min; domyślnie 2 min). Aplikacja wylicza rate z estymaty `TotalLengthM / 6 m/s` i `clamp(round(estimate / target), 1, 120)`. Headless CLI nadal używa jawnego tempa ×1 / ×2 / ×5 / ×20 (`--rate`).
+Zegar oglądania (Watch Race) jest nadzorujący. W Godocie gracz wybiera **czas filmu** przeciętnego etapu (30 s / 1 min / 2 min / 3 min / **5 min**; domyślnie 5 min, maksimum oglądania). Aplikacja wylicza rate z estymaty `TotalLengthM / 6 m/s` i `clamp(round(estimate / target), 1, 120)`, żeby film był przyspieszonym odzwierciedleniem kanonicznej symulacji, nie skrótem highlight. Headless CLI nadal używa jawnego tempa ×1 / ×2 / ×5 / ×20 (`--rate`).
 
-Symulacja dostosowuje się do tego zegara i pozostaje płynna. Gdyby na mapie trasy stały ikony kluczowych zawodników, ich pozycja ma wynikać z aktualnej prędkości, gapu, shelteru i terenu w danej chwili — bez teleportów.
+Symulacja dostosowuje się do tego zegara i pozostaje płynna. Prędkość na tablicy i na mapie pochodzi z fizyki (m/s → km/h). Ikony i radio sztabu pokazują aktualną pozycję, gap, teren i odczucie kolarzy z obserwacji, nie z ukrytej fizjologii. `DecisionRequest` pauzuje zegar oglądania, chyba że przed etapem włączono autonomię DS; wtedy Watch sam stosuje rekomendację DS. Osobna opcja „DS (chce: …)” oddaje decyzję DS-owi z jawną intencją. Pauza prezentacji i pauza na decyzji nie zjadają budżetu filmu. Renderer nie steruje fizyką.
 
 Fizyka zostaje kanoniczna (`R-001`). Prototype `dt = 1s` to krok referencyjny silnika, nie klatka filmu. Renderer może interpolować pozycje między krokami. `DecisionRequest` pauzuje zegar oglądania; pauza prezentacji i pauza na decyzji nie zjadają budżetu filmu. Renderer nie steruje fizyką.
 

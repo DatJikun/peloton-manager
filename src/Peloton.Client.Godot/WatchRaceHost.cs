@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Peloton.Application;
 using Peloton.Domain;
 using Peloton.Simulation.Race;
@@ -12,6 +13,7 @@ public sealed class WatchRaceHost
     private readonly GameApplication application;
     private readonly string autosavePath;
     private readonly string raceScenarioId;
+    private readonly List<long> squadIds = new();
     private RaceWatchFrame? previousFrame;
     private double watchAccumulator;
     private bool presentationPaused;
@@ -28,9 +30,14 @@ public sealed class WatchRaceHost
             ? RacePreparationDefaults.PrototypeScenarioId
             : raceScenarioId;
         SelectedFilmSeconds = WatchFilmDuration.DefaultSeconds;
+        DsAutonomy = false;
     }
 
     public int SelectedFilmSeconds { get; private set; }
+
+    public bool DsAutonomy { get; private set; }
+
+    public IReadOnlyList<long> SquadIds => squadIds;
 
     public int SelectedRate { get; private set; }
 
@@ -40,7 +47,8 @@ public sealed class WatchRaceHost
 
     public RaceWatchCourse? Course => application.RaceWatchCourse;
 
-    public PendingRaceDecision? PendingDecision => application.PendingRaceDecision;
+    public PendingRaceDecision? PendingDecision =>
+        DsAutonomy ? null : application.PendingRaceDecision;
 
     public RaceResultProjection? Result => application.RaceResult;
 
@@ -64,7 +72,8 @@ public sealed class WatchRaceHost
                 application.RaceWatch,
                 application.PendingRaceDecision is null && !presentationPaused
                     ? watchAccumulator / WatchSecondDuration
-                    : 1.0);
+                    : 1.0,
+                squadIds);
         }
     }
 
@@ -77,7 +86,13 @@ public sealed class WatchRaceHost
             return created;
         }
 
-        return application.Execute(new PrepareRaceCommand());
+        CommandResult prepared = application.Execute(new PrepareRaceCommand());
+        if (prepared.Succeeded)
+        {
+            CaptureSquad();
+        }
+
+        return prepared;
     }
 
     public CommandResult ConfirmPreparation()
@@ -101,6 +116,17 @@ public sealed class WatchRaceHost
         return CommandResult.Success;
     }
 
+    public CommandResult SelectDsAutonomy(bool enabled)
+    {
+        if (application.State == GameState.RaceLive)
+        {
+            return CommandResult.Reject("WATCH_AUTONOMY_LOCKED");
+        }
+
+        DsAutonomy = enabled;
+        return CommandResult.Success;
+    }
+
     public CommandResult StartWatch()
     {
         CommandResult started = application.Execute(
@@ -110,6 +136,7 @@ public sealed class WatchRaceHost
             return started;
         }
 
+        CaptureSquad();
         double routeLengthM = application.RaceWatchCourse?.TotalLengthM ?? 0.0;
         SelectedRate = WatchFilmDuration.RateFor(routeLengthM, SelectedFilmSeconds);
         CommandResult watching = application.Execute(new BeginRaceWatchCommand(SelectedRate));
@@ -121,7 +148,7 @@ public sealed class WatchRaceHost
         previousFrame = application.RaceWatch;
         watchAccumulator = 0.0;
         presentationPaused = false;
-        return CommandResult.Success;
+        return ApplyDsAutonomy();
     }
 
     public CommandResult SetPresentationPaused(bool paused)
@@ -131,7 +158,13 @@ public sealed class WatchRaceHost
             return CommandResult.Reject("GAME_STATE_INVALID");
         }
 
-        presentationPaused = paused || application.PendingRaceDecision is not null;
+        if (application.PendingRaceDecision is not null && !DsAutonomy)
+        {
+            presentationPaused = true;
+            return CommandResult.Success;
+        }
+
+        presentationPaused = paused;
         return CommandResult.Success;
     }
 
@@ -142,7 +175,13 @@ public sealed class WatchRaceHost
             return CommandResult.Success;
         }
 
-        if (application.PendingRaceDecision is not null)
+        CommandResult autonomy = ApplyDsAutonomy();
+        if (!autonomy.Succeeded)
+        {
+            return autonomy;
+        }
+
+        if (application.PendingRaceDecision is not null && !DsAutonomy)
         {
             presentationPaused = true;
             watchAccumulator = WatchSecondDuration;
@@ -157,9 +196,21 @@ public sealed class WatchRaceHost
         ArgumentOutOfRangeException.ThrowIfLessThan(realDeltaSeconds, 0.0);
         watchAccumulator += realDeltaSeconds;
         while (watchAccumulator >= WatchSecondDuration &&
-               application.State == GameState.RaceLive &&
-               application.PendingRaceDecision is null)
+               application.State == GameState.RaceLive)
         {
+            CommandResult drained = ApplyDsAutonomy();
+            if (!drained.Succeeded)
+            {
+                return drained;
+            }
+
+            if (application.PendingRaceDecision is not null && !DsAutonomy)
+            {
+                presentationPaused = true;
+                watchAccumulator = WatchSecondDuration;
+                break;
+            }
+
             watchAccumulator -= WatchSecondDuration;
             previousFrame = application.RaceWatch;
             CommandResult advanced = application.Execute(new AdvanceRaceWatchCommand());
@@ -174,7 +225,13 @@ public sealed class WatchRaceHost
                 break;
             }
 
-            if (application.PendingRaceDecision is not null)
+            CommandResult after = ApplyDsAutonomy();
+            if (!after.Succeeded)
+            {
+                return after;
+            }
+
+            if (application.PendingRaceDecision is not null && !DsAutonomy)
             {
                 presentationPaused = true;
                 watchAccumulator = WatchSecondDuration;
@@ -234,5 +291,40 @@ public sealed class WatchRaceHost
     public CommandResult CompleteDebrief()
     {
         return application.Execute(new CompleteRaceDebriefCommand());
+    }
+
+    private CommandResult ApplyDsAutonomy()
+    {
+        if (!DsAutonomy || application.PendingRaceDecision is not PendingRaceDecision decision)
+        {
+            return CommandResult.Success;
+        }
+
+        CommandResult responded = application.Execute(new RespondToRaceDecisionCommand(
+            decision.RequestId,
+            decision.AuthorityId,
+            decision.DelegatedDefaultOption));
+        if (!responded.Succeeded)
+        {
+            return responded;
+        }
+
+        presentationPaused = false;
+        previousFrame = application.RaceWatch;
+        return CommandResult.Success;
+    }
+
+    private void CaptureSquad()
+    {
+        if (application.RacePreparation is not RacePreparationProjection prep)
+        {
+            return;
+        }
+
+        squadIds.Clear();
+        foreach (WorldEntityId id in prep.Squad)
+        {
+            squadIds.Add(id.Value);
+        }
     }
 }

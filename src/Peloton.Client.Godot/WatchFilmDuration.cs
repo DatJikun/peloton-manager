@@ -9,7 +9,7 @@ public static class WatchFilmDuration
 {
     public static readonly int[] ChoicesSeconds = { 30, 60, 120, 180, 300 };
 
-    public const int DefaultSeconds = 120;
+    public const int DefaultSeconds = 300;
     public const double EstimateSpeedMps = 6.0;
 
     public static bool IsChoice(int seconds) => ChoicesSeconds.Contains(seconds);
