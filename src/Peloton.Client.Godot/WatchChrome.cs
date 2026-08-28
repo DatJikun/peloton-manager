@@ -44,7 +44,7 @@ internal static class WatchChrome
         Button button = new()
         {
             Text = text.ToUpperInvariant(),
-            Flat = true,
+            Flat = false,
             FocusMode = Control.FocusModeEnum.None,
         };
         button.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
