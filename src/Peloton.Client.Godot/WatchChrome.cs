@@ -76,9 +76,14 @@ internal static class WatchChrome
             Kind.Secondary => selected ? Black : Paper,
             _ => selected ? Black : White,
         };
-        Color hoverFill = kind == Kind.Primary ? Black : Black;
+        Color hoverFill = kind switch
+        {
+            Kind.Primary => Black,
+            Kind.Team => Team,
+            _ => Black,
+        };
         Color ink = fill == Paper || fill == White ? Black : Paper;
-        Color hoverInk = kind is Kind.Primary or Kind.Team ? Red : Paper;
+        Color hoverInk = kind == Kind.Primary ? Red : ink;
         bool shadow = kind != Kind.Segment;
         int border = kind == Kind.Segment ? 3 : 3;
         int padX = kind == Kind.Segment ? 12 : 22;
