@@ -45,16 +45,6 @@ public sealed partial class WatchRaceScreen : Control
         background.SetAnchorsPreset(LayoutPreset.FullRect);
         AddChild(background);
 
-        ColorRect bar = new()
-        {
-            Color = Red,
-        };
-        bar.SetAnchorsPreset(LayoutPreset.FullRect);
-        bar.AnchorTop = 0.62f;
-        bar.AnchorBottom = 0.70f;
-        bar.Rotation = -0.12f;
-        AddChild(bar);
-
         VBoxContainer root = new();
         root.SetAnchorsPreset(LayoutPreset.FullRect);
         root.OffsetLeft = 28;
