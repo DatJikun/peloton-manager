@@ -58,7 +58,7 @@ public sealed partial class WatchRaceMapView : Control
         float left = area.Position.X + 44;
         float right = area.End.X - 16;
         float top = area.Position.Y + 22;
-        float bottom = area.End.Y - 48;
+        float bottom = area.End.Y - 54;
         Vector2[] screen = ToScreen(left, right, top, bottom);
         if (screen.Length >= 2 && profile.Length >= 2)
         {
@@ -199,21 +199,37 @@ public sealed partial class WatchRaceMapView : Control
             return;
         }
 
-        for (double km = 0.0; km <= course.TotalLengthM + 0.5; km += 1000.0)
+        double lastMark = -1.0;
+        for (double km = 0.0; km < course.TotalLengthM - 1.0; km += 1000.0)
         {
-            double mark = System.Math.Min(km, course.TotalLengthM);
-            (double x, double _) = WatchRouteProfile.PointOnPolyline(profile, mark, left, right, top, bottom);
-            DrawLine(new Vector2((float)x, bottom + 2), new Vector2((float)x, bottom + 10), Gray, 1.5f);
-            string label = mark >= course.TotalLengthM
-                ? $"{course.TotalLengthM / 1000.0:0.0}"
-                : $"{mark / 1000.0:0}";
-            DrawCaption(new Vector2((float)x - 8, bottom + 12), label, Gray, 11);
+            DrawKmTick(km, left, right, top, bottom);
+            lastMark = km;
         }
 
-        DrawCaption(new Vector2(left, bottom + 12), "KM", Gray, 11);
+        if (course.TotalLengthM - lastMark >= 400.0)
+        {
+            DrawKmTick(course.TotalLengthM, left, right, top, bottom);
+        }
+
         DrawLegend(left, right, bottom);
         LabelTerrainRuns(left, right, top, bottom);
         DrawElevationAxis(left, top, bottom);
+    }
+
+    private void DrawKmTick(double mark, float left, float right, float top, float bottom)
+    {
+        if (course is null)
+        {
+            return;
+        }
+
+        (double x, double _) = WatchRouteProfile.PointOnPolyline(profile, mark, left, right, top, bottom);
+        DrawLine(new Vector2((float)x, bottom + 2), new Vector2((float)x, bottom + 8), Gray, 1.5f);
+        bool finish = mark >= course.TotalLengthM - 0.5;
+        string label = finish
+            ? string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{course.TotalLengthM / 1000.0:0.0}")
+            : string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{mark / 1000.0:0}");
+        DrawCaption(new Vector2((float)x - 6, bottom + 10), label, Gray, 10);
     }
 
     private void DrawElevationAxis(float left, float top, float bottom)
@@ -231,13 +247,13 @@ public sealed partial class WatchRaceMapView : Control
             max = System.Math.Max(max, profile[index].ElevationM);
         }
 
-        DrawCaption(new Vector2(4, top), $"{max:0} m", Gray, 10);
-        DrawCaption(new Vector2(4, bottom - 12), $"{min:0} m", Gray, 10);
+        DrawCaption(new Vector2(4, top), string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{max:0} m"), Gray, 10);
+        DrawCaption(new Vector2(4, bottom - 12), string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{System.Math.Max(0.0, min):0} m"), Gray, 10);
     }
 
     private void DrawLegend(float left, float right, float bottom)
     {
-        float y = bottom + 26;
+        float y = bottom + 28;
         DrawCaption(new Vector2(left, y), "NACHYLENIE", Gray, 9);
         float x = left + 90;
         DrawRect(new Rect2(x, y + 2, 18, 8), new Color("e8d9b8"));
