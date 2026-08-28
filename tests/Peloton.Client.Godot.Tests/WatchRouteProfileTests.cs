@@ -1,4 +1,3 @@
-using System.Linq;
 using Peloton.Client.Godot;
 using Peloton.Simulation.Race;
 using Xunit;
@@ -22,8 +21,8 @@ public sealed class WatchRouteProfileTests
         WatchRoutePoint[] points = WatchRouteProfile.Build(course);
 
         Assert.True(points.Length > 12);
-        Assert.True(points.Any(point => point.Kind == RouteTerrainKind.Climb && point.Gradient > 0.06));
-        Assert.True(points.Any(point => point.Kind == RouteTerrainKind.Crosswind && point.RoadWidthM < 3.0));
+        Assert.Contains(points, point => point.Kind == RouteTerrainKind.Climb && point.Gradient > 0.06);
+        Assert.Contains(points, point => point.Kind == RouteTerrainKind.Crosswind && point.RoadWidthM < 3.0);
         (double x, double y) start = WatchRouteProfile.PointOnPolyline(points, 0.0, 0, 100, 10, 90);
         (double x, double y) finish = WatchRouteProfile.PointOnPolyline(points, 5400.0, 0, 100, 10, 90);
         Assert.Equal(0.0, start.x, 6);

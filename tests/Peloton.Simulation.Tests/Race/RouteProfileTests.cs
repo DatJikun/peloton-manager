@@ -19,7 +19,10 @@ public sealed class RouteProfileTests
                 .Where(template => template.Kind == kind)
                 .OrderBy(template => template.Variant)
                 .ToArray();
-            Assert.Equal(new[] { 0, 1, 2 }, variants.Select(template => template.Variant));
+            Assert.Equal(3, variants.Length);
+            Assert.Equal(0, variants[0].Variant);
+            Assert.Equal(1, variants[1].Variant);
+            Assert.Equal(2, variants[2].Variant);
             Assert.All(variants, template =>
             {
                 Assert.Equal(0.0, template.Knots[0].T);
