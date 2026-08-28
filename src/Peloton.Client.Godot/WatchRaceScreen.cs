@@ -268,7 +268,15 @@ public sealed partial class WatchRaceScreen : Control
             status!.Text = host.DsAutonomy
                 ? $"Seed 91234 · film {WatchFilmDuration.Label(host.SelectedFilmSeconds)} · DS sam podejmuje decyzje."
                 : $"Seed 91234 · film {WatchFilmDuration.Label(host.SelectedFilmSeconds)} · oglądaj.";
-            clock!.Text = "zegar oglądania czeka na StartRace.";
+            clock!.Text = "Film ruszy po Oglądaj.";
+            if (board is not null)
+            {
+                board.Text = "Tablica sztabu pojawi się po starcie.";
+                board.Visible = true;
+            }
+
+            decisionBox!.Visible = false;
+            result!.Visible = false;
         }
 
         if (host.State == GameState.Management)
