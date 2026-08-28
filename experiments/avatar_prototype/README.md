@@ -3,6 +3,10 @@
 **Status:** EXPERIMENT. To nie jest kontrakt projektowy i nie jest wpisane do `DOCS.md`.
 Celem jest **wizualna ocena podejścia**, nie zamknięcie systemu.
 
+**2026-08-28 — wygląd placeholder odrzucony.** Zestawienie gotowych generatorów
+z internetu (algorytm + wpis w bazie + barki + bez kasku/okularów + koszulka
+Tour/Giro/Vuelta): `GENERATOR_RESEARCH.md` i `generator_gallery.html`.
+
 ## Co to jest
 
 Deterministyczny, warstwowy system awatarów w stylu „NFT trait compositing", ale dla

@@ -71,7 +71,7 @@ Godot Watch Race is a presentation client over the existing Application clock. O
 - [x] Rulesets v0.1 (DRAFT)
 - [x] Save Format v0.1 (DRAFT)
 - [x] Testing v0.1 (DRAFT)
-- [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
+- [ ] Avatar prototype (EXPERIMENT) — właściciel odrzucił obecny wygląd; research generatorów w `experiments/avatar_prototype/GENERATOR_RESEARCH.md` + `generator_gallery.html`
 
 ## Next task
 `Owner §49 playtest of Godot Watch Race. Do not close §49 with automations. Do not implement D-032. Do not build the rejected Career Hub.`
@@ -227,3 +227,4 @@ Peloton Manager jest na etapie pre-production. Celem jest modularny, determinist
 - `2026-08-26` — Skill `peloton-avatars` przetestowany na obcym agencie (dodanie fryzury wyłącznie z instrukcji). Test wykrył realny defekt: literówka w kluczu przepisu (`excludes_tags` zamiast `excludes`) przechodziła całą bramkę i publikowała asset bez reguły blokującej. Naprawione: `check_recipe` odrzuca nieznane klucze, nieznane style i nieznane tagi z podpowiedzią; doszedł `scripts/asset_usage.py` (udział assetu w puli + licznik naruszeń blokady); `asset_pack_version` dostaje odcisk liczony ze stylu, tabeli assetów i bajtów wszystkich PNG (wcześniej `flat` i `flat_outline` miały tę samą wersję, czyli kolizję cache), a `asset_table_hash` pilnuje, żeby plansza porównania stylów nie mieszała świeżych i nieświeżych pakietów. Self-test: 45 asercji.
 - `2026-08-27` — Właściciel kazał złączyć pętlę kariery z `main`. Jedno drzewo: PrototypeRaceEngine + Hub/inbox/prep/Watch razem z HTML labem (`08e` / `10` / `12` / `14-race.html`). Godot Watch i §49 nadal otwarte.
 - `2026-08-28` — Pierwszy Watch Race w Godot (D-033): okno oglądania etapu, nie Career Hub. §49 nadal `NOT VERIFIED`.
+- `2026-08-28` — Awatary: właściciel **nie lubi obecnych propozycji wyglądu**. Wymagania potwierdzone: algorytmiczna twarz, opcjonalny ręczny wpis wyglądu w bazie, kadr od barków, bez kasku i okularów, koszulka zmienia się przy prowadzeniu TdF / Giro / Vuelty. Pipeline prototypu zostaje (identity w save, equipment osobno). Research gotowców: `experiments/avatar_prototype/GENERATOR_RESEARCH.md`, galeria `generator_gallery.html`. Nic z tego nie jest kontraktem ani częścią `PelotonManager.sln`. Styl `poster` z 26.08 jest **ponownie otwarty** do decyzji wzrokowej.

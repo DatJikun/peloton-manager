@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Peloton Manager — generatory awatarów</title>
+  <style>
+    :root {
+      --paper: #f3ede1;
+      --ink: #0c0c0d;
+      --red: #d11f1f;
+      --cream: #fffdf7;
+      --line: 3px;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 16px/1.45 "IBM Plex Sans", "Segoe UI", sans-serif;
+    }
+    body { padding: 28px 32px 80px; max-width: 1280px; margin: 0 auto; }
+    h1, h2, h3 { font-family: Anton, Impact, sans-serif; letter-spacing: 0.02em; margin: 0; }
+    h1 { font-size: 42px; line-height: 0.95; }
+    h2 { font-size: 28px; margin: 36px 0 10px; border-bottom: var(--line) solid var(--ink); padding-bottom: 6px; }
+    h3 { font-size: 20px; }
+    .kicker { color: var(--red); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; font-size: 12px; margin-bottom: 8px; }
+    p { max-width: 68ch; }
+    a { color: var(--red); }
+    .rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 18px 0 28px; }
+    .rule {
+      background: var(--cream);
+      border: var(--line) solid var(--ink);
+      box-shadow: 6px 6px 0 var(--ink);
+      padding: 12px 14px;
+    }
+    .rule strong { display: block; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; }
+    .grid img, .jerseys img {
+      width: 100%;
+      aspect-ratio: 1;
+      display: block;
+      background: var(--paper);
+      border: var(--line) solid var(--ink);
+    }
+    .caption { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 4px; }
+    .block {
+      background: var(--cream);
+      border: var(--line) solid var(--ink);
+      box-shadow: 8px 8px 0 var(--ink);
+      padding: 16px 18px 20px;
+      margin: 16px 0 28px;
+    }
+    .meta { font-size: 13px; margin: 6px 0 14px; max-width: none; }
+    .jerseys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-width: 640px; }
+    .badge { display: inline-block; background: var(--ink); color: var(--cream); padding: 2px 8px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; margin-right: 6px; }
+    .no { opacity: 0.55; }
+    .ask {
+      background: var(--ink);
+      color: var(--cream);
+      padding: 22px 24px;
+      border: var(--line) solid var(--ink);
+      box-shadow: 8px 8px 0 var(--red);
+      margin-top: 40px;
+    }
+    .ask h2 { border: 0; color: var(--cream); margin-top: 0; }
+    .ask ol { margin: 8px 0 0; padding-left: 1.2em; }
+    code { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.92em; }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <p class="kicker">Eksperyment · nie kontrakt</p>
+  <h1>Generatory awatarów<br />z internetu</h1>
+  <p>
+    Obecne rysunki placeholder Ci się nie podobają. Poniżej gotowe systemy warstwowe:
+    twarz z algorytmu (albo z ręcznego wpisu w bazie), kadr od barków, bez kasku i okularów,
+    koszulka zmienia kolor gdy zawodnik prowadzi Tour, Giro albo Vueltę.
+  </p>
+  <p>
+    Obrazki ładują się na żywo z DiceBear (ten sam silnik ma bibliotekę C# i działa offline
+    w grze — tu internet jest tylko do podglądu). Szczegóły: <a href="GENERATOR_RESEARCH.md">GENERATOR_RESEARCH.md</a>.
+  </p>
+
+  <div class="rules">
+    <div class="rule"><strong>Algorytm</strong>seed = rider_id → zawsze ta sama twarz</div>
+    <div class="rule"><strong>Baza</strong>można wpisać włosy / karnację konkretnemu kolarzowi</div>
+    <div class="rule"><strong>Kadr</strong>od barków w górę, przód, bez kasku i okularów</div>
+    <div class="rule"><strong>Lider</strong>ta sama twarz, żółty / różowy / czerwony tułów</div>
+  </div>
+
+  <h2>1. Toon Head</h2>
+  <div class="block">
+    <p class="meta">
+      <span class="badge">koszulka OK</span>
+      <a href="https://www.dicebear.com/styles/toon-head/">DiceBear</a> ·
+      Johan Melin · CC BY 4.0 · gruba kreska, najbliżej plakatu UI
+    </p>
+    <div class="grid" id="g-toon"></div>
+    <p class="caption" style="margin-top:14px">Ten sam człowiek, cztery koszulki</p>
+    <div class="jerseys" id="j-toon"></div>
+  </div>
+
+  <h2>2. Micah / Nice Avatar</h2>
+  <div class="block">
+    <p class="meta">
+      <span class="badge">koszulka OK</span>
+      <a href="https://www.dicebear.com/styles/micah/">DiceBear Micah</a> ·
+      <a href="https://nice-avatar.vercel.app/">playground</a> ·
+      Micah Lanier · CC BY 4.0 · geometryczny, czytelny jako ikona
+    </p>
+    <div class="grid" id="g-micah"></div>
+    <p class="caption" style="margin-top:14px">Ten sam człowiek, cztery koszulki</p>
+    <div class="jerseys" id="j-micah"></div>
+  </div>
+
+  <h2>3. Avataaars</h2>
+  <div class="block">
+    <p class="meta">
+      <span class="badge">koszulka OK</span>
+      <a href="https://avataaars.com/">avataaars.com</a> ·
+      Pablo Stanley · darmowe komercyjnie · klasyczny półportret (wygląd „apki”)
+    </p>
+    <div class="grid" id="g-avataaars"></div>
+    <p class="caption" style="margin-top:14px">Ten sam człowiek, cztery koszulki</p>
+    <div class="jerseys" id="j-avataaars"></div>
+  </div>
+
+  <h2>4. Open Peeps</h2>
+  <div class="block">
+    <p class="meta">
+      <span class="badge">koszulka OK</span>
+      <a href="https://www.openpeeps.com/">openpeeps.com</a> ·
+      <a href="https://opeeps.fun/">opeeps.fun</a> ·
+      Pablo Stanley · CC0 · szkic, najłatwiejsza licencja
+    </p>
+    <div class="grid" id="g-peeps"></div>
+    <p class="caption" style="margin-top:14px">Ten sam człowiek, cztery koszulki</p>
+    <div class="jerseys" id="j-peeps"></div>
+  </div>
+
+  <h2>5. Personas</h2>
+  <div class="block">
+    <p class="meta">
+      <span class="badge">koszulka OK</span>
+      <a href="https://personas.draftbit.com/">personas.draftbit.com</a> ·
+      Draftbit · CC BY 4.0 · płaskie, charakterystyczne twarze
+    </p>
+    <div class="grid" id="g-personas"></div>
+    <p class="caption" style="margin-top:14px">Ten sam człowiek, cztery koszulki</p>
+    <div class="jerseys" id="j-personas"></div>
+  </div>
+
+  <h2>6. Pixel Art</h2>
+  <div class="block">
+    <p class="meta">
+      <span class="badge">koszulka OK</span>
+      <a href="https://www.dicebear.com/styles/pixel-art/">DiceBear</a> ·
+      CC0 · 8-bit, „od razu gra”, słabiej na dużej karcie
+    </p>
+    <div class="grid" id="g-pixel"></div>
+    <p class="caption" style="margin-top:14px">Ten sam człowiek, cztery koszulki</p>
+    <div class="jerseys" id="j-pixel"></div>
+  </div>
+
+  <h2>Tylko twarz — koszulkę dorysujemy my</h2>
+  <p>
+    Żaden gotowiec nie rysuje prawdziwej kolarskiej koszulki (zamek, kołnierz, logo ekipy).
+    Dają kolor t-shirtu. Jeśli wolisz lepszą twarz, a tułów zostawić nasz:
+  </p>
+  <div class="block">
+    <h3>Adventurer</h3>
+    <p class="meta"><a href="https://www.dicebear.com/styles/adventurer/">DiceBear</a> · Lisa Wischofsky · CC BY 4.0</p>
+    <div class="grid" id="g-adv"></div>
+  </div>
+  <div class="block">
+    <h3>Lorelei (CC0)</h3>
+    <p class="meta"><a href="https://www.dicebear.com/styles/lorelei/">DiceBear</a> · Lisa Wischofsky · domena publiczna</p>
+    <div class="grid" id="g-lorelei"></div>
+  </div>
+
+  <h2>Świadomie nie</h2>
+  <div class="block no">
+    <p class="meta">
+      Zdjęcia AI (<a href="https://thispersondoesnotexist.com/">This Person Does Not Exist</a>),
+      3D (<a href="https://readyplayer.me/">Ready Player Me</a>, FaceGen z Football Managera),
+      fotki z bazy jak w Pro Cycling Manager,
+      plamy geometryczne (<a href="https://boringavatars.com/">Boring Avatars</a>),
+      kreskówki ze zdjęcia (<a href="https://toonme.com/">ToonMe</a>).
+      Albo nie są algorytmem z cechami w bazie, albo są za realistyczne na ikonę UI.
+    </p>
+  </div>
+
+  <div class="ask">
+    <h2>Co wskazać</h2>
+    <ol>
+      <li>Jeden z sześciu stylów z koszulką — albo hybrydę „Adventurer/Lorelei + nasza koszulka”.</li>
+      <li>Czy słynni kolarze mają mieć ręczny override w bazie od dnia 1, a peleton z seedu.</li>
+      <li>Dopiero potem podmieniamy paczkę grafik. Silnik cech zostaje.</li>
+    </ol>
+  </div>
+
+<script>
+const API = "https://api.dicebear.com/10.x";
+const RIDERS = ["pogacar","vingegaard","evenepoel","vanaert","pidcock","bernal","alaphilippe","roglic"];
+const JERSEYS = [
+  ["1B4F8A", "drużyna"],
+  ["FFD400", "Tour"],
+  ["E66FA2", "Giro"],
+  ["D11F1F", "Vuelta"],
+];
+const COMMON = { size: 192, backgroundColor: "f3ede1" };
+
+const STYLES = {
+  toon: {
+    id: "toon-head",
+    color: "clothesColor",
+    base: {
+      clothesVariant: "tShirt",
+      hairVariant: "sideComed,spiky,undercut",
+      rearHairVariant: "neckHigh",
+      eyesVariant: "happy,humble,wink,wide",
+      mouthVariant: "smile,laugh",
+      eyebrowsVariant: "happy,neutral,raised",
+    },
+  },
+  micah: {
+    id: "micah",
+    color: "shirtColor",
+    base: {
+      glassesProbability: 0,
+      earringsProbability: 0,
+      clothesVariant: "crew",
+      hairVariant: "fonze,dougFunny,mrT",
+      eyebrowsVariant: "down,up",
+      eyesVariant: "eyes,round,smiling",
+      mouthVariant: "smile,smirk",
+    },
+  },
+  avataaars: {
+    id: "avataaars",
+    color: "clothesColor",
+    base: {
+      accessoriesProbability: 0,
+      clothesVariant: "shirtCrewNeck",
+      topVariant: "shortFlat,shortRound,shortWaved,theCaesar,theCaesarAndSidePart,shortCurly,shavedSides",
+      eyesVariant: "default,happy,squint,wink,side",
+      mouthVariant: "default,smile,serious,twinkle",
+      eyebrowsVariant: "default,defaultNatural,flatNatural,raisedExcited",
+    },
+  },
+  peeps: {
+    id: "open-peeps",
+    color: "clothingColor",
+    base: {
+      accessoriesProbability: 0,
+      maskProbability: 0,
+      facialHairProbability: 20,
+      headVariant: "short1,short2,short3,short4,short5,pomp,shaved1,shaved2,shaved3,flatTop,grayShort",
+      expressionVariant: "smile,calm,serious,driven,blank,solemn",
+    },
+  },
+  personas: {
+    id: "personas",
+    color: "clothingColor",
+    base: {
+      clothesVariant: "rounded",
+      eyesVariant: "happy,open,wink",
+      mouthVariant: "smile,smirk,bigSmile",
+      hairVariant: "buzzcut,fade,shortCombover,shortComboverChops,sideShave,curly,curlyHighTop",
+    },
+  },
+  pixel: {
+    id: "pixel-art",
+    color: "clothingColor",
+    base: {
+      glassesProbability: 0,
+      hatProbability: 0,
+      accessoriesProbability: 0,
+      mouthVariant: "happy01,happy02,happy03,happy04,happy05,happy06",
+      hairVariant: "short01,short02,short03,short04,short05,short06,short07,short08,short09,short10,short11,short12",
+    },
+  },
+};
+
+function url(styleId, seed, extra) {
+  const q = new URLSearchParams({ seed, ...COMMON, ...extra });
+  return `${API}/${styleId}/png?${q.toString()}`;
+}
+
+function fillGrid(elId, spec) {
+  const root = document.getElementById(elId);
+  RIDERS.forEach((seed) => {
+    const wrap = document.createElement("div");
+    const img = document.createElement("img");
+    const extra = { ...spec.base };
+    if (spec.color) extra[spec.color] = "1B4F8A";
+    img.src = url(spec.id, seed, extra);
+    img.alt = seed;
+    const cap = document.createElement("div");
+    cap.className = "caption";
+    cap.textContent = seed;
+    wrap.append(img, cap);
+    root.append(wrap);
+  });
+}
+
+function fillJerseys(elId, spec) {
+  const root = document.getElementById(elId);
+  JERSEYS.forEach(([hex, label]) => {
+    const wrap = document.createElement("div");
+    const img = document.createElement("img");
+    const extra = { ...spec.base, [spec.color]: hex };
+    img.src = url(spec.id, "pogacar", extra);
+    img.alt = label;
+    const cap = document.createElement("div");
+    cap.className = "caption";
+    cap.textContent = label;
+    wrap.append(img, cap);
+    root.append(wrap);
+  });
+}
+
+Object.entries(STYLES).forEach(([key, spec]) => {
+  fillGrid("g-" + key, spec);
+  fillJerseys("j-" + key, spec);
+});
+
+fillGrid("g-adv", {
+  id: "adventurer",
+  base: {
+    glassesProbability: 0,
+    earringsProbability: 0,
+    hairVariant: "short01,short02,short03,short04,short05,short06,short07,short08,short09,short10,short11,short12",
+  },
+});
+fillGrid("g-lorelei", {
+  id: "lorelei",
+  base: { glassesProbability: 0, hairAccessoriesProbability: 0 },
+});
+</script>
+</body>
+</html>

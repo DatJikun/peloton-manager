@@ -15,14 +15,13 @@ anything structural; this skill is the operating manual.
 
 ## The owner's taste, in one paragraph
 
-The approved look is the **`poster` style profile**: constructivist poster / comic, ink
-keylines about 4 px on a 512 px master, two flat tones, no highlights, almost no skin
-detail, nose and lips as line work, everyone slightly smiling. It exists because the
-owner rejected softer, more painted passes with: *"próbuje być zbyt realistycznym
-względem funkcjonalności po prostu jako awatar, zwłaszcza patrząc na ui w grze"*. An
-avatar here is a **UI element that must read at 48 px**, not a portrait. He also
-rejected a featureless-face variant (`09-avatar-lab.html`, deleted) as "ohydne", so do
-not remove facial features either. When in doubt: more graphic, never more photographic.
+The 2026-08-26 `poster` profile (constructivist / comic, ink keylines, two flat
+tones) was a first pass. On **2026-08-28 the owner rejected the current visual
+proposals** and asked for algorithmic portraits that can still be pinned in the
+database, framed shoulders-up, **no helmet and no glasses**, with the jersey
+swapping to Tour yellow / Giro pink / Vuelta red. Do not bake more `poster`
+variants until they pick a direction from
+`experiments/avatar_prototype/GENERATOR_RESEARCH.md` and `generator_gallery.html`.
 
 Locked answers you do not need to ask again:
 
@@ -32,8 +31,8 @@ Locked answers you do not need to ask again:
 | helmet in the portrait | off by default; helmet and glasses are optional layers |
 | peloton | male riders + manager outfits; no women's pack, no historical eras |
 | size in the UI | rider card up to ~1/6 of a laptop page; list icons use `head_crop` |
-| expression | slightly smiling; a neutral straight mouth reads as sullen |
 | kits | team kits + Tour (yellow) / Giro (pink) / Vuelta (red) GC leader, world, national |
+| look | **reopened 2026-08-28** — wait for the owner to pick a generator style |
 
 ## Master reference — immutable
 
@@ -321,7 +320,9 @@ belongs in the manifest.
 - Add an AI image call to any runtime path.
 - Introduce `random`, `DateTime.Now` or unseeded RNG into generation.
 - Let nationality pick a trait outright.
-- Make the portraits more photographic, add expressions beyond a slight smile, or drop
-  facial features entirely (both extremes were rejected).
+- Make the portraits more photographic, or drop facial features entirely
+  (a featureless lab was rejected as "ohydne"). The `poster` profile is
+  **not** locked after 2026-08-28; do not invent a new look — wait for the
+  owner to pick from `GENERATOR_RESEARCH.md`.
 - Promote this experiment into a canonical design doc, add it to `DOCS.md`, or wire it
   into `PelotonManager.sln` without a separately scoped task from the owner.
