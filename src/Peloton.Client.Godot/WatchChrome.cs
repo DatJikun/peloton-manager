@@ -92,8 +92,12 @@ internal static class WatchChrome
         {
             BgColor = fill,
             BorderColor = Black,
+            BorderWidthLeft = border,
+            BorderWidthTop = border,
+            BorderWidthRight = border,
+            BorderWidthBottom = border,
             ShadowColor = Black,
-            ShadowSize = 0,
+            ShadowSize = shadow ? 6 : 0,
             ShadowOffset = shadow ? new Vector2(6, 6) : Vector2.Zero,
             AntiAliasing = false,
             ContentMarginLeft = padX,
@@ -101,7 +105,6 @@ internal static class WatchChrome
             ContentMarginTop = padY,
             ContentMarginBottom = padY,
         };
-        box.SetBorderWidthAll(border);
         return box;
     }
 
