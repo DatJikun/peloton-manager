@@ -30,10 +30,13 @@ public sealed class WatchRaceHost
             ? RacePreparationDefaults.PrototypeScenarioId
             : raceScenarioId;
         SelectedFilmSeconds = WatchFilmDuration.DefaultSeconds;
+        ExpectedFilmSeconds = WatchFilmDuration.DefaultSeconds;
         DsAutonomy = false;
     }
 
     public int SelectedFilmSeconds { get; private set; }
+
+    public int ExpectedFilmSeconds { get; private set; }
 
     public bool DsAutonomy { get; private set; }
 
@@ -97,6 +100,11 @@ public sealed class WatchRaceHost
 
     public CommandResult ConfirmPreparation()
     {
+        if (application.RacePreparation is { PlanConfirmed: true })
+        {
+            return CommandResult.Success;
+        }
+
         return application.Execute(new ConfirmRacePreparationPlanCommand());
     }
 
@@ -129,6 +137,12 @@ public sealed class WatchRaceHost
 
     public CommandResult StartWatch()
     {
+        CommandResult confirmed = ConfirmPreparation();
+        if (!confirmed.Succeeded)
+        {
+            return confirmed;
+        }
+
         CommandResult started = application.Execute(
             new StartRaceCommand(autosavePath, raceScenarioId));
         if (!started.Succeeded)
@@ -137,8 +151,10 @@ public sealed class WatchRaceHost
         }
 
         CaptureSquad();
-        double routeLengthM = application.RaceWatchCourse?.TotalLengthM ?? 0.0;
-        SelectedRate = WatchFilmDuration.RateFor(routeLengthM, SelectedFilmSeconds);
+        SelectedRate = WatchFilmDuration.RateFor(application.RaceWatchCourse, SelectedFilmSeconds);
+        ExpectedFilmSeconds = WatchFilmDuration.EstimateFilmSeconds(
+            application.RaceWatchCourse,
+            SelectedFilmSeconds);
         CommandResult watching = application.Execute(new BeginRaceWatchCommand(SelectedRate));
         if (!watching.Succeeded)
         {

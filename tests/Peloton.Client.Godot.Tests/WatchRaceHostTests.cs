@@ -25,7 +25,6 @@ public sealed class WatchRaceHostTests
 
         Assert.True(host.OpenPrototype(GateSeed).Succeeded);
         Assert.Equal(GameState.RacePreparationFlow, host.State);
-        Assert.True(host.ConfirmPreparation().Succeeded);
         Assert.Equal(WatchFilmDuration.DefaultSeconds, host.SelectedFilmSeconds);
         Assert.Equal(300, host.SelectedFilmSeconds);
         Assert.Equal("WATCH_FILM_INVALID", host.SelectFilmDuration(90).ReasonCode);
@@ -60,9 +59,9 @@ public sealed class WatchRaceHostTests
         using TemporaryDirectory temp = new();
         WatchRaceHost host = CreateHost(temp.Path, new PrototypeRaceEngine());
         Assert.True(host.OpenPrototype(GateSeed).Succeeded);
-        Assert.True(host.ConfirmPreparation().Succeeded);
         Assert.True(host.StartWatch().Succeeded);
         Assert.Equal(3, host.SelectedRate);
+        Assert.InRange(host.ExpectedFilmSeconds, 240, 360);
         int startWatch = host.OfficialFrame!.WatchSecond;
         int startSim = host.OfficialFrame.RaceSecond;
 
@@ -110,7 +109,6 @@ public sealed class WatchRaceHostTests
         string autosave = Path.Combine(temp.Path, "pre-race.peloton");
         WatchRaceHost host = CreateHost(temp.Path, new PrototypeRaceEngine());
         Assert.True(host.OpenPrototype(GateSeed).Succeeded);
-        Assert.True(host.ConfirmPreparation().Succeeded);
         Assert.True(host.StartWatch().Succeeded);
         Assert.True(File.Exists(autosave));
         Assert.Equal(
@@ -136,7 +134,6 @@ public sealed class WatchRaceHostTests
             id => Assert.Equal(1002L, id),
             id => Assert.Equal(1003L, id),
             id => Assert.Equal(1004L, id));
-        Assert.True(host.ConfirmPreparation().Succeeded);
         Assert.True(host.StartWatch().Succeeded);
         InterpolatedWatchView view = Assert.IsType<InterpolatedWatchView>(host.Interpolated);
         Assert.Equal(4, view.Riders.Count);
@@ -198,7 +195,6 @@ public sealed class WatchRaceHostTests
         using TemporaryDirectory temp = new();
         WatchRaceHost host = CreateHost(temp.Path, new PrototypeRaceEngine());
         Assert.True(host.OpenPrototype(GateSeed).Succeeded);
-        Assert.True(host.ConfirmPreparation().Succeeded);
         Assert.False(host.DsAutonomy);
         Assert.True(host.SelectDsAutonomy(true).Succeeded);
         Assert.True(host.StartWatch().Succeeded);
@@ -208,6 +204,29 @@ public sealed class WatchRaceHostTests
         Assert.Equal(GameState.RaceResultsFlow, host.State);
         Assert.Equal(ExpectedChecksum, host.LastChecksum);
         Assert.Null(host.PendingDecision);
+    }
+
+    [Fact]
+    public void DefaultFiveMinuteFilmRunsAboutFiveMinutesOfWatchTime()
+    {
+        using TemporaryDirectory temp = new();
+        WatchRaceHost host = CreateHost(temp.Path, new PrototypeRaceEngine());
+        Assert.True(host.OpenPrototype(GateSeed).Succeeded);
+        Assert.True(host.SelectDsAutonomy(true).Succeeded);
+        Assert.True(host.StartWatch().Succeeded);
+        Assert.Equal(3, host.SelectedRate);
+        Assert.InRange(host.ExpectedFilmSeconds, 240, 360);
+
+        int lastWatch = host.OfficialFrame!.WatchSecond;
+        for (int barrier = 0; barrier < 100_000 && host.State == GameState.RaceLive; barrier++)
+        {
+            lastWatch = host.OfficialFrame?.WatchSecond ?? lastWatch;
+            Assert.True(host.Tick(1.0).Succeeded);
+        }
+
+        Assert.Equal(GameState.RaceResultsFlow, host.State);
+        Assert.InRange(lastWatch, 240, 360);
+        Assert.Equal(ExpectedChecksum, host.LastChecksum);
     }
 
     private static void CompleteWatch(WatchRaceHost host)

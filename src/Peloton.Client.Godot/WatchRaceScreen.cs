@@ -27,7 +27,6 @@ public sealed partial class WatchRaceScreen : Control
     private HBoxContainer? rateRow;
     private HBoxContainer? liveRow;
     private VBoxContainer? decisionBox;
-    private Button? confirmButton;
     private Button? startButton;
     private Button? autonomyButton;
     private Button? pauseButton;
@@ -59,12 +58,8 @@ public sealed partial class WatchRaceScreen : Control
         title = MakeLabel("WATCH RACE", 42, Black);
         root.AddChild(title);
 
-        status = MakeLabel("Potwierdź plan, wybierz czas filmu i oglądaj etap.", 16, Gray);
+        status = MakeLabel("Wybierz czas filmu, autonomię DS i oglądaj.", 16, Gray);
         root.AddChild(status);
-
-        confirmButton = MakeButton("POTWIERDŹ PLAN", onPressed: OnConfirm);
-        startButton = MakeButton("OGLĄDAJ ETAP", onPressed: OnStart);
-        root.AddChild(WrapRow(confirmButton, startButton));
 
         rateRow = new HBoxContainer();
         rateRow.AddThemeConstantOverride("separation", 8);
@@ -83,7 +78,13 @@ public sealed partial class WatchRaceScreen : Control
 
         autonomyButton = MakeButton("AUTONOMIA DS: NIE", OnToggleAutonomy, compact: true);
         autonomyButton.CustomMinimumSize = new Vector2(220, 40);
+        autonomyButton.SizeFlagsHorizontal = SizeFlags.ShrinkBegin;
         root.AddChild(autonomyButton);
+
+        startButton = MakeButton("OGLĄDAJ", onPressed: OnStart);
+        startButton.CustomMinimumSize = new Vector2(220, 48);
+        startButton.SizeFlagsHorizontal = SizeFlags.ShrinkBegin;
+        root.AddChild(startButton);
 
         map = new WatchRaceMapView
         {
@@ -133,7 +134,6 @@ public sealed partial class WatchRaceScreen : Control
         if (!opened.Succeeded)
         {
             status.Text = $"Nie udało się otworzyć prototypu ({opened.ReasonCode}).";
-            confirmButton.Disabled = true;
             startButton.Disabled = true;
             return;
         }
@@ -157,16 +157,6 @@ public sealed partial class WatchRaceScreen : Control
         }
 
         Refresh();
-    }
-
-    private void OnConfirm()
-    {
-        if (host is null)
-        {
-            return;
-        }
-
-        Apply(host.ConfirmPreparation());
     }
 
     private void OnSelectFilm(int seconds)
@@ -262,7 +252,6 @@ public sealed partial class WatchRaceScreen : Control
 
         bool live = host.State == GameState.RaceLive;
         bool prep = host.State == GameState.RacePreparationFlow;
-        confirmButton!.Visible = prep;
         startButton!.Visible = prep;
         rateRow!.Visible = prep || live;
         autonomyButton!.Visible = prep || live;
@@ -278,7 +267,7 @@ public sealed partial class WatchRaceScreen : Control
             title!.Text = "WATCH RACE";
             status!.Text = host.DsAutonomy
                 ? $"Seed 91234 · film {WatchFilmDuration.Label(host.SelectedFilmSeconds)} · DS sam podejmuje decyzje."
-                : $"Seed 91234 · film {WatchFilmDuration.Label(host.SelectedFilmSeconds)} · potwierdź plan i oglądaj.";
+                : $"Seed 91234 · film {WatchFilmDuration.Label(host.SelectedFilmSeconds)} · oglądaj.";
             clock!.Text = "zegar oglądania czeka na StartRace.";
         }
 
@@ -300,7 +289,7 @@ public sealed partial class WatchRaceScreen : Control
                 : "Pauza na decyzji. Fizyka stoi, aż sztab odpowie.";
             clock!.Text = string.Create(
                 CultureInfo.InvariantCulture,
-                $"film {WatchFilmDuration.Clock(view.WatchSecond, host.SelectedFilmSeconds)} · etap {view.RaceSecond}s{(view.Paused ? " · pauza" : string.Empty)}");
+                $"film {WatchFilmDuration.Clock(view.WatchSecond, host.ExpectedFilmSeconds)} · etap {view.RaceSecond}s{(view.Paused ? " · pauza" : string.Empty)}");
             board!.Text = FormatBoard(view);
             board.Visible = true;
             map?.ShowView(view);
@@ -438,7 +427,6 @@ public sealed partial class WatchRaceScreen : Control
     {
         return reasonCode switch
         {
-            "PREP_PLAN_INCOMPLETE" => "Najpierw potwierdź plan.",
             "SAVE_FORBIDDEN_IN_RACE_LIVE" => "Zapis w trakcie etapu jest zablokowany.",
             "LOAD_FORBIDDEN_IN_RACE_LIVE" => "Wczytanie w trakcie etapu jest zablokowane.",
             "WATCH_FILM_LOCKED" => "Czas filmu ustala się przed startem.",
@@ -448,18 +436,6 @@ public sealed partial class WatchRaceScreen : Control
             "GAME_STATE_INVALID" => "Ta akcja nie jest teraz dostępna.",
             _ => reasonCode,
         };
-    }
-
-    private static HBoxContainer WrapRow(params Control[] children)
-    {
-        HBoxContainer row = new();
-        row.AddThemeConstantOverride("separation", 10);
-        foreach (Control child in children)
-        {
-            row.AddChild(child);
-        }
-
-        return row;
     }
 
     private static Label MakeLabel(string text, int size, Color color)

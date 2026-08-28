@@ -10,7 +10,14 @@ public static class WatchFilmDuration
     public static readonly int[] ChoicesSeconds = { 30, 60, 120, 180, 300 };
 
     public const int DefaultSeconds = 300;
-    public const double EstimateSpeedMps = 6.0;
+
+    /// <summary>
+    /// Effective film-pacing speed, including climb and prototype fatigue.
+    /// Live board speed stays ~40 km/h on the flat (11 m/s); using that snapshot
+    /// under-estimates duration and the 5 min film overruns the 5 min cap.
+    /// 6 m/s on 5400 m ≈ 15 min of physics → ×3 → about 5 min of watching.
+    /// </summary>
+    public const double EffectivePaceMps = 6.0;
 
     public static bool IsChoice(int seconds) => ChoicesSeconds.Contains(seconds);
 
@@ -21,19 +28,43 @@ public static class WatchFilmDuration
             return 1;
         }
 
-        return Math.Max(1, (int)Math.Round(routeLengthM / EstimateSpeedMps, MidpointRounding.AwayFromZero));
+        return Math.Max(1, (int)Math.Round(routeLengthM / EffectivePaceMps, MidpointRounding.AwayFromZero));
+    }
+
+    public static int EstimatePhysicsSeconds(RaceWatchCourse? course)
+    {
+        return EstimatePhysicsSeconds(course?.TotalLengthM ?? 0.0);
     }
 
     public static int RateFor(double routeLengthM, int targetFilmSeconds)
+    {
+        return RateFor(EstimatePhysicsSeconds(routeLengthM), targetFilmSeconds);
+    }
+
+    public static int RateFor(RaceWatchCourse? course, int targetFilmSeconds)
+    {
+        return RateFor(EstimatePhysicsSeconds(course), targetFilmSeconds);
+    }
+
+    public static int RateFor(int estimatedPhysicsSeconds, int targetFilmSeconds)
     {
         if (!IsChoice(targetFilmSeconds))
         {
             throw new ArgumentOutOfRangeException(nameof(targetFilmSeconds));
         }
 
-        double estimate = routeLengthM / EstimateSpeedMps;
-        int rate = (int)Math.Round(estimate / targetFilmSeconds, MidpointRounding.AwayFromZero);
+        int physics = Math.Max(1, estimatedPhysicsSeconds);
+        int rate = (int)Math.Round(
+            physics / (double)targetFilmSeconds,
+            MidpointRounding.AwayFromZero);
         return Math.Clamp(rate, RaceWatchClock.MinimumRate, RaceWatchClock.MaximumRate);
+    }
+
+    public static int EstimateFilmSeconds(RaceWatchCourse? course, int targetFilmSeconds)
+    {
+        int physics = EstimatePhysicsSeconds(course);
+        int rate = RateFor(physics, targetFilmSeconds);
+        return Math.Max(1, (int)Math.Round(physics / (double)rate, MidpointRounding.AwayFromZero));
     }
 
     public static string Label(int seconds)
