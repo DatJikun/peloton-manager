@@ -42,7 +42,7 @@ public static class RouteProfileLibrary
         return All.Single(template => template.Kind == kind && template.Variant == variant);
     }
 
-    private static IReadOnlyList<RouteProfileTemplate> BuildAll()
+    private static RouteProfileTemplate[] BuildAll()
     {
         return new[]
         {
