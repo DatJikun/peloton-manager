@@ -255,6 +255,8 @@ public sealed partial class WatchRaceScreen : Control
             WatchChrome.ApplyKind(liveHud.HeaderContinue, WatchChrome.Kind.Team, selected: paused);
         }
 
+        liveHud.HeaderContinue.Disabled = host.PendingDecision is not null;
+
         RefreshDecision();
         RefreshResult();
     }
