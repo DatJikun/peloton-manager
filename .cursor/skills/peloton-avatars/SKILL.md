@@ -122,6 +122,13 @@ python3 scripts/apply_looks.py           # hardlink PNGs + remap weights/affines
 python3 scripts/render_look_compare.py   # teraz | kształt | znak | archetyp
 ```
 
+Optional public-generator comparison (fetch + sheet only, still not a runtime path):
+
+```bash
+python3 scripts/fetch_external_avatars.py
+python3 scripts/render_generator_compare.py
+```
+
 Never hand over a pack that fails `validate_pack.py`, and never claim a visual result
 without looking at the rendered sheets. Copy the sheets you actually judged into
 `demo/` when the change is meant to be reviewed by the owner.
@@ -306,6 +313,12 @@ To add a look the owner asked for, append recipes in `pack.py`. Do not silently 
   archetyp (ActorMIXER families). Do not promote a look into the default pack
   until the owner picks a column. Do not restore retired heart / lantern /
   mullet / bowl / pompadour heads to win a silhouette test.
+- **Public avatar generators are the wrong runtime.** DiceBear / Multiavatar /
+  Avataaars emit generic profile stickers (sunglasses, pacifiers, 3/4 doodles),
+  not a front-facing cyclist pack. An image model can imitate the poster ink
+  with a reference, but the faces collapse to one handsome template and there
+  is still **no AI at runtime**. Comparison sheets live in
+  `scripts/render_generator_compare.py`; do not wire a URL fetch into generate.
 - **A nose without a silhouette is invisible.** Multiply ticks at the nostrils do not
   carry width, length or hook. Give the nose a skin mask and a keyline.
 - **Same-polygon brows stay identical.** Changing only `th` by 2 px does not read; move
