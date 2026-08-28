@@ -54,7 +54,7 @@ public sealed partial class WatchRaceMapView : Control
         float top = area.Position.Y + 28;
         float bottom = area.End.Y - 28;
         Vector2[] screen = ToScreen(left, right, top, bottom);
-        if (screen.Length >= 2)
+        if (screen.Length >= 2 && profile.Length >= 2)
         {
             var fill = new List<Vector2>(screen)
             {
@@ -121,7 +121,8 @@ public sealed partial class WatchRaceMapView : Control
 
     private void DrawTerrainStroke(Vector2[] screen)
     {
-        for (int index = 0; index < screen.Length - 1; index++)
+        int last = System.Math.Min(screen.Length, profile.Length) - 1;
+        for (int index = 0; index < last; index++)
         {
             double gradient = profile[index].Gradient;
             Color color = gradient >= 0.03 ? ClimbStroke : gradient <= -0.03 ? DescentStroke : FlatStroke;
