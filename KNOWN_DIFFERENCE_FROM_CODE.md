@@ -9,9 +9,9 @@ The prototype is still below the accepted Race Engine contract. Remaining intent
 - fixed one-second step and `double` arithmetic; these are prototype choices, not production locks;
 - synthetic multi-team pack and transient numeric participant IDs, not career roster integration;
 - simplified shelter slots, drafting, durability, and knowledge-bounded chase decisions;
-- no Godot RaceLive UI;
+- Godot Watch Race exists as a presentation window over the same D-033 clock; it is not a Career Hub and not a fun-gate result;
 - owner engagement gate in `RACE_ENGINE_DESIGN_v0.2.md` §49 remains `NOT VERIFIED`;
-- SimRunner `watch` now has the D-033 headless supervising clock, rates ×1 / ×2 / ×5 / ×20, decision pauses, and RNG-neutral focal-rider motion; it is still not the Godot Watch Race renderer or an owner §49 playtest;
+- SimRunner `watch` still has the D-033 headless supervising clock, rates ×1 / ×2 / ×5 / ×20, decision pauses, and RNG-neutral focal-rider motion; CLI Watch is not the Godot renderer or an owner §49 playtest;
 - multi-stage GC leadership transfer (`D-032`) is not implemented.
 
 This is an explicit prototype boundary, not an accepted simplification of the future Race Engine. Deeper physiology, career calendars, and fun/decision-density claims wait on owner playtest.

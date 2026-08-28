@@ -1,0 +1,234 @@
+using System;
+using Peloton.Application;
+using Peloton.Domain;
+using Peloton.Simulation.Race;
+
+namespace Peloton.Client.Godot;
+
+public sealed class WatchRaceHost
+{
+    public const double WatchSecondDuration = 1.0;
+
+    private readonly GameApplication application;
+    private readonly string autosavePath;
+    private readonly string raceScenarioId;
+    private RaceWatchFrame? previousFrame;
+    private double watchAccumulator;
+    private bool presentationPaused;
+
+    public WatchRaceHost(
+        GameApplication application,
+        string autosavePath,
+        string? raceScenarioId = null)
+    {
+        this.application = application ?? throw new ArgumentNullException(nameof(application));
+        ArgumentException.ThrowIfNullOrWhiteSpace(autosavePath);
+        this.autosavePath = autosavePath;
+        this.raceScenarioId = string.IsNullOrWhiteSpace(raceScenarioId)
+            ? RacePreparationDefaults.PrototypeScenarioId
+            : raceScenarioId;
+        SelectedRate = 5;
+    }
+
+    public int SelectedRate { get; private set; }
+
+    public GameState State => application.State;
+
+    public RaceWatchFrame? OfficialFrame => application.RaceWatch;
+
+    public RaceWatchCourse? Course => application.RaceWatchCourse;
+
+    public PendingRaceDecision? PendingDecision => application.PendingRaceDecision;
+
+    public RaceResultProjection? Result => application.RaceResult;
+
+    public RaceDebriefProjection? Debrief => application.RaceDebrief;
+
+    public string? LastChecksum => application.LastOfficialChecksum;
+
+    public bool PresentationPaused => presentationPaused;
+
+    public InterpolatedWatchView? Interpolated
+    {
+        get
+        {
+            if (application.RaceWatch is null)
+            {
+                return null;
+            }
+
+            return WatchMotionInterpolator.Project(
+                previousFrame,
+                application.RaceWatch,
+                application.PendingRaceDecision is null && !presentationPaused
+                    ? watchAccumulator / WatchSecondDuration
+                    : 1.0);
+        }
+    }
+
+    public CommandResult OpenPrototype(long seed)
+    {
+        CommandResult created = application.Execute(
+            new CreateWorldCommand("scenario.peloton.skeleton", seed));
+        if (!created.Succeeded)
+        {
+            return created;
+        }
+
+        return application.Execute(new PrepareRaceCommand());
+    }
+
+    public CommandResult ConfirmPreparation()
+    {
+        return application.Execute(new ConfirmRacePreparationPlanCommand());
+    }
+
+    public CommandResult SelectRate(int rate)
+    {
+        if (application.State == GameState.RaceLive)
+        {
+            return CommandResult.Reject("WATCH_RATE_LOCKED");
+        }
+
+        if (rate is not (1 or 2 or 5 or 20))
+        {
+            return CommandResult.Reject("WATCH_RATE_INVALID");
+        }
+
+        SelectedRate = rate;
+        return CommandResult.Success;
+    }
+
+    public CommandResult StartWatch()
+    {
+        CommandResult started = application.Execute(
+            new StartRaceCommand(autosavePath, raceScenarioId));
+        if (!started.Succeeded)
+        {
+            return started;
+        }
+
+        CommandResult watching = application.Execute(new BeginRaceWatchCommand(SelectedRate));
+        if (!watching.Succeeded)
+        {
+            return watching;
+        }
+
+        previousFrame = application.RaceWatch;
+        watchAccumulator = 0.0;
+        presentationPaused = false;
+        return CommandResult.Success;
+    }
+
+    public CommandResult SetPresentationPaused(bool paused)
+    {
+        if (application.State != GameState.RaceLive)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        presentationPaused = paused || application.PendingRaceDecision is not null;
+        return CommandResult.Success;
+    }
+
+    public CommandResult Tick(double realDeltaSeconds)
+    {
+        if (application.State != GameState.RaceLive || application.RaceWatch is null)
+        {
+            return CommandResult.Success;
+        }
+
+        if (application.PendingRaceDecision is not null)
+        {
+            presentationPaused = true;
+            watchAccumulator = WatchSecondDuration;
+            return CommandResult.Success;
+        }
+
+        if (presentationPaused)
+        {
+            return CommandResult.Success;
+        }
+
+        ArgumentOutOfRangeException.ThrowIfLessThan(realDeltaSeconds, 0.0);
+        watchAccumulator += realDeltaSeconds;
+        while (watchAccumulator >= WatchSecondDuration &&
+               application.State == GameState.RaceLive &&
+               application.PendingRaceDecision is null)
+        {
+            watchAccumulator -= WatchSecondDuration;
+            previousFrame = application.RaceWatch;
+            CommandResult advanced = application.Execute(new AdvanceRaceWatchCommand());
+            if (!advanced.Succeeded)
+            {
+                return advanced;
+            }
+
+            if (application.State != GameState.RaceLive)
+            {
+                watchAccumulator = 0.0;
+                break;
+            }
+
+            if (application.PendingRaceDecision is not null)
+            {
+                presentationPaused = true;
+                watchAccumulator = WatchSecondDuration;
+                break;
+            }
+        }
+
+        return CommandResult.Success;
+    }
+
+    public CommandResult Respond(RaceDecisionOption option)
+    {
+        if (application.PendingRaceDecision is not PendingRaceDecision decision)
+        {
+            return CommandResult.Reject("RACE_DECISION_NOT_PENDING");
+        }
+
+        CommandResult responded = application.Execute(new RespondToRaceDecisionCommand(
+            decision.RequestId,
+            decision.AuthorityId,
+            option));
+        if (!responded.Succeeded)
+        {
+            return responded;
+        }
+
+        presentationPaused = false;
+        watchAccumulator = 0.0;
+        previousFrame = application.RaceWatch;
+        return CommandResult.Success;
+    }
+
+    public CommandResult RespondDelegatedDefault()
+    {
+        if (application.PendingRaceDecision is not PendingRaceDecision decision)
+        {
+            return CommandResult.Reject("RACE_DECISION_NOT_PENDING");
+        }
+
+        return Respond(decision.DelegatedDefaultOption);
+    }
+
+    public CommandResult Abandon()
+    {
+        CommandResult abandoned = application.Execute(new AbandonRaceLiveCommand(autosavePath));
+        previousFrame = null;
+        watchAccumulator = 0.0;
+        presentationPaused = false;
+        return abandoned;
+    }
+
+    public CommandResult AcknowledgeResults()
+    {
+        return application.Execute(new AcknowledgeRaceResultsCommand());
+    }
+
+    public CommandResult CompleteDebrief()
+    {
+        return application.Execute(new CompleteRaceDebriefCommand());
+    }
+}

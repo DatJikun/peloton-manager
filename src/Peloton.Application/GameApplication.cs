@@ -82,6 +82,9 @@ public sealed class GameApplication
     public RaceWatchFrame? RaceWatch =>
         State == GameState.RaceLive && watchClock is not null ? watchClock.Current : null;
 
+    public RaceWatchCourse? RaceWatchCourse =>
+        State == GameState.RaceLive && activeRaceSession is not null ? activeRaceSession.Course : null;
+
     public string? LastOfficialChecksum => lastOfficialChecksum;
 
     public int LastWatchSecond { get; private set; }
@@ -466,6 +469,36 @@ public sealed class GameApplication
         catch (InvalidOperationException)
         {
             return CommandResult.Reject("RACE_ADVANCE_FAILED");
+        }
+    }
+
+    public CommandResult Execute(AbandonRaceLiveCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.RaceLive)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        activeRaceSession = null;
+        watchClock = null;
+        LastWatchSecond = 0;
+        LastSimSecond = 0;
+        lastOfficialChecksum = null;
+        try
+        {
+            WorldCheckpoint checkpoint = saveStore.Load(command.PreRaceAutosavePath);
+            World = checkpoint.World;
+            racePreparation = checkpoint.RacePreparation;
+            State = checkpoint.GameState;
+            return CommandResult.Success;
+        }
+        catch (Exception exception) when (exception is IOException or InvalidDataException)
+        {
+            World = null;
+            racePreparation = null;
+            State = GameState.MainMenu;
+            return CommandResult.Reject("RACE_ABANDON_FAILED");
         }
     }
 

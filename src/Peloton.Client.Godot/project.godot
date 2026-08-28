@@ -1,0 +1,27 @@
+; Engine configuration file.
+; Godot 4.4 .NET Watch Race prototype (D-033). Presentation only.
+
+config_version=5
+
+[application]
+
+config/name="Peloton Manager — Watch Race"
+config/description="First playable Watch Race. Commands and queries only."
+run/main_scene="res://WatchRace.tscn"
+config/features=PackedStringArray("4.4", "C#", "Forward Plus")
+config/icon="res://icon.svg"
+
+[display]
+
+window/size/viewport_width=1440
+window/size/viewport_height=900
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[dotnet]
+
+project/assembly_name="Peloton.Client.Godot"
+
+[rendering]
+
+environment/defaults/default_clear_color=Color(0.952941, 0.929412, 0.882353, 1)

@@ -8,10 +8,13 @@ namespace Peloton.Simulation.Race;
 public sealed record RaceRiderMotion(
     WorldEntityId RiderId,
     double DistanceM,
-    double SpeedMps);
+    double SpeedMps,
+    double ShelterMultiplier,
+    double Gradient);
 
 public sealed record RaceMotionSnapshot(
     int RaceSecond,
+    double RouteLengthM,
     IReadOnlyList<RaceRiderMotion> Riders);
 
 public sealed class RaceSession
@@ -65,16 +68,28 @@ public sealed class RaceSession
 
     public RaceDecisionRequest? PendingDecision => pendingDecisionContext?.Request;
 
+    public RaceWatchCourse Course => new(
+        scenario.Definition.TotalLengthM,
+        scenario.Definition.Segments
+            .Select(segment => new RaceWatchCourseSegment(segment.Id, segment.LengthM, segment.Gradient))
+            .ToArray());
+
     public RaceMotionSnapshot GetMotionSnapshot()
     {
         RaceRiderMotion[] motion = riders
             .OrderBy(rider => rider.Profile.RiderId.Value)
-            .Select(rider => new RaceRiderMotion(
-                rider.Profile.RiderId,
-                rider.DistanceM,
-                rider.SpeedMps))
+            .Select(rider =>
+            {
+                RaceRouteSegment segment = scenario.Definition.SegmentAt(rider.DistanceM);
+                return new RaceRiderMotion(
+                    rider.Profile.RiderId,
+                    rider.DistanceM,
+                    rider.SpeedMps,
+                    rider.ShelterMultiplier,
+                    segment.Gradient);
+            })
             .ToArray();
-        return new RaceMotionSnapshot(simulationSecond, motion);
+        return new RaceMotionSnapshot(simulationSecond, scenario.Definition.TotalLengthM, motion);
     }
 
     public RaceStepResult Step()

@@ -290,6 +290,36 @@ public sealed class GameApplicationTests
     }
 
     [Fact]
+    public void AbandonRaceLiveRollsBackToPreRaceAutosaveAndKeepsCareerBlockedUntilExit()
+    {
+        using TemporaryDirectory temp = new();
+        string autosave = Path.Combine(temp.Path, "pre-race.peloton");
+        GameApplication application = TestApplication.Create();
+        Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 91234)).Succeeded);
+        Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
+        Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        string preRaceChecksum = Peloton.Simulation.WorldChecksum.Compute(application.World!);
+        Assert.True(application.Execute(new StartRaceCommand(autosave, PrototypeRaceScenarioId)).Succeeded);
+        Assert.True(application.Execute(new BeginRaceWatchCommand(5)).Succeeded);
+        Assert.Equal(GameState.RaceLive, application.State);
+        Assert.NotNull(application.RaceWatchCourse);
+        Assert.Null(application.CareerDay);
+        Assert.Equal(
+            "SAVE_FORBIDDEN_IN_RACE_LIVE",
+            application.Execute(new SaveGameCommand(Path.Combine(temp.Path, "mid-race.peloton"))).ReasonCode);
+        Assert.Equal(
+            "GAME_STATE_INVALID",
+            application.Execute(new FollowHubPrimaryActionCommand()).ReasonCode);
+
+        Assert.True(application.Execute(new AbandonRaceLiveCommand(autosave)).Succeeded);
+
+        Assert.Equal(GameState.RacePreparationFlow, application.State);
+        Assert.Null(application.RaceWatch);
+        Assert.Equal(0, application.World!.RaceCount);
+        Assert.Equal(preRaceChecksum, Peloton.Simulation.WorldChecksum.Compute(application.World));
+    }
+
+    [Fact]
     public void AdvanceDayAdvancesEveryOrganization()
     {
         GameApplication application = TestApplication.Create();

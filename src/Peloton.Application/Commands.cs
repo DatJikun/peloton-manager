@@ -30,6 +30,8 @@ public sealed record BeginRaceWatchCommand(int Rate);
 
 public sealed record AdvanceRaceWatchCommand;
 
+public sealed record AbandonRaceLiveCommand(string PreRaceAutosavePath);
+
 public sealed record RespondToRaceDecisionCommand(
     RaceDecisionRequestId RequestId,
     WorldEntityId AuthorityId,
