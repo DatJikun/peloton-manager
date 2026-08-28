@@ -25,5 +25,8 @@ public sealed class WatchObservationTextTests
         Assert.DoesNotContain("WPrime", flat, System.StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("WPrime", climb, System.StringComparison.OrdinalIgnoreCase);
         Assert.Equal("DS (chce: Pościg)", WatchObservationText.DsAction("CommitSupport"));
+        Assert.Equal("0:00", WatchObservationText.GapClock(0.0, 11.0));
+        Assert.Equal("+0:04", WatchObservationText.GapClock(44.0, 11.0));
+        Assert.Equal("Alpha Leader", WatchObservationText.DisplayName("alpha-leader"));
     }
 }

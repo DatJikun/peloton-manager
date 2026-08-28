@@ -46,7 +46,7 @@ Static content lives in `content/peloton.skeleton` and `content/peloton.race-pro
 | SimRunner race gate | `tools/Peloton.SimRunner/RacePrototypeCommand.cs` | prototype design §11 | `SimRunnerContractTests` |
 | Headless Watch clock | `Peloton.Simulation/Race/RaceWatch.cs`, `tools/Peloton.SimRunner/RaceWatchCommand.cs` | `D-033` clock contract | `RaceWatchTests`, `SimRunnerContractTests` |
 | Route profile library | `Peloton.Simulation/Race/RouteProfileLibrary.cs`, `RouteProfileGenerator.cs` | presentation profiles; physics stays coarse prototype segments | `RouteProfileTests` |
-| Godot Watch Race | `src/Peloton.Client.Godot` (`WatchRaceHost`, `WatchRaceScreen`, `WatchChrome`, `fonts/`, `project.godot`) | `D-033` renderer; 08e chrome; squad radio board; optional DS autonomy | `WatchRaceHostTests`, `WatchMotionInterpolatorTests`, `WatchFilmDurationTests`, `WatchRouteProfileTests`, `WatchObservationTextTests` |
+| Godot Watch Race | `src/Peloton.Client.Godot` (`WatchRaceHost`, `WatchRaceScreen`, `WatchLiveHud`, `WatchPanel`, `WatchChrome`, `fonts/`, `project.godot`) | `D-033` renderer; 08e chrome; RACE LIVE dashboard; squad radio board; optional DS autonomy | `WatchRaceHostTests`, `WatchMotionInterpolatorTests`, `WatchFilmDurationTests`, `WatchRouteProfileTests`, `WatchObservationTextTests` |
 | Career Hub query | `Peloton.Application/CareerDay.cs` | `GAME_STATES_v0.1.md` Advance Day; Hub primary action (`advance-day` / `race-next`); Management only; not a UI dashboard | Application tests, `day` SimRunner |
 | Race preparation | `Peloton.Application/RacePreparation.cs`, `GameApplication.cs` | fixture-backed projection; session checkpoint plan; no career roster | Application + Persistence tests |
 | Race result / debrief | `Peloton.Application/RaceResultDebrief.cs`, `GameApplication.cs` | committed `LastRace` + calendar; knowledge-bounded notes; checkpoint not World | Application + Persistence tests |
@@ -115,6 +115,7 @@ Content creation failure
 Godot Watch Race
 → src/Peloton.Client.Godot/WatchRaceHost.cs
 → WatchRaceScreen.cs
+→ WatchLiveHud.cs / WatchPanel.cs / WatchRaceMapView.cs
 → WatchRouteProfile.cs / Peloton.Simulation/Race/RouteProfileGenerator.cs
 → GameApplication RaceWatch / PendingRaceDecision / RaceResult
 

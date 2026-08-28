@@ -9,10 +9,14 @@ internal static class WatchChrome
     public static readonly Color Red = new("d11f1f");
     public static readonly Color Black = new("0c0c0d");
     public static readonly Color White = new("fffdf7");
+    public static readonly Color Team = new("2050c8");
+    public static readonly Color Gray = new("6f6f72");
+    public static readonly Color Hair = new("d9d2c0");
 
     public enum Kind
     {
         Primary,
+        Team,
         Secondary,
         Segment,
     }
@@ -61,12 +65,13 @@ internal static class WatchChrome
         Color fill = kind switch
         {
             Kind.Primary => selected ? Black : Red,
+            Kind.Team => selected ? Black : Team,
             Kind.Secondary => selected ? Black : Paper,
             _ => selected ? Black : White,
         };
         Color hoverFill = kind == Kind.Primary ? Black : Black;
         Color ink = fill == Paper || fill == White ? Black : Paper;
-        Color hoverInk = kind == Kind.Primary ? Red : Paper;
+        Color hoverInk = kind is Kind.Primary or Kind.Team ? Red : Paper;
         bool shadow = kind != Kind.Segment;
         int border = kind == Kind.Segment ? 3 : 3;
         int padX = kind == Kind.Segment ? 12 : 22;
@@ -119,5 +124,20 @@ internal static class WatchChrome
         }
 
         return font;
+    }
+
+    public static StyleBoxFlat HeaderBar()
+    {
+        StyleBoxFlat box = Box(Team, 0, 12, 8, shadow: false);
+        box.BorderWidthLeft = 0;
+        box.BorderWidthTop = 0;
+        box.BorderWidthRight = 0;
+        box.BorderWidthBottom = 0;
+        return box;
+    }
+
+    public static StyleBoxFlat Frame(Color fill, bool shadow)
+    {
+        return Box(fill, 3, 0, 0, shadow);
     }
 }

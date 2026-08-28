@@ -76,6 +76,35 @@ public static class WatchRouteProfile
         return (x, y);
     }
 
+    public static (double LengthM, double ClimbM, double DescentM, double MaxElevationM) Summarize(
+        IReadOnlyList<WatchRoutePoint> points)
+    {
+        if (points.Count == 0)
+        {
+            return (0.0, 0.0, 0.0, 0.0);
+        }
+
+        double climb = 0.0;
+        double descent = 0.0;
+        double maxElevation = points[0].ElevationM;
+        for (int index = 1; index < points.Count; index++)
+        {
+            double delta = points[index].ElevationM - points[index - 1].ElevationM;
+            if (delta > 0.0)
+            {
+                climb += delta;
+            }
+            else
+            {
+                descent += -delta;
+            }
+
+            maxElevation = Math.Max(maxElevation, points[index].ElevationM);
+        }
+
+        return (points[^1].DistanceM, climb, descent, maxElevation);
+    }
+
     public static bool IsCrosswind(RaceWatchCourseSegment segment)
     {
         return RouteProfileGenerator.IsCrosswind(segment);

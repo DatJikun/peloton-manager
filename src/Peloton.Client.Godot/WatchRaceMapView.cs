@@ -22,6 +22,8 @@ public sealed partial class WatchRaceMapView : Control
         new("2050c8"),
     };
 
+    public bool DrawOuterFrame { get; set; } = true;
+
     private RaceWatchCourse? course;
     private InterpolatedWatchView? view;
     private WatchRoutePoint[] profile = System.Array.Empty<WatchRoutePoint>();
@@ -48,11 +50,15 @@ public sealed partial class WatchRaceMapView : Control
     {
         Rect2 area = new(Vector2.Zero, Size);
         DrawRect(area, Paper);
-        DrawRect(area, Black, filled: false, width: 3);
-        float left = area.Position.X + 16;
+        if (DrawOuterFrame)
+        {
+            DrawRect(area, Black, filled: false, width: 3);
+        }
+
+        float left = area.Position.X + 44;
         float right = area.End.X - 16;
-        float top = area.Position.Y + 28;
-        float bottom = area.End.Y - 28;
+        float top = area.Position.Y + 22;
+        float bottom = area.End.Y - 48;
         Vector2[] screen = ToScreen(left, right, top, bottom);
         if (screen.Length >= 2 && profile.Length >= 2)
         {
@@ -72,27 +78,45 @@ public sealed partial class WatchRaceMapView : Control
             return;
         }
 
-        for (int index = 0; index < view.Riders.Count; index++)
+        double totalLengthM = course.TotalLengthM;
+        HashSet<long> drawn = new();
+        void DrawRider(InterpolatedRiderView rider, int colorIndex, bool labelLeader)
         {
-            InterpolatedRiderView rider = view.Riders[index];
+            if (!drawn.Add(rider.RiderId))
+            {
+                return;
+            }
+
             (double x, double y) = WatchRouteProfile.PointOnPolyline(
                 profile,
-                rider.Progress * course.TotalLengthM,
+                rider.Progress * totalLengthM,
                 left,
                 right,
                 top,
                 bottom);
             Vector2 point = new((float)x, (float)y);
             float radius = rider.Place == 1 ? 11f : 9f;
-            Color fill = RiderFills[index % RiderFills.Length];
+            Color fill = rider.Place == 1 ? new Color("2050c8") : RiderFills[colorIndex % RiderFills.Length];
             DrawCircle(point, radius + 2f, Black);
             DrawCircle(point, radius, fill);
-            if (rider.ShelterMultiplier >= 0.99)
-            {
-                DrawArc(point, radius + 5f, 0, Mathf.Tau, 24, Red, 2f, antialiased: true);
-            }
+            string caption = rider.Place == 1 && labelLeader
+                ? "LIDER WYŚCIGU"
+                : WatchObservationText.DisplayName(rider.Label);
+            DrawCaption(point + new Vector2(12, -10), caption, rider.Place == 1 ? new Color("2050c8") : Black, 11);
+        }
 
-            DrawCaption(point + new Vector2(12, -8), rider.Label, Black, 12);
+        foreach (InterpolatedRiderView rider in view.Field)
+        {
+            if (rider.Place == 1)
+            {
+                DrawRider(rider, 0, labelLeader: true);
+                break;
+            }
+        }
+
+        for (int index = 0; index < view.Riders.Count; index++)
+        {
+            DrawRider(view.Riders[index], index, labelLeader: false);
         }
     }
 
@@ -187,7 +211,47 @@ public sealed partial class WatchRaceMapView : Control
         }
 
         DrawCaption(new Vector2(left, bottom + 12), "KM", Gray, 11);
+        DrawLegend(left, right, bottom);
         LabelTerrainRuns(left, right, top, bottom);
+        DrawElevationAxis(left, top, bottom);
+    }
+
+    private void DrawElevationAxis(float left, float top, float bottom)
+    {
+        if (profile.Length == 0)
+        {
+            return;
+        }
+
+        double min = profile[0].ElevationM;
+        double max = profile[0].ElevationM;
+        for (int index = 1; index < profile.Length; index++)
+        {
+            min = System.Math.Min(min, profile[index].ElevationM);
+            max = System.Math.Max(max, profile[index].ElevationM);
+        }
+
+        DrawCaption(new Vector2(4, top), $"{max:0} m", Gray, 10);
+        DrawCaption(new Vector2(4, bottom - 12), $"{min:0} m", Gray, 10);
+    }
+
+    private void DrawLegend(float left, float right, float bottom)
+    {
+        float y = bottom + 26;
+        DrawCaption(new Vector2(left, y), "NACHYLENIE", Gray, 9);
+        float x = left + 90;
+        DrawRect(new Rect2(x, y + 2, 18, 8), new Color("e8d9b8"));
+        DrawCaption(new Vector2(x + 22, y), "0–3%", Gray, 9);
+        x += 68;
+        DrawRect(new Rect2(x, y + 2, 18, 8), new Color("d11f1f", 0.35f));
+        DrawCaption(new Vector2(x + 22, y), "3–6%", Gray, 9);
+        x += 68;
+        DrawRect(new Rect2(x, y + 2, 18, 8), new Color("d11f1f", 0.7f));
+        DrawCaption(new Vector2(x + 22, y), "6–9%", Gray, 9);
+        x += 68;
+        DrawRect(new Rect2(x, y + 2, 18, 8), ClimbStroke);
+        DrawCaption(new Vector2(x + 22, y), ">9%", Gray, 9);
+        _ = right;
     }
 
     private void LabelTerrainRuns(float left, float right, float top, float bottom)
@@ -243,12 +307,7 @@ public sealed partial class WatchRaceMapView : Control
 
     private void DrawCaption(Vector2 position, string text, Color color, int size)
     {
-        Font? font = ThemeDB.FallbackFont;
-        if (font is null)
-        {
-            return;
-        }
-
+        Font font = WatchChrome.BodyBoldFont();
         DrawString(font, position, text, HorizontalAlignment.Left, -1, size, color);
     }
 }

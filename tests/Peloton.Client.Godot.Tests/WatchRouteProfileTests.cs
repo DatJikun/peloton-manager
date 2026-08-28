@@ -25,6 +25,11 @@ public sealed class WatchRouteProfileTests
         Assert.Contains(points, point => point.Kind == RouteTerrainKind.Crosswind && point.RoadWidthM < 3.0);
         (double x, double y) start = WatchRouteProfile.PointOnPolyline(points, 0.0, 0, 100, 10, 90);
         (double x, double y) finish = WatchRouteProfile.PointOnPolyline(points, 5400.0, 0, 100, 10, 90);
+        (double lengthM, double climbM, double descentM, double maxElevationM) = WatchRouteProfile.Summarize(points);
+        Assert.Equal(5400.0, lengthM, 6);
+        Assert.True(climbM > 0.0);
+        Assert.True(maxElevationM > 0.0);
+        _ = descentM;
         Assert.Equal(0.0, start.x, 6);
         Assert.Equal(100.0, finish.x, 6);
         Assert.True(finish.y < start.y);

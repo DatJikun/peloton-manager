@@ -59,10 +59,46 @@ public static class WatchObservationText
     {
         if (gapM < 0.5)
         {
-            return "lider";
+            return "—";
         }
 
         return string.Create(CultureInfo.InvariantCulture, $"+{Math.Max(0.0, gapM):0} m");
+    }
+
+    public static string GapClock(double gapM, double speedMps)
+    {
+        if (gapM < 0.5)
+        {
+            return "0:00";
+        }
+
+        double seconds = gapM / Math.Max(1.0, speedMps);
+        int total = Math.Max(1, (int)Math.Round(seconds, MidpointRounding.AwayFromZero));
+        return string.Create(CultureInfo.InvariantCulture, $"+{total / 60}:{total % 60:00}");
+    }
+
+    public static string DisplayName(string label)
+    {
+        if (string.IsNullOrWhiteSpace(label))
+        {
+            return "—";
+        }
+
+        string[] parts = label.Replace('-', ' ').Replace('.', ' ')
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0)
+        {
+            return "—";
+        }
+        for (int index = 0; index < parts.Length; index++)
+        {
+            string part = parts[index];
+            parts[index] = part.Length == 1
+                ? char.ToUpperInvariant(part[0]).ToString()
+                : char.ToUpperInvariant(part[0]) + part[1..];
+        }
+
+        return string.Join(' ', parts);
     }
 
     public static string Radio(
