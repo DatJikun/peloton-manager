@@ -10,6 +10,7 @@ The prototype is still below the accepted Race Engine contract. Remaining intent
 - synthetic multi-team pack and transient numeric participant IDs, not career roster integration;
 - simplified shelter slots, drafting, durability, and knowledge-bounded chase decisions;
 - Godot Watch Race exists as a presentation window over the same D-033 clock; it is not a Career Hub and not a fun-gate result;
+- Godot Watch map expands coarse prototype segments through an authored route-profile library (3 variants each for flat / climb / descent / rolling / crosswind) and a seeded generator. Official `race-prototype.json` physics stay three constant-gradient ramps so goldens do not move;
 - owner engagement gate in `RACE_ENGINE_DESIGN_v0.2.md` §49 remains `NOT VERIFIED`;
 - SimRunner `watch` still has the D-033 headless supervising clock, rates ×1 / ×2 / ×5 / ×20, decision pauses, and RNG-neutral focal-rider motion; CLI Watch is not the Godot renderer or an owner §49 playtest;
 - multi-stage GC leadership transfer (`D-032`) is not implemented.

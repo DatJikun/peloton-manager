@@ -10,7 +10,10 @@ namespace Peloton.Simulation.Race;
 public sealed record RaceWatchCourseSegment(
     string Id,
     double LengthM,
-    double Gradient);
+    double Gradient,
+    double RoadWidthM,
+    double WindSpeedMps,
+    double WindYawDegrees);
 
 public sealed record RaceWatchCourse(
     double TotalLengthM,
@@ -41,7 +44,8 @@ public sealed record RaceWatchReport(
 
 public sealed class RaceWatchClock
 {
-    private static readonly HashSet<int> SupportedRates = new() { 1, 2, 5, 20 };
+    public const int MinimumRate = 1;
+    public const int MaximumRate = 120;
 
     private readonly RaceSession session;
     private readonly int rate;
@@ -50,9 +54,11 @@ public sealed class RaceWatchClock
     public RaceWatchClock(RaceSession session, int rate = 5)
     {
         ArgumentNullException.ThrowIfNull(session);
-        if (!SupportedRates.Contains(rate))
+        if (rate < MinimumRate || rate > MaximumRate)
         {
-            throw new ArgumentOutOfRangeException(nameof(rate), "Watch rate must be 1, 2, 5, or 20.");
+            throw new ArgumentOutOfRangeException(
+                nameof(rate),
+                "Watch rate must be between 1 and 120.");
         }
 
         this.session = session;

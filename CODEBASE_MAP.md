@@ -11,7 +11,7 @@ This file is a navigation map, not implementation documentation. Design contract
 | `src/Peloton.Domain` | World root, stable IDs, people, ManagerCareer, Employment, Organization, DecisionAuthority, AccessContext, `CalendarEntry`, content/rules identity, DecisionTrace / Spy sinks. |
 | `src/Peloton.Rules` | Stable rules-module identity and deterministic aggregate identity. No full legal engine yet. |
 | `src/Peloton.Simulation` | Versioned seed derivation, isolated deterministic RNG, whole-world day scheduler, checksum, `PrototypeRaceEngine`. |
-| `src/Peloton.Simulation/Race` | Physics, capability, groups/shelter, `RaceSession.Step`, chase decisions, Race Spy export, headless Watch clock and public motion projection. |
+| `src/Peloton.Simulation/Race` | Physics, capability, groups/shelter, `RaceSession.Step`, chase decisions, Race Spy export, headless Watch clock, public motion projection, authored route-profile library and seeded generator (map/presentation; not prototype physics). |
 | `src/Peloton.Application` | Canonical nine-state machine, Commands, prep/result/debrief projections, prep checkpoint, save/content/race ports, world creation, RaceLive isolation, skeleton-season orchestration. |
 | `src/Peloton.Persistence` | SQLite schema version 1, verified candidate save, envelope identity, snapshot round trip, integrity checks. |
 | `src/Peloton.Content` | JSON pack loaders: skeleton `scenarios` and `racePrototypeScenarios`. |
@@ -26,11 +26,11 @@ Static content lives in `content/peloton.skeleton` and `content/peloton.race-pro
 | Project | Coverage |
 |---|---|
 | `tests/Peloton.Domain.Tests` | Stable ID allocation and no-reuse spine. |
-| `tests/Peloton.Simulation.Tests` | Seed derivation plus race physics, groups, decisions, Watch clock invariants, and Spy neutrality. |
+| `tests/Peloton.Simulation.Tests` | Seed derivation plus race physics, groups, decisions, Watch clock invariants, Spy neutrality, and route-profile library/generator. |
 | `tests/Peloton.Application.Tests` | GameState guards, prep actions, result/debrief projections, Watch/Simulate parity, content identity, Advance Day, RaceLive isolation, CLI contracts, 10-season determinism. |
 | `tests/Peloton.Persistence.Tests` | SQLite schema/content/rules metadata, checksum round trip, prep checkpoint recovery through Results/Debrief, failed-load atomicity, last-race JSON shape. |
 | `tests/Peloton.Architecture.Tests` | Forbidden PlayerTeam-like types, no production `StubRaceEngine`, Godot-free headless assemblies. |
-| `tests/Peloton.Client.Godot.Tests` | Watch interpolator and host command path (StartRace clock, decision pause, LastRace result, abandon rollback). Compiles Godot-free host sources; does not need the Godot editor. |
+| `tests/Peloton.Client.Godot.Tests` | Watch interpolator, film duration, host command path (StartRace clock, decision pause, LastRace result, abandon rollback), and map profile sampling. Compiles Godot-free host sources; does not need the Godot editor. |
 
 ## System ownership
 
@@ -45,7 +45,8 @@ Static content lives in `content/peloton.skeleton` and `content/peloton.race-pro
 | Race content | `Peloton.Content/JsonRacePrototypeCatalog.cs`, `content/peloton.race-prototype` | `CONTENT_FORMAT_v0.1.md` | `RaceContentTests` |
 | SimRunner race gate | `tools/Peloton.SimRunner/RacePrototypeCommand.cs` | prototype design §11 | `SimRunnerContractTests` |
 | Headless Watch clock | `Peloton.Simulation/Race/RaceWatch.cs`, `tools/Peloton.SimRunner/RaceWatchCommand.cs` | `D-033` clock contract | `RaceWatchTests`, `SimRunnerContractTests` |
-| Godot Watch Race | `src/Peloton.Client.Godot` (`WatchRaceHost`, `WatchRaceScreen`, `project.godot`) | `D-033` renderer; `UI_SITEMAP` RaceLive; §49 still owner-only | `WatchRaceHostTests`, `WatchMotionInterpolatorTests` |
+| Route profile library | `Peloton.Simulation/Race/RouteProfileLibrary.cs`, `RouteProfileGenerator.cs` | presentation profiles; physics stays coarse prototype segments | `RouteProfileTests` |
+| Godot Watch Race | `src/Peloton.Client.Godot` (`WatchRaceHost`, `WatchRaceScreen`, `WatchRouteProfile`, `project.godot`) | `D-033` renderer; `UI_SITEMAP` RaceLive; §49 still owner-only | `WatchRaceHostTests`, `WatchMotionInterpolatorTests`, `WatchFilmDurationTests`, `WatchRouteProfileTests` |
 | Career Hub query | `Peloton.Application/CareerDay.cs` | `GAME_STATES_v0.1.md` Advance Day; Hub primary action (`advance-day` / `race-next`); Management only; not a UI dashboard | Application tests, `day` SimRunner |
 | Race preparation | `Peloton.Application/RacePreparation.cs`, `GameApplication.cs` | fixture-backed projection; session checkpoint plan; no career roster | Application + Persistence tests |
 | Race result / debrief | `Peloton.Application/RaceResultDebrief.cs`, `GameApplication.cs` | committed `LastRace` + calendar; knowledge-bounded notes; checkpoint not World | Application + Persistence tests |
@@ -114,6 +115,7 @@ Content creation failure
 Godot Watch Race
 → src/Peloton.Client.Godot/WatchRaceHost.cs
 → WatchRaceScreen.cs
+→ WatchRouteProfile.cs / Peloton.Simulation/Race/RouteProfileGenerator.cs
 → GameApplication RaceWatch / PendingRaceDecision / RaceResult
 
 SimRunner race gate

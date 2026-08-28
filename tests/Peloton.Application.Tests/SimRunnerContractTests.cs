@@ -116,6 +116,7 @@ public sealed class SimRunnerContractTests
     [InlineData("race", "--scenario", RacePrototypeCommand.CanonicalScenarioId, "--seed", "not-a-number")]
     [InlineData("race", "--scenario", RacePrototypeCommand.CanonicalScenarioId, "--seed", "1", "--seed", "2")]
     [InlineData("watch", "--scenario", RacePrototypeCommand.CanonicalScenarioId, "--seed", "1", "--rate", "0")]
+    [InlineData("watch", "--scenario", RacePrototypeCommand.CanonicalScenarioId, "--seed", "1", "--rate", "8")]
     [InlineData("watch", "--scenario", RacePrototypeCommand.CanonicalScenarioId, "--seed", "1", "--rate", "100")]
     [InlineData("day", "--scenario", "scenario.peloton.skeleton", "--seed", "1", "--days", "1", "--watch-from-prep", "--rate", "0")]
     public void MalformedRaceOptionsReturnUsageExitCode(params string[] args)

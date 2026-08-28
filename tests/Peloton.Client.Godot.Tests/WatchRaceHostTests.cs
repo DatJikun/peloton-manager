@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Peloton.Application;
+using Peloton.Client.Godot;
 using Peloton.Content;
 using Peloton.Domain;
 using Peloton.Persistence;
@@ -25,9 +26,12 @@ public sealed class WatchRaceHostTests
         Assert.True(host.OpenPrototype(GateSeed).Succeeded);
         Assert.Equal(GameState.RacePreparationFlow, host.State);
         Assert.True(host.ConfirmPreparation().Succeeded);
-        Assert.True(host.SelectRate(5).Succeeded);
+        Assert.Equal(WatchFilmDuration.DefaultSeconds, host.SelectedFilmSeconds);
+        Assert.Equal("WATCH_FILM_INVALID", host.SelectFilmDuration(90).ReasonCode);
+        Assert.True(host.SelectFilmDuration(180).Succeeded);
         Assert.True(host.StartWatch().Succeeded);
         Assert.Equal(GameState.RaceLive, host.State);
+        Assert.Equal(5, host.SelectedRate);
         Assert.NotNull(host.Course);
         Assert.NotNull(host.OfficialFrame);
         Assert.All(
@@ -57,6 +61,7 @@ public sealed class WatchRaceHostTests
         Assert.True(host.OpenPrototype(GateSeed).Succeeded);
         Assert.True(host.ConfirmPreparation().Succeeded);
         Assert.True(host.StartWatch().Succeeded);
+        Assert.Equal(8, host.SelectedRate);
         int startWatch = host.OfficialFrame!.WatchSecond;
         int startSim = host.OfficialFrame.RaceSecond;
 
@@ -65,7 +70,15 @@ public sealed class WatchRaceHostTests
 
         Assert.True(host.Tick(0.51).Succeeded);
         Assert.Equal(startWatch + 1, host.OfficialFrame.WatchSecond);
-        Assert.InRange(host.OfficialFrame.RaceSecond - startSim, 1, 5);
+        Assert.Equal(8, host.OfficialFrame.RaceSecond - startSim);
+
+        Assert.True(host.SetPresentationPaused(true).Succeeded);
+        int pausedWatch = host.OfficialFrame.WatchSecond;
+        int pausedSim = host.OfficialFrame.RaceSecond;
+        Assert.True(host.Tick(20.0).Succeeded);
+        Assert.Equal(pausedWatch, host.OfficialFrame.WatchSecond);
+        Assert.Equal(pausedSim, host.OfficialFrame.RaceSecond);
+        Assert.True(host.SetPresentationPaused(false).Succeeded);
 
         bool sawDecision = false;
         for (int step = 0; step < 50_000 && host.State == GameState.RaceLive; step++)
@@ -100,8 +113,8 @@ public sealed class WatchRaceHostTests
         Assert.True(host.StartWatch().Succeeded);
         Assert.True(File.Exists(autosave));
         Assert.Equal(
-            "WATCH_RATE_LOCKED",
-            host.SelectRate(20).ReasonCode);
+            "WATCH_FILM_LOCKED",
+            host.SelectFilmDuration(30).ReasonCode);
 
         Assert.True(host.Abandon().Succeeded);
         Assert.Equal(GameState.RacePreparationFlow, host.State);

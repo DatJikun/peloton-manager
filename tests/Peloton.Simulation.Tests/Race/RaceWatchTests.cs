@@ -36,6 +36,23 @@ public sealed class RaceWatchTests
     }
 
     [Fact]
+    public void ClockAcceptsFilmRatesAndRejectsOutOfRange()
+    {
+        RaceScenario scenario = ChaseScenario();
+        RaceSession session = new PrototypeRaceEngine().CreateSession(scenario, 808);
+        RaceWatchClock eight = new(session, rate: 8);
+        Assert.Equal(8, eight.Current.Rate);
+
+        RaceSession thirtySession = new PrototypeRaceEngine().CreateSession(scenario, 809);
+        RaceWatchClock thirty = new(thirtySession, rate: 30);
+        Assert.Equal(30, thirty.Current.Rate);
+
+        RaceSession rejected = new PrototypeRaceEngine().CreateSession(scenario, 810);
+        Assert.Throws<ArgumentOutOfRangeException>(() => new RaceWatchClock(rejected, rate: 0));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new RaceWatchClock(rejected, rate: 121));
+    }
+
+    [Fact]
     public void DecisionRequestFreezesBothClocksUntilResponded()
     {
         RaceScenario scenario = ChaseScenario();
