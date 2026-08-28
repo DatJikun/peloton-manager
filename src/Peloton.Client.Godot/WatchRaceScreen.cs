@@ -10,18 +10,10 @@ namespace Peloton.Client.Godot;
 
 public sealed partial class WatchRaceScreen : Control
 {
-    private static readonly Color Paper = new("f3ede1");
-    private static readonly Color Red = new("d11f1f");
-    private static readonly Color Black = new("0c0c0d");
-    private static readonly Color Gray = new("6f6f72");
-    private static readonly Color White = new("fffdf7");
-
     private WatchRaceHost? host;
     private WatchRaceMapView? map;
     private Label? title;
-    private Label? status;
     private Label? clock;
-    private Label? observations;
     private Label? board;
     private Label? result;
     private HBoxContainer? rateRow;
@@ -32,6 +24,9 @@ public sealed partial class WatchRaceScreen : Control
     private Button? pauseButton;
     private Button? exitButton;
     private Button? continueButton;
+    private string paintedDecisionKey = string.Empty;
+    private string winnerLabel = string.Empty;
+    private GameState paintedState;
 
     public override void _Ready()
     {
@@ -41,7 +36,8 @@ public sealed partial class WatchRaceScreen : Control
 
         ColorRect background = new()
         {
-            Color = Paper,
+            Color = WatchChrome.Paper,
+            MouseFilter = MouseFilterEnum.Ignore,
         };
         background.SetAnchorsPreset(LayoutPreset.FullRect);
         AddChild(background);
@@ -52,38 +48,31 @@ public sealed partial class WatchRaceScreen : Control
         root.OffsetTop = 24;
         root.OffsetRight = -28;
         root.OffsetBottom = -24;
-        root.AddThemeConstantOverride("separation", 14);
+        root.AddThemeConstantOverride("separation", 16);
         AddChild(root);
 
-        title = MakeLabel("WATCH RACE", 42, Black);
+        title = WatchChrome.MakeLabel("WATCH RACE", 42, WatchChrome.Black, displayFace: true);
         root.AddChild(title);
-
-        status = MakeLabel("Wybierz czas filmu, autonomię DS i oglądaj.", 16, Gray);
-        root.AddChild(status);
 
         rateRow = new HBoxContainer();
         rateRow.AddThemeConstantOverride("separation", 8);
         foreach (int seconds in WatchFilmDuration.ChoicesSeconds)
         {
             int captured = seconds;
-            Button button = MakeButton(
+            Button button = WatchChrome.MakeButton(
                 WatchFilmDuration.Label(captured),
                 () => OnSelectFilm(captured),
-                compact: true);
+                WatchChrome.Kind.Segment);
             button.Name = $"Film{captured}";
             rateRow.AddChild(button);
         }
 
         root.AddChild(rateRow);
 
-        autonomyButton = MakeButton("AUTONOMIA DS: NIE", OnToggleAutonomy, compact: true);
-        autonomyButton.CustomMinimumSize = new Vector2(220, 40);
-        autonomyButton.SizeFlagsHorizontal = SizeFlags.ShrinkBegin;
+        autonomyButton = WatchChrome.MakeButton("Autonomia DS: nie", OnToggleAutonomy, WatchChrome.Kind.Secondary);
         root.AddChild(autonomyButton);
 
-        startButton = MakeButton("OGLĄDAJ", onPressed: OnStart);
-        startButton.CustomMinimumSize = new Vector2(220, 48);
-        startButton.SizeFlagsHorizontal = SizeFlags.ShrinkBegin;
+        startButton = WatchChrome.MakeButton("Oglądaj", OnStart, WatchChrome.Kind.Primary);
         root.AddChild(startButton);
 
         map = new WatchRaceMapView
@@ -93,36 +82,32 @@ public sealed partial class WatchRaceScreen : Control
         };
         root.AddChild(map);
 
-        clock = MakeLabel("zegar oglądania —", 15, Black);
+        clock = WatchChrome.MakeLabel(string.Empty, 14, WatchChrome.Black);
         root.AddChild(clock);
 
-        board = MakeLabel("Tablica sztabu pojawi się po starcie.", 14, Black);
+        board = WatchChrome.MakeLabel(string.Empty, 14, WatchChrome.Black);
         board.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         root.AddChild(board);
 
-        observations = MakeLabel(string.Empty, 15, Black);
-        observations.Visible = false;
-        root.AddChild(observations);
-
         liveRow = new HBoxContainer();
-        liveRow.AddThemeConstantOverride("separation", 8);
-        pauseButton = MakeButton("PAUZA", OnTogglePause, compact: true);
-        exitButton = MakeButton("WYJŚCIE", OnExit, compact: true);
+        liveRow.AddThemeConstantOverride("separation", 12);
+        pauseButton = WatchChrome.MakeButton("Pauza", OnTogglePause, WatchChrome.Kind.Secondary);
+        exitButton = WatchChrome.MakeButton("Wyjdź", OnExit, WatchChrome.Kind.Secondary);
         liveRow.AddChild(pauseButton);
         liveRow.AddChild(exitButton);
         liveRow.Visible = false;
         root.AddChild(liveRow);
 
         decisionBox = new VBoxContainer();
-        decisionBox.AddThemeConstantOverride("separation", 8);
+        decisionBox.AddThemeConstantOverride("separation", 12);
         decisionBox.Visible = false;
         root.AddChild(decisionBox);
 
-        result = MakeLabel(string.Empty, 18, Black);
+        result = WatchChrome.MakeLabel(string.Empty, 22, WatchChrome.Black, displayFace: true);
         result.Visible = false;
         root.AddChild(result);
 
-        continueButton = MakeButton("WYNIK ZATWIERDZONY", OnAcknowledge);
+        continueButton = WatchChrome.MakeButton("Dalej", OnAcknowledge, WatchChrome.Kind.Primary);
         continueButton.Visible = false;
         root.AddChild(continueButton);
 
@@ -133,7 +118,6 @@ public sealed partial class WatchRaceScreen : Control
         CommandResult opened = host.OpenPrototype(91234);
         if (!opened.Succeeded)
         {
-            status.Text = $"Nie udało się otworzyć prototypu ({opened.ReasonCode}).";
             startButton.Disabled = true;
             return;
         }
@@ -144,19 +128,24 @@ public sealed partial class WatchRaceScreen : Control
 
     public override void _Process(double delta)
     {
-        if (host is null || host.State != GameState.RaceLive)
+        if (host is null)
         {
             return;
         }
 
-        CommandResult ticked = host.Tick(delta);
-        if (!ticked.Succeeded)
+        if (host.State == GameState.RaceLive)
         {
-            status!.Text = $"Zegar oglądania zatrzymał się ({ticked.ReasonCode}).";
-            return;
+            CommandResult ticked = host.Tick(delta);
+            if (ticked.Succeeded)
+            {
+                RefreshLive();
+            }
         }
 
-        Refresh();
+        if (paintedState != host.State)
+        {
+            Refresh();
+        }
     }
 
     private void OnSelectFilm(int seconds)
@@ -213,6 +202,8 @@ public sealed partial class WatchRaceScreen : Control
         }
 
         Apply(host.Abandon());
+        paintedDecisionKey = string.Empty;
+        ClearDecisionBox();
         decisionBox!.Visible = false;
         liveRow!.Visible = false;
         result!.Visible = false;
@@ -220,6 +211,7 @@ public sealed partial class WatchRaceScreen : Control
         if (map is not null)
         {
             map.ShowView(null);
+            map.ShowCourse(null);
         }
     }
 
@@ -233,13 +225,9 @@ public sealed partial class WatchRaceScreen : Control
         Apply(host.State == GameState.RaceDebriefFlow ? host.CompleteDebrief() : host.AcknowledgeResults());
     }
 
-    private void Apply(CommandResult result)
+    private void Apply(CommandResult command)
     {
-        if (!result.Succeeded)
-        {
-            status!.Text = ReasonMessage(result.ReasonCode);
-        }
-
+        _ = command;
         Refresh();
     }
 
@@ -250,31 +238,29 @@ public sealed partial class WatchRaceScreen : Control
             return;
         }
 
+        paintedState = host.State;
         bool live = host.State == GameState.RaceLive;
         bool prep = host.State == GameState.RacePreparationFlow;
         startButton!.Visible = prep;
-        rateRow!.Visible = prep || live;
-        autonomyButton!.Visible = prep || live;
+        rateRow!.Visible = prep;
+        autonomyButton!.Visible = prep;
         liveRow!.Visible = live;
         continueButton!.Visible = host.State is GameState.RaceResultsFlow or GameState.RaceDebriefFlow;
-        continueButton.Text = host.State == GameState.RaceDebriefFlow ? "KONIEC" : "WYNIK ZATWIERDZONY";
+        continueButton.Text = host.State == GameState.RaceDebriefFlow ? "KONIEC" : "DALEJ";
+        WatchChrome.ApplyKind(
+            continueButton,
+            WatchChrome.Kind.Primary,
+            selected: false);
         pauseButton!.Text = host.PresentationPaused ? "WZNÓW" : "PAUZA";
+        WatchChrome.ApplyKind(pauseButton, WatchChrome.Kind.Secondary, selected: host.PresentationPaused);
         RefreshFilmButtons();
         RefreshAutonomyButton();
 
         if (prep)
         {
             title!.Text = "WATCH RACE";
-            status!.Text = host.DsAutonomy
-                ? $"Seed 91234 · film {WatchFilmDuration.Label(host.SelectedFilmSeconds)} · DS sam podejmuje decyzje."
-                : $"Seed 91234 · film {WatchFilmDuration.Label(host.SelectedFilmSeconds)} · oglądaj.";
-            clock!.Text = "Film ruszy po Oglądaj.";
-            if (board is not null)
-            {
-                board.Text = "Tablica sztabu pojawi się po starcie.";
-                board.Visible = true;
-            }
-
+            clock!.Text = string.Empty;
+            board!.Text = string.Empty;
             decisionBox!.Visible = false;
             result!.Visible = false;
         }
@@ -282,25 +268,37 @@ public sealed partial class WatchRaceScreen : Control
         if (host.State == GameState.Management)
         {
             title!.Text = "WATCH RACE";
-            status!.Text = "Etap zamknięty. To nie jest Career Hub.";
             liveRow!.Visible = false;
             decisionBox!.Visible = false;
         }
 
-        if (live && host.Interpolated is InterpolatedWatchView view)
+        if (live)
         {
             title!.Text = "RACE LIVE";
-            status!.Text = host.PendingDecision is null
-                ? host.DsAutonomy
-                    ? "Autonomia DS. Film jest przyspieszoną symulacją, bez pauzy na decyzjach."
-                    : "Kariera zablokowana. Autosave przed startem. Bez zapisu w trakcie etapu."
-                : "Pauza na decyzji. Fizyka stoi, aż sztab odpowie.";
-            clock!.Text = string.Create(
-                CultureInfo.InvariantCulture,
-                $"film {WatchFilmDuration.Clock(view.WatchSecond, host.ExpectedFilmSeconds)} · etap {view.RaceSecond}s{(view.Paused ? " · pauza" : string.Empty)}");
-            board!.Text = FormatBoard(view);
-            board.Visible = true;
-            map?.ShowView(view);
+            RefreshLive();
+            return;
+        }
+
+        RefreshDecision();
+        RefreshResult();
+    }
+
+    private void RefreshLive()
+    {
+        if (host is null || host.Interpolated is not InterpolatedWatchView view)
+        {
+            return;
+        }
+
+        clock!.Text = WatchFilmDuration.Clock(view.WatchSecond, host.ExpectedFilmSeconds);
+        board!.Text = FormatBoard(view);
+        map?.ShowView(view);
+        bool paused = host.PresentationPaused || host.PendingDecision is not null;
+        string pauseCaption = paused ? "WZNÓW" : "PAUZA";
+        if (pauseButton!.Text != pauseCaption)
+        {
+            pauseButton.Text = pauseCaption;
+            WatchChrome.ApplyKind(pauseButton, WatchChrome.Kind.Secondary, selected: paused);
         }
 
         RefreshDecision();
@@ -309,23 +307,27 @@ public sealed partial class WatchRaceScreen : Control
 
     private void RefreshDecision()
     {
-        foreach (Node child in decisionBox!.GetChildren())
+        PendingRaceDecision? pending = host?.PendingDecision;
+        string key = pending is null ? string.Empty : pending.RequestId.Value;
+        if (key == paintedDecisionKey)
         {
-            child.QueueFree();
+            decisionBox!.Visible = pending is not null;
+            return;
         }
 
-        PendingRaceDecision? pending = host?.PendingDecision;
-        decisionBox.Visible = pending is not null;
+        paintedDecisionKey = key;
+        ClearDecisionBox();
+        decisionBox!.Visible = pending is not null;
         if (pending is null)
         {
             return;
         }
 
-        decisionBox.AddChild(MakeLabel("DECYZJA", 22, Red));
-        decisionBox.AddChild(MakeLabel(pending.Trigger, 15, Black));
-        string dsCaption = WatchObservationText.DsAction(pending.DelegatedDefaultOption.ToString());
-        Button dsButton = MakeButton(dsCaption.ToUpperInvariant(), () => OnDecide(pending.DelegatedDefaultOption));
-        dsButton.CustomMinimumSize = new Vector2(420, 44);
+        Button dsButton = WatchChrome.MakeButton(
+            WatchObservationText.DsAction(pending.DelegatedDefaultOption.ToString()),
+            () => OnDecide(pending.DelegatedDefaultOption),
+            WatchChrome.Kind.Primary);
+        dsButton.CustomMinimumSize = new Vector2(420, 52);
         decisionBox.AddChild(dsButton);
         foreach (RaceDecisionOption option in pending.LegalOptions)
         {
@@ -335,9 +337,19 @@ public sealed partial class WatchRaceScreen : Control
             }
 
             RaceDecisionOption captured = option;
-            string caption = WatchObservationText.DecisionOption(captured.ToString());
-            Button button = MakeButton(caption.ToUpperInvariant(), () => OnDecide(captured), compact: true);
+            Button button = WatchChrome.MakeButton(
+                WatchObservationText.DecisionOption(captured.ToString()),
+                () => OnDecide(captured),
+                WatchChrome.Kind.Secondary);
             decisionBox.AddChild(button);
+        }
+    }
+
+    private void ClearDecisionBox()
+    {
+        foreach (Node child in decisionBox!.GetChildren())
+        {
+            child.QueueFree();
         }
     }
 
@@ -348,6 +360,7 @@ public sealed partial class WatchRaceScreen : Control
             return;
         }
 
+        paintedDecisionKey = string.Empty;
         Apply(host.Respond(option));
     }
 
@@ -355,29 +368,25 @@ public sealed partial class WatchRaceScreen : Control
     {
         RaceResultProjection? projection = host?.Result;
         RaceDebriefProjection? debrief = host?.Debrief;
-        result!.Visible = projection is not null || debrief is not null;
+        result!.Visible = projection is not null;
         if (projection is not null)
         {
             title!.Text = "WYNIK";
-            status!.Text = "Oficjalny wynik z LastRace. Bez drugiego RunBatch.";
-            result.Text = string.Create(
-                CultureInfo.InvariantCulture,
-                $"Zwycięzca {projection.WinnerLabel} ({projection.WinnerId.Value})\n{host!.LastChecksum}");
+            clock!.Text = string.Empty;
+            winnerLabel = projection.WinnerLabel;
+            result.Text = winnerLabel;
             map?.ShowView(null);
             liveRow!.Visible = false;
             decisionBox!.Visible = false;
-            if (board is not null)
-            {
-                board.Visible = false;
-            }
+            board!.Text = string.Empty;
             return;
         }
 
         if (debrief is not null)
         {
-            title!.Text = "DEBRIEF";
-            status!.Text = debrief.Objective;
-            result.Text = string.Join('\n', debrief.Notes);
+            title!.Text = "WYNIK";
+            result.Visible = winnerLabel.Length > 0;
+            result.Text = winnerLabel;
         }
     }
 
@@ -393,8 +402,7 @@ public sealed partial class WatchRaceScreen : Control
             if (child is Button button)
             {
                 bool selected = button.Name == $"Film{host.SelectedFilmSeconds}";
-                button.Modulate = selected ? Red : Colors.White;
-                button.Disabled = host.State == GameState.RaceLive;
+                WatchChrome.ApplyKind(button, WatchChrome.Kind.Segment, selected);
             }
         }
     }
@@ -407,15 +415,14 @@ public sealed partial class WatchRaceScreen : Control
         }
 
         autonomyButton.Text = host.DsAutonomy ? "AUTONOMIA DS: TAK" : "AUTONOMIA DS: NIE";
-        autonomyButton.Modulate = host.DsAutonomy ? Red : Colors.White;
-        autonomyButton.Disabled = host.State == GameState.RaceLive;
+        WatchChrome.ApplyKind(autonomyButton, WatchChrome.Kind.Secondary, selected: host.DsAutonomy);
     }
 
     private static string FormatBoard(InterpolatedWatchView view)
     {
         if (view.Riders.Count == 0)
         {
-            return "Brak zawodników w radiu sztabu.";
+            return string.Empty;
         }
 
         string[] lines = new string[view.Riders.Count + 1];
@@ -429,64 +436,5 @@ public sealed partial class WatchRaceScreen : Control
         }
 
         return string.Join('\n', lines);
-    }
-
-    private static string ReasonMessage(string reasonCode)
-    {
-        return reasonCode switch
-        {
-            "SAVE_FORBIDDEN_IN_RACE_LIVE" => "Zapis w trakcie etapu jest zablokowany.",
-            "LOAD_FORBIDDEN_IN_RACE_LIVE" => "Wczytanie w trakcie etapu jest zablokowane.",
-            "WATCH_FILM_LOCKED" => "Czas filmu ustala się przed startem.",
-            "WATCH_FILM_INVALID" => "Wybierz 30 s, 1 min, 2 min, 3 min albo 5 min.",
-            "WATCH_AUTONOMY_LOCKED" => "Autonomię DS ustala się przed startem.",
-            "WATCH_RATE_LOCKED" => "Tempo ustala się przed startem.",
-            "GAME_STATE_INVALID" => "Ta akcja nie jest teraz dostępna.",
-            _ => reasonCode,
-        };
-    }
-
-    private static Label MakeLabel(string text, int size, Color color)
-    {
-        Label label = new()
-        {
-            Text = text,
-        };
-        label.AddThemeColorOverride("font_color", color);
-        label.AddThemeFontSizeOverride("font_size", size);
-        return label;
-    }
-
-    private static Button MakeButton(string text, Action onPressed, bool compact = false)
-    {
-        Button button = new()
-        {
-            Text = text,
-        };
-        button.CustomMinimumSize = new Vector2(compact ? 120 : 220, compact ? 40 : 48);
-        button.AddThemeColorOverride("font_color", White);
-        button.AddThemeColorOverride("font_hover_color", Paper);
-        button.AddThemeColorOverride("font_pressed_color", Paper);
-        StyleBoxFlat normal = new()
-        {
-            BgColor = Black,
-            ContentMarginLeft = 16,
-            ContentMarginRight = 16,
-            ContentMarginTop = 8,
-            ContentMarginBottom = 8,
-        };
-        StyleBoxFlat hover = new()
-        {
-            BgColor = Red,
-            ContentMarginLeft = 16,
-            ContentMarginRight = 16,
-            ContentMarginTop = 8,
-            ContentMarginBottom = 8,
-        };
-        button.AddThemeStyleboxOverride("normal", normal);
-        button.AddThemeStyleboxOverride("hover", hover);
-        button.AddThemeStyleboxOverride("pressed", hover);
-        button.Pressed += onPressed;
-        return button;
     }
 }
