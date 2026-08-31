@@ -14,8 +14,8 @@ The prototype is still below the accepted Race Engine contract. Remaining intent
 - owner engagement gate in `RACE_ENGINE_DESIGN_v0.2.md` §49 remains `NOT VERIFIED`;
 - SimRunner `watch` implements the D-033 headless supervising clock (rates ×1 / ×2 / ×5 / ×20, decision pauses, RNG-neutral focal-rider motion); CLI Watch is not the Godot renderer or an owner §49 playtest;
 - `Form01` / `Freshness01` / `Fatigue01` on `RiderCareer` are applied on Advance Day and official races (phase 2 landed); stored physiology is not mutated — readiness scales CP/Pmax at assemble time only;
-- `Loyalty01` is stored but unused until contracts phase;
-- rider `Employment` / contracts, knowledge stores, and `RecruitmentCase` from `DATA_MODEL_v0.1.md` are not implemented;
+- `Loyalty01` is stored; phase 4 will query it with contracts and still will not use it as a transfer modifier;
+- rider `RiderContract` (wage + expiry) is specified for phase 4 and not yet in code; manager `Employment` stays manager-only; knowledge stores and `RecruitmentCase` from `DATA_MODEL_v0.1.md` are not implemented;
 - multi-stage GC leadership transfer (`D-032`) is not implemented.
 
 This is an explicit prototype boundary, not an accepted simplification of the future Race Engine. Deeper physiology and fun/decision-density claims wait on owner playtest.
@@ -40,7 +40,9 @@ Phase 1 out of scope (now landed in phase 3 headless): pre-season picker and str
 - `SetRacePreparationStrategyCommand` (leader/support/objective/briefing) required before `ConfirmRacePreparationPlanCommand`; assembler honours player strategy; checkpoint round-trips in saves.
 - World checksum label is `peloton-world-checksum-v3`. Schema 2 saves may refuse to load.
 
-Phase 3+ out of scope: contracts, 2026 WT pack wired to `CreateWorld`, AI managers, D-032, tenth GameState.
+Phase 4 specified: `RiderContract` wage + inclusive expiry, nullable `RiderCareer.OrganizationId`, SchemaVersion 4. Not in code yet.
+
+Phase 4+ out of scope: transfer market, 2026 WT pack wired to `CreateWorld`, AI managers, D-032, tenth GameState.
 
 ## Day state (D-036 phase 2 landed)
 

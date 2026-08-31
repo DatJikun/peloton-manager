@@ -102,11 +102,11 @@ Baza 2026: najpierw 18 ekip męskiego WorldTour. Liczby fizjologii i budżetów 
 - [x] Career WorldTour slice phase 1 — world–race bind (`RiderCareer`, SchemaVersion 2, career results)
 - [x] Career WorldTour slice phase 2 — form / freshness / fatigue on Advance Day and in official races
 - [x] Career WorldTour slice phase 3 — pre-season entry + pre-race strategy (`OrganizationRaceEntry`, SchemaVersion 3)
-- [ ] Career WorldTour slice phases 3–6 — planning windows, contracts, WT pack, thin economy
+- [ ] Career WorldTour slice phases 4–6 — contracts, WT pack, thin economy
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task
-`Pre-season race entry + pre-race strategy window (CAREER_WORLDTOUR_SLICE_v0.1.md phase 3). Headless commands. No tenth GameState. Do not close §49. Do not build Career Hub. Do not start AI managers.`
+`Rider contracts + thin loyalty (CAREER_WORLDTOUR_SLICE_v0.1.md phase 4). Headless RiderContract wage/expiry. No transfer market. No tenth GameState. Do not close §49. Do not build Career Hub. Do not start AI managers.`
 
 ## Known blockers
 - None.
@@ -126,6 +126,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
+- `2026-08-31` — **Phase 4 specified:** `RiderContract` (not manager `Employment`), wage + inclusive expiry, nullable club id, SchemaVersion 4. Loyalty stored/queried only. No transfer market this phase.
 - `2026-08-31` — **Phase 3 landed (Composer):** pre-season `PreSeasonPlanningFlow` (draft entry by `RaceContentId`), `OrganizationRaceEntry`, player race-due gating, delegated auto-sim on skipped race days, `SetRacePreparationStrategyCommand` + `PREP_STRATEGY_INCOMPLETE`, SQLite SchemaVersion 3 / checksum v3. Gate green: format/build/test (132 tests) + SimRunner gates.
 - `2026-08-31` — **Phase 1 landed (Composer):** world–race bind.
 - `2026-08-31` — Career WorldTour slice: bind world to race; 2026 WT pack; contracts; no minigames; All/Guessed/None stay the visibility model; AI managers wait (D-036–D-042).

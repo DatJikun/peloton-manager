@@ -41,7 +41,7 @@ The “knowledge spine” is only the **backend of those modes**: the simulation
 
 ### 3. Item 5 — “Day events” and the 2026 database
 
-**Day events** in designer-speak only means: when you press Advance Day, the world **does work** (recovery, form, contract expiry, later scout reports). It is not a second calendar and not a minigame. Right now Advance Day mostly adds +1 to the date. Form tick is the first real work.
+**Day events** in designer-speak only means: when you press Advance Day, the world **does work** (recovery, form, contract expiry, later scout reports). It is not a second calendar and not a minigame. Form tick is in. Contract expiry is phase 4.
 
 **2026 database — can we do it ourselves?** Yes as a **content pack**, not as a licensed official product.
 
@@ -113,13 +113,13 @@ Person
 RiderCareer
     Id                          // WorldEntityId; used as race RiderId
     PersonId
-    OrganizationId              // active club; later replaced by rider Employment/contract
+    OrganizationId              // WorldEntityId?; current club from the active RiderContract; null = unattached
     OriginDefinitionId
     physiology                  // fields RaceRiderProfile already needs
     Form01                      // 0..1, default 1; unused by physics until phase 2
     Freshness01                 // 0..1, default 1
     Fatigue01                   // 0..1, default 0
-    Loyalty01                   // 0..1, default 0.5; unused until contracts phase
+    Loyalty01                   // 0..1, default 0.5; stored; no transfer modifier until a market exists
     Results                     // append-only RiderCareerResult
 
 RiderCareerResult
@@ -129,7 +129,7 @@ RiderCareerResult
     DidNotFinish
 ```
 
-`Employment` today is manager-only. Do not invent rider employment tables in phase 1; `RiderCareer.OrganizationId` is the roster link until the contract phase.
+`Employment` stays manager-only (see phase 4). Phase 1 used `RiderCareer.OrganizationId` as the roster link; phase 4 adds `RiderContract` and allows `OrganizationId` to become null when the contract expires.
 
 ### Application
 
@@ -235,7 +235,132 @@ Tests: toggle entry then confirm — player skipped race does not block Advance 
 
 ### Phase 4 — contracts
 
-Rider wage + expiry. Loyalty used only as a modifier when a transfer system exists; until then it is stored and visible under All/Guessed rules.
+Rider wage + expiry. Loyalty is stored and queried; it is **not** a transfer modifier until a market exists. No personal sponsors. No marketability loop. Headless only. No tenth GameState. No Career Hub. No Godot planning UI.
+
+#### Slice lock vs manager Employment (OQ-DM-002 for this slice)
+
+- Manager `Employment` stays manager-only. Do **not** reuse it for riders.
+- Riders use a new `RiderContract` entity. A generic shared “contract” table is still later.
+
+```text
+RiderContract
+    Id                  // WorldEntityId
+    RiderCareerId
+    OrganizationId      // club this contract binds
+    AnnualWage          // int, whole game-euros per year; must be > 0
+    StartDate           // WorldDate; world create uses day 0
+    EndDate             // WorldDate; inclusive last contracted day
+```
+
+Invariants:
+
+- World create: exactly one `RiderContract` per `RiderCareer`.
+- At most one **active** contract per rider. Active means `StartDate.DayNumber <= CurrentDate.DayNumber` and `EndDate.DayNumber >= CurrentDate.DayNumber`.
+- Do not delete expired contracts. They remain history.
+- `EndDate >= StartDate`.
+- No overlapping contracts this phase. No renew/sign/release commands this phase (that is a market).
+
+#### Roster link
+
+- `RiderCareer.OrganizationId` is `WorldEntityId?`: the current club copied from the active contract.
+- `WorldEntityId` cannot be 0, so unattached is **null**, not a sentinel.
+- `GetRiderCareersForOrganization` returns riders whose `OrganizationId` equals that club (unattached riders drop off).
+- Official start lists, prep squad, and strategy leader/support use that same roster filter. Assembler must skip `OrganizationId is null`.
+- Unattached riders still exist, still receive the rest tick, still keep career history. They do not start races.
+
+#### Expiry (Advance Day)
+
+`AdvanceOneDay` order:
+
+1. Organization day counters (unchanged).
+2. Rest tick on every `RiderCareer` (unchanged).
+3. `CurrentDate = CurrentDate.NextDay()`.
+4. **Then** expire: for each `RiderContract` with `EndDate.DayNumber < CurrentDate.DayNumber`, if that rider’s `OrganizationId` still equals the contract’s club, `DetachFromClub()` (`OrganizationId = null`).
+
+Inclusive last day: a rider whose `EndDate` is day 5 is still on the roster on day 5 (can race that day). After the Advance that moves the world to day 6, they are unattached.
+
+`CaptureDayNotes` (after Advance Day in `GameApplication`) adds one deterministic note per rider who expired on this Advance, ordered by `OriginDefinitionId`:
+
+```text
+{Person.Name}'s contract expired.
+```
+
+Do not mention expiry when nobody expired.
+
+#### World create / content
+
+Extend `content/peloton.skeleton/skeleton-roster.json` and `RiderDefinition` / `RiderDocument` with required fields:
+
+- `annualWage` (int)
+- `contractEndDay` (int, inclusive)
+- optional `loyalty01` (0..1); default 0.5 if omitted
+
+Catalog validation fails if `annualWage` is missing or `<= 0`, or if `contractEndDay` is missing or `< 0`.
+
+Skeleton wages (estimated game-euros/year — copy exactly):
+
+| OriginDefinitionId | annualWage | contractEndDay | loyalty01 |
+|---|---|---|---|
+| `rider.race-prototype.alpha-leader` | 280000 | 10000 | 0.80 |
+| `rider.race-prototype.alpha-support-1` | 160000 | 10000 | default |
+| `rider.race-prototype.alpha-support-2` | 110000 | 10000 | default |
+| `rider.race-prototype.alpha-card` | 90000 | 10000 | default |
+| `rider.race-prototype.beta-leader` | 280000 | 10000 | default |
+| `rider.race-prototype.beta-support-1` | 160000 | 10000 | default |
+| `rider.race-prototype.beta-support-2` | 110000 | 10000 | default |
+| `rider.race-prototype.beta-card` | 90000 | 10000 | default |
+| `rider.race-prototype.gamma-leader` | 280000 | 10000 | default |
+| `rider.race-prototype.gamma-support-1` | 160000 | 10000 | default |
+| `rider.race-prototype.gamma-support-2` | 110000 | 10000 | default |
+| `rider.race-prototype.gamma-card` | 90000 | 10000 | default |
+
+`contractEndDay: 10000` is past the 10-season soak (120 days) so default races keep a 12-rider peloton. Do **not** put a short contract on the skeleton roster; expiry is proven with a constructed `WorldState` (see tests).
+
+`CreateWorld` allocates a `RiderContract` id per rider (after person + career ids), `StartDate = day 0`, `EndDate = contractEndDay`, `AnnualWage` from content, `OrganizationId` = mapped club. Copy wage/end/loyalty into domain; do not re-derive wage from CP at runtime.
+
+#### Query
+
+Headless `ClubRosterProjection` on `GameApplication` (employer roster + unattached is not listed here):
+
+```text
+ClubRosterEntry
+    RiderCareerId
+    Name
+    OriginDefinitionId
+    AnnualWage
+    ContractEndDay
+    Loyalty01
+```
+
+Exact numbers this phase (Godot All/Guessed/None filtering waits for UI). Skeleton `attributeVisibility` stays Guessed; that does not hide wages in this headless query.
+
+No new GameApplication **commands** except what already exists. Expiry is a world rule on Advance Day, not a Card Flow.
+
+#### Persistence / checksum
+
+- SQLite `SchemaVersion` **4**. Schema 1–3 saves may refuse to load.
+- World checksum label `peloton-world-checksum-v4`.
+- Persist `RiderContract` rows and nullable `RiderCareer.OrganizationId`.
+- Checksum includes every contract (id, rider, org, wage, start day, end day) ordered by contract id, and writes `OrganizationId.Value` or `0` when null.
+- Ten-season golden checksums will change; tests compare same-seed equality, not a hardcoded hex.
+
+#### Tests (`CareerWorldTourPhase4Tests`)
+
+- CreateWorld: 12 contracts; alpha-leader wage 280000, loyalty 0.80; others loyalty 0.5; every career `OrganizationId` matches its contract club.
+- `ClubRosterProjection` for the red employer lists four riders with those wages.
+- SchemaVersion 4 save/load round-trips contracts, wages, loyalty, nullable org id; checksum matches.
+- Constructed `WorldState` (test helper; do not go through CreateWorld): one rider, contract `EndDate = 0`. After one `AdvanceOneDay`, date is 1, `OrganizationId` is null, `GetRiderCareersForOrganization` is empty, contract row still exists. After that Advance, a race assemble (or a start-list helper) must not include the rider.
+- Constructed world with `EndDate = 5`: still on roster at day 5; unattached after the Advance to day 6.
+- Unattached riders still receive the rest tick (fatigue still drops).
+- Default CreateWorld 10-season runner still completes with 10 races / day 120; still 12 riders on clubs (nobody expired).
+- Spy OFF/ON still matches checksum and finish order where those tests already exist.
+- `dotnet format --verify-no-changes`, `dotnet build`, `dotnet test`.
+- SimRunner `run` / `race` / `day --simulate-from-prep --through-results` still pass.
+- Architecture tests: still no `PlayerTeam`, no `StubRaceEngine`.
+
+#### Out of scope for phase 4
+
+Transfer market, renew/sign/release commands, wage negotiation, personal sponsors, marketability, club cash, title sponsors, Godot Hub, tenth GameState, AI managers, wiring `peloton.wt-2026` to CreateWorld, closing §49.
 
 ### Phase 5 — 2026 WorldTour pack
 
