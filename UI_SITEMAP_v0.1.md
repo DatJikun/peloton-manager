@@ -7,7 +7,7 @@
 **Authority/Owner:** Project owner (gameplay/UX architecture)  
 **Supersedes:** none  
 **Superseded by:** none  
-**Last reviewed:** 2026-08-25  
+**Last reviewed:** 2026-08-31  
 **Related decisions/ADRs:** D-002, D-003, D-004, D-005, D-006, D-008, D-009, D-010, D-013, D-014, D-017, D-020, D-024, D-027, D-016, D-031; OPEN — Hotseat RaceLive (DECISIONS.md)
 
 ---
@@ -64,6 +64,8 @@ UI refresh ← Query projection ← Knowledge stores (via AccessContext)
 ```
 
 Queries and forecasts are read-only, RNG-neutral, and knowledge-bounded (D-014, D-027).
+
+**Look reference:** career-shell chrome and layout start from `HTML_UI_LAB.md` / `peloton-manager-full-ui-poc-v3.html`. Godot `CareerShell.tscn` copies that chrome. The HTML is not a client and does not change this sitemap's domains, Commands, or knowledge rules.
 
 ---
 

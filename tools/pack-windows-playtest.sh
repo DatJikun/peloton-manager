@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Pack a Windows playtest zip of the Godot Career Hub.
+# Pack a Windows playtest zip of the Godot career shell.
 # Requires Godot 4.4.1 .NET and matching mono export templates.
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -54,8 +54,12 @@ cp -a "${ROOT}/content/peloton.race-prototype" "${ZIP_DIR}/content/"
 cat > "${ZIP_DIR}/CZYTAJ_MNIE.txt" <<'EOF'
 Peloton Manager — playtest na Windows
 
-To jeszcze nie jest skończona gra. Jest biurko kariery: kolejne dni,
+To jeszcze nie jest skończona gra. To niebieska powłoka kariery
+(Biurko, Skład, Sztab, kalendarz) plus prawdziwa pętla: kolejne dni,
 przygotowanie czwórki, wyścig i tabela wyników.
+
+Sponsorzy, finanse, skauting i OVR na tych stronach to jeszcze rysunek.
+Nie zapisują się do kariery.
 
 Jak uruchomić
 1. Rozpakuj CAŁY folder, nie sam plik .exe.
@@ -71,7 +75,7 @@ Co robić na biurku
 - W przygotowaniu ustaw jednego Leader i jednego Card, reszta wozi.
 - JEDŹ WYŚCIG — dostajesz wynik i tabelę.
 - WYNIK: Wszyscy, albo jeden zespół (Beskid–Vetter / Fala–Karpaty / Ost-Wind).
-- Film jest wyłączony. FILM: WŁ włącza oglądanie etapu; wynik zostaje ten sam.
+- Film jest wyłączony. W Ustawieniach FILM: WŁ włącza oglądanie etapu; wynik zostaje ten sam.
 
 Zapis autosave leży w podfolderze saves obok gry.
 EOF

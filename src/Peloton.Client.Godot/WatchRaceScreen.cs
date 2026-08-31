@@ -1,6 +1,5 @@
 using System;
 using System.Globalization;
-using System.IO;
 using Godot;
 using Peloton.Application;
 using Peloton.Domain;
@@ -28,10 +27,22 @@ public sealed partial class WatchRaceScreen : Control
     private VBoxContainer? decisionBox;
     private Button? confirmButton;
     private Button? startButton;
+    private Button? deskButton;
     private Button? pauseButton;
     private Button? exitButton;
     private Button? continueButton;
+    private bool attached;
+    private bool returned;
+
     public WatchRaceHost? ExternalHost { get; set; }
+
+    public event Action? ReturnedToManagement;
+
+    public void Attach(WatchRaceHost existing)
+    {
+        host = existing ?? throw new ArgumentNullException(nameof(existing));
+        attached = true;
+    }
 
     public override void _Ready()
     {
@@ -63,7 +74,9 @@ public sealed partial class WatchRaceScreen : Control
 
         confirmButton = MakeButton("POTWIERDŹ PLAN", onPressed: OnConfirm);
         startButton = MakeButton("OGLĄDAJ ETAP", onPressed: OnStart);
-        root.AddChild(WrapRow(confirmButton, startButton));
+        deskButton = MakeButton("WRÓĆ DO BIURKA", onPressed: OnBackToDesk);
+        deskButton.Visible = attached;
+        root.AddChild(WrapRow(confirmButton, startButton, deskButton));
 
         rateRow = new HBoxContainer();
         rateRow.AddThemeConstantOverride("separation", 8);
@@ -116,16 +129,17 @@ public sealed partial class WatchRaceScreen : Control
         continueButton.Visible = false;
         root.AddChild(continueButton);
 
-        string autosavePath = WatchContentPath.PlaytestSavePath(
-            "peloton-watch-prerace.peloton",
-            OS.HasFeature("editor"),
-            OS.GetExecutablePath());
         if (ExternalHost is not null)
         {
             host = ExternalHost;
+            attached = true;
         }
-        else
+        else if (host is null)
         {
+            string autosavePath = WatchContentPath.PlaytestSavePath(
+                "peloton-watch-prerace.peloton",
+                OS.HasFeature("editor"),
+                OS.GetExecutablePath());
             host = new WatchRaceHost(
                 ApplicationFactory.Create(WatchContentPath.FindContentRoot()),
                 autosavePath);
@@ -200,6 +214,22 @@ public sealed partial class WatchRaceScreen : Control
         }
     }
 
+    private void OnBackToDesk()
+    {
+        if (host is null)
+        {
+            return;
+        }
+
+        if (host.State == GameState.RacePreparationFlow)
+        {
+            Apply(host.CancelPreparation());
+            return;
+        }
+
+        NotifyReturned();
+    }
+
     private void OnTogglePause()
     {
         if (host is null)
@@ -259,6 +289,7 @@ public sealed partial class WatchRaceScreen : Control
         bool prep = host.State == GameState.RacePreparationFlow;
         confirmButton!.Visible = prep;
         startButton!.Visible = prep;
+        deskButton!.Visible = attached && (prep || host.State == GameState.Management);
         rateRow!.Visible = prep || live;
         liveRow!.Visible = live;
         continueButton!.Visible = host.State is GameState.RaceResultsFlow or GameState.RaceDebriefFlow;
@@ -269,16 +300,25 @@ public sealed partial class WatchRaceScreen : Control
         if (prep)
         {
             title!.Text = "WATCH RACE";
-            status!.Text = $"Seed 91234 · film {WatchFilmDuration.Label(host.SelectedFilmSeconds)} · potwierdź plan i oglądaj.";
+            status!.Text = attached
+                ? $"Kariera · film {WatchFilmDuration.Label(host.SelectedFilmSeconds)} · potwierdź plan albo wróć do biurka."
+                : $"Seed 91234 · film {WatchFilmDuration.Label(host.SelectedFilmSeconds)} · potwierdź plan i oglądaj.";
             clock!.Text = "zegar oglądania czeka na StartRace.";
         }
 
         if (host.State == GameState.Management)
         {
             title!.Text = "WATCH RACE";
-            status!.Text = "Etap zamknięty. To nie jest Career Hub.";
+            status!.Text = attached
+                ? "Etap zamknięty. Wracasz do biurka."
+                : "Etap zamknięty. To nie jest Career Hub.";
             liveRow!.Visible = false;
             decisionBox!.Visible = false;
+            if (attached)
+            {
+                NotifyReturned();
+                return;
+            }
         }
 
         if (live && host.Interpolated is InterpolatedWatchView view)
@@ -473,5 +513,16 @@ public sealed partial class WatchRaceScreen : Control
         button.AddThemeStyleboxOverride("pressed", hover);
         button.Pressed += onPressed;
         return button;
+    }
+
+    private void NotifyReturned()
+    {
+        if (!attached || returned)
+        {
+            return;
+        }
+
+        returned = true;
+        ReturnedToManagement?.Invoke();
     }
 }

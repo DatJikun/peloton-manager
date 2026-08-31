@@ -36,13 +36,13 @@ dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.
 
 The skeleton calendar is deliberately short: one season is 12 calls to `AdvanceDay` followed by one prototype race. The season runner reports crash status, final world day, deterministic checksum, and race count. The `race` command reports winner, checksum, decision count, Spy neutrality, and crash status. Optional `--trace-json` and `--trace-markdown` write Race Spy artifacts. The `day` command creates a skeleton career, advances the requested days, prints the Hub snapshot (date, employer, next race, primary action/label, today's notes), calendar entries (`calendar=day=… kind=… status=… title=…` plus `result=` when completed), inbox items (`inboxCount`, `inbox=identity=…`), and stops with `RACE_DAY_PENDING` when a race is due. Add `--follow-hub` to enter race preparation and print `prep=` without running the race. Add `--simulate-from-prep` to confirm and simulate once from that flow, `--through-results` to acknowledge the committed result and print `result=` / `headlines=` / `table=` / `debrief=`, or `--through-races` to confirm, simulate, acknowledge results, finish the debrief, and keep advancing.
 
-## Godot boundary
+## Godot client
 
-`src/Peloton.Client.Godot` is an empty compile-time stub. Future Godot code will call Application Commands and Queries; it will not own World State or write SQLite. Godot was not used to implement or verify Milestone 0 or the race prototype.
+`src/Peloton.Client.Godot` is presentation only (Commands + Queries). Open `src/Peloton.Client.Godot/project.godot` in Godot 4.4 .NET. Main scene: career shell (`CareerShell.tscn`) with Watch Race as a blocking overlay. Headless tests do not need Godot installed.
 
 ## UI lab
 
-Static HTML prototypes live at the repository root (`08e-constructivist-desk.html`, `10-dashboard-constructivist.html`, `12-dashboard-team-mid.html`, `14-race.html`). Rejected variants are under `archive/`. The avatar experiment is `experiments/avatar_prototype/`. These are not Godot and not the headless career loop.
+Static HTML prototypes live at the repository root. The current career-shell look is `peloton-manager-full-ui-poc-v3.html` (index: `HTML_UI_LAB.md`). Ancestors: `08e-constructivist-desk.html`, `10-dashboard-constructivist.html`, `12-dashboard-team-mid.html`, `14-race.html`. Rejected variants are under `archive/`. The avatar experiment is `experiments/avatar_prototype/`. These are not Godot and not the headless career loop.
 
 ## Known difference from the race contract
 

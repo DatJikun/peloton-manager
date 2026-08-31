@@ -9,7 +9,8 @@ The prototype is still below the accepted Race Engine contract. Remaining intent
 - fixed one-second step and `double` arithmetic; these are prototype choices, not production locks;
 - synthetic multi-team pack and transient numeric participant IDs on the standalone `race` / `watch` CLI; career Simulate/Watch bind the same physiology onto the skeleton roster (12 named people, 3 teams);
 - simplified shelter slots, drafting, durability, and knowledge-bounded chase decisions;
-- Godot Watch Race exists as an **optional** presentation window over the same D-033 clock (`D-036`); the thin Career Hub default is simulate → official result table, headline events, and a presentation-only team filter (`D-037`), not a KPI dashboard or a fun-gate result;
+- Godot Watch Race exists as an **optional** presentation window over the same D-033 clock (`D-036`); the career shell default is simulate → official result table, headline events, and a presentation-only team filter (`D-037`), not a KPI dashboard or a fun-gate result;
+- Godot career shell may show POC look-catalog names (Beskid–Vetter, OVR, cash) on empty management domains; those numbers are not World State and not true ability;
 - Godot Watch map expands coarse prototype segments through an authored route-profile library (3 variants each for flat / climb / descent / rolling / crosswind) and a seeded generator. Official `race-prototype.json` physics stay three constant-gradient ramps so goldens do not move;
 - owner engagement gate in `RACE_ENGINE_DESIGN_v0.2.md` §49 remains `NOT VERIFIED`;
 - SimRunner `watch` still has the D-033 headless supervising clock, rates ×1 / ×2 / ×5 / ×20, decision pauses, and RNG-neutral focal-rider motion; CLI Watch is not the Godot renderer or an owner §49 playtest;
