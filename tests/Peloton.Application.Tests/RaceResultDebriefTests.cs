@@ -63,6 +63,9 @@ public sealed class RaceResultDebriefTests
         Assert.DoesNotContain("Marco Anconi", RaceOutcomeQueries.FormatTable(result, beskid.Id), StringComparison.Ordinal);
         Assert.Contains("Beskid–Vetter", RaceOutcomeQueries.FormatTable(result, beskid.Id), StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void RaceResultProjectionIsOnlyAvailableInResultsFlowAndDoesNotRerunTheRace()
     {
         CountingRaceEngine engine = new();
         GameApplication application = Create(engine);
