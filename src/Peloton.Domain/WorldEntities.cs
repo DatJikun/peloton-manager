@@ -34,10 +34,13 @@ public sealed class Organization
         string titleSponsor = "",
         string bike = "",
         string groupset = "",
-        long estimatedBudgetEur = 0)
+        long estimatedBudgetEur = 0,
+        long cashEur = 0,
+        long titleSponsorAnnualFeeEur = 0)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(daysSimulated);
         ArgumentOutOfRangeException.ThrowIfNegative(licenceYearsRemaining);
+        ArgumentOutOfRangeException.ThrowIfNegative(titleSponsorAnnualFeeEur);
 
         Id = id;
         OriginDefinitionId = originDefinitionId;
@@ -50,6 +53,8 @@ public sealed class Organization
         Bike = bike;
         Groupset = groupset;
         EstimatedBudgetEur = estimatedBudgetEur;
+        CashEur = cashEur;
+        TitleSponsorAnnualFeeEur = titleSponsorAnnualFeeEur;
     }
 
     public WorldEntityId Id { get; }
@@ -74,9 +79,18 @@ public sealed class Organization
 
     public long EstimatedBudgetEur { get; }
 
+    public long CashEur { get; private set; }
+
+    public long TitleSponsorAnnualFeeEur { get; }
+
     public void AdvanceOneDay()
     {
         DaysSimulated = checked(DaysSimulated + 1);
+    }
+
+    public void ApplyFinanceTick(long dailySponsor, long dailyWages)
+    {
+        CashEur = checked(CashEur + dailySponsor - dailyWages);
     }
 }
 

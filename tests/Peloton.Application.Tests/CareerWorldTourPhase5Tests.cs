@@ -66,7 +66,7 @@ public sealed class CareerWorldTourPhase5Tests
     }
 
     [Fact]
-    public void SchemaVersionFiveRoundTripsWorldTourWorldChecksum()
+    public void SchemaVersionSixRoundTripsWorldTourWorldChecksum()
     {
         using TemporaryDirectory temp = new();
         string savePath = Path.Combine(temp.Path, "wt-2026.peloton");

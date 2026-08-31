@@ -44,7 +44,7 @@ public sealed class CareerWorldTourBindTests
     }
 
     [Fact]
-    public void SchemaVersionFiveRoundTripsRiderCareersAndResults()
+    public void SchemaVersionSixRoundTripsRiderCareersAndResults()
     {
         using TemporaryDirectory temp = new();
         string savePath = Path.Combine(temp.Path, "career-bind.peloton");

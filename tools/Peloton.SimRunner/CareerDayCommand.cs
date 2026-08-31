@@ -462,6 +462,13 @@ public static class CareerDayCommand
         output.WriteLine($"primaryAction={hub.PrimaryAction}");
         output.WriteLine($"primaryLabel={hub.PrimaryLabel}");
         output.WriteLine($"raceCount={hub.RaceCount.ToString(CultureInfo.InvariantCulture)}");
+        ClubFinanceProjection? finance = application.ClubFinance;
+        if (finance is not null)
+        {
+            output.WriteLine($"cash={finance.CashEur.ToString(CultureInfo.InvariantCulture)}");
+            output.WriteLine($"overdrawn={finance.Overdrawn.ToString().ToLowerInvariant()}");
+        }
+
         foreach (string note in hub.TodayNotes)
         {
             output.WriteLine($"note={note}");

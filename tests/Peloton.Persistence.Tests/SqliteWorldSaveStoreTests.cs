@@ -98,7 +98,7 @@ public sealed class SqliteWorldSaveStoreTests
     }
 
     [Fact]
-    public void OfficialRaceRoundTripKeepsSchemaVersionFiveAndLastRaceJsonShape()
+    public void OfficialRaceRoundTripKeepsSchemaVersionSixAndLastRaceJsonShape()
     {
         using TemporaryDirectory temp = new();
         string savePath = Path.Combine(temp.Path, "post-race.peloton");
@@ -139,7 +139,7 @@ public sealed class SqliteWorldSaveStoreTests
     }
 
     [Fact]
-    public void ConfirmedPreparationRoundTripKeepsSessionPlanAtSchemaVersionFive()
+    public void ConfirmedPreparationRoundTripKeepsSessionPlanAtSchemaVersionSix()
     {
         using TemporaryDirectory temp = new();
         string savePath = Path.Combine(temp.Path, "confirmed-prep.peloton");

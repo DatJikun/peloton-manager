@@ -55,11 +55,19 @@ Phase 1 out of scope (now landed in phase 3 headless): pre-season picker and str
 - Route geometry remains the **synthetic proof circuit** (`race-scenario.peloton.prototype-v0`); WT `RaceContentId` values map to that template at assemble time.
 - `GeneratePeriodicRaces` is false for WT; skeleton keeps periodic race generation.
 - Race-due uses calendar entries, not `day % CalendarPeriodDays`.
-- SQLite SchemaVersion **5** / checksum `peloton-world-checksum-v5`. Skeleton worlds also save as v5.
+- SQLite SchemaVersion **5** / checksum `peloton-world-checksum-v5`. Skeleton worlds also save as v5. (Superseded by phase 6 — see below.)
 
-Phase 6 specified (not in code yet): club `CashEur`, daily floor(sponsor fee / year days) minus floor(wages / year days), no luxury tax, SchemaVersion 6. Overdrawn is a note, not auto-firing.
+## Thin economy (D-036 phase 6 landed)
 
-Phase 6+ out of scope: dynamic sponsor market, inflation, transfer market, Godot Hub, AI managers, D-032, tenth GameState.
+- `Organization.CashEur` (may be negative) and `TitleSponsorAnnualFeeEur` tick daily on Advance Day after contract expiry.
+- `WorldState.FinancialYearDays`: skeleton = `CalendarPeriodDays` (12); WT = 365.
+- `dailySponsor = floor(fee / yearDays)`, `dailyWages = floor(active wage bill / yearDays)`; no luxury tax, no inflation, no auto-firing when overdrawn.
+- Skeleton world create: fee 2_000_000 and `TitleSponsor = "Skeleton Sponsor"` when budget is 0. WT: fee = `EstimatedBudgetEur`.
+- `ClubFinanceProjection` on Management; SimRunner `day` prints `cash=` and `overdrawn=`.
+- `RacePreparationProjection.Title` uses today's calendar race name (WT TDU = `Santos Tour Down Under`).
+- SQLite SchemaVersion **6** / checksum `peloton-world-checksum-v6`. Schema 1–5 saves refuse to load.
+
+Phase 7+ out of scope: dynamic sponsor market, inflation, transfer market, Godot Hub, AI managers, D-032, tenth GameState.
 
 ## Day state (D-036 phase 2 landed)
 

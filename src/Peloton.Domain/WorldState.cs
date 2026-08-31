@@ -65,7 +65,8 @@ public sealed class WorldState
         IEnumerable<RiderCareer>? riderCareers = null,
         IEnumerable<OrganizationRaceEntry>? organizationRaceEntries = null,
         IEnumerable<RiderContract>? riderContracts = null,
-        bool generatePeriodicRaces = true)
+        bool generatePeriodicRaces = true,
+        int? financialYearDays = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(worldId);
         ArgumentNullException.ThrowIfNull(contentIdentity);
@@ -106,6 +107,7 @@ public sealed class WorldState
             .OrderBy(contract => contract.Id.Value)
             .ToList();
         GeneratePeriodicRaces = generatePeriodicRaces;
+        FinancialYearDays = financialYearDays ?? (generatePeriodicRaces ? calendarPeriodDays : 365);
     }
 
     public string WorldId { get; }
@@ -153,6 +155,8 @@ public sealed class WorldState
     public IReadOnlyList<RiderContract> RiderContracts => riderContracts;
 
     public bool GeneratePeriodicRaces { get; }
+
+    public int FinancialYearDays { get; }
 
     public RiderCareer? TryGetRiderCareer(WorldEntityId riderCareerId) =>
         riderCareers.FirstOrDefault(career => career.Id == riderCareerId);
@@ -267,6 +271,39 @@ public sealed class WorldState
 
         CurrentDate = CurrentDate.NextDay();
         ExpireContracts();
+        ApplyFinanceTick();
+    }
+
+    private void ApplyFinanceTick()
+    {
+        foreach (Organization organization in organizations)
+        {
+            long activeWageBill = ComputeActiveWageBill(organization.Id);
+            long dailySponsor = organization.TitleSponsorAnnualFeeEur / FinancialYearDays;
+            long dailyWages = activeWageBill / FinancialYearDays;
+            organization.ApplyFinanceTick(dailySponsor, dailyWages);
+        }
+    }
+
+    private long ComputeActiveWageBill(WorldEntityId organizationId)
+    {
+        long wageBill = 0;
+        foreach (RiderCareer career in riderCareers)
+        {
+            if (career.OrganizationId != organizationId)
+            {
+                continue;
+            }
+
+            RiderContract? contract = riderContracts.FirstOrDefault(
+                item => item.RiderCareerId == career.Id);
+            if (contract is not null)
+            {
+                wageBill = checked(wageBill + contract.AnnualWage);
+            }
+        }
+
+        return wageBill;
     }
 
     private void ExpireContracts()
@@ -436,6 +473,11 @@ public sealed class WorldState
             {
                 lastDayNotes.Add($"{person.Name}'s contract expired.");
             }
+        }
+
+        if (employer is not null && employer.CashEur < 0)
+        {
+            lastDayNotes.Add("The club is overdrawn.");
         }
     }
 

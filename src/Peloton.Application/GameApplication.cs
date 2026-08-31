@@ -57,7 +57,7 @@ public sealed class GameApplication
             string objective = ResolvePreparationObjective(World, organizationId, racePreparation.RaceScenarioId);
             bool canRun = racePreparation.PlanConfirmed;
             return new RacePreparationProjection(
-                RacePreparationDefaults.Title,
+                ResolvePreparationTitle(World),
                 objective,
                 Array.AsReadOnly(squad),
                 racePreparation.LeaderId,
@@ -216,6 +216,53 @@ public sealed class GameApplication
                 .OrderBy(entry => entry.OriginDefinitionId, StringComparer.Ordinal)
                 .ToArray();
             return new ClubRosterProjection(riders);
+        }
+    }
+
+    public ClubFinanceProjection? ClubFinance
+    {
+        get
+        {
+            if (World is null || State != GameState.Management)
+            {
+                return null;
+            }
+
+            AccessContext access = GetAccessContext();
+            if (access.CurrentOrganizationId is not WorldEntityId organizationId)
+            {
+                return null;
+            }
+
+            Organization? employer = World.Organizations.FirstOrDefault(
+                organization => organization.Id == organizationId);
+            if (employer is null)
+            {
+                return null;
+            }
+
+            long wageBillAnnual = 0;
+            foreach (RiderCareer career in World.GetRiderCareersForOrganization(organizationId))
+            {
+                RiderContract? contract = World.RiderContracts.FirstOrDefault(
+                    item => item.RiderCareerId == career.Id);
+                if (contract is not null)
+                {
+                    wageBillAnnual = checked(wageBillAnnual + contract.AnnualWage);
+                }
+            }
+
+            long dailySponsor = employer.TitleSponsorAnnualFeeEur / World.FinancialYearDays;
+            long dailyWages = wageBillAnnual / World.FinancialYearDays;
+            return new ClubFinanceProjection(
+                employer.CashEur,
+                wageBillAnnual,
+                employer.TitleSponsor,
+                employer.TitleSponsorAnnualFeeEur,
+                dailySponsor,
+                dailyWages,
+                dailySponsor - dailyWages,
+                employer.CashEur < 0);
         }
     }
 
@@ -938,6 +985,13 @@ public sealed class GameApplication
         return raceContentId;
     }
 
+    private static string ResolvePreparationTitle(WorldState world)
+    {
+        CalendarEntry? entry = world.CalendarEntries.FirstOrDefault(
+            item => item.DayNumber == world.CurrentDate.DayNumber && item.Kind == CalendarEntryKind.Race);
+        return entry?.Title ?? RacePreparationDefaults.Title;
+    }
+
     private string ResolvePreparationObjective(
         WorldState world,
         WorldEntityId organizationId,
@@ -1001,6 +1055,17 @@ public sealed class GameApplication
         {
             WorldEntityId organizationId = allocator.Allocate();
             organizationIds[definition.Id] = organizationId;
+            long titleSponsorAnnualFeeEur = definition.EstimatedBudgetEur;
+            string titleSponsor = definition.TitleSponsor;
+            if (definition.EstimatedBudgetEur == 0)
+            {
+                titleSponsorAnnualFeeEur = 2_000_000;
+                if (string.IsNullOrEmpty(titleSponsor))
+                {
+                    titleSponsor = "Skeleton Sponsor";
+                }
+            }
+
             organizations.Add(new Organization(
                 organizationId,
                 definition.Id,
@@ -1008,10 +1073,12 @@ public sealed class GameApplication
                 country: definition.Country,
                 division: definition.Division,
                 licenceYearsRemaining: definition.LicenceYearsRemaining,
-                titleSponsor: definition.TitleSponsor,
+                titleSponsor: titleSponsor,
                 bike: definition.Bike,
                 groupset: definition.Groupset,
-                estimatedBudgetEur: definition.EstimatedBudgetEur));
+                estimatedBudgetEur: definition.EstimatedBudgetEur,
+                cashEur: 0,
+                titleSponsorAnnualFeeEur: titleSponsorAnnualFeeEur));
         }
 
         List<Person> persons = new();
@@ -1073,6 +1140,7 @@ public sealed class GameApplication
             null);
         DecisionAuthority authority = new(authorityId, DecisionAuthorityKind.HumanInput);
         int calendarPeriodDays = ReadCalendarPeriodDays(recipe);
+        int financialYearDays = recipe.GeneratePeriodicRaces ? calendarPeriodDays : 365;
         List<CalendarEntry> calendarEntries = new();
         if (recipe.CalendarRaces.Count > 0)
         {
@@ -1127,7 +1195,8 @@ public sealed class GameApplication
             riderCareers: riderCareers,
             organizationRaceEntries: organizationRaceEntries,
             riderContracts: riderContracts,
-            generatePeriodicRaces: recipe.GeneratePeriodicRaces);
+            generatePeriodicRaces: recipe.GeneratePeriodicRaces,
+            financialYearDays: financialYearDays);
     }
 
     private static int ReadCalendarPeriodDays(WorldRecipe recipe)
