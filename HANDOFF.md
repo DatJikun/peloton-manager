@@ -10,13 +10,13 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`D-035 sequential core loop — step 2 world roster`
+`D-035 sequential core loop — step 4 calendar (step 3 is owner watch)`
 
 ### Goal
-Twelve named riders, three teams, career races from those people. Manager is a separate person, not a rider. No transfers. Keep the `race` CLI golden. Then the owner watches a stage (step 3). Do not close §49.
+A season has 2–3 races, not one every 12 days. Other teams are on the start list. Then a thin Godot Hub. Owner still has to watch a stage (step 3); tests do not close §49.
 
 ### Status
-Skeleton career world loads Beskid–Vetter, Fala–Karpaty, and Ost-Wind with four named riders each. The human manager (Adam Wroński) is a person off the roster. Career Simulate/Watch bind prototype physiology onto those people, so results and Watch labels are names (expected winner Marco Anconi). The standalone `race` / `watch` CLI still uses synthetic IDs 1001–1012 and the old golden (`winner=1006`, checksum `5A35E881…`). Godot Watch film duration + route from step 1 remains. Calendar is still one race every 12 days. Godot Hub is not this window. HTML lab stays a look reference. §49 remains `NOT VERIFIED`. `D-032` remains deferred. SchemaVersion remains 1. Build order is `D-035`: one step at a time.
+Skeleton career world loads Beskid–Vetter, Fala–Karpaty, and Ost-Wind with four named riders each. The human manager (Adam Wroński) is a person off the roster. Career Simulate/Watch bind prototype physiology onto those people. The standalone `race` / `watch` CLI still uses synthetic IDs 1001–1012 and the old golden (`winner=1006`, checksum `5A35E881…`). A 12-day season now has three named races (Opening Classic, Hill Classic, Season Finale on days 4 / 8 / 12). All three teams start those races. Godot Watch film duration + route from step 1 remains. Godot Hub is next. HTML lab stays a look reference. §49 remains `NOT VERIFIED`. SchemaVersion remains 1.
 
 ## What works now
 - [x] High-level game design v0.7
@@ -55,7 +55,7 @@ Skeleton career world loads Beskid–Vetter, Fala–Karpaty, and Ost-Wind with f
 - [x] Godot Watch Race window: Commands + Queries, interpolated icons, decision pause, Results from LastRace
 - [x] Godot Watch film duration (30 s–5 min) plus authored route-profile library (3 variants per terrain kind) and a seeded route generator for the map
 - [x] Career world roster: 12 named riders, 3 teams, manager person off the roster; career races bind prototype physiology onto those people
-- [x] Career calendar entries (domain system of record) and inbox query (race-due + race-result); archive cannot dismiss race deadlines
+- [x] Career calendar of three races per 12-day season (Opening Classic, Hill Classic, Season Finale); all three teams start; inbox still cannot dismiss race deadlines
 - [x] Headless domain/application/persistence/architecture tests
 
 ## What is currently being changed
@@ -76,7 +76,7 @@ Skeleton career world loads Beskid–Vetter, Fala–Karpaty, and Ost-Wind with f
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task
-`D-035 step 3 — owner watches a stage.` Does the story stick, does the decision have two outcomes, do they want another. Tests do not close this. §49 stays `NOT VERIFIED`. After that: calendar of 2–3 races (step 4). Do not start Godot Hub, radio/DS, transfers, or more race decisions until the list says so.
+`D-035 step 5 — thin Godot Hub.` Advance Day, Race next, inbox, entry to Watch. Look from the HTML lab, not a KPI dashboard. Owner still needs to watch a stage (step 3); §49 stays `NOT VERIFIED`. Prep from the four is step 6. More race decisions wait on that watch.
 
 ## Known blockers
 - None.
@@ -209,7 +209,7 @@ src/Peloton.Client.Godot/project.godot
 - Nie traktuj starych dokumentów jako aktualnych bez sprawdzenia statusu.
 - Nie rozszerzaj scope'u taska bez wskazania PLAYER VALUE.
 - Nie zamykaj OQ-TS-001 ani OQ-DM-001 na podstawie checksumy lub allocatora szkieletowego.
-- Nie skacz po `D-035`. Jedna rzecz na raz. Po kadrze świata właściciel ogląda etap; potem kalendarz 2–3 wyścigów, potem cienki Hub.
+- Nie skacz po `D-035`. Jedna rzecz na raz. Po kalendarzu: cienki Hub, potem przygotowanie z czwórki. Właściciel musi oglądnąć etap (krok 3) zanim dojdą kolejne decyzje w wyścigu.
 - Nie wpuszczaj PR #25 (radio/DS board) dopóki właściciel nie obejrzy etapu i nie poprosi.
 - Nie wracaj do starych PR-ów kariery #13–#16 (Hub/inbox/debrief) — to już w `main`.
 - Nie buduj teraz dossier/agenta, transferów, sponsorów, AI na rynku, lidera GC ani awatarów na oko.

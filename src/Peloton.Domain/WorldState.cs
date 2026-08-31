@@ -135,9 +135,10 @@ public sealed class WorldState
     public IReadOnlyList<RosterRider> RosterRiders => rosterRiders;
 
     public bool IsRaceDue =>
-        CurrentDate.DayNumber > 0 &&
-        CurrentDate.DayNumber % CalendarPeriodDays == 0 &&
-        LastCompletedRaceDay != CurrentDate.DayNumber;
+        calendarEntries.Any(entry =>
+            entry.Kind == CalendarEntryKind.Race &&
+            entry.DayNumber == CurrentDate.DayNumber &&
+            entry.OfficialResult is null);
 
     public int NextRaceDayNumber
     {
@@ -148,7 +149,32 @@ public sealed class WorldState
                 return CurrentDate.DayNumber;
             }
 
-            return ((CurrentDate.DayNumber / CalendarPeriodDays) + 1) * CalendarPeriodDays;
+            CalendarEntry? upcoming = calendarEntries
+                .Where(entry =>
+                    entry.Kind == CalendarEntryKind.Race &&
+                    entry.OfficialResult is null &&
+                    entry.DayNumber > CurrentDate.DayNumber)
+                .OrderBy(entry => entry.DayNumber)
+                .ThenBy(entry => entry.Id.Value)
+                .FirstOrDefault();
+            if (upcoming is not null)
+            {
+                return upcoming.DayNumber;
+            }
+
+            int period = CalendarPeriodDays;
+            int[] offsets = SkeletonCalendar.Offsets(period);
+            int seasonIndex = CurrentDate.DayNumber / period;
+            foreach (int offset in offsets)
+            {
+                int candidate = (seasonIndex * period) + offset;
+                if (candidate > CurrentDate.DayNumber)
+                {
+                    return candidate;
+                }
+            }
+
+            return ((seasonIndex + 1) * period) + offsets[0];
         }
     }
 
@@ -213,17 +239,32 @@ public sealed class WorldState
 
     public void EnsureUpcomingRaceEntry()
     {
-        int nextRaceDay = NextRaceDayNumber;
-        if (calendarEntries.Any(entry => entry.DayNumber == nextRaceDay))
+        int period = CalendarPeriodDays;
+        int seasonIndex = CurrentDate.DayNumber == 0 ? 0 : (CurrentDate.DayNumber - 1) / period;
+        bool finishedFinale = CurrentDate.DayNumber > 0 &&
+            CurrentDate.DayNumber % period == 0 &&
+            LastCompletedRaceDay == CurrentDate.DayNumber;
+        int lastSeason = finishedFinale ? seasonIndex + 1 : seasonIndex;
+        for (int season = seasonIndex; season <= lastSeason; season++)
         {
-            return;
+            int start = checked(season * period);
+            foreach (int offset in SkeletonCalendar.Offsets(period))
+            {
+                int dayNumber = start + offset;
+                if (calendarEntries.Any(entry =>
+                    entry.Kind == CalendarEntryKind.Race && entry.DayNumber == dayNumber))
+                {
+                    continue;
+                }
+
+                calendarEntries.Add(new CalendarEntry(
+                    AllocateEntityId(),
+                    dayNumber,
+                    CalendarEntryKind.Race,
+                    SkeletonCalendar.TitleForOffset(offset, period)));
+            }
         }
 
-        calendarEntries.Add(new CalendarEntry(
-            AllocateEntityId(),
-            nextRaceDay,
-            CalendarEntryKind.Race,
-            "Skeleton race"));
         calendarEntries.Sort(CompareCalendarEntries);
     }
 
@@ -261,6 +302,7 @@ public sealed class WorldState
         if (IsRaceDue)
         {
             lastDayNotes.Add("A race is due today.");
+            lastDayNotes.Add("All three teams are on the start list.");
         }
     }
 }

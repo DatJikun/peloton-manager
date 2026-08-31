@@ -102,7 +102,7 @@ public sealed class GameApplicationTests
         Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
 
         RacePreparationProjection prep = Assert.IsType<RacePreparationProjection>(application.RacePreparation);
-        Assert.Equal("Skeleton race", prep.Title);
+        Assert.Equal(SkeletonCalendar.OpeningClassic, prep.Title);
         Assert.Equal("StageWin", prep.Objective);
         Assert.Equal(new long[] { 4, 5, 6, 7 }, prep.Squad.Select(id => id.Value));
         Assert.False(prep.PlanConfirmed);
@@ -130,10 +130,7 @@ public sealed class GameApplicationTests
     {
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 42)).Succeeded);
-        for (int day = 0; day < 12; day++)
-        {
-            Assert.True(application.Execute(new AdvanceDayCommand()).Succeeded);
-        }
+        TestApplication.AdvanceToRaceDue(application);
 
         Assert.True(application.Execute(new FollowHubPrimaryActionCommand()).Succeeded);
         Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
@@ -331,7 +328,7 @@ public sealed class GameApplicationTests
         CareerDayProjection hub = Assert.IsType<CareerDayProjection>(application.CareerDay);
         Assert.Equal(1, hub.DayNumber);
         Assert.Equal("Beskid–Vetter", hub.EmployerName);
-        Assert.Equal(11, hub.DaysUntilNextRace);
+        Assert.Equal(3, hub.DaysUntilNextRace);
         Assert.False(hub.RaceDueToday);
         Assert.Contains(hub.TodayNotes, note => note.Contains("worked the day", StringComparison.Ordinal));
         Assert.Contains(hub.TodayNotes, note => note.Contains("rest of the world", StringComparison.Ordinal));
@@ -360,13 +357,10 @@ public sealed class GameApplicationTests
     {
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 42)).Succeeded);
-        for (int day = 0; day < 12; day++)
-        {
-            Assert.True(application.Execute(new AdvanceDayCommand()).Succeeded, $"day {day + 1}");
-        }
+        TestApplication.AdvanceToRaceDue(application);
 
         CareerDayProjection hub = Assert.IsType<CareerDayProjection>(application.CareerDay);
-        Assert.Equal(12, hub.DayNumber);
+        Assert.Equal(4, hub.DayNumber);
         Assert.True(hub.RaceDueToday);
         Assert.Equal(HubPrimaryActionIds.RaceNext, hub.PrimaryAction);
         Assert.Equal(HubPrimaryActionLabels.RaceNext, hub.PrimaryLabel);
@@ -374,33 +368,31 @@ public sealed class GameApplicationTests
         CommandResult blocked = application.Execute(new AdvanceDayCommand());
         Assert.False(blocked.Succeeded);
         Assert.Equal("RACE_DAY_PENDING", blocked.ReasonCode);
-        Assert.Equal(12, application.World!.CurrentDate.DayNumber);
+        Assert.Equal(4, application.World!.CurrentDate.DayNumber);
 
         Assert.True(application.Execute(new FollowHubPrimaryActionCommand()).Succeeded);
         Assert.Equal(GameState.RacePreparationFlow, application.State);
-        Assert.Equal(12, application.World.CurrentDate.DayNumber);
+        Assert.Equal(4, application.World.CurrentDate.DayNumber);
     }
 
     [Fact]
-    public void TwelfthDayBlocksAdvanceUntilTheRaceIsCompleted()
+    public void FirstRaceDayBlocksAdvanceUntilTheRaceIsCompleted()
     {
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 42)).Succeeded);
-        for (int day = 0; day < 12; day++)
-        {
-            Assert.True(application.Execute(new AdvanceDayCommand()).Succeeded, $"day {day + 1}");
-        }
+        TestApplication.AdvanceToRaceDue(application);
 
         CareerDayProjection hub = Assert.IsType<CareerDayProjection>(application.CareerDay);
-        Assert.Equal(12, hub.DayNumber);
+        Assert.Equal(4, hub.DayNumber);
         Assert.True(hub.RaceDueToday);
         Assert.Equal(0, hub.DaysUntilNextRace);
         Assert.Contains(hub.TodayNotes, note => note.Contains("race is due", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(hub.TodayNotes, note => note.Contains("All three teams are on the start list.", StringComparison.Ordinal));
 
         CommandResult blocked = application.Execute(new AdvanceDayCommand());
         Assert.False(blocked.Succeeded);
         Assert.Equal("RACE_DAY_PENDING", blocked.ReasonCode);
-        Assert.Equal(12, application.World!.CurrentDate.DayNumber);
+        Assert.Equal(4, application.World!.CurrentDate.DayNumber);
 
         using TemporaryDirectory temp = new();
         string raceDueSave = Path.Combine(temp.Path, "race-due.peloton");
@@ -421,8 +413,8 @@ public sealed class GameApplicationTests
 
         Assert.False(application.World.IsRaceDue);
         Assert.True(application.Execute(new AdvanceDayCommand()).Succeeded);
-        Assert.Equal(13, application.World.CurrentDate.DayNumber);
-        Assert.Equal(11, application.CareerDay!.DaysUntilNextRace);
+        Assert.Equal(5, application.World.CurrentDate.DayNumber);
+        Assert.Equal(3, application.CareerDay!.DaysUntilNextRace);
     }
 
     private static GameApplication RunOneRace(long seed, string autosaveDirectory)

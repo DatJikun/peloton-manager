@@ -70,7 +70,9 @@ internal static class CareerProjectionQueries
                 results.Add(new InboxItemProjection(
                     FormatResultIdentity(entry.Id),
                     "race-result",
-                    string.Create(CultureInfo.InvariantCulture, $"Skeleton race finished. {entry.OfficialResult}."),
+                    string.Create(
+                        CultureInfo.InvariantCulture,
+                        $"{entry.Title} finished. {entry.OfficialResult}."),
                     entry.DayNumber,
                     entry.Id));
             }

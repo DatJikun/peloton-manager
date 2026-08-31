@@ -48,7 +48,7 @@ public sealed class GameApplication
                 ? Array.Empty<WorldEntityId>()
                 : CareerRaceBinder.PlayerSquad(World);
             return new RacePreparationProjection(
-                RacePreparationDefaults.Title,
+                CurrentRaceTitle(World),
                 RacePreparationDefaults.Objective,
                 Array.AsReadOnly(squad),
                 racePreparation.PlanConfirmed,
@@ -702,11 +702,10 @@ public sealed class GameApplication
             new(secondAiAuthorityId, DecisionAuthorityKind.AIInput),
         };
         int calendarPeriodDays = ReadCalendarPeriodDays(recipe);
-        WorldEntityId initialRaceEntryId = allocator.Allocate();
-        IReadOnlyList<CalendarEntry> calendarEntries = new[]
-        {
-            new CalendarEntry(initialRaceEntryId, calendarPeriodDays, CalendarEntryKind.Race, "Skeleton race"),
-        };
+        IReadOnlyList<CalendarEntry> calendarEntries = SkeletonCalendar.CreateSeason(
+            allocator,
+            seasonIndex: 0,
+            calendarPeriodDays);
 
         return new WorldState(
             $"{recipe.ContentIdentity.ScenarioId}:{seed}",
@@ -727,6 +726,31 @@ public sealed class GameApplication
             calendarPeriodDays: calendarPeriodDays,
             calendarEntries: calendarEntries,
             rosterRiders: roster);
+    }
+
+    private static string CurrentRaceTitle(WorldState? world)
+    {
+        if (world is null)
+        {
+            return RacePreparationDefaults.Title;
+        }
+
+        CalendarEntry? today = world.CalendarEntries.FirstOrDefault(entry =>
+            entry.Kind == CalendarEntryKind.Race &&
+            entry.DayNumber == world.CurrentDate.DayNumber);
+        if (today is not null)
+        {
+            return today.Title;
+        }
+
+        CalendarEntry? next = world.CalendarEntries
+            .Where(entry =>
+                entry.Kind == CalendarEntryKind.Race &&
+                entry.OfficialResult is null &&
+                entry.DayNumber >= world.CurrentDate.DayNumber)
+            .OrderBy(entry => entry.DayNumber)
+            .FirstOrDefault();
+        return next?.Title ?? RacePreparationDefaults.Title;
     }
 
     private static int ReadCalendarPeriodDays(WorldRecipe recipe)

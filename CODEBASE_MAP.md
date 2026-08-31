@@ -50,14 +50,14 @@ Static content lives in `content/peloton.skeleton` and `content/peloton.race-pro
 | Career Hub query | `Peloton.Application/CareerDay.cs` | `GAME_STATES_v0.1.md` Advance Day; Hub primary action (`advance-day` / `race-next`); Management only; not a UI dashboard | Application tests, `day` SimRunner |
 | Race preparation | `Peloton.Application/RacePreparation.cs`, `CareerRaceBinder.cs`, `GameApplication.cs` | career squad from the player's four named riders; session checkpoint plan | Application + Persistence tests |
 | Race result / debrief | `Peloton.Application/RaceResultDebrief.cs`, `GameApplication.cs` | committed `LastRace` + calendar; knowledge-bounded notes; checkpoint not World | Application + Persistence tests |
-| Career calendar | `Peloton.Domain/CalendarEntry.cs`, `Peloton.Application/CareerCalendarInbox.cs` | stored entries + derived status | Application tests |
+| Career calendar | `Peloton.Domain/CalendarEntry.cs`, `SkeletonCalendar.cs`, `Peloton.Application/CareerCalendarInbox.cs` | three named races per 12-day season; stored entries + derived status | Application tests |
 | Career inbox query | `Peloton.Application/CareerCalendarInbox.cs`, `ArchiveInboxItemCommand` | rebuilt race-due + race-result items; dismiss lock on race-due | Application tests |
 | AI managers | Not implemented | `AI_MANAGER_SYSTEM_v0.2.md` | Not implemented |
 | Save / SQLite | `Peloton.Persistence` | `SAVE_FORMAT_v0.1.md` | Persistence + Application tests |
 | Career scenarios | `content/peloton.skeleton`, `JsonScenarioCatalog.cs` | `CONTENT_FORMAT_v0.1.md`; 12 named riders, 3 teams, manager off roster | Application tests |
 | Rules modules | `Peloton.Rules`, scenario JSON | `RULESETS_v0.1.md` | Application + Architecture tests |
 
-Recruitment, contracts, sponsors, knowledge records, full calendar beyond skeleton races, Career Hub UI, and `D-032` multi-stage leadership transfer are not implemented. Godot Watch is the first playable race window, not the career shell.
+Recruitment, contracts, sponsors, knowledge records, Career Hub UI, and `D-032` multi-stage leadership transfer are not implemented. Godot Watch is the first playable race window, not the career shell. The skeleton calendar is three races per season, not a full WT year.
 
 ## Dependency direction
 
