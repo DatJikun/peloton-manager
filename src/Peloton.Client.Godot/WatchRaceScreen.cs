@@ -345,9 +345,11 @@ public sealed partial class WatchRaceScreen : Control
         {
             title!.Text = "WYNIK";
             status!.Text = "Oficjalny wynik z LastRace. Bez drugiego RunBatch.";
-            result.Text = string.Create(
-                CultureInfo.InvariantCulture,
-                $"Zwycięzca {projection.WinnerLabel} ({projection.WinnerId.Value})\n{host!.LastChecksum}");
+            result.Text = RaceOutcomeQueries.FormatTable(projection, teamId: null)
+                + "\n\n"
+                + string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"Zwycięzca {projection.WinnerLabel} ({projection.WinnerId.Value})\n{host!.LastChecksum}");
             map?.ShowView(null);
             liveRow!.Visible = false;
             decisionBox!.Visible = false;

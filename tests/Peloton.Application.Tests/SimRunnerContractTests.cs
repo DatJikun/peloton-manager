@@ -355,6 +355,10 @@ public sealed class SimRunnerContractTests
         Assert.Contains("headlines=Opening Classic: wygrał Marco Anconi.", stdout, StringComparison.Ordinal);
         Assert.Contains("Cel StageWin: nie tym razem.", stdout, StringComparison.Ordinal);
         Assert.Contains(RaceOutcomeQueries.StaffDecisionHeadline, stdout, StringComparison.Ordinal);
+        Assert.Contains("table=1. Marco Anconi | Fala–Karpaty", stdout, StringComparison.Ordinal);
+        Assert.Contains("table=", stdout, StringComparison.Ordinal);
+        Assert.Contains("| Beskid–Vetter", stdout, StringComparison.Ordinal);
+        Assert.Contains("| Ost-Wind", stdout, StringComparison.Ordinal);
         Assert.Contains("state=RaceDebriefFlow", stdout, StringComparison.Ordinal);
         Assert.Contains("debrief=objective=StageWin notes=Oficjalny zwycięzca: Marco Anconi.", stdout, StringComparison.Ordinal);
         Assert.DoesNotContain("Widoczny rozjazd", stdout, StringComparison.Ordinal);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Peloton.Application;
 using Peloton.Domain;
 
@@ -13,6 +14,7 @@ public sealed class CareerHubHost
     private readonly GameApplication application;
     private readonly string autosavePath;
     private readonly string settingsPath;
+    private WorldEntityId? resultTeamFilter;
 
     public CareerHubHost(GameApplication application, string autosavePath)
     {
@@ -40,11 +42,29 @@ public sealed class CareerHubHost
 
     public RaceDebriefProjection? Debrief => application.RaceDebrief;
 
+    public WorldEntityId? ResultTeamFilter => resultTeamFilter;
+
+    public IReadOnlyList<RaceResultPlacement> VisibleResultTable =>
+        Result is null
+            ? Array.Empty<RaceResultPlacement>()
+            : RaceOutcomeQueries.FilterPlacements(Result, resultTeamFilter);
+
     public WatchRaceHost? Watch { get; private set; }
 
     public CommandResult Open(long seed)
     {
+        resultTeamFilter = null;
         return application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", seed));
+    }
+
+    public void SetResultTeamFilter(WorldEntityId? teamId)
+    {
+        if (teamId is { } id && (Result is null || Result.Teams.All(team => team.Id != id)))
+        {
+            return;
+        }
+
+        resultTeamFilter = teamId;
     }
 
     public CommandResult AdvanceDay()
@@ -97,7 +117,13 @@ public sealed class CareerHubHost
             return prepared;
         }
 
-        return application.Execute(new SimulateRaceCommand(RacePreparationDefaults.PrototypeScenarioId));
+        CommandResult raced = application.Execute(new SimulateRaceCommand(RacePreparationDefaults.PrototypeScenarioId));
+        if (raced.Succeeded)
+        {
+            PruneResultTeamFilter();
+        }
+
+        return raced;
     }
 
     public CommandResult OpenWatch()
@@ -162,6 +188,14 @@ public sealed class CareerHubHost
         }
 
         return CommandResult.Reject("GAME_STATE_INVALID");
+    }
+
+    private void PruneResultTeamFilter()
+    {
+        if (resultTeamFilter is { } id && (Result is null || Result.Teams.All(team => team.Id != id)))
+        {
+            resultTeamFilter = null;
+        }
     }
 
     private CommandResult EnsureConfirmedPreparation()

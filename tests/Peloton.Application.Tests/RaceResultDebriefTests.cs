@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Peloton.Application;
@@ -24,8 +25,44 @@ public sealed class RaceResultDebriefTests
         RaceOutcomeQueries.UncertainStaffNote,
     };
 
+    private static readonly string[] SkeletonTeamNames =
+    {
+        "Beskid–Vetter",
+        "Fala–Karpaty",
+        "Ost-Wind",
+    };
+
     [Fact]
-    public void RaceResultProjectionIsOnlyAvailableInResultsFlowAndDoesNotRerunTheRace()
+    public void RaceResultTableNamesTeamsAndKeepsGlobalPlacesWhenFiltered()
+    {
+        GameApplication application = TestApplication.Create();
+        Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", GateSeed)).Succeeded);
+        Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
+        Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(application.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId)).Succeeded);
+
+        RaceResultProjection result = Assert.IsType<RaceResultProjection>(application.RaceResult);
+        Assert.Equal(12, result.FinishOrder.Count);
+        Assert.Equal(3, result.Teams.Count);
+        Assert.Equal(SkeletonTeamNames, result.Teams.Select(team => team.Name));
+        Assert.Equal(4, result.FinishOrder.Count(row => row.TeamName == "Beskid–Vetter"));
+        Assert.Equal(4, result.FinishOrder.Count(row => row.TeamName == "Fala–Karpaty"));
+        Assert.Equal(4, result.FinishOrder.Count(row => row.TeamName == "Ost-Wind"));
+
+        RaceResultTeam beskid = result.Teams.Single(team => team.Name == "Beskid–Vetter");
+        IReadOnlyList<RaceResultPlacement> filtered = RaceOutcomeQueries.FilterPlacements(result, beskid.Id);
+        Assert.Equal(4, filtered.Count);
+        Assert.All(filtered, row => Assert.Equal("Beskid–Vetter", row.TeamName));
+        Assert.Equal(filtered.Select(row => row.Place), filtered.Select(row => row.Place).Distinct());
+        Assert.DoesNotContain(filtered, row => row.Place == 1);
+        Assert.Contains(filtered, row => row.Place > 4);
+        Assert.Equal(
+            RaceOutcomeQueries.FormatTable(result, teamId: null),
+            string.Join('\n', result.FinishOrder.Select(row => $"{row.Place}. {row.Label} | {row.TeamName}")));
+        Assert.DoesNotContain("WPrime", RaceOutcomeQueries.FormatTable(result, beskid.Id), StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Marco Anconi", RaceOutcomeQueries.FormatTable(result, beskid.Id), StringComparison.Ordinal);
+        Assert.Contains("Beskid–Vetter", RaceOutcomeQueries.FormatTable(result, beskid.Id), StringComparison.Ordinal);
+    }
     {
         CountingRaceEngine engine = new();
         GameApplication application = Create(engine);
@@ -47,10 +84,16 @@ public sealed class RaceResultDebriefTests
         Assert.Equal("Marco Anconi", result.WinnerLabel);
         Assert.Equal(12, result.FinishOrder.Count);
         Assert.Equal("Marco Anconi", result.FinishOrder[0].Label);
+        Assert.Equal(1, result.FinishOrder[0].Place);
+        Assert.Equal("Fala–Karpaty", result.FinishOrder[0].TeamName);
         Assert.Equal(application.World!.LastRace!.FinishOrder, result.FinishOrder.Select(place => place.RiderId));
         Assert.All(
             result.FinishOrder,
             place => Assert.False(string.IsNullOrWhiteSpace(place.Label)));
+        Assert.All(
+            result.FinishOrder,
+            place => Assert.False(string.IsNullOrWhiteSpace(place.TeamName)));
+        Assert.Equal(SkeletonTeamNames, result.Teams.Select(team => team.Name));
         Assert.Contains(result.Headlines, line => line.Contains("Marco Anconi", StringComparison.Ordinal));
         Assert.Contains(result.Headlines, line => line.Contains("Piotr Kowalczyk", StringComparison.Ordinal));
         Assert.Contains(result.Headlines, line => line.Contains("Cel StageWin", StringComparison.Ordinal));

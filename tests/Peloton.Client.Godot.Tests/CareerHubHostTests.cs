@@ -75,6 +75,21 @@ public sealed class CareerHubHostTests
         Assert.Contains(result.Headlines, line => line.Contains("Cel StageWin: nie tym razem.", StringComparison.Ordinal));
         Assert.Contains(result.Headlines, line => line.Equals(RaceOutcomeQueries.StaffDecisionHeadline, StringComparison.Ordinal));
         Assert.All(result.Headlines, line => Assert.DoesNotContain("WPrime", line, StringComparison.OrdinalIgnoreCase));
+        Assert.Equal(3, result.Teams.Count);
+        Assert.Contains(result.FinishOrder, row => row.Label == "Dawid Rutka" && row.TeamName == "Beskid–Vetter");
+        Assert.Equal("Fala–Karpaty", result.FinishOrder[0].TeamName);
+        Assert.Equal(12, host.VisibleResultTable.Count);
+
+        RaceResultTeam beskid = result.Teams.Single(team => team.Name == "Beskid–Vetter");
+        host.SetResultTeamFilter(beskid.Id);
+        Assert.Equal(beskid.Id, host.ResultTeamFilter);
+        Assert.Equal(4, host.VisibleResultTable.Count);
+        Assert.All(host.VisibleResultTable, row => Assert.Equal("Beskid–Vetter", row.TeamName));
+        Assert.DoesNotContain(host.VisibleResultTable, row => row.Place == 1);
+        Assert.Contains(host.VisibleResultTable, row => row.Label == "Dawid Rutka");
+        host.SetResultTeamFilter(null);
+        Assert.Null(host.ResultTeamFilter);
+        Assert.Equal(12, host.VisibleResultTable.Count);
 
         Assert.True(host.ContinueOutcome().Succeeded);
         Assert.Equal(GameState.RaceDebriefFlow, host.State);

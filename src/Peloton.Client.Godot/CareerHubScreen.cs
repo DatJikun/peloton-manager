@@ -25,6 +25,7 @@ public sealed partial class CareerHubScreen : Control
     private Label? inbox;
     private Label? prep;
     private Label? outcome;
+    private HBoxContainer? resultFilterRow;
     private VBoxContainer? seatBox;
     private Button? primaryButton;
     private Button? watchButton;
@@ -82,9 +83,16 @@ public sealed partial class CareerHubScreen : Control
         seatBox = new VBoxContainer();
         seatBox.AddThemeConstantOverride("separation", 6);
         desk.AddChild(seatBox);
-        outcome = MakeLabel("Po wyścigu tu będzie wynik i najważniejsze wydarzenia.", 15, Black);
+        outcome = MakeLabel("Po wyścigu tu będzie tabela wyników. Możesz filtrować po zespole.", 15, Black);
         outcome.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-        desk.AddChild(Panel("WYNIK", outcome));
+        resultFilterRow = new HBoxContainer();
+        resultFilterRow.AddThemeConstantOverride("separation", 8);
+        VBoxContainer wynikBox = new();
+        wynikBox.AddThemeConstantOverride("separation", 6);
+        wynikBox.AddChild(MakeLabel("WYNIK", 13, Red));
+        wynikBox.AddChild(resultFilterRow);
+        wynikBox.AddChild(outcome);
+        desk.AddChild(wynikBox);
 
         string autosave = Path.Combine(Path.GetTempPath(), "peloton-hub-prerace.peloton");
         host = new CareerHubHost(
@@ -254,6 +262,7 @@ public sealed partial class CareerHubScreen : Control
             ? "Czwórka z Beskid–Vetter. W dzień wyścigu wybierasz, kto prowadzi i kto finiszuje."
             : $"{preparation.Title} · {preparation.Objective}";
         RebuildSeats(preparation);
+        RebuildResultFilters(host.Result);
         outcome!.Text = OutcomeText(host);
     }
 
@@ -289,11 +298,8 @@ public sealed partial class CareerHubScreen : Control
     {
         if (host.Result is RaceResultProjection result)
         {
-            string finish = string.Join(
-                '\n',
-                result.FinishOrder.Select((place, index) =>
-                    string.Create(CultureInfo.InvariantCulture, $"{index + 1}. {place.Label}")));
-            return string.Join('\n', result.Headlines) + "\n\n" + finish;
+            string table = RaceOutcomeQueries.FormatTable(result, host.ResultTeamFilter);
+            return string.Join('\n', result.Headlines) + "\n\n" + table;
         }
 
         if (host.Debrief is RaceDebriefProjection debrief)
@@ -301,7 +307,49 @@ public sealed partial class CareerHubScreen : Control
             return string.Join('\n', debrief.Notes);
         }
 
-        return "Po wyścigu tu będzie wynik i najważniejsze wydarzenia.";
+        return "Po wyścigu tu będzie tabela wyników. Możesz filtrować po zespole.";
+    }
+
+    private void RebuildResultFilters(RaceResultProjection? result)
+    {
+        if (resultFilterRow is null || host is null)
+        {
+            return;
+        }
+
+        foreach (Node child in resultFilterRow.GetChildren())
+        {
+            child.QueueFree();
+        }
+
+        resultFilterRow.Visible = result is not null;
+        if (result is null)
+        {
+            return;
+        }
+
+        resultFilterRow.AddChild(MakeFilterButton("Wszyscy", null, host.ResultTeamFilter is null));
+        foreach (RaceResultTeam team in result.Teams)
+        {
+            RaceResultTeam captured = team;
+            resultFilterRow.AddChild(MakeFilterButton(
+                captured.Name,
+                captured.Id,
+                host.ResultTeamFilter == captured.Id));
+        }
+    }
+
+    private Button MakeFilterButton(string caption, WorldEntityId? teamId, bool selected)
+    {
+        Button button = MakeButton(caption, () => OnFilterTeam(teamId), compact: true);
+        button.Disabled = selected;
+        return button;
+    }
+
+    private void OnFilterTeam(WorldEntityId? teamId)
+    {
+        host?.SetResultTeamFilter(teamId);
+        Refresh();
     }
 
     private void RebuildSeats(RacePreparationProjection? preparation)
@@ -395,10 +443,10 @@ public sealed partial class CareerHubScreen : Control
         return label;
     }
 
-    private static Button MakeButton(string text, Action onPressed)
+    private static Button MakeButton(string text, Action onPressed, bool compact = false)
     {
         Button button = new() { Text = text };
-        button.CustomMinimumSize = new Vector2(220, 48);
+        button.CustomMinimumSize = compact ? new Vector2(0, 36) : new Vector2(220, 48);
         button.AddThemeColorOverride("font_color", White);
         button.AddThemeColorOverride("font_hover_color", Paper);
         StyleBoxFlat normal = new() { BgColor = Black, ContentMarginLeft = 16, ContentMarginRight = 16, ContentMarginTop = 8, ContentMarginBottom = 8 };

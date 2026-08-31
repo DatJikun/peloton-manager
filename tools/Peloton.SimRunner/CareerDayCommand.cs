@@ -431,6 +431,13 @@ public static class CareerDayCommand
                 CultureInfo.InvariantCulture,
                 $"result=title={result.Title} winner={result.WinnerId.Value} winnerLabel={result.WinnerLabel} routeId={result.RouteId} finishOrder={finishOrder}"));
         output.WriteLine($"headlines={headlines}");
+        foreach (RaceResultPlacement row in result.FinishOrder)
+        {
+            output.WriteLine(
+                string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"table={row.Place}. {row.Label} | {row.TeamName}"));
+        }
     }
 
     private static void WriteDebrief(TextWriter output, GameApplication application)

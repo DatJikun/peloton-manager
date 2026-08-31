@@ -9,8 +9,15 @@ using Peloton.Simulation.Race;
 namespace Peloton.Application;
 
 public sealed record RaceResultPlacement(
+    int Place,
     WorldEntityId RiderId,
-    string Label);
+    string Label,
+    WorldEntityId? TeamId,
+    string TeamName);
+
+public sealed record RaceResultTeam(
+    WorldEntityId Id,
+    string Name);
 
 public sealed record RaceResultProjection(
     string Title,
@@ -18,6 +25,7 @@ public sealed record RaceResultProjection(
     WorldEntityId WinnerId,
     string WinnerLabel,
     IReadOnlyList<RaceResultPlacement> FinishOrder,
+    IReadOnlyList<RaceResultTeam> Teams,
     IReadOnlyList<string> Headlines);
 
 public sealed record RaceDebriefProjection(
@@ -45,7 +53,7 @@ public static class RaceOutcomeQueries
 
         RaceScenario? scenario = TryResolve(racePreparation, raceScenarioCatalog);
         RaceResultPlacement[] finishOrder = world.LastRace.FinishOrder
-            .Select(id => new RaceResultPlacement(id, Label(world, scenario, id)))
+            .Select((id, index) => PlaceRow(world, scenario, id, index + 1))
             .ToArray();
         string title = CompletedCalendarTitle(world) ?? RacePreparationDefaults.Title;
         string winnerLabel = Label(world, scenario, world.LastRace.WinnerId);
@@ -55,6 +63,7 @@ public static class RaceOutcomeQueries
             world.LastRace.WinnerId,
             winnerLabel,
             Array.AsReadOnly(finishOrder),
+            Array.AsReadOnly(DistinctTeams(finishOrder)),
             BuildHeadlines(
                 world,
                 title,
@@ -63,6 +72,30 @@ public static class RaceOutcomeQueries
                 world.LastRace.FinishOrder,
                 racePreparation,
                 decisionCount));
+    }
+
+    public static IReadOnlyList<RaceResultPlacement> FilterPlacements(
+        RaceResultProjection projection,
+        WorldEntityId? teamId)
+    {
+        ArgumentNullException.ThrowIfNull(projection);
+        if (teamId is null)
+        {
+            return projection.FinishOrder;
+        }
+
+        WorldEntityId filter = teamId.Value;
+        return projection.FinishOrder.Where(row => row.TeamId == filter).ToArray();
+    }
+
+    public static string FormatTable(RaceResultProjection projection, WorldEntityId? teamId)
+    {
+        ArgumentNullException.ThrowIfNull(projection);
+        return string.Join(
+            '\n',
+            FilterPlacements(projection, teamId).Select(row => string.Create(
+                CultureInfo.InvariantCulture,
+                $"{row.Place}. {row.Label} | {row.TeamName}")));
     }
 
     public static RaceDebriefProjection BuildDebrief(
@@ -171,6 +204,38 @@ public static class RaceOutcomeQueries
         {
             return null;
         }
+    }
+
+    private static RaceResultPlacement PlaceRow(
+        WorldState world,
+        RaceScenario? scenario,
+        WorldEntityId riderId,
+        int place)
+    {
+        (WorldEntityId? teamId, string teamName) = TeamOf(world, riderId);
+        return new RaceResultPlacement(place, riderId, Label(world, scenario, riderId), teamId, teamName);
+    }
+
+    private static RaceResultTeam[] DistinctTeams(IReadOnlyList<RaceResultPlacement> finishOrder)
+    {
+        return finishOrder
+            .Where(row => row.TeamId is not null && !string.IsNullOrWhiteSpace(row.TeamName))
+            .GroupBy(row => row.TeamId!.Value)
+            .Select(group => new RaceResultTeam(group.Key, group.First().TeamName))
+            .OrderBy(team => team.Id.Value)
+            .ToArray();
+    }
+
+    private static (WorldEntityId? TeamId, string TeamName) TeamOf(WorldState world, WorldEntityId riderId)
+    {
+        RosterRider? roster = world.RosterRiders.FirstOrDefault(item => item.PersonId == riderId);
+        if (roster is null)
+        {
+            return (null, string.Empty);
+        }
+
+        Organization? organization = world.Organizations.FirstOrDefault(item => item.Id == roster.OrganizationId);
+        return (roster.OrganizationId, organization?.Name ?? string.Empty);
     }
 
     private static string Label(WorldState? world, RaceScenario? scenario, WorldEntityId riderId)
