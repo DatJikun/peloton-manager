@@ -26,6 +26,7 @@
 | `GITHUB_WORKFLOW_v0.1.md` | REVIEW | Branch, commit, PR and merge workflow |
 | `CODEBASE_MAP.md` | TEMPLATE | Fast navigation map of code ownership and debugging entry points |
 | `RACE_ENGINE_RESEARCH_2026-08-25.md` | RESEARCH SOURCE | Research basis for physiology, physics, DS information and tactics |
+| `MANAGER_GAMES_AND_CYCLING_RESEARCH_2026-08-31.md` | RESEARCH SOURCE | Cycling as a management sport (calendar, licences, sponsors, transfers) plus why manager games work; does not replace Vision/Decisions |
 | `CONTENT_FORMAT_v0.1.md` | DRAFT | JSON content packs, manifesty, IDs, dependencies, overrides i deterministic resolution |
 | `RULESETS_v0.1.md` | DRAFT | Składane moduły reguł, compatibility i effective-dated transitions |
 | `SAVE_FORMAT_v0.1.md` | DRAFT | SQLite save contract, schema versions, migrations, content identity i recovery |

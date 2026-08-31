@@ -16,7 +16,8 @@
 `RACE_SPY_DEBUGGING_v0.1.md`
 `WORLD_SPY_AND_DECISION_TRACING_v0.1.md`
 12. `RACE_ENGINE_RESEARCH_2026-08-25.md`
-13. `DOCS_GOVERNANCE.md`
+13. `MANAGER_GAMES_AND_CYCLING_RESEARCH_2026-08-31.md`
+14. `DOCS_GOVERNANCE.md`
 
 
 ## What we want from you
@@ -36,7 +37,7 @@ When proposing a change, explain the problem it solves and which current decisio
 
 ## Current priorities
 
-Still pre-production. `UI_SITEMAP_v0.1.md`, `GAME_STATES_v0.1.md`, and `DATA_MODEL_v0.1.md` exist as DRAFT documents. Race Engine Design v0.2 exists from cycling research. Review the draft contracts and continue the remaining pre-code documentation gate before a small headless Race Engine prototype/spike. Do not begin broad gameplay implementation yet.
+Still pre-production. `UI_SITEMAP_v0.1.md`, `GAME_STATES_v0.1.md`, and `DATA_MODEL_v0.1.md` exist as DRAFT documents. Race Engine Design v0.2 exists from cycling research. Genre/management research lives in `MANAGER_GAMES_AND_CYCLING_RESEARCH_2026-08-31.md` (source, not a lock). Review the draft contracts and continue the remaining pre-code documentation gate before a small headless Race Engine prototype/spike. Do not begin broad gameplay implementation yet.
 
 ## Core invariants
 

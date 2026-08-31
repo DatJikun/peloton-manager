@@ -71,6 +71,7 @@ Godot Watch Race is a presentation client over the existing Application clock. O
 - [x] Rulesets v0.1 (DRAFT)
 - [x] Save Format v0.1 (DRAFT)
 - [x] Testing v0.1 (DRAFT)
+- [x] Manager-games + cycling-as-management research (RESEARCH SOURCE, 2026-08-31) — nie zmienia locków
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task
@@ -164,6 +165,7 @@ AI_DEVELOPMENT_RULES_v0.1.md
 GITHUB_WORKFLOW_v0.1.md
 CODEBASE_MAP.md
 RACE_ENGINE_RESEARCH_2026-08-25.md
+MANAGER_GAMES_AND_CYCLING_RESEARCH_2026-08-31.md
 ```
 
 ## Commands to run first
@@ -209,6 +211,8 @@ Milestone 0 still supplies the headless .NET 8 spine. The race prototype is the 
 This tree joins that career loop onto `main` without dropping the HTML UI lab. The paragraph below preserves the pre-bootstrap design context and owner lessons; implementation status is given above and in `CODEBASE_MAP.md`.
 
 Peloton Manager jest na etapie pre-production. Celem jest modularny, deterministyczny manager kolarstwa z matematyczną symulacją i emergent history. Epoki składają się z niezależnych modułów content/rules. Race gameplay jest krytycznym ryzykiem: wcześniejszy projekt managerski właściciela okazał się nudny przez brak ciekawych decyzji w trakcie meczu, więc realizm nie może usprawiedliwiać pasywnej rozgrywki. RNG musi być izolowany per domena, aby kosmetyczne zmiany nie wpływały na gameplay. Truth należy do Simulation, natomiast Knowledge do konkretnych organizacji. Human i AI używają tych samych Application Commands oraz rynku; AI nie posiada magicznego dostępu do ukrytych atrybutów. Wyniki są evidence, a nie bezpośrednim odczytem ability. Dossier jest sprawą rekrutacyjną z kontaktem z agentem, a nie paskiem postępu. UI Godota nie może posiadać logiki świata. Advance Day jest jedyną podstawową jednostką postępu UX, ale scheduler pozostaje event-driven i symuluje cały świat niezależnie od gracza. AI managerowie korzystają z tych samych Commands co człowiek; ich różnorodność wynika z traits, skills, knowledge, staffu, identity organizacji i kontekstu rulesetu. Efektywność cech managerów jest mierzona przez batchowe i 100-letnie symulacje w wielu epokach. Stable IDs nigdy nie są ponownie używane, a stare encje są kompaktowane zamiast kasowane z historii. UI Sitemap, Game States, minimalny Data Model, Content Format, Rulesets, Save Format i Testing są w DRAFT i czekają na owner review. Content resolution zapisuje dokładną tożsamość packów, dependencies i overrides. Rules modules składają świat bez globalnego przełącznika epoki, a ich przejścia są effective-dated. Save jest kontraktem pliku SQLite z wersją schematu, obowiązkową migracją, recovery i dokładną content/rules identity; nie zawiera mid-race snapshotu ani scheduler runtime jako World State. Testing definiuje warstwy, golden families, kanoniczny przepis Dynamic+Advanced+Guessed i gate Milestone 0; nie zamyka fun gate'u automatami. Race prototype v0 jest oficjalną ścieżką wyników, ale nadal poniżej pełnego kontraktu `RACE_ENGINE_DESIGN_v0.2.md`; §49 pozostaje do ręcznego playtestu właściciela.
+
+- `2026-08-31` — Research źródłowy `MANAGER_GAMES_AND_CYCLING_RESEARCH_2026-08-31.md`: kolarstwo poza rowerem (sponsor-vehiculum, licencje UCI, kalendarz szczytów, rynek bez okna FIFA) oraz gatunek menedżerów (FM/CM/OOTP/PCM/F1/MM). Nie zmienia locków; potwierdza VISION/DECISIONS i uzupełnia lukę obok researchu wyścigu.
 
 - `2026-08-25` — Race Spy jest obowiązkowym, RNG-neutral narzędziem debugowym od pierwszego headless race spike; porównuje truth z actor knowledge i generuje reprodukowalne raporty decyzji.
 
