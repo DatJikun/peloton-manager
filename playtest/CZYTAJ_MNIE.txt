@@ -1,0 +1,22 @@
+Peloton Manager — playtest na Windows
+
+To jeszcze nie jest skończona gra. Jest biurko kariery: kolejne dni,
+przygotowanie czwórki, wyścig i tabela wyników.
+
+Jak uruchomić
+1. Rozpakuj CAŁY folder, nie sam plik .exe.
+2. Wejdź do folderu PelotonManager-playtest.
+3. Kliknij dwukrotnie PelotonManager.exe.
+4. Jeśli Windows pokaże SmartScreen: „Więcej informacji”, potem „Uruchom mimo to”.
+
+Nie instalujesz Godota ani .NET. Wszystko jest w tym folderze.
+
+Co robić na biurku
+- ADVANCE DAY — świat idzie o jeden dzień.
+- W dzień wyścigu przycisk zmienia się na Race next.
+- W przygotowaniu ustaw jednego Leader i jednego Card, reszta wozi.
+- JEDŹ WYŚCIG — dostajesz wynik i tabelę.
+- WYNIK: Wszyscy, albo jeden zespół (Beskid–Vetter / Fala–Karpaty / Ost-Wind).
+- Film jest wyłączony. FILM: WŁ włącza oglądanie etapu; wynik zostaje ten sam.
+
+Zapis autosave leży w podfolderze saves obok gry.
