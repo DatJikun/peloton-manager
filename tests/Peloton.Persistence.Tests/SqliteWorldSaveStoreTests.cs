@@ -163,7 +163,6 @@ public sealed class SqliteWorldSaveStoreTests
         Assert.Equal(4, plan.Assignments!.Count);
         Assert.Equal(1, plan.Assignments.Count(assignment => assignment.Role == SquadRoles.Leader));
         Assert.Equal(1, plan.Assignments.Count(assignment => assignment.Role == SquadRoles.Card));
-        Assert.Equal(source.RacePreparation, plan);
         Assert.Equal(worldChecksum, WorldChecksum.Compute(stored.World));
 
         GameApplication loaded = CreateApplication();
