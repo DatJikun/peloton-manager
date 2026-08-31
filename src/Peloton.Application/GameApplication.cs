@@ -18,6 +18,7 @@ public sealed class GameApplication
     private RaceWatchClock? watchClock;
     private RacePreparationCheckpoint? racePreparation;
     private string? lastOfficialChecksum;
+    private int? lastCommittedDecisionCount;
 
     public GameApplication(
         IScenarioCatalog scenarioCatalog,
@@ -142,7 +143,11 @@ public sealed class GameApplication
                 return null;
             }
 
-            return RaceOutcomeQueries.BuildResult(World, racePreparation, raceScenarioCatalog);
+            return RaceOutcomeQueries.BuildResult(
+                World,
+                racePreparation,
+                raceScenarioCatalog,
+                lastCommittedDecisionCount);
         }
     }
 
@@ -181,6 +186,7 @@ public sealed class GameApplication
             racePreparation = null;
             watchClock = null;
             lastOfficialChecksum = null;
+            lastCommittedDecisionCount = null;
             LastWatchSecond = 0;
             LastSimSecond = 0;
             State = GameState.Management;
@@ -255,6 +261,7 @@ public sealed class GameApplication
             activeRaceSession = null;
             watchClock = null;
             lastOfficialChecksum = null;
+            lastCommittedDecisionCount = null;
             LastWatchSecond = 0;
             LastSimSecond = 0;
             racePreparation = checkpoint.RacePreparation;
@@ -592,6 +599,7 @@ public sealed class GameApplication
         }
 
         racePreparation = null;
+        lastCommittedDecisionCount = null;
         State = GameState.Management;
         return CommandResult.Success;
     }
@@ -659,6 +667,7 @@ public sealed class GameApplication
         ArgumentNullException.ThrowIfNull(World);
         World.RecordRace(new RaceSummary(result.RouteId, result.WinnerId, result.FinishOrder));
         lastOfficialChecksum = result.Checksum;
+        lastCommittedDecisionCount = result.DecisionCount;
         activeRaceSession = null;
         watchClock = null;
         State = GameState.RaceResultsFlow;

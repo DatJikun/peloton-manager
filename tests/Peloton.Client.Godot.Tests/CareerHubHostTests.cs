@@ -73,6 +73,7 @@ public sealed class CareerHubHostTests
         Assert.Contains(result.Headlines, line => line.Contains("Marco Anconi", StringComparison.Ordinal));
         Assert.Contains(result.Headlines, line => line.Contains("Dawid Rutka", StringComparison.Ordinal));
         Assert.Contains(result.Headlines, line => line.Contains("Cel StageWin: nie tym razem.", StringComparison.Ordinal));
+        Assert.Contains(result.Headlines, line => line.Equals(RaceOutcomeQueries.StaffDecisionHeadline, StringComparison.Ordinal));
         Assert.All(result.Headlines, line => Assert.DoesNotContain("WPrime", line, StringComparison.OrdinalIgnoreCase));
 
         Assert.True(host.ContinueOutcome().Succeeded);

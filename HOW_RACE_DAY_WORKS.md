@@ -14,7 +14,7 @@ Domyślnie **nie oglądasz filmu**. Stawiasz czwórkę, jedziesz wyścig, dostaj
 2. W dzień wyścigu przycisk zmienia się na **Race next**. Wchodzisz w przygotowanie.
 3. Przy czwórce z Beskid–Vetter wybierasz, **kto prowadzi** (Leader), **kto ma wynik** (Card) i kto wozi (Worker). Każde miejsce ma jedną linijkę „po co”.
 4. **Jedź wyścig** — silnik liczy etap od razu. Nie sterujesz kolarzem palcem.
-5. Na biurku pojawia się **Wynik**: kto wygrał, klasyfikacja i najważniejsze wydarzenia (miejsca Twojej czwórki i czy cel StageWin wyszedł).
+5. Na biurku pojawia się **Wynik**: kto wygrał, kolejność, miejsca Twojej czwórki, czy cel StageWin wyszedł, i czy sztab miał momenty decyzji (dziś: pościg albo czekać na rywali). Bez filmu te decyzje idą delegowane.
 6. **Dalej** — krótki debrief sztabu. **Zamknij** — z powrotem na biurko, świat idzie dalej.
 
 Inne ekipy też jadą. Kalendarz sezonu to trzy wyścigi: Opening Classic, Hill Classic, Season Finale.
@@ -35,4 +35,4 @@ Wyłączenie filmu nie osłabia przeciwników i nie zmienia zwycięzcy. Sztab ro
 
 ## Co jest prawdą, a co opisem
 
-Wynik (kto wygrał, kolejność) jest oficjalny i zapisany. Zdania o wydarzeniach mówią o **miejscach i celu**, nie o ukrytej fizjologii. Testy nie mówią, czy oglądanie filmu jest „fajne” — to Twoja ocena, gdy włączysz film.
+Wynik (kto wygrał, kolejność) jest oficjalny i zapisany. Zdania o wydarzeniach mówią o **miejscach, celu i momentach decyzji sztabu**, nie o ukrytej fizjologii. Testy nie mówią, czy oglądanie filmu jest „fajne” — to Twoja ocena, gdy włączysz film.

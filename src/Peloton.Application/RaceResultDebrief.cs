@@ -27,11 +27,14 @@ public sealed record RaceDebriefProjection(
 public static class RaceOutcomeQueries
 {
     public const string UncertainStaffNote = "sztab nie ma pewności";
+    public const string StaffDecisionHeadline =
+        "Sztab miał momenty decyzji: pościg albo czekać na rywali. Bez filmu poszły delegowane.";
 
     public static RaceResultProjection? BuildResult(
         WorldState world,
         RacePreparationCheckpoint? racePreparation,
-        IRaceScenarioCatalog raceScenarioCatalog)
+        IRaceScenarioCatalog raceScenarioCatalog,
+        int? decisionCount = null)
     {
         ArgumentNullException.ThrowIfNull(world);
         ArgumentNullException.ThrowIfNull(raceScenarioCatalog);
@@ -58,7 +61,8 @@ public static class RaceOutcomeQueries
                 world.LastRace.WinnerId,
                 winnerLabel,
                 world.LastRace.FinishOrder,
-                racePreparation));
+                racePreparation,
+                decisionCount));
     }
 
     public static RaceDebriefProjection BuildDebrief(
@@ -90,7 +94,8 @@ public static class RaceOutcomeQueries
         WorldEntityId winnerId,
         string winnerLabel,
         IReadOnlyList<WorldEntityId> finishOrder,
-        RacePreparationCheckpoint? racePreparation)
+        RacePreparationCheckpoint? racePreparation,
+        int? decisionCount)
     {
         List<string> headlines = new()
         {
@@ -110,6 +115,11 @@ public static class RaceOutcomeQueries
         headlines.Add(teamWon
             ? "Cel StageWin: wasz kolarz wygrał."
             : "Cel StageWin: nie tym razem.");
+        if (decisionCount > 0)
+        {
+            headlines.Add(StaffDecisionHeadline);
+        }
+
         return headlines;
     }
 
