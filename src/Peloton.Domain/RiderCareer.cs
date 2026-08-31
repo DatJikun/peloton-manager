@@ -15,7 +15,7 @@ public sealed class RiderCareer
     public RiderCareer(
         WorldEntityId id,
         WorldEntityId personId,
-        WorldEntityId organizationId,
+        WorldEntityId? organizationId,
         string originDefinitionId,
         double criticalPowerW,
         double wPrimeCapacityJ,
@@ -72,7 +72,9 @@ public sealed class RiderCareer
 
     public WorldEntityId PersonId { get; }
 
-    public WorldEntityId OrganizationId { get; }
+    public WorldEntityId? OrganizationId { get; private set; }
+
+    public void DetachFromClub() => OrganizationId = null;
 
     public string OriginDefinitionId { get; }
 

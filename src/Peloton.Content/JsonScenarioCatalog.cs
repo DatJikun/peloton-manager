@@ -110,7 +110,10 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
                         rider.BaseCrr,
                         rider.Positioning,
                         rider.Handling,
-                        rider.TacticalAwareness))
+                        rider.TacticalAwareness,
+                        rider.AnnualWage,
+                        rider.ContractEndDay,
+                        rider.Loyalty01 ?? 0.5))
                     .OrderBy(rider => rider.Id, StringComparer.Ordinal)
                     .ToArray();
                 ManagerDefinition manager = new(roster.Manager.Name, roster.Manager.OrganizationId);
@@ -186,6 +189,19 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
         {
             throw new InvalidDataException("Skeleton scenario requires a roster with riders and team mappings.");
         }
+
+        foreach (RiderDocument rider in roster.Riders)
+        {
+            if (rider.AnnualWage <= 0)
+            {
+                throw new InvalidDataException($"Rider '{rider.Id}' requires annualWage > 0.");
+            }
+
+            if (rider.ContractEndDay < 0)
+            {
+                throw new InvalidDataException($"Rider '{rider.Id}' requires contractEndDay >= 0.");
+            }
+        }
     }
 
     private static string ComputeArtifactHash(params string[] paths)
@@ -258,5 +274,8 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
         double BaseCrr,
         double Positioning,
         double Handling,
-        double TacticalAwareness);
+        double TacticalAwareness,
+        int AnnualWage,
+        int ContractEndDay,
+        double? Loyalty01 = null);
 }

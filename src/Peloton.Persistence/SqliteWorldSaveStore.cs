@@ -13,7 +13,7 @@ namespace Peloton.Persistence;
 
 public sealed class SqliteWorldSaveStore : IWorldSaveStore
 {
-    public const int SchemaVersion = 3;
+    public const int SchemaVersion = 4;
 
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
 
@@ -282,7 +282,7 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
     private sealed record RiderCareerDto(
         WorldEntityId Id,
         WorldEntityId PersonId,
-        WorldEntityId OrganizationId,
+        WorldEntityId? OrganizationId,
         string OriginDefinitionId,
         double CriticalPowerW,
         double WPrimeCapacityJ,
@@ -358,6 +358,27 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                 .ToArray());
     }
 
+    private sealed record RiderContractDto(
+        WorldEntityId Id,
+        WorldEntityId RiderCareerId,
+        WorldEntityId OrganizationId,
+        int AnnualWage,
+        WorldDate StartDate,
+        WorldDate EndDate)
+    {
+        public RiderContract ToDomain() =>
+            new(Id, RiderCareerId, OrganizationId, AnnualWage, StartDate, EndDate);
+
+        public static RiderContractDto FromDomain(RiderContract contract) =>
+            new(
+                contract.Id,
+                contract.RiderCareerId,
+                contract.OrganizationId,
+                contract.AnnualWage,
+                contract.StartDate,
+                contract.EndDate);
+    }
+
     private sealed record OrganizationRaceEntryDto(
         WorldEntityId OrganizationId,
         string RaceContentId,
@@ -410,7 +431,8 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         IReadOnlyList<string> LastDayNotes,
         IReadOnlyList<CalendarEntryDto>? CalendarEntries = null,
         IReadOnlyList<RiderCareerDto>? RiderCareers = null,
-        IReadOnlyList<OrganizationRaceEntryDto>? OrganizationRaceEntries = null)
+        IReadOnlyList<OrganizationRaceEntryDto>? OrganizationRaceEntries = null,
+        IReadOnlyList<RiderContractDto>? RiderContracts = null)
     {
         public static WorldSnapshotDto FromDomain(WorldState world)
         {
@@ -457,7 +479,8 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                 world.RiderCareers.Select(RiderCareerDto.FromDomain).ToArray(),
                 world.OrganizationRaceEntries
                     .Select(OrganizationRaceEntryDto.FromDomain)
-                    .ToArray());
+                    .ToArray(),
+                world.RiderContracts.Select(RiderContractDto.FromDomain).ToArray());
         }
 
         public WorldState ToDomain()
@@ -486,7 +509,9 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                 (RiderCareers ?? Array.Empty<RiderCareerDto>())
                     .Select(career => career.ToDomain()),
                 (OrganizationRaceEntries ?? Array.Empty<OrganizationRaceEntryDto>())
-                    .Select(entry => entry.ToDomain()));
+                    .Select(entry => entry.ToDomain()),
+                (RiderContracts ?? Array.Empty<RiderContractDto>())
+                    .Select(contract => contract.ToDomain()));
         }
     }
 }

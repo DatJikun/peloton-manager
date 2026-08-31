@@ -51,7 +51,7 @@ public sealed class SqliteWorldSaveStoreTests
 
         using SqliteConnection connection = new($"Data Source={savePath};Mode=ReadOnly;Pooling=False");
         connection.Open();
-        Assert.Equal("3", ReadMetadata(connection, "schema_version"));
+        Assert.Equal("4", ReadMetadata(connection, "schema_version"));
         Assert.Equal(source.World!.ContentIdentity.AggregateHash, ReadMetadata(connection, "content_identity"));
         Assert.Equal(source.World.RulesIdentity, ReadMetadata(connection, "rules_identity"));
     }
@@ -98,7 +98,7 @@ public sealed class SqliteWorldSaveStoreTests
     }
 
     [Fact]
-    public void OfficialRaceRoundTripKeepsSchemaVersionThreeAndLastRaceJsonShape()
+    public void OfficialRaceRoundTripKeepsSchemaVersionFourAndLastRaceJsonShape()
     {
         using TemporaryDirectory temp = new();
         string savePath = Path.Combine(temp.Path, "post-race.peloton");
@@ -114,7 +114,7 @@ public sealed class SqliteWorldSaveStoreTests
 
         using SqliteConnection connection = new($"Data Source={savePath};Mode=ReadOnly;Pooling=False");
         connection.Open();
-        Assert.Equal("3", ReadMetadata(connection, "schema_version"));
+        Assert.Equal("4", ReadMetadata(connection, "schema_version"));
         string payload = ReadSnapshot(connection);
         Assert.Contains("\"lastRace\":{\"routeId\":", payload, StringComparison.Ordinal);
         Assert.Contains("\"winnerId\":", payload, StringComparison.Ordinal);
@@ -139,7 +139,7 @@ public sealed class SqliteWorldSaveStoreTests
     }
 
     [Fact]
-    public void ConfirmedPreparationRoundTripKeepsSessionPlanAtSchemaVersionThree()
+    public void ConfirmedPreparationRoundTripKeepsSessionPlanAtSchemaVersionFour()
     {
         using TemporaryDirectory temp = new();
         string savePath = Path.Combine(temp.Path, "confirmed-prep.peloton");
@@ -154,7 +154,7 @@ public sealed class SqliteWorldSaveStoreTests
         using (SqliteConnection connection = new($"Data Source={savePath};Mode=ReadOnly;Pooling=False"))
         {
             connection.Open();
-            Assert.Equal("3", ReadMetadata(connection, "schema_version"));
+            Assert.Equal("4", ReadMetadata(connection, "schema_version"));
         }
 
         WorldCheckpoint stored = new SqliteWorldSaveStore().Load(savePath);

@@ -181,6 +181,44 @@ public sealed class GameApplication
         }
     }
 
+    public ClubRosterProjection? ClubRoster
+    {
+        get
+        {
+            if (World is null || State != GameState.Management)
+            {
+                return null;
+            }
+
+            AccessContext access = GetAccessContext();
+            if (access.CurrentOrganizationId is not WorldEntityId organizationId)
+            {
+                return null;
+            }
+
+            Dictionary<WorldEntityId, RiderContract> contractsByRider = World.RiderContracts
+                .ToDictionary(contract => contract.RiderCareerId);
+            Dictionary<WorldEntityId, Person> personsById = World.Persons
+                .ToDictionary(person => person.Id);
+            ClubRosterEntry[] riders = World.GetRiderCareersForOrganization(organizationId)
+                .Select(career =>
+                {
+                    RiderContract contract = contractsByRider[career.Id];
+                    Person person = personsById[career.PersonId];
+                    return new ClubRosterEntry(
+                        career.Id,
+                        person.Name,
+                        career.OriginDefinitionId,
+                        contract.AnnualWage,
+                        contract.EndDate.DayNumber,
+                        career.Loyalty01);
+                })
+                .OrderBy(entry => entry.OriginDefinitionId, StringComparer.Ordinal)
+                .ToArray();
+            return new ClubRosterProjection(riders);
+        }
+    }
+
     public RaceResultProjection? RaceResult
     {
         get
@@ -957,17 +995,20 @@ public sealed class GameApplication
 
         List<Person> persons = new();
         List<RiderCareer> riderCareers = new();
+        List<RiderContract> riderContracts = new();
         foreach (RiderDefinition definition in recipe.Riders.OrderBy(
                      rider => rider.Id,
                      StringComparer.Ordinal))
         {
             WorldEntityId personId = allocator.Allocate();
             WorldEntityId riderCareerId = allocator.Allocate();
+            WorldEntityId contractId = allocator.Allocate();
+            WorldEntityId organizationId = organizationIds[definition.OrganizationId];
             persons.Add(new Person(personId, definition.Name, definition.Id));
             riderCareers.Add(new RiderCareer(
                 riderCareerId,
                 personId,
-                organizationIds[definition.OrganizationId],
+                organizationId,
                 definition.Id,
                 definition.CriticalPowerW,
                 definition.WPrimeCapacityJ,
@@ -981,7 +1022,15 @@ public sealed class GameApplication
                 definition.BaseCrr,
                 definition.Positioning,
                 definition.Handling,
-                definition.TacticalAwareness));
+                definition.TacticalAwareness,
+                loyalty01: definition.Loyalty01));
+            riderContracts.Add(new RiderContract(
+                contractId,
+                riderCareerId,
+                organizationId,
+                definition.AnnualWage,
+                new WorldDate(0),
+                new WorldDate(definition.ContractEndDay)));
         }
 
         WorldEntityId managerPersonId = allocator.Allocate();
@@ -1037,7 +1086,8 @@ public sealed class GameApplication
             calendarPeriodDays: calendarPeriodDays,
             calendarEntries: calendarEntries,
             riderCareers: riderCareers,
-            organizationRaceEntries: organizationRaceEntries);
+            organizationRaceEntries: organizationRaceEntries,
+            riderContracts: riderContracts);
     }
 
     private static int ReadCalendarPeriodDays(WorldRecipe recipe)

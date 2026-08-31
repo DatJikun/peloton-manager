@@ -39,6 +39,8 @@ public sealed class WorldState
     private readonly List<CalendarEntry> calendarEntries;
     private readonly List<RiderCareer> riderCareers;
     private readonly List<OrganizationRaceEntry> organizationRaceEntries;
+    private readonly List<RiderContract> riderContracts;
+    private readonly List<RiderCareer> ridersExpiredThisAdvance = new();
 
     public WorldState(
         string worldId,
@@ -61,7 +63,8 @@ public sealed class WorldState
         IEnumerable<string>? lastDayNotes = null,
         IEnumerable<CalendarEntry>? calendarEntries = null,
         IEnumerable<RiderCareer>? riderCareers = null,
-        IEnumerable<OrganizationRaceEntry>? organizationRaceEntries = null)
+        IEnumerable<OrganizationRaceEntry>? organizationRaceEntries = null,
+        IEnumerable<RiderContract>? riderContracts = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(worldId);
         ArgumentNullException.ThrowIfNull(contentIdentity);
@@ -97,6 +100,9 @@ public sealed class WorldState
         this.organizationRaceEntries = (organizationRaceEntries ?? Array.Empty<OrganizationRaceEntry>())
             .OrderBy(entry => entry.OrganizationId.Value)
             .ThenBy(entry => entry.RaceContentId, StringComparer.Ordinal)
+            .ToList();
+        this.riderContracts = (riderContracts ?? Array.Empty<RiderContract>())
+            .OrderBy(contract => contract.Id.Value)
             .ToList();
     }
 
@@ -141,6 +147,8 @@ public sealed class WorldState
     public IReadOnlyList<RiderCareer> RiderCareers => riderCareers;
 
     public IReadOnlyList<OrganizationRaceEntry> OrganizationRaceEntries => organizationRaceEntries;
+
+    public IReadOnlyList<RiderContract> RiderContracts => riderContracts;
 
     public RiderCareer? TryGetRiderCareer(WorldEntityId riderCareerId) =>
         riderCareers.FirstOrDefault(career => career.Id == riderCareerId);
@@ -231,6 +239,8 @@ public sealed class WorldState
 
     public void AdvanceOneDay()
     {
+        ridersExpiredThisAdvance.Clear();
+
         foreach (Organization organization in organizations)
         {
             organization.AdvanceOneDay();
@@ -242,6 +252,27 @@ public sealed class WorldState
         }
 
         CurrentDate = CurrentDate.NextDay();
+        ExpireContracts();
+    }
+
+    private void ExpireContracts()
+    {
+        foreach (RiderContract contract in riderContracts)
+        {
+            if (contract.EndDate.DayNumber >= CurrentDate.DayNumber)
+            {
+                continue;
+            }
+
+            RiderCareer? career = TryGetRiderCareer(contract.RiderCareerId);
+            if (career is null || career.OrganizationId != contract.OrganizationId)
+            {
+                continue;
+            }
+
+            career.DetachFromClub();
+            ridersExpiredThisAdvance.Add(career);
+        }
     }
 
     public void RecordRace(RaceSummary result, string raceContentId, IReadOnlyList<WorldEntityId> starters)
@@ -369,6 +400,16 @@ public sealed class WorldState
             IsRaceDueForOrganization(organizationId))
         {
             lastDayNotes.Add("A race is due today.");
+        }
+
+        foreach (RiderCareer career in ridersExpiredThisAdvance
+                     .OrderBy(item => item.OriginDefinitionId, StringComparer.Ordinal))
+        {
+            Person? person = persons.FirstOrDefault(item => item.Id == career.PersonId);
+            if (person is not null)
+            {
+                lastDayNotes.Add($"{person.Name}'s contract expired.");
+            }
         }
     }
 

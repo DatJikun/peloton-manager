@@ -25,7 +25,10 @@ public sealed record RiderDefinition(
     double BaseCrr,
     double Positioning,
     double Handling,
-    double TacticalAwareness);
+    double TacticalAwareness,
+    int AnnualWage,
+    int ContractEndDay,
+    double Loyalty01 = 0.5);
 
 public sealed record WorldRecipe(
     ContentIdentity ContentIdentity,

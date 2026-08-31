@@ -44,7 +44,7 @@ public sealed class CareerWorldTourBindTests
     }
 
     [Fact]
-    public void SchemaVersionThreeRoundTripsRiderCareersAndResults()
+    public void SchemaVersionFourRoundTripsRiderCareersAndResults()
     {
         using TemporaryDirectory temp = new();
         string savePath = Path.Combine(temp.Path, "career-bind.peloton");
@@ -57,6 +57,7 @@ public sealed class CareerWorldTourBindTests
 
         WorldCheckpoint stored = new SqliteWorldSaveStore().Load(savePath);
         Assert.Equal(12, stored.World.RiderCareers.Count);
+        Assert.Equal(12, stored.World.RiderContracts.Count);
         Assert.All(stored.World.RiderCareers, career => Assert.Single(career.Results));
 
         GameApplication loaded = TestApplication.Create();

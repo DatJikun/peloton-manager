@@ -16,7 +16,7 @@ public static class WorldChecksum
         using MemoryStream buffer = new();
         using (BinaryWriter writer = new(buffer, Encoding.UTF8, leaveOpen: true))
         {
-            writer.Write("peloton-world-checksum-v3");
+            writer.Write("peloton-world-checksum-v4");
             writer.Write(world.WorldId);
             writer.Write(world.MasterSeed);
             writer.Write(world.RngContractVersion);
@@ -46,7 +46,7 @@ public static class WorldChecksum
             {
                 writer.Write(career.Id.Value);
                 writer.Write(career.PersonId.Value);
-                writer.Write(career.OrganizationId.Value);
+                writer.Write(career.OrganizationId?.Value ?? 0);
                 writer.Write(career.OriginDefinitionId);
                 writer.Write(career.CriticalPowerW);
                 writer.Write(career.WPrimeCapacityJ);
@@ -72,6 +72,16 @@ public static class WorldChecksum
                     writer.Write(result.Place);
                     writer.Write(result.DidNotFinish);
                 }
+            }
+
+            foreach (RiderContract contract in world.RiderContracts.OrderBy(contract => contract.Id.Value))
+            {
+                writer.Write(contract.Id.Value);
+                writer.Write(contract.RiderCareerId.Value);
+                writer.Write(contract.OrganizationId.Value);
+                writer.Write(contract.AnnualWage);
+                writer.Write(contract.StartDate.DayNumber);
+                writer.Write(contract.EndDate.DayNumber);
             }
 
             foreach (ManagerCareer manager in world.ManagerCareers.OrderBy(manager => manager.Id.Value))

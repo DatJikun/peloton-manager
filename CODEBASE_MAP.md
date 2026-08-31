@@ -8,12 +8,12 @@ This file is a navigation map, not implementation documentation. Design contract
 
 | Project | Current responsibility |
 |---|---|
-| `src/Peloton.Domain` | World root, stable IDs, people, `RiderCareer`, ManagerCareer, Employment, Organization, DecisionAuthority, AccessContext, `CalendarEntry`, content/rules identity, DecisionTrace / Spy sinks. |
+| `src/Peloton.Domain` | World root, stable IDs, people, `RiderCareer`, `RiderContract`, ManagerCareer, Employment, Organization, DecisionAuthority, AccessContext, `CalendarEntry`, content/rules identity, DecisionTrace / Spy sinks. |
 | `src/Peloton.Rules` | Stable rules-module identity and deterministic aggregate identity. No full legal engine yet. |
 | `src/Peloton.Simulation` | Versioned seed derivation, isolated deterministic RNG, whole-world day scheduler, checksum, `PrototypeRaceEngine`. |
 | `src/Peloton.Simulation/Race` | Physics, capability, groups/shelter, `RaceSession.Step`, chase decisions, Race Spy export, headless Watch clock and public motion projection. |
 | `src/Peloton.Application` | Canonical nine-state machine, Commands, prep/result/debrief projections, prep checkpoint, save/content/race ports, world creation, RaceLive isolation, skeleton-season orchestration. |
-| `src/Peloton.Persistence` | SQLite schema version 3, verified candidate save, envelope identity, snapshot round trip (including `RiderCareer`, results, `OrganizationRaceEntry`), integrity checks. |
+| `src/Peloton.Persistence` | SQLite schema version 4, verified candidate save, envelope identity, snapshot round trip (including `RiderCareer`, `RiderContract`, results, `OrganizationRaceEntry`), integrity checks. |
 | `src/Peloton.Content` | JSON pack loaders: skeleton `scenarios` + `roster`, and `racePrototypeScenarios` (route/tuning templates). |
 | `src/Peloton.Infrastructure` | Composition root connecting Application ports to Content, Persistence, and Simulation. |
 | `src/Peloton.Client.Godot` | Godot 4.4 .NET Watch Race window. Presentation only: Commands + Queries, interpolated `RaceWatch` icons, decision overlay, Results from `LastRace`. Uses Infrastructure as composition root; does not hold World State or open SQLite. |
@@ -46,9 +46,9 @@ Static content lives in `content/peloton.skeleton` and `content/peloton.race-pro
 | SimRunner race gate | `tools/Peloton.SimRunner/RacePrototypeCommand.cs` | prototype design §11 | `SimRunnerContractTests` |
 | Headless Watch clock | `Peloton.Simulation/Race/RaceWatch.cs`, `tools/Peloton.SimRunner/RaceWatchCommand.cs` | `D-033` clock contract | `RaceWatchTests`, `SimRunnerContractTests` |
 | Godot Watch Race | `src/Peloton.Client.Godot` (`WatchRaceHost`, `WatchRaceScreen`, `project.godot`) | `D-033` renderer; `UI_SITEMAP` RaceLive; §49 still owner-only | `WatchRaceHostTests`, `WatchMotionInterpolatorTests` |
-| Career Hub query | `Peloton.Application/CareerDay.cs` | `GAME_STATES_v0.1.md` Advance Day; Hub primary action (`advance-day` / `race-next`); Management only; not a UI dashboard | Application tests, `day` SimRunner |
+| Career Hub query | `Peloton.Application/CareerDay.cs`, `ClubRosterProjection` | `GAME_STATES_v0.1.md` Advance Day; Hub primary action (`advance-day` / `race-next`); employer roster wages via `ClubRosterProjection`; Management only; not a UI dashboard | Application tests, `day` SimRunner |
 | Race preparation | `Peloton.Application/RacePreparation.cs`, `PreSeasonPlanning.cs`, `WorldRaceScenarioAssembler.cs`, `GameApplication.cs` | world roster + route template + entry filter + player strategy (`D-036` phase 1–3); readiness scales CP/Pmax at assemble | Application + Persistence tests |
-| RiderCareer / world–race bind | `Peloton.Domain/RiderCareer.cs`, `OrganizationRaceEntry`, `WorldRaceScenarioAssembler.cs`, `content/peloton.skeleton/skeleton-roster.json` | `CAREER_WORLDTOUR_SLICE_v0.1.md` phase 1–3; start lists from entered org rosters; day-state rest/race load | `CareerWorldTourBindTests`, `CareerWorldTourPhase2Tests`, `CareerWorldTourPhase3Tests` |
+| RiderCareer / world–race bind | `Peloton.Domain/RiderCareer.cs`, `RiderContract.cs`, `OrganizationRaceEntry`, `WorldRaceScenarioAssembler.cs`, `content/peloton.skeleton/skeleton-roster.json` | `CAREER_WORLDTOUR_SLICE_v0.1.md` phase 1–4; start lists from entered org rosters (skip null `OrganizationId`); contract expiry on Advance Day | `CareerWorldTourBindTests`, `CareerWorldTourPhase2Tests`, `CareerWorldTourPhase3Tests`, `CareerWorldTourPhase4Tests` |
 | Pre-season planning | `Peloton.Application/PreSeasonPlanning.cs`, `GameApplication.cs` | `PreSeasonPlanningFlow` draft entry by `RaceContentId`; confirm commits `OrganizationRaceEntry` | `CareerWorldTourPhase3Tests` |
 | Race result / debrief | `Peloton.Application/RaceResultDebrief.cs`, `GameApplication.cs` | committed `LastRace` uses world `RiderCareer.Id`; career history append on `RecordRace` | Application + Persistence tests |
 | Career calendar | `Peloton.Domain/CalendarEntry.cs`, `Peloton.Application/CareerCalendarInbox.cs` | stored entries + derived status | Application tests |
@@ -58,7 +58,7 @@ Static content lives in `content/peloton.skeleton` and `content/peloton.race-pro
 | Career scenarios | `content/peloton.skeleton`, `JsonScenarioCatalog.cs` | `CONTENT_FORMAT_v0.1.md` | Application tests |
 | Rules modules | `Peloton.Rules`, scenario JSON | `RULESETS_v0.1.md` | Application + Architecture tests |
 
-Recruitment, contracts, sponsors, knowledge records, full calendar beyond skeleton races, Career Hub UI, and `D-032` multi-stage leadership transfer are not implemented. Godot Watch is the first playable race window, not the career shell.
+Recruitment, transfer market, sponsors, knowledge records, full calendar beyond skeleton races, Career Hub UI, and `D-032` multi-stage leadership transfer are not implemented. Godot Watch is the first playable race window, not the career shell.
 
 ## Dependency direction
 

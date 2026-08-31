@@ -38,7 +38,9 @@ public static class WorldRaceScenarioAssembler
             .ToHashSet();
 
         RaceRiderProfile[] riders = world.RiderCareers
-            .Where(career => enteredOrganizationIds.Contains(career.OrganizationId))
+            .Where(career =>
+                career.OrganizationId is WorldEntityId organizationId &&
+                enteredOrganizationIds.Contains(organizationId))
             .OrderBy(career => career.OriginDefinitionId, StringComparer.Ordinal)
             .Select(career => ToRaceProfile(career))
             .ToArray();
@@ -126,7 +128,7 @@ public static class WorldRaceScenarioAssembler
         double peakPowerW = Math.Max(career.PeakPowerW * readiness, criticalPowerW);
         return new RaceRiderProfile(
             career.Id,
-            career.OrganizationId,
+            career.OrganizationId!.Value,
             criticalPowerW,
             career.WPrimeCapacityJ,
             peakPowerW,
