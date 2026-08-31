@@ -17,6 +17,7 @@
 | `DOCS_GOVERNANCE.md` | REVIEW | Lifecycle i hierarchy of truth |
 | `HANDOFF.md` | ACTIVE | Żywy stan projektu |
 | `UI_SITEMAP_v0.1.md` | DRAFT | Ekrany, nawigacja, modality, knowledge-bounded UI |
+| `HTML_UI_LAB.md` | LOOK REFERENCE | Chrome 08e + full UI POC v3; not the game |
 | `GAME_STATES_v0.1.md` | DRAFT | Kanoniczne stany, przejścia, save/load i runtime barriers |
 | `DATA_MODEL_v0.1.md` | DRAFT | Minimalne byty, IDs, employment, authority, knowledge i event contracts |
 | `RACE_ENGINE_DESIGN_v0.2.md` | REVIEW | Race physics, rider capability, groups, gaps, DS decisions, prototype gate |

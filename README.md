@@ -42,7 +42,7 @@ The skeleton calendar is deliberately short: one season is 12 calls to `AdvanceD
 
 ## UI lab
 
-Static HTML prototypes live at the repository root (`08e-constructivist-desk.html`, `10-dashboard-constructivist.html`, `12-dashboard-team-mid.html`, `14-race.html`). Rejected variants are under `archive/`. The avatar experiment is `experiments/avatar_prototype/`. These are not Godot and not the headless career loop.
+Static HTML prototypes live at the repository root. The current career-shell look is `peloton-manager-full-ui-poc-v3.html` (index: `HTML_UI_LAB.md`). Ancestors: `08e-constructivist-desk.html`, `10-dashboard-constructivist.html`, `12-dashboard-team-mid.html`, `14-race.html`. Rejected variants are under `archive/`. The avatar experiment is `experiments/avatar_prototype/`. These are not Godot and not the headless career loop.
 
 ## Known difference from the race contract
 

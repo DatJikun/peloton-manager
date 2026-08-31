@@ -60,6 +60,9 @@ touching the area it covers.
  style profiles, validation gate). Use it whenever avatars, avatar assets, avatar style
  or the trait generator are involved. It records the owner's taste decisions, so do not
  re-litigate them from scratch.
+- HTML look lab — `HTML_UI_LAB.md` and `peloton-manager-full-ui-poc-v3.html` are the
+ owner-accepted look for most career/management screens. Copy chrome into Godot; do not
+ treat the HTML as the game or as true attributes.
 
 ### Collaboration roles (owner lock)
 Default split when this repo is developed with a main Cloud Agent plus Composer 2.5
