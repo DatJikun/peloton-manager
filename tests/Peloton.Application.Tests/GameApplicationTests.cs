@@ -330,7 +330,7 @@ public sealed class GameApplicationTests
         Assert.All(application.World!.Organizations, organization => Assert.Equal(1, organization.DaysSimulated));
         CareerDayProjection hub = Assert.IsType<CareerDayProjection>(application.CareerDay);
         Assert.Equal(1, hub.DayNumber);
-        Assert.Equal("red", hub.EmployerName);
+        Assert.Equal("Beskid–Vetter", hub.EmployerName);
         Assert.Equal(11, hub.DaysUntilNextRace);
         Assert.False(hub.RaceDueToday);
         Assert.Contains(hub.TodayNotes, note => note.Contains("worked the day", StringComparison.Ordinal));
