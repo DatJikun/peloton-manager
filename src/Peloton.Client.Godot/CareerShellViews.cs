@@ -124,8 +124,7 @@ public sealed partial class CareerShellScreen
     {
         VBoxContainer box = new();
         box.AddThemeConstantOverride("separation", 8);
-        CalendarEntryProjection? entry = host!.Calendar.FirstOrDefault(item => item.Title == lookRaceId)
-            ?? host.Calendar.FirstOrDefault();
+        CalendarEntryProjection? entry = FindCalendarEntry(lookRaceId);
         if (entry is null)
         {
             box.AddChild(LookChrome.Body("Kalendarz świata jest pusty.", 13, LookChrome.Gray));
@@ -149,7 +148,7 @@ public sealed partial class CareerShellScreen
             box.AddChild(LookChrome.Kv("Wynik", entry.OfficialResult));
         }
 
-        RacePreparationProjection? prep = host.Preparation;
+        RacePreparationProjection? prep = host!.Preparation;
         if (prep is not null)
         {
             box.AddChild(LookChrome.Kv("Cel", prep.Objective));
@@ -1270,9 +1269,27 @@ public sealed partial class CareerShellScreen
         real.AddThemeConstantOverride("separation", 8);
         real.AddChild(LookChrome.Body("Advance Day przesuwa cały świat o jeden dzień.", 14, LookChrome.Black));
         real.AddChild(LookChrome.Body("W dzień wyścigu ten sam przycisk nazywa się Race next i wchodzi w przygotowanie.", 14, LookChrome.Black));
-        real.AddChild(LookChrome.Body("Oglądanie etapu blokuje biurko. Nie ma zapisu w trakcie wyścigu.", 14, LookChrome.Black));
+        real.AddChild(LookChrome.Body("Oglądanie etapu jest opcją w Ustawieniach. Domyślnie dostajesz wynik i tabelę.", 14, LookChrome.Black));
         real.AddChild(LookChrome.Body("Skrzynka świata nie startuje wyścigu. OVR, kasa i skauci na tych ekranach są rysunkiem.", 14, LookChrome.Black));
         content.AddChild(Panel("ŚWIAT", real));
+    }
+
+    private CalendarEntryProjection? FindCalendarEntry(string title)
+    {
+        IReadOnlyList<CalendarEntryProjection> calendar = host!.Calendar;
+        CalendarEntryProjection? fallback = null;
+        for (int index = 0; index < calendar.Count; index++)
+        {
+            CalendarEntryProjection item = calendar[index];
+            if (item.Title == title)
+            {
+                return item;
+            }
+
+            fallback ??= item;
+        }
+
+        return fallback;
     }
 
     private static Label LookBanner()
