@@ -102,11 +102,11 @@ public sealed class RiderCareer
 
     public double TacticalAwareness { get; }
 
-    public double Form01 { get; }
+    public double Form01 { get; private set; }
 
-    public double Freshness01 { get; }
+    public double Freshness01 { get; private set; }
 
-    public double Fatigue01 { get; }
+    public double Fatigue01 { get; private set; }
 
     public double Loyalty01 { get; }
 
@@ -116,6 +116,33 @@ public sealed class RiderCareer
     {
         ArgumentNullException.ThrowIfNull(result);
         results.Add(result);
+    }
+
+    public void ApplyRestTick()
+    {
+        Fatigue01 = Clamp01(Fatigue01 * 0.82);
+        Freshness01 = Clamp01(Freshness01 + (0.12 * (1.0 - Freshness01)));
+        Form01 = Clamp01(Form01 + (0.05 * (0.90 - Form01)));
+    }
+
+    public void ApplyRaceLoad()
+    {
+        Fatigue01 = Clamp01(Fatigue01 + 0.30);
+        Freshness01 = Clamp01(Freshness01 - 0.25);
+        Form01 = Clamp01(Form01 - 0.08);
+    }
+
+    public double ComputeReadiness() =>
+        (0.70 + (0.30 * Form01)) * (0.85 + (0.15 * Freshness01)) * (1.0 - (0.25 * Fatigue01));
+
+    private static double Clamp01(double value)
+    {
+        if (!double.IsFinite(value))
+        {
+            throw new ArgumentOutOfRangeException(nameof(value));
+        }
+
+        return Math.Clamp(value, 0.0, 1.0);
     }
 
     private static void RequireUnitInterval(double value, string parameterName)

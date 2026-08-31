@@ -172,6 +172,11 @@ public sealed class WorldState
             organization.AdvanceOneDay();
         }
 
+        foreach (RiderCareer career in riderCareers)
+        {
+            career.ApplyRestTick();
+        }
+
         CurrentDate = CurrentDate.NextDay();
     }
 
@@ -201,6 +206,7 @@ public sealed class WorldState
             }
 
             bool didNotFinish = !placeByRider.TryGetValue(riderId, out int place);
+            career.ApplyRaceLoad();
             career.AppendResult(new RiderCareerResult(
                 raceContentId,
                 CurrentDate.DayNumber,

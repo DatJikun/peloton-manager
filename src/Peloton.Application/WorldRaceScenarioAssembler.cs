@@ -26,6 +26,7 @@ public static class WorldRaceScenarioAssembler
                 StringComparer.Ordinal);
         Dictionary<string, RiderCareer> careersByOrigin = world.RiderCareers
             .ToDictionary(career => career.OriginDefinitionId, StringComparer.Ordinal);
+        WorldEntityId humanAuthorityId = ResolveHumanAuthorityId(world);
 
         RaceRiderProfile[] riders = world.RiderCareers
             .OrderBy(career => career.OriginDefinitionId, StringComparer.Ordinal)
@@ -57,7 +58,7 @@ public static class WorldRaceScenarioAssembler
                     careersByOrigin[plan.SupportRiderId].Id,
                     new TeamRaceObservation(
                         organizationId,
-                        new WorldEntityId(checked(organizationId.Value + 100)),
+                        humanAuthorityId,
                         plan.OfficialGapSeconds,
                         plan.VisibleSplit,
                         plan.LeaderPositionBand,
@@ -81,14 +82,29 @@ public static class WorldRaceScenarioAssembler
             template.TuningIdentity);
     }
 
-    private static RaceRiderProfile ToRaceProfile(RiderCareer career)
+    private static WorldEntityId ResolveHumanAuthorityId(WorldState world)
     {
+        DecisionAuthority? humanAuthority = world.DecisionAuthorities.FirstOrDefault(
+            authority => authority.Kind == DecisionAuthorityKind.HumanInput);
+        if (humanAuthority is null)
+        {
+            throw new InvalidOperationException("World has no human decision authority.");
+        }
+
+        return humanAuthority.Id;
+    }
+
+    public static RaceRiderProfile ToRaceProfile(RiderCareer career)
+    {
+        double readiness = career.ComputeReadiness();
+        double criticalPowerW = career.CriticalPowerW * readiness;
+        double peakPowerW = Math.Max(career.PeakPowerW * readiness, criticalPowerW);
         return new RaceRiderProfile(
             career.Id,
             career.OrganizationId,
-            career.CriticalPowerW,
+            criticalPowerW,
             career.WPrimeCapacityJ,
-            career.PeakPowerW,
+            peakPowerW,
             career.WPrimeRecoveryJPerSecond,
             career.LowIntensityDurability,
             career.HighIntensityDurability,
