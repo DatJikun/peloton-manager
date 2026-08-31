@@ -40,6 +40,16 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
         {
             PackDocument pack = ReadJson<PackDocument>(packPath);
             string packRoot = Path.GetDirectoryName(packPath)!;
+            RosterDocument? roster = null;
+            foreach (ResourceDocument resource in pack.Resources
+                         .Where(resource => string.Equals(resource.Kind, "roster", StringComparison.Ordinal))
+                         .OrderBy(resource => resource.Path, StringComparer.Ordinal))
+            {
+                string resourcePath = ResolveInsidePack(packRoot, resource.Path);
+                roster = ReadJson<RosterDocument>(resourcePath);
+                break;
+            }
+
             foreach (ResourceDocument resource in pack.Resources
                          .Where(resource => string.Equals(resource.Kind, "scenarios", StringComparison.Ordinal))
                          .OrderBy(resource => resource.Path, StringComparer.Ordinal))
@@ -51,7 +61,7 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
                     continue;
                 }
 
-                Validate(pack, scenario);
+                Validate(pack, scenario, roster);
                 RulesModuleIdentity[] modules = scenario.Modules
                     .Select(module => new RulesModuleIdentity(
                         module.Slot,
@@ -61,7 +71,10 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
                         module.ParameterIdentity))
                     .OrderBy(module => module.Slot, StringComparer.Ordinal)
                     .ToArray();
-                string aggregateHash = ComputeArtifactHash(packPath, resourcePath);
+                string? rosterPath = ResolveRosterPath(packRoot, pack);
+                string aggregateHash = rosterPath is null
+                    ? ComputeArtifactHash(packPath, resourcePath)
+                    : ComputeArtifactHash(packPath, resourcePath, rosterPath);
                 ContentIdentity contentIdentity = new(
                     pack.PackId,
                     pack.PackVersion,
@@ -74,11 +87,41 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
                 OrganizationDefinition[] organizations = scenario.Organizations
                     .Select(id => new OrganizationDefinition(id, DisplayName(id)))
                     .ToArray();
+                TeamRaceMappingDefinition[] teamMappings = roster!.TeamMappings
+                    .Select(mapping => new TeamRaceMappingDefinition(
+                        mapping.OrganizationId,
+                        mapping.RaceTeamId))
+                    .OrderBy(mapping => mapping.OrganizationId, StringComparer.Ordinal)
+                    .ToArray();
+                RiderDefinition[] riders = roster.Riders
+                    .Select(rider => new RiderDefinition(
+                        rider.Id,
+                        rider.Name,
+                        rider.OrganizationId,
+                        rider.CriticalPowerW,
+                        rider.WPrimeCapacityJ,
+                        rider.PeakPowerW,
+                        rider.WPrimeRecoveryJPerSecond,
+                        rider.LowIntensityDurability,
+                        rider.HighIntensityDurability,
+                        rider.BodyMassKg,
+                        rider.SystemMassKg,
+                        rider.CdAM2,
+                        rider.BaseCrr,
+                        rider.Positioning,
+                        rider.Handling,
+                        rider.TacticalAwareness))
+                    .OrderBy(rider => rider.Id, StringComparer.Ordinal)
+                    .ToArray();
+                ManagerDefinition manager = new(roster.Manager.Name, roster.Manager.OrganizationId);
                 return new WorldRecipe(
                     contentIdentity,
                     modules,
                     ResolvedRuleset.ComputeIdentity(modules),
-                    organizations);
+                    organizations,
+                    teamMappings,
+                    riders,
+                    manager);
             }
         }
 
@@ -115,7 +158,14 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
         return candidate;
     }
 
-    private static void Validate(PackDocument pack, ScenarioDocument scenario)
+    private static string? ResolveRosterPath(string packRoot, PackDocument pack)
+    {
+        ResourceDocument? rosterResource = pack.Resources
+            .FirstOrDefault(resource => string.Equals(resource.Kind, "roster", StringComparison.Ordinal));
+        return rosterResource is null ? null : ResolveInsidePack(packRoot, rosterResource.Path);
+    }
+
+    private static void Validate(PackDocument pack, ScenarioDocument scenario, RosterDocument? roster)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(pack.PackId);
         ArgumentException.ThrowIfNullOrWhiteSpace(pack.PackVersion);
@@ -130,6 +180,11 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
             scenario.Modules.Select(module => module.Slot).Distinct(StringComparer.Ordinal).Count() != scenario.Modules.Count)
         {
             throw new InvalidDataException("Scenario rule module slots must be present and unique.");
+        }
+
+        if (roster is null || roster.Riders.Count == 0 || roster.TeamMappings.Count == 0)
+        {
+            throw new InvalidDataException("Skeleton scenario requires a roster with riders and team mappings.");
         }
     }
 
@@ -177,4 +232,31 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
         string Contract,
         int ContractVersion,
         string ParameterIdentity);
+
+    private sealed record RosterDocument(
+        ManagerDocument Manager,
+        IReadOnlyList<TeamMappingDocument> TeamMappings,
+        IReadOnlyList<RiderDocument> Riders);
+
+    private sealed record ManagerDocument(string Name, string OrganizationId);
+
+    private sealed record TeamMappingDocument(string OrganizationId, string RaceTeamId);
+
+    private sealed record RiderDocument(
+        string Id,
+        string Name,
+        string OrganizationId,
+        double CriticalPowerW,
+        double WPrimeCapacityJ,
+        double PeakPowerW,
+        double WPrimeRecoveryJPerSecond,
+        double LowIntensityDurability,
+        double HighIntensityDurability,
+        double BodyMassKg,
+        double SystemMassKg,
+        double CdAM2,
+        double BaseCrr,
+        double Positioning,
+        double Handling,
+        double TacticalAwareness);
 }

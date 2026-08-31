@@ -41,13 +41,13 @@ public static class RaceOutcomeQueries
 
         RaceScenario? scenario = TryResolve(racePreparation, raceScenarioCatalog);
         RaceResultPlacement[] finishOrder = world.LastRace.FinishOrder
-            .Select(id => new RaceResultPlacement(id, Label(scenario, id)))
+            .Select(id => new RaceResultPlacement(id, Label(world, scenario, id)))
             .ToArray();
         return new RaceResultProjection(
             CompletedCalendarTitle(world) ?? RacePreparationDefaults.Title,
             world.LastRace.RouteId,
             world.LastRace.WinnerId,
-            Label(scenario, world.LastRace.WinnerId),
+            Label(world, scenario, world.LastRace.WinnerId),
             Array.AsReadOnly(finishOrder));
     }
 
@@ -61,7 +61,7 @@ public static class RaceOutcomeQueries
         if (world?.LastRace is not null)
         {
             RaceScenario? scenario = TryResolve(racePreparation, raceScenarioCatalog);
-            notes.Add($"Oficjalny zwycięzca: {Label(scenario, world.LastRace.WinnerId)}.");
+            notes.Add($"Oficjalny zwycięzca: {Label(world, scenario, world.LastRace.WinnerId)}.");
         }
 
         if (notes.Count == 0)
@@ -111,8 +111,14 @@ public static class RaceOutcomeQueries
         }
     }
 
-    private static string Label(RaceScenario? scenario, WorldEntityId riderId)
+    private static string Label(WorldState world, RaceScenario? scenario, WorldEntityId riderId)
     {
+        RiderCareer? career = world.TryGetRiderCareer(riderId);
+        if (career is not null)
+        {
+            return career.OriginDefinitionId;
+        }
+
         if (scenario is not null)
         {
             RaceRiderProfile? rider = scenario.Riders.FirstOrDefault(item => item.RiderId == riderId);

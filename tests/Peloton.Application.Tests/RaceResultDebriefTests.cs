@@ -43,7 +43,7 @@ public sealed class RaceResultDebriefTests
         Assert.Null(application.RaceDebrief);
         Assert.Equal("Skeleton race", result.Title);
         Assert.Equal("race-route.peloton.synthetic-proof-v0", result.RouteId);
-        Assert.Equal(1006, result.WinnerId.Value);
+        Assert.Equal(CareerWorldTestSupport.BetaLeaderCareerId(application).Value, result.WinnerId.Value);
         Assert.Equal("rider.race-prototype.beta-leader", result.WinnerLabel);
         Assert.Equal(12, result.FinishOrder.Count);
         Assert.Equal("rider.race-prototype.beta-leader", result.FinishOrder[0].Label);

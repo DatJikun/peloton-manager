@@ -16,7 +16,7 @@
 The people in the club are the people who race. Results become career history. Then form-on-day, pre-season race picks, pre-race strategy, contracts, and a 2026 WorldTour content pack. Do not close §49 with automations. Do not build Career Hub.
 
 ### Status
-Owner (player) directed the slice on 2026-08-31 (D-036–D-042). Code still has a disconnected race fixture. Next implementation is the bind.
+Owner (player) directed the slice on 2026-08-31 (D-036–D-042). **Phase 1 world–race bind landed** (2026-08-31): career `RiderCareer` rows are the official start list; SchemaVersion 2; see `KNOWN_DIFFERENCE_FROM_CODE.md`.
 
 ## Gdzie jest gra (dla właściciela)
 Nie ma jeszcze pełnej gry managerskiej.
@@ -96,7 +96,8 @@ Baza 2026: najpierw 18 ekip męskiego WorldTour. Liczby fizjologii i budżetów 
 - [x] Save Format v0.1 (DRAFT)
 - [x] Testing v0.1 (DRAFT)
 - [x] Docs snapshot 2026-08-31: Godot Watch is real (not a stub); Composer 2.5 coding lock (D-035)
-- [ ] Career WorldTour slice (D-036–D-042) — world–race bind first
+- [x] Career WorldTour slice phase 1 — world–race bind (`RiderCareer`, SchemaVersion 2, career results)
+- [ ] Career WorldTour slice phases 2–6 — form tick, planning windows, contracts, WT pack, thin economy
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task

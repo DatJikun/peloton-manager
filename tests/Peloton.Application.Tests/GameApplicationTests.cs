@@ -104,7 +104,7 @@ public sealed class GameApplicationTests
         RacePreparationProjection prep = Assert.IsType<RacePreparationProjection>(application.RacePreparation);
         Assert.Equal("Skeleton race", prep.Title);
         Assert.Equal("StageWin", prep.Objective);
-        Assert.Equal(new long[] { 1001, 1002, 1003, 1004 }, prep.Squad.Select(id => id.Value));
+        Assert.Equal(CareerWorldTestSupport.EmployerSquadCareerIds(application), prep.Squad.Select(id => id.Value));
         Assert.False(prep.PlanConfirmed);
         Assert.False(prep.CanStart);
         Assert.False(prep.CanSimulate);

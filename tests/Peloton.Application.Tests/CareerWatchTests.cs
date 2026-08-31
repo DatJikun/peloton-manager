@@ -36,7 +36,7 @@ public sealed class CareerWatchTests
         Assert.Equal(1, watchEngine.CreateSessionCalls);
         Assert.Equal(0, watchEngine.RunBatchCalls);
         RaceResultProjection watchResult = Assert.IsType<RaceResultProjection>(watched.RaceResult);
-        Assert.Equal(1006, watchResult.WinnerId.Value);
+        Assert.Equal(CareerWorldTestSupport.BetaLeaderCareerId(watched).Value, watchResult.WinnerId.Value);
         Assert.Null(watched.CareerDay);
 
         CountingRaceEngine simulateEngine = new();
@@ -65,7 +65,9 @@ public sealed class CareerWatchTests
 
         Assert.Equivalent(rateOne.Application.World!.LastRace, rateTwenty.Application.World!.LastRace, strict: true);
         Assert.Equal(rateOne.Application.LastOfficialChecksum, rateTwenty.Application.LastOfficialChecksum);
-        Assert.Equal(1006, rateOne.Application.World.LastRace!.WinnerId.Value);
+        Assert.Equal(
+            CareerWorldTestSupport.BetaLeaderCareerId(rateOne.Application).Value,
+            rateOne.Application.World.LastRace!.WinnerId.Value);
         Assert.True(rateOne.WatchSecond > rateTwenty.WatchSecond);
         Assert.Equal(
             WorldChecksum.Compute(rateOne.Application.World),

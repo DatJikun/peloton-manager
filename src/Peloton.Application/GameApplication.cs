@@ -39,22 +39,24 @@ public sealed class GameApplication
     {
         get
         {
-            if (State != GameState.RacePreparationFlow || racePreparation is null)
+            if (State != GameState.RacePreparationFlow || racePreparation is null || World is null)
             {
                 return null;
             }
 
-            RaceScenario scenario = raceScenarioCatalog.Resolve(racePreparation.RaceScenarioId);
-            WorldEntityId organizationId = new(
-                scenario.Riders.Min(rider => rider.OrganizationId.Value));
-            WorldEntityId[] squad = scenario.Riders
-                .Where(rider => rider.OrganizationId == organizationId)
-                .Select(rider => rider.RiderId)
-                .OrderBy(id => id.Value)
+            AccessContext access = GetAccessContext();
+            if (access.CurrentOrganizationId is not WorldEntityId organizationId)
+            {
+                return null;
+            }
+
+            WorldEntityId[] squad = World.GetRiderCareersForOrganization(organizationId)
+                .Select(career => career.Id)
                 .ToArray();
+            string objective = ResolvePreparationObjective(World, organizationId, racePreparation.RaceScenarioId);
             return new RacePreparationProjection(
                 RacePreparationDefaults.Title,
-                RacePreparationDefaults.Objective,
+                objective,
                 Array.AsReadOnly(squad),
                 racePreparation.PlanConfirmed,
                 racePreparation.PlanConfirmed,
@@ -349,7 +351,7 @@ public sealed class GameApplication
 
         try
         {
-            RaceScenario scenario = raceScenarioCatalog.Resolve(command.RaceScenarioId);
+            RaceScenario scenario = BuildOfficialRaceScenario(command.RaceScenarioId);
             long raceSeed = DeriveRaceSeed(World, scenario);
             activeRaceSession = raceEngine.CreateSession(scenario, raceSeed);
             watchClock = null;
@@ -379,9 +381,9 @@ public sealed class GameApplication
 
         try
         {
-            RaceScenario scenario = raceScenarioCatalog.Resolve(command.RaceScenarioId);
+            RaceScenario scenario = BuildOfficialRaceScenario(command.RaceScenarioId);
             RaceResult result = raceEngine.RunBatch(scenario, DeriveRaceSeed(World, scenario));
-            CommitOfficialResult(result);
+            CommitOfficialResult(result, command.RaceScenarioId, scenario);
             return CommandResult.Success;
         }
         catch (Exception exception) when (
@@ -413,7 +415,10 @@ public sealed class GameApplication
                 {
                     RaceResult result = step.Result
                         ?? throw new InvalidOperationException("A completed race step must carry its result.");
-                    CommitOfficialResult(result);
+                    CommitOfficialResult(
+                        result,
+                        racePreparation?.RaceScenarioId ?? RacePreparationDefaults.PrototypeScenarioId,
+                        activeRaceSession.Scenario);
                 }
 
                 return CommandResult.Success;
@@ -461,7 +466,10 @@ public sealed class GameApplication
             {
                 RaceResult result = activeRaceSession.Result
                     ?? throw new InvalidOperationException("A completed watch step must carry its result.");
-                CommitOfficialResult(result);
+                CommitOfficialResult(
+                    result,
+                    racePreparation?.RaceScenarioId ?? RacePreparationDefaults.PrototypeScenarioId,
+                    activeRaceSession.Scenario);
             }
 
             return CommandResult.Success;
@@ -621,14 +629,62 @@ public sealed class GameApplication
         LastSimSecond = frame.RaceSecond;
     }
 
-    private void CommitOfficialResult(RaceResult result)
+    private void CommitOfficialResult(RaceResult result, string raceScenarioId, RaceScenario scenario)
     {
         ArgumentNullException.ThrowIfNull(World);
-        World.RecordRace(new RaceSummary(result.RouteId, result.WinnerId, result.FinishOrder));
+        WorldEntityId[] starters = scenario.Riders.Select(rider => rider.RiderId).ToArray();
+        World.RecordRace(
+            new RaceSummary(result.RouteId, result.WinnerId, result.FinishOrder),
+            raceScenarioId,
+            starters);
         lastOfficialChecksum = result.Checksum;
         activeRaceSession = null;
         watchClock = null;
         State = GameState.RaceResultsFlow;
+    }
+
+    private RaceScenario BuildOfficialRaceScenario(string raceScenarioId)
+    {
+        ArgumentNullException.ThrowIfNull(World);
+        WorldRecipe recipe = scenarioCatalog.Resolve(World.ContentIdentity.ScenarioId);
+        RaceScenarioTemplate template = raceScenarioCatalog.ResolveTemplate(raceScenarioId);
+        return WorldRaceScenarioAssembler.Assemble(World, recipe, template);
+    }
+
+    private string ResolvePreparationObjective(
+        WorldState world,
+        WorldEntityId organizationId,
+        string raceScenarioId)
+    {
+        Organization? employer = world.Organizations.FirstOrDefault(
+            organization => organization.Id == organizationId);
+        if (employer is null)
+        {
+            return RacePreparationDefaults.Objective;
+        }
+
+        try
+        {
+            WorldRecipe recipe = scenarioCatalog.Resolve(world.ContentIdentity.ScenarioId);
+            TeamRaceMappingDefinition? mapping = recipe.TeamRaceMappings.FirstOrDefault(
+                item => string.Equals(item.OrganizationId, employer.OriginDefinitionId, StringComparison.Ordinal));
+            if (mapping is null)
+            {
+                return RacePreparationDefaults.Objective;
+            }
+
+            RaceScenarioTemplate template = raceScenarioCatalog.ResolveTemplate(raceScenarioId);
+            if (!template.Teams.TryGetValue(mapping.RaceTeamId, out RaceTeamTemplate? team))
+            {
+                return RacePreparationDefaults.Objective;
+            }
+
+            return team.Objective.ToString();
+        }
+        catch (Exception exception) when (exception is IOException or ArgumentException)
+        {
+            return RacePreparationDefaults.Objective;
+        }
     }
 
     private static bool IsLegalSaveState(GameState state)
@@ -650,29 +706,56 @@ public sealed class GameApplication
     private static WorldState CreateWorld(WorldRecipe recipe, long seed)
     {
         WorldEntityIdAllocator allocator = new();
+        Dictionary<string, WorldEntityId> organizationIds = new(StringComparer.Ordinal);
         List<Organization> organizations = new(recipe.Organizations.Count);
-        foreach (OrganizationDefinition definition in recipe.Organizations)
+        foreach (OrganizationDefinition definition in recipe.Organizations.OrderBy(
+                     item => item.Id,
+                     StringComparer.Ordinal))
         {
-            organizations.Add(new Organization(
-                allocator.Allocate(),
+            WorldEntityId organizationId = allocator.Allocate();
+            organizationIds[definition.Id] = organizationId;
+            organizations.Add(new Organization(organizationId, definition.Id, definition.Name));
+        }
+
+        List<Person> persons = new();
+        List<RiderCareer> riderCareers = new();
+        foreach (RiderDefinition definition in recipe.Riders.OrderBy(
+                     rider => rider.Id,
+                     StringComparer.Ordinal))
+        {
+            WorldEntityId personId = allocator.Allocate();
+            WorldEntityId riderCareerId = allocator.Allocate();
+            persons.Add(new Person(personId, definition.Name, definition.Id));
+            riderCareers.Add(new RiderCareer(
+                riderCareerId,
+                personId,
+                organizationIds[definition.OrganizationId],
                 definition.Id,
-                definition.Name));
+                definition.CriticalPowerW,
+                definition.WPrimeCapacityJ,
+                definition.PeakPowerW,
+                definition.WPrimeRecoveryJPerSecond,
+                definition.LowIntensityDurability,
+                definition.HighIntensityDurability,
+                definition.BodyMassKg,
+                definition.SystemMassKg,
+                definition.CdAM2,
+                definition.BaseCrr,
+                definition.Positioning,
+                definition.Handling,
+                definition.TacticalAwareness));
         }
 
-        List<Person> persons = new(recipe.Organizations.Count);
-        for (int index = 0; index < recipe.Organizations.Count; index++)
-        {
-            persons.Add(new Person(allocator.Allocate(), $"Skeleton Rider {index + 1}"));
-        }
-
+        WorldEntityId managerPersonId = allocator.Allocate();
+        persons.Add(new Person(managerPersonId, recipe.Manager.Name));
         WorldEntityId managerCareerId = allocator.Allocate();
         WorldEntityId employmentId = allocator.Allocate();
         WorldEntityId authorityId = allocator.Allocate();
-        ManagerCareer managerCareer = new(managerCareerId, persons[0].Id, employmentId);
+        ManagerCareer managerCareer = new(managerCareerId, managerPersonId, employmentId);
         Employment employment = new(
             employmentId,
             managerCareerId,
-            organizations[0].Id,
+            organizationIds[recipe.Manager.OrganizationId],
             new WorldDate(0),
             null);
         DecisionAuthority authority = new(authorityId, DecisionAuthorityKind.HumanInput);
@@ -680,7 +763,12 @@ public sealed class GameApplication
         WorldEntityId initialRaceEntryId = allocator.Allocate();
         IReadOnlyList<CalendarEntry> calendarEntries = new[]
         {
-            new CalendarEntry(initialRaceEntryId, calendarPeriodDays, CalendarEntryKind.Race, "Skeleton race"),
+            new CalendarEntry(
+                initialRaceEntryId,
+                calendarPeriodDays,
+                CalendarEntryKind.Race,
+                "Skeleton race",
+                RaceContentId: RacePreparationDefaults.PrototypeScenarioId),
         };
 
         return new WorldState(
@@ -700,7 +788,8 @@ public sealed class GameApplication
             raceCount: 0,
             lastRace: null,
             calendarPeriodDays: calendarPeriodDays,
-            calendarEntries: calendarEntries);
+            calendarEntries: calendarEntries,
+            riderCareers: riderCareers);
     }
 
     private static int ReadCalendarPeriodDays(WorldRecipe recipe)

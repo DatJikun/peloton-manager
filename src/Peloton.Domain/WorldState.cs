@@ -37,6 +37,7 @@ public sealed class WorldState
     private readonly List<DecisionAuthority> decisionAuthorities;
     private readonly List<RulesModuleIdentity> rulesModules;
     private readonly List<CalendarEntry> calendarEntries;
+    private readonly List<RiderCareer> riderCareers;
 
     public WorldState(
         string worldId,
@@ -57,7 +58,8 @@ public sealed class WorldState
         int calendarPeriodDays = 12,
         int lastCompletedRaceDay = 0,
         IEnumerable<string>? lastDayNotes = null,
-        IEnumerable<CalendarEntry>? calendarEntries = null)
+        IEnumerable<CalendarEntry>? calendarEntries = null,
+        IEnumerable<RiderCareer>? riderCareers = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(worldId);
         ArgumentNullException.ThrowIfNull(contentIdentity);
@@ -87,6 +89,9 @@ public sealed class WorldState
         LastCompletedRaceDay = lastCompletedRaceDay;
         this.lastDayNotes = (lastDayNotes ?? Array.Empty<string>()).ToList();
         this.calendarEntries = SortCalendarEntries(calendarEntries ?? Array.Empty<CalendarEntry>());
+        this.riderCareers = (riderCareers ?? Array.Empty<RiderCareer>())
+            .OrderBy(career => career.Id.Value)
+            .ToList();
     }
 
     public string WorldId { get; }
@@ -127,6 +132,17 @@ public sealed class WorldState
 
     public IReadOnlyList<CalendarEntry> CalendarEntries => calendarEntries;
 
+    public IReadOnlyList<RiderCareer> RiderCareers => riderCareers;
+
+    public RiderCareer? TryGetRiderCareer(WorldEntityId riderCareerId) =>
+        riderCareers.FirstOrDefault(career => career.Id == riderCareerId);
+
+    public IReadOnlyList<RiderCareer> GetRiderCareersForOrganization(WorldEntityId organizationId) =>
+        riderCareers
+            .Where(career => career.OrganizationId == organizationId)
+            .OrderBy(career => career.OriginDefinitionId, StringComparer.Ordinal)
+            .ToArray();
+
     public bool IsRaceDue =>
         CurrentDate.DayNumber > 0 &&
         CurrentDate.DayNumber % CalendarPeriodDays == 0 &&
@@ -159,12 +175,38 @@ public sealed class WorldState
         CurrentDate = CurrentDate.NextDay();
     }
 
-    public void RecordRace(RaceSummary result)
+    public void RecordRace(RaceSummary result, string raceContentId, IReadOnlyList<WorldEntityId> starters)
     {
         ArgumentNullException.ThrowIfNull(result);
+        ArgumentException.ThrowIfNullOrWhiteSpace(raceContentId);
+        ArgumentNullException.ThrowIfNull(starters);
+
         LastRace = result;
         RaceCount = checked(RaceCount + 1);
         LastCompletedRaceDay = CurrentDate.DayNumber;
+
+        Dictionary<WorldEntityId, int> placeByRider = new();
+        for (int index = 0; index < result.FinishOrder.Count; index++)
+        {
+            placeByRider[result.FinishOrder[index]] = index + 1;
+        }
+
+        foreach (WorldEntityId riderId in starters.OrderBy(id => id.Value))
+        {
+            RiderCareer? career = TryGetRiderCareer(riderId);
+            if (career is null)
+            {
+                throw new InvalidOperationException(
+                    $"Official race result references unknown RiderCareer '{riderId.Value}'.");
+            }
+
+            bool didNotFinish = !placeByRider.TryGetValue(riderId, out int place);
+            career.AppendResult(new RiderCareerResult(
+                raceContentId,
+                CurrentDate.DayNumber,
+                didNotFinish ? 0 : place,
+                didNotFinish));
+        }
 
         string officialResult = string.Create(
             System.Globalization.CultureInfo.InvariantCulture,
@@ -180,10 +222,11 @@ public sealed class WorldState
                 existing.Kind,
                 existing.Title,
                 officialResult,
-                ResultAcknowledged: false);
+                ResultAcknowledged: false,
+                raceContentId);
         }
 
-        EnsureUpcomingRaceEntry();
+        EnsureUpcomingRaceEntry(raceContentId);
     }
 
     public bool AcknowledgeRaceResult(WorldEntityId entryId)
@@ -204,7 +247,7 @@ public sealed class WorldState
         return true;
     }
 
-    public void EnsureUpcomingRaceEntry()
+    public void EnsureUpcomingRaceEntry(string? raceContentId = null)
     {
         int nextRaceDay = NextRaceDayNumber;
         if (calendarEntries.Any(entry => entry.DayNumber == nextRaceDay))
@@ -216,7 +259,8 @@ public sealed class WorldState
             AllocateEntityId(),
             nextRaceDay,
             CalendarEntryKind.Race,
-            "Skeleton race"));
+            "Skeleton race",
+            RaceContentId: raceContentId));
         calendarEntries.Sort(CompareCalendarEntries);
     }
 

@@ -8,13 +8,13 @@ This file is a navigation map, not implementation documentation. Design contract
 
 | Project | Current responsibility |
 |---|---|
-| `src/Peloton.Domain` | World root, stable IDs, people, ManagerCareer, Employment, Organization, DecisionAuthority, AccessContext, `CalendarEntry`, content/rules identity, DecisionTrace / Spy sinks. |
+| `src/Peloton.Domain` | World root, stable IDs, people, `RiderCareer`, ManagerCareer, Employment, Organization, DecisionAuthority, AccessContext, `CalendarEntry`, content/rules identity, DecisionTrace / Spy sinks. |
 | `src/Peloton.Rules` | Stable rules-module identity and deterministic aggregate identity. No full legal engine yet. |
 | `src/Peloton.Simulation` | Versioned seed derivation, isolated deterministic RNG, whole-world day scheduler, checksum, `PrototypeRaceEngine`. |
 | `src/Peloton.Simulation/Race` | Physics, capability, groups/shelter, `RaceSession.Step`, chase decisions, Race Spy export, headless Watch clock and public motion projection. |
 | `src/Peloton.Application` | Canonical nine-state machine, Commands, prep/result/debrief projections, prep checkpoint, save/content/race ports, world creation, RaceLive isolation, skeleton-season orchestration. |
-| `src/Peloton.Persistence` | SQLite schema version 1, verified candidate save, envelope identity, snapshot round trip, integrity checks. |
-| `src/Peloton.Content` | JSON pack loaders: skeleton `scenarios` and `racePrototypeScenarios`. |
+| `src/Peloton.Persistence` | SQLite schema version 2, verified candidate save, envelope identity, snapshot round trip (including `RiderCareer` + results), integrity checks. |
+| `src/Peloton.Content` | JSON pack loaders: skeleton `scenarios` + `roster`, and `racePrototypeScenarios` (route/tuning templates). |
 | `src/Peloton.Infrastructure` | Composition root connecting Application ports to Content, Persistence, and Simulation. |
 | `src/Peloton.Client.Godot` | Godot 4.4 .NET Watch Race window. Presentation only: Commands + Queries, interpolated `RaceWatch` icons, decision overlay, Results from `LastRace`. Uses Infrastructure as composition root; does not hold World State or open SQLite. |
 | `tools/Peloton.SimRunner` | Headless CLI: `run` for skeleton seasons, `race` for the prototype gate, `watch` for rate-controlled supervising-clock output, `day` for Hub, prep, calendar/inbox, result/debrief, and race-due flows. |
@@ -47,8 +47,9 @@ Static content lives in `content/peloton.skeleton` and `content/peloton.race-pro
 | Headless Watch clock | `Peloton.Simulation/Race/RaceWatch.cs`, `tools/Peloton.SimRunner/RaceWatchCommand.cs` | `D-033` clock contract | `RaceWatchTests`, `SimRunnerContractTests` |
 | Godot Watch Race | `src/Peloton.Client.Godot` (`WatchRaceHost`, `WatchRaceScreen`, `project.godot`) | `D-033` renderer; `UI_SITEMAP` RaceLive; §49 still owner-only | `WatchRaceHostTests`, `WatchMotionInterpolatorTests` |
 | Career Hub query | `Peloton.Application/CareerDay.cs` | `GAME_STATES_v0.1.md` Advance Day; Hub primary action (`advance-day` / `race-next`); Management only; not a UI dashboard | Application tests, `day` SimRunner |
-| Race preparation | `Peloton.Application/RacePreparation.cs`, `GameApplication.cs` | fixture-backed projection; session checkpoint plan; no career roster | Application + Persistence tests |
-| Race result / debrief | `Peloton.Application/RaceResultDebrief.cs`, `GameApplication.cs` | committed `LastRace` + calendar; knowledge-bounded notes; checkpoint not World | Application + Persistence tests |
+| Race preparation | `Peloton.Application/RacePreparation.cs`, `WorldRaceScenarioAssembler.cs`, `GameApplication.cs` | world roster + route template (`D-036` phase 1); `RaceScenarioId` is route/tuning only | Application + Persistence tests |
+| RiderCareer / world–race bind | `Peloton.Domain/RiderCareer.cs`, `WorldRaceScenarioAssembler.cs`, `content/peloton.skeleton/skeleton-roster.json` | `CAREER_WORLDTOUR_SLICE_v0.1.md` phase 1; official start lists from world `RiderCareer` rows | `CareerWorldTourBindTests` |
+| Race result / debrief | `Peloton.Application/RaceResultDebrief.cs`, `GameApplication.cs` | committed `LastRace` uses world `RiderCareer.Id`; career history append on `RecordRace` | Application + Persistence tests |
 | Career calendar | `Peloton.Domain/CalendarEntry.cs`, `Peloton.Application/CareerCalendarInbox.cs` | stored entries + derived status | Application tests |
 | Career inbox query | `Peloton.Application/CareerCalendarInbox.cs`, `ArchiveInboxItemCommand` | rebuilt race-due + race-result items; dismiss lock on race-due | Application tests |
 | AI managers | Not implemented | `AI_MANAGER_SYSTEM_v0.2.md` | Not implemented |

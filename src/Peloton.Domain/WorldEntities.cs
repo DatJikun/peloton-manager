@@ -2,7 +2,7 @@ using System;
 
 namespace Peloton.Domain;
 
-public sealed record Person(WorldEntityId Id, string Name);
+public sealed record Person(WorldEntityId Id, string Name, string? OriginDefinitionId = null);
 
 public sealed record ManagerCareer(
     WorldEntityId Id,

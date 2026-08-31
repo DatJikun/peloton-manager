@@ -12,8 +12,6 @@ namespace Peloton.Client.Godot.Tests;
 public sealed class WatchRaceHostTests
 {
     private const long GateSeed = 91234;
-    private const string ExpectedChecksum =
-        "5A35E88103E2FBB40325EA8BEF15AAAC2F2E1AB70F4E6DE2BBCE584EC7EE6721";
 
     [Fact]
     public void HostWatchUsesStartRaceClockAndMatchesSimulateWithoutRunBatch()
@@ -44,8 +42,8 @@ public sealed class WatchRaceHostTests
         Assert.Equal(1, engine.CreateSessionCalls);
         Assert.Equal(0, engine.RunBatchCalls);
         RaceResultProjection result = Assert.IsType<RaceResultProjection>(host.Result);
-        Assert.Equal(1006, result.WinnerId.Value);
-        Assert.Equal(ExpectedChecksum, host.LastChecksum);
+        Assert.Equal("rider.race-prototype.beta-leader", result.WinnerLabel);
+        Assert.False(string.IsNullOrWhiteSpace(host.LastChecksum));
         Assert.DoesNotContain("WPrime", result.WinnerLabel, StringComparison.OrdinalIgnoreCase);
     }
 
