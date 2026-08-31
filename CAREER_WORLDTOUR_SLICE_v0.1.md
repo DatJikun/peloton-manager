@@ -165,7 +165,37 @@ Form tick, pre-season picker, strategy window UI, contracts, 2026 names, Godot c
 
 ### Phase 2 — day state
 
-`DeterministicScheduler.AdvanceDay` updates Form/Freshness/Fatigue with a tiny deterministic rule (seeded domain RNG, not `new Random()`). Race capability uses form as a multiplier on realizable power. Deep glycogen/thermal stays deferred (D-022).
+Advance Day must change stored `Form01` / `Freshness01` / `Fatigue01` for every `RiderCareer`. Official races must use those values. No `new Random()`. No gameplay RNG on this tick (closed formula, D-013). Deep glycogen/thermal stays deferred (D-022).
+
+**Rest tick** (every `AdvanceOneDay`, after org day counters, before or as part of the same world day):
+
+```text
+Fatigue01    = clamp01(Fatigue01 * 0.82)
+Freshness01  = clamp01(Freshness01 + 0.12 * (1 - Freshness01))
+Form01       = clamp01(Form01 + 0.05 * (0.90 - Form01))
+```
+
+Form drifts toward 0.90 at rest, not 1.00.
+
+**Race load** (when `RecordRace` appends a starter result):
+
+```text
+Fatigue01    = clamp01(Fatigue01 + 0.30)
+Freshness01  = clamp01(Freshness01 - 0.25)
+Form01       = clamp01(Form01 - 0.08)
+```
+
+**Race capability** (`WorldRaceScenarioAssembler.ToRaceProfile`): do not mutate stored CP. Scale the profile fed to the engine:
+
+```text
+readiness = (0.70 + 0.30 * Form01) * (0.85 + 0.15 * Freshness01) * (1.0 - 0.25 * Fatigue01)
+criticalPowerW' = CriticalPowerW * readiness
+peakPowerW'     = max(PeakPowerW * readiness, criticalPowerW')
+```
+
+**Also:** `TeamRaceObservation.DecisionAuthorityId` must be a real `WorldState` authority id (the human authority for this slice), not `organizationId + 100`.
+
+Tests: rest days recover fatigue; a race raises fatigue on starters; same seed → same form trajectory and same finish order; Spy OFF/ON still matches; SchemaVersion stays 2; no Career Hub; no tenth GameState.
 
 ### Phase 3 — windows
 

@@ -62,7 +62,7 @@ These DRAFT contracts exist and still await owner REVIEW. They are not a reason 
 2. `CONTENT_FORMAT_v0.1.md`, `RULESETS_v0.1.md`, `SAVE_FORMAT_v0.1.md`, `TESTING_v0.1.md`
 3. `RACE_ENGINE_DESIGN_v0.2.md` — REVIEW; official results already use `PrototypeRaceEngine` below this contract
 
-Already in code (thin versus those contracts): Milestone 0 spine, nine GameStates, SQLite SchemaVersion 1, skeleton Advance Day, prototype race, CLI Hub/inbox/prep/Watch, Godot Watch Race presentation. See `HANDOFF.md`.
+Already in code (thin versus those contracts): Milestone 0 spine, nine GameStates, SQLite SchemaVersion 2, skeleton Advance Day, prototype race bound to world `RiderCareer` rows, CLI Hub/inbox/prep/Watch, Godot Watch Race presentation. See `HANDOFF.md`.
 
 Not in code yet, though named in `DATA_MODEL_v0.1.md`: `RiderCareer` as a world career bound to race, `OrganizationKnowledgeStore`, `PersonalKnowledge`, `RecruitmentCase`. Career persons and race-prototype riders are still separate. AI managers, sponsors, training, and a full legal rules engine are not implemented.
 

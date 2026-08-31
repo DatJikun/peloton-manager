@@ -22,15 +22,16 @@ Owner (player) directed the slice on 2026-08-31 (D-036–D-042). **Phase 1 world
 Nie ma jeszcze pełnej gry managerskiej.
 
 Działa:
-- w Godot okno Watch Race — jeden syntetyczny etap (ikony, tempo, decyzja, zwycięzca);
-- w CLI pętla dnia: Advance Day, Race next, przygotowanie, Simulate albo Watch, wynik.
+- w Godot okno Watch Race;
+- w CLI pętla dnia i ten sam człowiek na starcie co w klubie (most fazy 1);
+- wynik zapisuje się na karierze kolarza (`RiderCareerResult`).
 
 Właśnie budujemy:
-- most świat–wyścig: ten sam człowiek w klubie, na starcie i w historii wyników.
+- Advance Day ma zmieniać formę / świeżość / zmęczenie, a to ma wpływać na wyścig.
 
 Jeszcze nie:
-- skład kariery nie jest tymi samymi ludźmi co w wyścigu (to jest pierwszy kod tego slice);
-- nie ma scoutingu, kontraktów kolarzy, sponsorów, treningu ani AI managerów;
+- nie ma scoutingu, kontraktów kolarzy, sponsorów ani AI managerów;
+- kalendarz 2026 i 18 ekip WT leżą jako szkic treści, nie są podpięte do New Game;
 - nie ma Career Hub (odrzucony);
 - §49 nie jest zaliczone — to ręczny playtest właściciela.
 
@@ -101,7 +102,7 @@ Baza 2026: najpierw 18 ekip męskiego WorldTour. Liczby fizjologii i budżetów 
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task
-`World–race bind (D-036, CAREER_WORLDTOUR_SLICE_v0.1.md phase 1). Do not close §49 with automations. Do not implement D-032. Do not build the rejected Career Hub. Do not start AI managers (D-041).`
+`Form / freshness / fatigue on Advance Day and in official races (CAREER_WORLDTOUR_SLICE_v0.1.md phase 2). Do not close §49. Do not implement D-032. Do not build Career Hub. Do not start AI managers.`
 
 ## Known blockers
 - None.
@@ -121,6 +122,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
+- `2026-08-31` — **Phase 1 landed (Composer):** world–race bind. `RiderCareer` + career results, `skeleton-roster.json`, `WorldRaceScenarioAssembler`, SQLite SchemaVersion 2, checksum v2. Career Start/Simulate/Watch use world start lists; standalone `race` gate still uses fixture. Gate green: format/build/test (122 tests) + `day --simulate-from-prep --through-results`.
 - `2026-08-31` — Career WorldTour slice: bind world to race; 2026 WT pack; contracts; no minigames; All/Guessed/None stay the visibility model; AI managers wait (D-036–D-042).
 - `2026-08-31` — Composer 2.5 is the default coding subagent; Grok 4.6 High writes docs and reviews (D-035). Owner is a player giving feedback, not a programmer.
 - `2026-08-25` — Nie wysyłać właścicielowi maili o zmianach; status tylko w czacie agenta.
