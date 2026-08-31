@@ -331,7 +331,9 @@ Organization
     TitleSponsor?
     Bike?
     Groupset?
-    EstimatedBudgetEur?         // labelled estimated gameplay; economy spends it in phase 6
+    EstimatedBudgetEur?         // labelled estimated gameplay; title-sponsor fee source in phase 6
+    CashEur                     // mutable; may be negative (overdrawn)
+    TitleSponsorAnnualFeeEur
 ```
 
 `Employment` is the system of record for the relationship. If active-employment references are stored on ManagerCareer or Organization for efficient lookup, validation must keep them consistent with that lifecycle.

@@ -551,7 +551,94 @@ Real cobbled/mountain route profiles, 28-rider rosters, 150-rider pelotons, livi
 
 ### Phase 6 — thin economy
 
-Club cash, wage sum, one title sponsor paying a fee. No luxury tax. No century inflation.
+Club cash, wage sum, one title sponsor paying a fee. **No luxury tax (D-011). No century inflation (D-012).** No personal rider sponsors. No marketability minigame. No transfer market. Headless only. No tenth GameState. No Career Hub.
+
+Also fix the phase-5 cosmetic: `RacePreparationProjection.Title` must be today’s calendar entry title (WT: `Santos Tour Down Under`), not the hardcoded `"Skeleton race"`. Skeleton entries stay `"Skeleton race"`.
+
+#### Player meaning
+
+You have cash in the club. Riders cost wages every day. The title sponsor pays a fee every day. If wages outrun the sponsor, cash goes negative (overdrawn). That is the warning. This slice does **not** auto-fire riders, auto-change sponsors, or levy a hidden tax.
+
+#### Domain
+
+On `Organization` (mutable cash only):
+
+```text
+CashEur                     // long; may be negative; start 0
+TitleSponsorAnnualFeeEur    // long >= 0
+```
+
+`TitleSponsor` name already exists. `EstimatedBudgetEur` stays the labelled content budget; it is the source of the fee at world create, not a second bank.
+
+`WorldState.FinancialYearDays`:
+- skeleton (`GeneratePeriodicRaces`): `CalendarPeriodDays` (12)
+- WT (`calendar-from-content`): **365**
+
+Active wage bill for an org = sum of `RiderContract.AnnualWage` whose `RiderCareer.OrganizationId` is that org (expired/unattached riders are not paid).
+
+Daily integers, floor division, no RNG:
+
+```text
+dailySponsor = Floor(TitleSponsorAnnualFeeEur / FinancialYearDays)
+dailyWages   = Floor(activeWageBill / FinancialYearDays)
+CashEur     += dailySponsor - dailyWages
+```
+
+#### AdvanceOneDay order (extend phase 4)
+
+1. Organization day counters  
+2. Rest tick  
+3. `CurrentDate = NextDay()`  
+4. Contract expiry (`DetachFromClub`)  
+5. **Then finance tick** for every organization (expired riders already unpaid)
+
+`CaptureDayNotes`: if the employer `CashEur < 0`, add `The club is overdrawn.` Do not mention cash when solvent.
+
+#### World create
+
+- WT: `TitleSponsorAnnualFeeEur = EstimatedBudgetEur` from `organizations.json` (Alpecin 18_000_000, Picnic 12_000_000, UAE 50_000_000, …). `CashEur = 0`. Title sponsor name already loaded.
+- Skeleton: if `EstimatedBudgetEur == 0`, set `TitleSponsorAnnualFeeEur = 2_000_000` and `TitleSponsor = "Skeleton Sponsor"` when empty. `CashEur = 0`. This keeps 10-season soak solvent (wage bill 640_000 vs fee 2_000_000 per 12-day year).
+
+No new spend/sign/sponsor-market **commands**. Cash only moves on Advance Day.
+
+#### Query
+
+`ClubFinanceProjection` on `GameApplication` (employer, Management only, same style as `ClubRoster`):
+
+```text
+CashEur
+WageBillAnnual
+TitleSponsorName
+TitleSponsorAnnualFeeEur
+DailySponsor
+DailyWages
+DailyNet
+Overdrawn    // CashEur < 0
+```
+
+SimRunner `day` Hub print may include `cash=` and `overdrawn=`. Do not put this in Godot.
+
+#### Persistence
+
+SQLite **SchemaVersion 6**. Checksum label `peloton-world-checksum-v6`. Schema 1–5 may refuse to load. Persist `CashEur`, `TitleSponsorAnnualFeeEur`, `FinancialYearDays`. Ten-season checksums change because cash ticks every day; tests keep same-seed equality, not a hardcoded hex.
+
+#### Tests (`CareerWorldTourPhase6Tests`)
+
+- WT CreateWorld: Alpecin `CashEur == 0`, fee `18_000_000`, `FinancialYearDays == 365`, wage bill equals the four Alpecin contracts, `DailyNet == Floor(fee/365) - Floor(wages/365)`.
+- After one `AdvanceDay` on WT: Alpecin cash equals that `DailyNet`. Same seed → same cash.
+- Constructed/skeleton world with fee 0 and positive wages: after AdvanceDay, cash negative; Hub notes contain `The club is overdrawn.`
+- SchemaVersion 6 save/load round-trips cash, fee, and checksum.
+- Skeleton 10-season runner still completes (10 races, day 120); employer cash is finite; cash never jumps by a tax (only the locked daily formula).
+- WT prep on TDU: `RacePreparationProjection.Title` is `Santos Tour Down Under` (not `Skeleton race`).
+- No `PlayerTeam`. No `StubRaceEngine`.
+
+#### Gate
+
+Same as phase 5 (skeleton format/build/test/`run`/`race`/`day`, plus WT `day --days 20 --simulate-from-prep --through-results`).
+
+#### Out of scope for phase 6
+
+Dynamic sponsor market, co-sponsor slots, luxury tax, inflation, marketability, personal rider sponsors, transfer/renew commands, auto-firing overdrawn clubs, Godot Hub, tenth GameState, AI managers, closing §49.
 
 ---
 

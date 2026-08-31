@@ -57,7 +57,9 @@ Phase 1 out of scope (now landed in phase 3 headless): pre-season picker and str
 - Race-due uses calendar entries, not `day % CalendarPeriodDays`.
 - SQLite SchemaVersion **5** / checksum `peloton-world-checksum-v5`. Skeleton worlds also save as v5.
 
-Phase 6 out of scope: thin club cash / title-sponsor economy.
+Phase 6 specified (not in code yet): club `CashEur`, daily floor(sponsor fee / year days) minus floor(wages / year days), no luxury tax, SchemaVersion 6. Overdrawn is a note, not auto-firing.
+
+Phase 6+ out of scope: dynamic sponsor market, inflation, transfer market, Godot Hub, AI managers, D-032, tenth GameState.
 
 ## Day state (D-036 phase 2 landed)
 
