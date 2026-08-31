@@ -10,7 +10,7 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`Career WorldTour slice` — phase 6 thin economy (`CAREER_WORLDTOUR_SLICE_v0.1.md`)
+`Career WorldTour slice` — landed (`CAREER_WORLDTOUR_SLICE_v0.1.md` phases 1–6)
 
 ### Goal
 The people in the club are the people who race. Results become career history. Then form-on-day, pre-season race picks, pre-race strategy, contracts, and a 2026 WorldTour content pack. Do not close §49 with automations. Do not build Career Hub.
@@ -32,20 +32,20 @@ Działa:
 - cienka ekonomia klubu: kasa, dzienna opłata sponsora vs płace, `ClubFinanceProjection`, notatka o debecie (faza 6).
 
 Właśnie budujemy:
-- (kolejna faza slice — po fazie 6).
+- czekamy na kolejny kierunek właściciela (slice 1–6 jest w kodzie).
 
 Jeszcze nie:
-- nie ma scoutingu, sponsorów ani AI managerów;
+- nie ma scoutingu, dynamicznego rynku sponsorów ani AI managerów;
 - nie ma Career Hub (odrzucony);
 - §49 nie jest zaliczone — to ręczny playtest właściciela.
 
 Tryby All / Guessed / None (widać / częściowo / ukryte OVR i POT) zostają. Nie dokładamy czwartej mgły.
 
-„Eventy dnia” = po Advance Day świat coś robi (forma, regeneracja, terminy), nie tylko +1 na dacie.
+„Eventy dnia” = po Advance Day świat coś robi (forma, regeneracja, terminy, kasa), nie tylko +1 na dacie.
 
-Pieniądze: budżet i płace, sponsor płaci rachunki — bez ukrytego podatku. Cienka ekonomia dopiero po kontraktach.
+Pieniądze: kasa klubu, płace kolarzy, sponsor tytułowy płaci dzienną opłatę — bez ukrytego podatku.
 
-Baza 2026: najpierw 18 ekip męskiego WorldTour. Liczby fizjologii i budżetów będą oszacowane. 3 lata licencji WT i niższe ligi są w modelu, nie w pierwszej grywalnej siatce.
+Baza 2026: 18 ekip męskiego WorldTour w `scenario.peloton.wt-2026`. Fizjologia, płace i budżety są oszacowane. 3 lata licencji WT i niższe ligi są w modelu; silnik wyścigu ma cap 12 na starcie.
 
 ## What works now
 - [x] High-level game design v0.7
