@@ -79,7 +79,7 @@ Skeleton career has 12 named riders, 3 teams, manager off the roster. A 12-day s
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task
-`D-035 step 7 waits on the owner.` Default race day is now results, not film (`D-036`, `HOW_RACE_DAY_WORKS.md`). Film is optional in Hub settings. §49 stays `NOT VERIFIED`. More in-race decisions only if the owner wants them after seeing this path. Do not glue on physiology. Do not add dossier, transfers, sponsors, market AI, GC leader, avatars, or radio/DS.
+`D-035 steps 3 and 7 wait on the owner.` Lista 1–2 i 4–6 jest w kodzie. Film jest opcją (`D-036`). §49 stays `NOT VERIFIED`. Three questions: does the story stick; are chase/wait enough; do you want another in-race decision. Without a yes on the third, do not start step 7. Do not add dossier, transfers, sponsors, market AI, GC leader, avatars, or radio/DS.
 
 ## Known blockers
 - None.

@@ -36,3 +36,12 @@ Wyłączenie filmu nie osłabia przeciwników i nie zmienia zwycięzcy. Sztab ro
 ## Co jest prawdą, a co opisem
 
 Wynik (kto wygrał, kolejność) jest oficjalny i zapisany. Zdania o wydarzeniach mówią o **miejscach, celu i momentach decyzji sztabu**, nie o ukrytej fizjologii. Testy nie mówią, czy oglądanie filmu jest „fajne” — to Twoja ocena, gdy włączysz film.
+
+## Co potrzebuję od Ciebie (krok 3 i 7)
+
+To nie zamykają testy. Wystarczy odpowiedź na trzy pytania, z wyniku albo z filmu (`FILM: WŁ`):
+
+1. Czy historia się trzyma?
+2. Czy dwa wyjścia (pościg / czekać) wystarczają?
+3. Czy chcesz **kolejną decyzję w tym samym wyścigu**? (to jest krok 7 — bez Twojego „tak” go nie zaczynam)
+
