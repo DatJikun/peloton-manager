@@ -17,7 +17,8 @@ public sealed record RaceResultProjection(
     string RouteId,
     WorldEntityId WinnerId,
     string WinnerLabel,
-    IReadOnlyList<RaceResultPlacement> FinishOrder);
+    IReadOnlyList<RaceResultPlacement> FinishOrder,
+    IReadOnlyList<string> Headlines);
 
 public sealed record RaceDebriefProjection(
     string Objective,
@@ -43,12 +44,15 @@ public static class RaceOutcomeQueries
         RaceResultPlacement[] finishOrder = world.LastRace.FinishOrder
             .Select(id => new RaceResultPlacement(id, Label(world, scenario, id)))
             .ToArray();
+        string title = CompletedCalendarTitle(world) ?? RacePreparationDefaults.Title;
+        string winnerLabel = Label(world, scenario, world.LastRace.WinnerId);
         return new RaceResultProjection(
-            CompletedCalendarTitle(world) ?? RacePreparationDefaults.Title,
+            title,
             world.LastRace.RouteId,
             world.LastRace.WinnerId,
-            Label(world, scenario, world.LastRace.WinnerId),
-            Array.AsReadOnly(finishOrder));
+            winnerLabel,
+            Array.AsReadOnly(finishOrder),
+            BuildHeadlines(world, title, world.LastRace.WinnerId, winnerLabel, racePreparation));
     }
 
     public static RaceDebriefProjection BuildDebrief(
@@ -72,6 +76,47 @@ public static class RaceOutcomeQueries
         return new RaceDebriefProjection(
             RacePreparationDefaults.Objective,
             notes.Take(3).ToArray());
+    }
+
+    private static IReadOnlyList<string> BuildHeadlines(
+        WorldState world,
+        string title,
+        WorldEntityId winnerId,
+        string winnerLabel,
+        RacePreparationCheckpoint? racePreparation)
+    {
+        List<string> headlines = new()
+        {
+            $"{title}: wygrał {winnerLabel}.",
+        };
+
+        IReadOnlyList<SquadSeat> seats = CareerRaceBinder.Seats(world, racePreparation?.Assignments);
+        foreach (SquadSeat seat in seats.OrderBy(seat => Place(world.LastRace!.FinishOrder, seat.RiderId)))
+        {
+            int place = Place(world.LastRace.FinishOrder, seat.RiderId);
+            headlines.Add(string.Create(
+                CultureInfo.InvariantCulture,
+                $"{seat.Name} ({seat.Role}) — {place}. miejsce."));
+        }
+
+        bool teamWon = seats.Any(seat => seat.RiderId == winnerId);
+        headlines.Add(teamWon
+            ? "Cel StageWin: wasz kolarz wygrał."
+            : "Cel StageWin: nie tym razem.");
+        return headlines;
+    }
+
+    private static int Place(IReadOnlyList<WorldEntityId> finishOrder, WorldEntityId riderId)
+    {
+        for (int index = 0; index < finishOrder.Count; index++)
+        {
+            if (finishOrder[index] == riderId)
+            {
+                return index + 1;
+            }
+        }
+
+        return finishOrder.Count + 1;
     }
 
     private static string? CompletedCalendarTitle(WorldState world)

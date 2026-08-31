@@ -38,7 +38,9 @@ When proposing a change, explain the problem it solves and which current decisio
 
 Core loop follows `D-035` in `DECISIONS.md`: one thing at a time. Roster → watching → calendar → Hub. Do not parallelize rider database, negotiations, and native HTML.
 
-This tree is through step 6 (Hub + prep from the four). Owner §49 playtest is step 3 and is not closed by tests. More race decisions (step 7) wait on that watch. Radio/DS, transfers, sponsors, and avatars wait.
+This tree is through step 6 plus `D-036`: default race day is headless results and headline events; Watch film is optional in settings. Owner §49 playtest is not closed by tests. More race decisions (step 7) wait. Radio/DS, transfers, sponsors, and avatars wait.
+
+Player-facing race-day description: `HOW_RACE_DAY_WORKS.md`.
 
 ## Core invariants
 
@@ -57,7 +59,7 @@ This tree is through step 6 (Hub + prep from the four). Owner §49 playtest is s
 - Race gameplay must contain meaningful decisions; realism does not excuse boredom.
 - Race dropping is emergent from required power, realizable power, gaps and shelter; no generic stamina-zero rule.
 - Race decisions use observations/interpretations, not hidden physiological truth.
-- Core-loop work follows `D-035`: one step at a time (Watch film+route → roster → owner watch → calendar → Hub).
+- Core-loop work follows `D-035` / `D-036`: one step at a time; default race day is results, Watch film is optional.
 
 
 ## Before writing code

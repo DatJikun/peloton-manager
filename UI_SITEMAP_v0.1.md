@@ -241,7 +241,8 @@ RACE CLUSTER (stage-scoped)
 │   └── RespondToRaceDecision Commands
 ├── [Card Flow] RACE RESULTS → DEBRIEF
 │   Result → Key moments → DS debrief → Medical notes → Consequences → Management
-└── (optional) Fast sim path: SimulateRace → Results/Debrief without RaceLive
+└── (default) Fast sim path: SimulateRace → Results/Debrief without RaceLive
+    Watch film is an optional presentation setting (`D-036`), off by default.
 
 POST-SEASON (seasonal Card Flow — extent OPEN)
 └── [Card Flow] SEASON REVIEW (optional depth)
@@ -298,13 +299,13 @@ DEVELOPER-ONLY (not player sitemap — see DEFERRED)
 | Job Market (unemployed) | Find employment | Public vacancies, approaches, reputation fit | `ApplyForManagerRole`, `AcceptManagerContract` | Hub when unemployed; Manager profile | Employment Card Flow | persistent |
 | Employment Offer Card Flow | Hire/fire transitions | Offer terms, expectations; no former employer confidential data | `AcceptManagerContract`, `DismissManager`, board Commands | Inbox; Job market | Management with new org context | card-flow |
 | Knowledge / Intel View | Compare assessments | Org knowledge index; rival estimates; confidence | none (read-only) | Shell nav (optional) | Back | persistent |
-| Race Preparation | Pre-race briefing setup | Race overview, route labels as summaries; rival assessments; squad form | Briefing-related Commands; `SetRaceBriefing`; `StartRace` | Calendar; Hub; Advance Day stop | RaceLive or fast sim | card-flow |
-| RaceLive | Watch / intervene in stage | Observations, gaps, DS recommendations — **never** hidden race truth | `RespondToRaceDecision`; pause; presentation only | Race Preparation; Advance Day | Results flow or exit (autosave rollback) | **blocking** |
-| Race Results | Immediate outcome | Official result, gaps, classifications | `FinishDebrief` entry or auto-advance | RaceLive end; fast sim | Debrief Card Flow | card-flow |
-| Race Debrief | Explain performance | Plan vs execution, DS decisions, staff hypotheses — knowledge-bounded | `FinishDebrief`; optional follow-up Commands | Results card | Management | card-flow |
-| Fast Sim Summary | Skip live presentation | Key Race Story from same canonical engine | `SimulateRace` (from prep) | Race Preparation | Results/Debrief | card-flow or persistent |
+| Race Preparation | Pre-race briefing setup | Race overview, route labels as summaries; rival assessments; squad form | Briefing-related Commands; `SetRaceBriefing`; `StartRace` / `SimulateRace` | Calendar; Hub; Advance Day stop | Results (default) or RaceLive if Watch film is on | card-flow |
+| RaceLive | Watch / intervene in stage | Observations, gaps, DS recommendations — **never** hidden race truth | `RespondToRaceDecision`; pause; presentation only | Race Preparation when Watch film setting is on | Results flow or exit (autosave rollback) | **blocking** |
+| Race Results | Immediate outcome | Official result, headline events (places, objective), classifications | `AcknowledgeRaceResults` | RaceLive end; default fast sim | Debrief Card Flow | card-flow |
+| Race Debrief | Explain performance | Plan vs execution, DS decisions, staff hypotheses — knowledge-bounded | `CompleteRaceDebrief`; optional follow-up Commands | Results card | Management | card-flow |
+| Fast Sim Summary | Default race presentation (`D-036`) | Key Race Story from same canonical engine | `SimulateRace` (from prep) | Race Preparation | Results/Debrief | card-flow or persistent |
 | Season Review | Close season loop | Season aggregates, development narratives, finance trace | Season acknowledgment Commands (if any) | End of season trigger | Management | card-flow (OPEN depth) |
-| In-Career Settings | Player preferences | Non-gameplay settings | Save/Load when legal | Shell nav | Back | persistent |
+| In-Career Settings | Player preferences | Non-gameplay settings (Watch film on/off) | Save/Load when legal | Hub / shell nav | Back | persistent |
 | Challenge Mode Setup | Overlay objectives | Challenge definition, locked settings | Same as New Game + challenge manifest | Main Menu | New Game branch | card-flow |
 
 ---
@@ -317,8 +318,10 @@ DEVELOPER-ONLY (not player sitemap — see DEFERRED)
 MainMenu ↔ LoadingWorld ↔ Management
 MainMenu → NewGameFlow (card) → LoadingWorld → Management
 Management → PreSeasonPlanningFlow (card) → Management
-Management → RacePreparationFlow (card) → RaceLive (blocking)
+Management → RacePreparationFlow (card) → RaceResultsFlow (default simulate, D-036)
+Management → RacePreparationFlow (card) → RaceLive (blocking, Watch film on)
 RaceLive → RaceResultsFlow (card) → RaceDebriefFlow (card) → Management
+RacePreparationFlow → RaceResultsFlow → RaceDebriefFlow → Management
 Management → [hosted Employment Change presentation] → Management (same or new org context)
 Management ↔ Unemployed Hub variant (employment data changes; GameState remains Management)
 ```

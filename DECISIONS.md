@@ -143,4 +143,9 @@ Jedna rzecz na raz. Skład → oglądanie → kalendarz → Hub. Nie równolegle
 7. **Więcej decyzji w wyścigu.** Tylko jeśli punkt 3 wypadł dobrze. Nie doklejać fizjologii.
 8. **Potem, nie teraz.** Dossier/agent, transfery, sponsorzy, AI na rynku, lider GC (`D-032`), awatarzy na oko właściciela.
 
-Kolejny krok zaczyna się dopiero gdy poprzedni wylądował. Radio/DS (PR #25) nie wchodzi w krok 1. Godot Hub / look-lab (PR #27, #28) czekają na krok 5.
+Kolejny krok zaczyna się dopiero gdy poprzedni wylądował. Radio/DS (PR #25) nie wchodzi w krok 1. Godot Hub / look-lab (PR #27, #28) czekają na krok 5. Prezentacja dnia wyścigu: `D-036` (wynik domyślnie, film opcjonalnie).
+
+## D-036 — Default race day is results, not film
+Owner 2026-08-31: film Watch jest **opcjonalnym ustawieniem prezentacji**, domyślnie **wyłączony**. Domyślna ścieżka dnia wyścigu to kanoniczny headless `SimulateRace` (ten sam silnik co Watch), potem `RaceResultsFlow` z oficjalnym wynikiem i knowledge-bounded wydarzeniami (miejsca czwórki, cel). Włączenie filmu nie zmienia wyniku. Ustawienie nie jest GameState ani World State (`D-031`): nie woła gameplay RNG i nie rusza goldenu. `D-033` zostaje dla ścieżki filmu. §49 zostaje `NOT VERIFIED`. Więcej decyzji w wyścigu (`D-035` pkt 7) nadal czeka; ta decyzja nie zamyka fun gate'u.
+
+Opis dla gracza: `HOW_RACE_DAY_WORKS.md`.

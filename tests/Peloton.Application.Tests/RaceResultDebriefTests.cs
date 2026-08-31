@@ -51,6 +51,10 @@ public sealed class RaceResultDebriefTests
         Assert.All(
             result.FinishOrder,
             place => Assert.False(string.IsNullOrWhiteSpace(place.Label)));
+        Assert.Contains(result.Headlines, line => line.Contains("Marco Anconi", StringComparison.Ordinal));
+        Assert.Contains(result.Headlines, line => line.Contains("Piotr Kowalczyk", StringComparison.Ordinal));
+        Assert.Contains(result.Headlines, line => line.Contains("Cel StageWin", StringComparison.Ordinal));
+        Assert.All(result.Headlines, line => Assert.DoesNotContain("WPrime", line, StringComparison.OrdinalIgnoreCase));
         Assert.Equal(1, engine.RunBatchCalls);
         Assert.Equal(0, engine.CreateSessionCalls);
 

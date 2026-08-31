@@ -36,7 +36,7 @@ public sealed class CareerHubHostTests
     }
 
     [Fact]
-    public void RaceNextEntersPrepWithNamedSeatsThenWatch()
+    public void RaceNextEntersPrepWithNamedSeatsThenSimulatesToResults()
     {
         using TemporaryDirectory temp = new();
         CareerHubHost host = CreateHost(temp.Path);
@@ -63,11 +63,47 @@ public sealed class CareerHubHostTests
             host.Preparation.Seats.Single(seat => seat.Name == "Piotr Kowalczyk").RiderId,
             SquadRoles.Card).Succeeded);
 
-        Assert.True(host.OpenWatch().Succeeded);
-        Assert.Equal(GameState.RaceLive, host.State);
-        Assert.NotNull(host.Watch);
-        Assert.Contains(host.Watch!.Interpolated!.Riders, rider => rider.Name == "Piotr Kowalczyk");
-        Assert.All(host.Watch.Interpolated.Riders, rider => Assert.False(string.IsNullOrWhiteSpace(rider.Name)));
+        Assert.False(host.Settings.WatchFilmEnabled);
+        Assert.True(host.RunRace().Succeeded);
+        Assert.Equal(GameState.RaceResultsFlow, host.State);
+        Assert.Null(host.Watch);
+        RaceResultProjection result = Assert.IsType<RaceResultProjection>(host.Result);
+        Assert.Equal("Opening Classic", result.Title);
+        Assert.Equal("Marco Anconi", result.WinnerLabel);
+        Assert.Contains(result.Headlines, line => line.Contains("Marco Anconi", StringComparison.Ordinal));
+        Assert.Contains(result.Headlines, line => line.Contains("Dawid Rutka", StringComparison.Ordinal));
+        Assert.Contains(result.Headlines, line => line.Contains("Cel StageWin: nie tym razem.", StringComparison.Ordinal));
+        Assert.All(result.Headlines, line => Assert.DoesNotContain("WPrime", line, StringComparison.OrdinalIgnoreCase));
+
+        Assert.True(host.ContinueOutcome().Succeeded);
+        Assert.Equal(GameState.RaceDebriefFlow, host.State);
+        Assert.Contains(host.Debrief!.Notes, note => note.Contains("Marco Anconi", StringComparison.Ordinal));
+        Assert.True(host.ContinueOutcome().Succeeded);
+        Assert.Equal(GameState.Management, host.State);
+        Assert.Null(host.Result);
+    }
+
+    [Fact]
+    public void WatchFilmSettingIsOffByDefaultAndOptInOpensWatch()
+    {
+        using TemporaryDirectory temp = new();
+        CareerHubHost host = CreateHost(temp.Path);
+        Assert.True(host.Open(GateSeed).Succeeded);
+        Assert.False(host.Settings.WatchFilmEnabled);
+        host.SetWatchFilmEnabled(true);
+        Assert.True(host.Settings.WatchFilmEnabled);
+
+        CareerHubHost reloaded = CreateHost(temp.Path);
+        Assert.True(reloaded.Settings.WatchFilmEnabled);
+        Assert.True(reloaded.Open(GateSeed).Succeeded);
+
+        AdvanceToRaceDue(reloaded);
+        Assert.True(reloaded.FollowPrimary().Succeeded);
+        Assert.True(reloaded.RunRace().Succeeded);
+        Assert.Equal(GameState.RaceLive, reloaded.State);
+        Assert.NotNull(reloaded.Watch);
+        Assert.Contains(reloaded.Watch!.Interpolated!.Riders, rider => rider.Name == "Piotr Kowalczyk");
+        Assert.All(reloaded.Watch.Interpolated.Riders, rider => Assert.False(string.IsNullOrWhiteSpace(rider.Name)));
     }
 
     private static void AdvanceToRaceDue(CareerHubHost host)

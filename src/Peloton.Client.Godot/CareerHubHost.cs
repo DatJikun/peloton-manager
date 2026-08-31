@@ -8,17 +8,25 @@ namespace Peloton.Client.Godot;
 
 public sealed class CareerHubHost
 {
+    private const string SettingsFileName = "presentation-settings.txt";
+
     private readonly GameApplication application;
     private readonly string autosavePath;
+    private readonly string settingsPath;
 
     public CareerHubHost(GameApplication application, string autosavePath)
     {
         this.application = application ?? throw new ArgumentNullException(nameof(application));
         ArgumentException.ThrowIfNullOrWhiteSpace(autosavePath);
         this.autosavePath = autosavePath;
+        string directory = Path.GetDirectoryName(autosavePath) ?? ".";
+        settingsPath = Path.Combine(directory, SettingsFileName);
+        Settings = LoadSettings(settingsPath);
     }
 
     public GameState State => application.State;
+
+    public PresentationSettings Settings { get; private set; }
 
     public CareerDayProjection? Day => application.CareerDay;
 
@@ -27,6 +35,10 @@ public sealed class CareerHubHost
     public IReadOnlyList<InboxItemProjection> Inbox => application.Inbox;
 
     public RacePreparationProjection? Preparation => application.RacePreparation;
+
+    public RaceResultProjection? Result => application.RaceResult;
+
+    public RaceDebriefProjection? Debrief => application.RaceDebrief;
 
     public WatchRaceHost? Watch { get; private set; }
 
@@ -60,29 +72,40 @@ public sealed class CareerHubHost
         return application.Execute(new ConfirmRacePreparationPlanCommand());
     }
 
+    public void SetWatchFilmEnabled(bool enabled)
+    {
+        Settings = new PresentationSettings(enabled);
+        string? directory = Path.GetDirectoryName(settingsPath);
+        if (!string.IsNullOrWhiteSpace(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        File.WriteAllText(settingsPath, enabled ? "true" : "false");
+    }
+
+    public CommandResult RunRace()
+    {
+        return Settings.WatchFilmEnabled ? OpenWatch() : SimulateRace();
+    }
+
+    public CommandResult SimulateRace()
+    {
+        CommandResult prepared = EnsureConfirmedPreparation();
+        if (!prepared.Succeeded)
+        {
+            return prepared;
+        }
+
+        return application.Execute(new SimulateRaceCommand(RacePreparationDefaults.PrototypeScenarioId));
+    }
+
     public CommandResult OpenWatch()
     {
-        if (application.State == GameState.Management)
+        CommandResult prepared = EnsureConfirmedPreparation();
+        if (!prepared.Succeeded)
         {
-            CommandResult entered = FollowPrimary();
-            if (!entered.Succeeded)
-            {
-                return entered;
-            }
-        }
-
-        if (application.State != GameState.RacePreparationFlow)
-        {
-            return CommandResult.Reject("GAME_STATE_INVALID");
-        }
-
-        if (application.RacePreparation is { PlanConfirmed: false })
-        {
-            CommandResult confirmed = ConfirmPreparation();
-            if (!confirmed.Succeeded)
-            {
-                return confirmed;
-            }
+            return prepared;
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(autosavePath) ?? ".");
@@ -93,6 +116,26 @@ public sealed class CareerHubHost
     public CommandResult TickWatch(double realDeltaSeconds)
     {
         return Watch is null ? CommandResult.Success : Watch.Tick(realDeltaSeconds);
+    }
+
+    public CommandResult ContinueOutcome()
+    {
+        if (Watch is not null)
+        {
+            return FinishWatchResults();
+        }
+
+        if (application.State == GameState.RaceResultsFlow)
+        {
+            return application.Execute(new AcknowledgeRaceResultsCommand());
+        }
+
+        if (application.State == GameState.RaceDebriefFlow)
+        {
+            return application.Execute(new CompleteRaceDebriefCommand());
+        }
+
+        return CommandResult.Reject("GAME_STATE_INVALID");
     }
 
     public CommandResult FinishWatchResults()
@@ -119,5 +162,40 @@ public sealed class CareerHubHost
         }
 
         return CommandResult.Reject("GAME_STATE_INVALID");
+    }
+
+    private CommandResult EnsureConfirmedPreparation()
+    {
+        if (application.State == GameState.Management)
+        {
+            CommandResult entered = FollowPrimary();
+            if (!entered.Succeeded)
+            {
+                return entered;
+            }
+        }
+
+        if (application.State != GameState.RacePreparationFlow)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        if (application.RacePreparation is { PlanConfirmed: false })
+        {
+            return ConfirmPreparation();
+        }
+
+        return CommandResult.Success;
+    }
+
+    private static PresentationSettings LoadSettings(string path)
+    {
+        if (!File.Exists(path))
+        {
+            return PresentationSettings.Default;
+        }
+
+        string text = File.ReadAllText(path).Trim();
+        return new PresentationSettings(string.Equals(text, "true", StringComparison.OrdinalIgnoreCase));
     }
 }

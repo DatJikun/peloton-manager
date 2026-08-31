@@ -24,9 +24,11 @@ public sealed partial class CareerHubScreen : Control
     private Label? calendar;
     private Label? inbox;
     private Label? prep;
+    private Label? outcome;
     private VBoxContainer? seatBox;
     private Button? primaryButton;
     private Button? watchButton;
+    private Button? settingsButton;
     private VBoxContainer? desk;
     private WatchRaceScreen? watchScreen;
 
@@ -60,12 +62,13 @@ public sealed partial class CareerHubScreen : Control
         desk.AddChild(dateLabel);
         employerLabel = MakeLabel("Zespół", 18, Red);
         desk.AddChild(employerLabel);
-        status = MakeLabel("Advance Day, skrzynka, kalendarz, wejście w Watch.", 15, Gray);
+        status = MakeLabel("Advance Day, skrzynka, kalendarz, wynik wyścigu. Film w ustawieniach.", 15, Gray);
         desk.AddChild(status);
 
         primaryButton = MakeButton("ADVANCE DAY", OnPrimary);
         watchButton = MakeButton("OGLĄDAJ ETAP", OnWatch);
-        desk.AddChild(WrapRow(primaryButton, watchButton));
+        settingsButton = MakeButton("FILM: WYŁ", OnToggleFilm);
+        desk.AddChild(WrapRow(primaryButton, watchButton, settingsButton));
 
         calendar = MakeLabel("Kalendarz", 15, Black);
         calendar.AutowrapMode = TextServer.AutowrapMode.WordSmart;
@@ -79,6 +82,9 @@ public sealed partial class CareerHubScreen : Control
         seatBox = new VBoxContainer();
         seatBox.AddThemeConstantOverride("separation", 6);
         desk.AddChild(seatBox);
+        outcome = MakeLabel("Po wyścigu tu będzie wynik i najważniejsze wydarzenia.", 15, Black);
+        outcome.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        desk.AddChild(Panel("WYNIK", outcome));
 
         string autosave = Path.Combine(Path.GetTempPath(), "peloton-hub-prerace.peloton");
         host = new CareerHubHost(
@@ -90,6 +96,7 @@ public sealed partial class CareerHubScreen : Control
             status.Text = $"Nie udało się otworzyć kariery ({opened.ReasonCode}).";
             primaryButton.Disabled = true;
             watchButton.Disabled = true;
+            settingsButton.Disabled = true;
             return;
         }
 
@@ -118,7 +125,30 @@ public sealed partial class CareerHubScreen : Control
             return;
         }
 
-        Apply(host.State == GameState.Management ? host.FollowPrimary() : host.ConfirmPreparation());
+        if (host.State == GameState.Management)
+        {
+            Apply(host.FollowPrimary());
+            return;
+        }
+
+        if (host.State == GameState.RacePreparationFlow)
+        {
+            Apply(host.RunRace());
+            return;
+        }
+
+        Apply(host.ContinueOutcome());
+    }
+
+    private void OnToggleFilm()
+    {
+        if (host is null)
+        {
+            return;
+        }
+
+        host.SetWatchFilmEnabled(!host.Settings.WatchFilmEnabled);
+        Refresh();
     }
 
     private void OnWatch()
@@ -177,38 +207,40 @@ public sealed partial class CareerHubScreen : Control
             return;
         }
 
-        if (host.State is GameState.RaceLive or GameState.RaceResultsFlow or GameState.RaceDebriefFlow)
+        if (host.State == GameState.RaceLive && host.Watch is not null)
         {
             if (watchScreen is null)
             {
                 ShowWatch();
             }
 
-            if (host.State == GameState.Management)
-            {
-                HideWatch();
-            }
-
             return;
         }
 
-        if (host.State == GameState.Management)
+        if (host.State != GameState.RaceLive)
         {
             HideWatch();
         }
 
         CareerDayProjection? day = host.Day;
-        dateLabel!.Text = day is null
-            ? "DZIEŃ —"
-            : string.Create(CultureInfo.InvariantCulture, $"DZIEŃ {day.DayNumber}");
-        employerLabel!.Text = day?.EmployerName ?? "Zespół";
-        status!.Text = day is null
-            ? string.Empty
-            : $"{day.ManagerName} · {day.PrimaryLabel} · next {day.NextRaceDayNumber}";
-        primaryButton!.Text = day is null ? "ADVANCE DAY" : day.PrimaryLabel.ToUpperInvariant();
-        primaryButton.Visible = host.State is GameState.Management or GameState.RacePreparationFlow;
-        watchButton!.Visible = host.State is GameState.Management or GameState.RacePreparationFlow;
+        dateLabel!.Text = host.State switch
+        {
+            GameState.RaceResultsFlow => "WYNIK",
+            GameState.RaceDebriefFlow => "DEBRIEF",
+            _ => day is null
+                ? "DZIEŃ —"
+                : string.Create(CultureInfo.InvariantCulture, $"DZIEŃ {day.DayNumber}"),
+        };
+        employerLabel!.Text = day?.EmployerName ?? host.Result?.Title ?? "Zespół";
+        status!.Text = StatusLine(host, day);
+        primaryButton!.Text = PrimaryCaption(host, day);
+        primaryButton.Visible = true;
+        primaryButton.Disabled = false;
+        watchButton!.Visible = host.Settings.WatchFilmEnabled &&
+            host.State is GameState.Management or GameState.RacePreparationFlow;
         watchButton.Disabled = host.State == GameState.Management && day is { RaceDueToday: false };
+        settingsButton!.Text = host.Settings.WatchFilmEnabled ? "FILM: WŁ" : "FILM: WYŁ";
+        settingsButton.Visible = host.State is GameState.Management or GameState.RacePreparationFlow;
 
         calendar!.Text = string.Join('\n', host.Calendar.Select(entry =>
             string.Create(
@@ -222,6 +254,54 @@ public sealed partial class CareerHubScreen : Control
             ? "Czwórka z Beskid–Vetter. W dzień wyścigu wybierasz, kto prowadzi i kto finiszuje."
             : $"{preparation.Title} · {preparation.Objective}";
         RebuildSeats(preparation);
+        outcome!.Text = OutcomeText(host);
+    }
+
+    private static string StatusLine(CareerHubHost host, CareerDayProjection? day)
+    {
+        if (host.State == GameState.RaceResultsFlow && host.Result is RaceResultProjection result)
+        {
+            return $"{result.Title} · wygrał {result.WinnerLabel}";
+        }
+
+        if (host.State == GameState.RaceDebriefFlow && host.Debrief is RaceDebriefProjection debrief)
+        {
+            return debrief.Notes.Count == 0 ? debrief.Objective : debrief.Notes[0];
+        }
+
+        return day is null
+            ? string.Empty
+            : $"{day.ManagerName} · {day.PrimaryLabel} · next {day.NextRaceDayNumber}";
+    }
+
+    private static string PrimaryCaption(CareerHubHost host, CareerDayProjection? day)
+    {
+        return host.State switch
+        {
+            GameState.RacePreparationFlow => host.Settings.WatchFilmEnabled ? "OGLĄDAJ ETAP" : "JEDŹ WYŚCIG",
+            GameState.RaceResultsFlow => "DALEJ",
+            GameState.RaceDebriefFlow => "ZAMKNIJ",
+            _ => day is null ? "ADVANCE DAY" : day.PrimaryLabel.ToUpperInvariant(),
+        };
+    }
+
+    private static string OutcomeText(CareerHubHost host)
+    {
+        if (host.Result is RaceResultProjection result)
+        {
+            string finish = string.Join(
+                '\n',
+                result.FinishOrder.Select((place, index) =>
+                    string.Create(CultureInfo.InvariantCulture, $"{index + 1}. {place.Label}")));
+            return string.Join('\n', result.Headlines) + "\n\n" + finish;
+        }
+
+        if (host.Debrief is RaceDebriefProjection debrief)
+        {
+            return string.Join('\n', debrief.Notes);
+        }
+
+        return "Po wyścigu tu będzie wynik i najważniejsze wydarzenia.";
     }
 
     private void RebuildSeats(RacePreparationProjection? preparation)

@@ -425,10 +425,12 @@ public static class CareerDayCommand
         }
 
         string finishOrder = string.Join(",", result.FinishOrder.Select(place => place.Label));
+        string headlines = string.Join("|", result.Headlines);
         output.WriteLine(
             string.Create(
                 CultureInfo.InvariantCulture,
                 $"result=title={result.Title} winner={result.WinnerId.Value} winnerLabel={result.WinnerLabel} routeId={result.RouteId} finishOrder={finishOrder}"));
+        output.WriteLine($"headlines={headlines}");
     }
 
     private static void WriteDebrief(TextWriter output, GameApplication application)
