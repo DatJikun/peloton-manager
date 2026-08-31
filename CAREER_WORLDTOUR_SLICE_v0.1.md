@@ -199,8 +199,39 @@ Tests: rest days recover fatigue; a race raises fatigue on starters; same seed �
 
 ### Phase 3 — windows
 
-- `PreSeasonPlanningFlow`: pick which calendar races this organization enters. Confirm commits entries. Cancel discards the draft.
-- `RacePreparationFlow`: extra strategy step (leader / support / objective / briefing) **before** Confirm. Still the same nine states (D-031). Headless commands first; Godot Watch does not become a Hub.
+Headless commands first. Same nine GameStates (D-031). No Career Hub. Godot Watch stays a race window.
+
+#### Pre-season race entry
+
+- `BeginPreSeasonPlanningCommand`: `Management` → `PreSeasonPlanningFlow`. Time does not advance.
+- `PreSeasonPlanningProjection`: upcoming calendar races for the season with `Entered` for the **current employer**.
+- `SetSeasonRaceEntryCommand(raceContentId, entered)` edits a **draft** only.
+- `ConfirmPreSeasonPlanCommand` commits the draft onto world state and returns to `Management`.
+- `CancelPreSeasonPlanningCommand` discards the draft and returns to `Management`.
+- Entry is keyed by `RaceContentId` for the season (skip Flanders, not “this Tuesday’s copy”).
+- **World create:** every organization is entered into every currently scheduled race content id (soak/tests keep racing).
+- Persist `OrganizationRaceEntry` (OrganizationId, RaceContentId, Entered). **SchemaVersion 3.**
+- Official start list = `RiderCareer` rows whose organization is entered for that race’s `RaceContentId`.
+- **Race-due for the player** (Hub Race next / AdvanceDay blocked): today is a calendar race **and** the player’s employer is entered.
+- If today is a world race but the player did **not** enter: `AdvanceDay` is legal and must **auto-simulate** that official race with the entered teams (delegated DS defaults), then record results. The world does not wait on a skipped race.
+- If nobody entered, skip creating a session (no empty race). Default world-create entries make this rare.
+
+#### Pre-race strategy step
+
+Inside `RacePreparationFlow`, **before** Confirm:
+
+- `SetRacePreparationStrategyCommand(leaderId, supportId, objective, briefingKind)`
+- Leader and support must be distinct riders on the employer’s world roster.
+- Objective: existing `RaceObjective` (`StageWin` / `GeneralClassification`).
+- Briefing: existing `RaceBriefingKind` (`Chase` / `Protect`).
+- Projection includes those fields plus `StrategySet`.
+- `ConfirmRacePreparationPlanCommand` rejects `PREP_STRATEGY_INCOMPLETE` unless strategy is set.
+- `CanStart` / `CanSimulate` still require confirmed plan.
+- `WorldRaceScenarioAssembler` must honour the committed strategy for the player’s organization (leader/support/objective/briefing). Other orgs keep template/delegated defaults.
+- `RacePreparationCheckpoint` stores the strategy; round-trip through SchemaVersion 3 saves.
+- Update `SkeletonCareerRunner` and every test that Confirms prep so they set strategy first (deterministic: first two roster riders by Id as leader/support, StageWin + Chase unless a test says otherwise).
+
+Tests: toggle entry then confirm — player skipped race does not block Advance Day and player riders are absent from that start list; strategy required before Confirm; strategy changes the assembled tactical plan; Cancel discards drafts; no tenth GameState; Spy neutrality still holds.
 
 ### Phase 4 — contracts
 

@@ -10,7 +10,7 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`Career WorldTour slice` — world–race bind first (`CAREER_WORLDTOUR_SLICE_v0.1.md`)
+`Career WorldTour slice` — phase 3 planning windows (`CAREER_WORLDTOUR_SLICE_v0.1.md`)
 
 ### Goal
 The people in the club are the people who race. Results become career history. Then form-on-day, pre-season race picks, pre-race strategy, contracts, and a 2026 WorldTour content pack. Do not close §49 with automations. Do not build Career Hub.
@@ -99,11 +99,12 @@ Baza 2026: najpierw 18 ekip męskiego WorldTour. Liczby fizjologii i budżetów 
 - [x] Testing v0.1 (DRAFT)
 - [x] Docs snapshot 2026-08-31: Godot Watch is real (not a stub); Composer 2.5 coding lock (D-035)
 - [x] Career WorldTour slice phase 1 — world–race bind (`RiderCareer`, SchemaVersion 2, career results)
-- [ ] Career WorldTour slice phases 2–6 — form tick, planning windows, contracts, WT pack, thin economy
+- [x] Career WorldTour slice phase 2 — form / freshness / fatigue on Advance Day and in official races
+- [ ] Career WorldTour slice phases 3–6 — planning windows, contracts, WT pack, thin economy
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task
-`Form / freshness / fatigue on Advance Day and in official races (CAREER_WORLDTOUR_SLICE_v0.1.md phase 2). Do not close §49. Do not implement D-032. Do not build Career Hub. Do not start AI managers.`
+`Pre-season race entry + pre-race strategy window (CAREER_WORLDTOUR_SLICE_v0.1.md phase 3). Headless commands. No tenth GameState. Do not close §49. Do not build Career Hub. Do not start AI managers.`
 
 ## Known blockers
 - None.
