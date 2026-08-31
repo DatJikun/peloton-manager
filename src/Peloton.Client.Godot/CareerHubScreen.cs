@@ -94,10 +94,12 @@ public sealed partial class CareerHubScreen : Control
         wynikBox.AddChild(outcome);
         desk.AddChild(wynikBox);
 
-        string autosave = Path.Combine(Path.GetTempPath(), "peloton-hub-prerace.peloton");
         host = new CareerHubHost(
             ApplicationFactory.Create(WatchContentPath.FindContentRoot()),
-            autosave);
+            WatchContentPath.PlaytestSavePath(
+                "peloton-hub-prerace.peloton",
+                OS.HasFeature("editor"),
+                OS.GetExecutablePath()));
         CommandResult opened = host.Open(91234);
         if (!opened.Succeeded)
         {

@@ -7,6 +7,11 @@
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
     <DefaultItemExcludes>$(DefaultItemExcludes);.godot/**</DefaultItemExcludes>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'ExportRelease'">
+    <SelfContained>true</SelfContained>
+    <PublishTrimmed>false</PublishTrimmed>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Remove=".godot/**" />
     <EmbeddedResource Remove=".godot/**" />

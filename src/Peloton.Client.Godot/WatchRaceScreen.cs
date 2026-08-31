@@ -116,7 +116,10 @@ public sealed partial class WatchRaceScreen : Control
         continueButton.Visible = false;
         root.AddChild(continueButton);
 
-        string autosavePath = Path.Combine(Path.GetTempPath(), "peloton-watch-prerace.peloton");
+        string autosavePath = WatchContentPath.PlaytestSavePath(
+            "peloton-watch-prerace.peloton",
+            OS.HasFeature("editor"),
+            OS.GetExecutablePath());
         if (ExternalHost is not null)
         {
             host = ExternalHost;
