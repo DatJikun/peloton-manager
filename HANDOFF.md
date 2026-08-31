@@ -16,7 +16,7 @@
 The people in the club are the people who race. Results become career history. Then form-on-day, pre-season race picks, pre-race strategy, contracts, and a 2026 WorldTour content pack. Do not close §49 with automations. Do not build Career Hub.
 
 ### Status
-Owner (player) directed the slice on 2026-08-31 (D-036–D-042). **Phase 1 world–race bind landed** (2026-08-31): career `RiderCareer` rows are the official start list; SchemaVersion 2; see `KNOWN_DIFFERENCE_FROM_CODE.md`.
+Owner (player) directed the slice on 2026-08-31 (D-036–D-042). **Phase 1 world–race bind landed** (2026-08-31): career `RiderCareer` rows are the official start list; SchemaVersion 2; see `KNOWN_DIFFERENCE_FROM_CODE.md`. **Phase 2 day state landed** (2026-08-31): rest tick on Advance Day, race load on `RecordRace`, readiness-scaled CP/Pmax in `WorldRaceScenarioAssembler`; tests in `CareerWorldTourPhase2Tests`.
 
 ## Gdzie jest gra (dla właściciela)
 Nie ma jeszcze pełnej gry managerskiej.
@@ -24,10 +24,11 @@ Nie ma jeszcze pełnej gry managerskiej.
 Działa:
 - w Godot okno Watch Race;
 - w CLI pętla dnia i ten sam człowiek na starcie co w klubie (most fazy 1);
-- wynik zapisuje się na karierze kolarza (`RiderCareerResult`).
+- wynik zapisuje się na karierze kolarza (`RiderCareerResult`);
+- Advance Day zmienia formę / świeżość / zmęczenie; wyścig używa readiness na CP/Pmax (faza 2).
 
 Właśnie budujemy:
-- Advance Day ma zmieniać formę / świeżość / zmęczenie, a to ma wpływać na wyścig.
+- okno strategii przed wyścigiem i wybór wyścigów w przedsezonie (faza 3).
 
 Jeszcze nie:
 - nie ma scoutingu, kontraktów kolarzy, sponsorów ani AI managerów;

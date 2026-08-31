@@ -13,7 +13,7 @@ The prototype is still below the accepted Race Engine contract. Remaining intent
 - Godot Watch Race exists as a presentation window over the same D-033 clock; it is not a Career Hub and not a fun-gate result;
 - owner engagement gate in `RACE_ENGINE_DESIGN_v0.2.md` §49 remains `NOT VERIFIED`;
 - SimRunner `watch` implements the D-033 headless supervising clock (rates ×1 / ×2 / ×5 / ×20, decision pauses, RNG-neutral focal-rider motion); CLI Watch is not the Godot renderer or an owner §49 playtest;
-- `Form01` / `Freshness01` / `Fatigue01` on `RiderCareer` are stored but not applied on Advance Day yet (phase 2);
+- `Form01` / `Freshness01` / `Fatigue01` on `RiderCareer` are applied on Advance Day and official races (phase 2 landed); stored physiology is not mutated — readiness scales CP/Pmax at assemble time only;
 - `Loyalty01` is stored but unused until contracts phase;
 - rider `Employment` / contracts, knowledge stores, and `RecruitmentCase` from `DATA_MODEL_v0.1.md` are not implemented;
 - multi-stage GC leadership transfer (`D-032`) is not implemented.
@@ -29,6 +29,14 @@ This is an explicit prototype boundary, not an accepted simplification of the fu
 - World checksum label is `peloton-world-checksum-v2` (ten-season golden checksums changed).
 - `CalendarEntry.RaceContentId` stores the route/tuning scenario id.
 
-Phase 1 out of scope: form tick on Advance Day, pre-season picker, strategy window UI, contracts, 2026 WT pack, Career Hub.
+Phase 1 out of scope: pre-season picker, strategy window UI, contracts, 2026 WT pack, Career Hub.
+
+## Day state (D-036 phase 2 landed)
+
+- `WorldState.AdvanceOneDay` applies the locked rest tick to every `RiderCareer` (deterministic, no RNG).
+- `WorldState.RecordRace` applies the locked race-load formula to every starter before appending `RiderCareerResult`.
+- `WorldRaceScenarioAssembler.ToRaceProfile` scales `CriticalPowerW` / `PeakPowerW` by readiness from stored form/freshness/fatigue; stored physiology is unchanged.
+- `TeamRaceObservation.DecisionAuthorityId` uses the world's human `DecisionAuthority` id (not `organizationId + 100`).
+- Career day races after 12 advance days now differ from immediate race-on-create (readiness drift); SimRunner day goldens use winner `7` / `alpha-leader` for seed `91234`.
 
 Owner slice contract: `CAREER_WORLDTOUR_SLICE_v0.1.md`.
