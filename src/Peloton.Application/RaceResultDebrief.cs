@@ -52,7 +52,13 @@ public static class RaceOutcomeQueries
             world.LastRace.WinnerId,
             winnerLabel,
             Array.AsReadOnly(finishOrder),
-            BuildHeadlines(world, title, world.LastRace.WinnerId, winnerLabel, racePreparation));
+            BuildHeadlines(
+                world,
+                title,
+                world.LastRace.WinnerId,
+                winnerLabel,
+                world.LastRace.FinishOrder,
+                racePreparation));
     }
 
     public static RaceDebriefProjection BuildDebrief(
@@ -78,11 +84,12 @@ public static class RaceOutcomeQueries
             notes.Take(3).ToArray());
     }
 
-    private static IReadOnlyList<string> BuildHeadlines(
+    private static List<string> BuildHeadlines(
         WorldState world,
         string title,
         WorldEntityId winnerId,
         string winnerLabel,
+        IReadOnlyList<WorldEntityId> finishOrder,
         RacePreparationCheckpoint? racePreparation)
     {
         List<string> headlines = new()
@@ -91,9 +98,9 @@ public static class RaceOutcomeQueries
         };
 
         IReadOnlyList<SquadSeat> seats = CareerRaceBinder.Seats(world, racePreparation?.Assignments);
-        foreach (SquadSeat seat in seats.OrderBy(seat => Place(world.LastRace!.FinishOrder, seat.RiderId)))
+        foreach (SquadSeat seat in seats.OrderBy(seat => Place(finishOrder, seat.RiderId)))
         {
-            int place = Place(world.LastRace.FinishOrder, seat.RiderId);
+            int place = Place(finishOrder, seat.RiderId);
             headlines.Add(string.Create(
                 CultureInfo.InvariantCulture,
                 $"{seat.Name} ({seat.Role}) — {place}. miejsce."));
