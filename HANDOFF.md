@@ -78,7 +78,13 @@ Skeleton career has 12 named riders, 3 teams, manager off the roster. A 12-day s
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task
-`D-035 step 3 — owner watches a stage.` Does the story stick, does the decision have two outcomes, do they want another. Tests do not close this. §49 stays `NOT VERIFIED`. Step 7 (more race decisions) waits on that watch. Do not add dossier, transfers, sponsors, market AI, GC leader, avatars, or radio/DS.
+`D-035 step 3 — owner watches a stage.` Open `src/Peloton.Client.Godot` (main scene is the Hub). Advance Day to the Opening Classic (day 4), check seats on the four, Race next / Open Watch, film at 2 minutes. Then answer:
+
+1. Does the story stick?
+2. Does the radio decision have two real outcomes?
+3. Do you want another decision in the same race?
+
+Tests do not close this. §49 stays `NOT VERIFIED`. Taste flag while watching: the manager is **Adam Wroński** (not a rider) — keep or rename. If watch is good, sequence 7 (more race decisions) is next. Do not glue on physiology. Do not add dossier, transfers, sponsors, market AI, GC leader, avatars, or radio/DS.
 
 ## Known blockers
 - None.

@@ -160,6 +160,10 @@ public sealed class SqliteWorldSaveStoreTests
         RacePreparationCheckpoint plan = Assert.IsType<RacePreparationCheckpoint>(stored.RacePreparation);
         Assert.Equal("race-scenario.peloton.prototype-v0", plan.RaceScenarioId);
         Assert.True(plan.PlanConfirmed);
+        Assert.Equal(4, plan.Assignments!.Count);
+        Assert.Equal(1, plan.Assignments.Count(assignment => assignment.Role == SquadRoles.Leader));
+        Assert.Equal(1, plan.Assignments.Count(assignment => assignment.Role == SquadRoles.Card));
+        Assert.Equal(source.RacePreparation, plan);
         Assert.Equal(worldChecksum, WorldChecksum.Compute(stored.World));
 
         GameApplication loaded = CreateApplication();

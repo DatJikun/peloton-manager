@@ -66,7 +66,8 @@ public sealed class CareerHubHostTests
         Assert.True(host.OpenWatch().Succeeded);
         Assert.Equal(GameState.RaceLive, host.State);
         Assert.NotNull(host.Watch);
-        Assert.Contains(host.Watch!.Interpolated!.Riders, rider => rider.Name == "Dawid Rutka");
+        Assert.Contains(host.Watch!.Interpolated!.Riders, rider => rider.Name == "Piotr Kowalczyk");
+        Assert.All(host.Watch.Interpolated.Riders, rider => Assert.False(string.IsNullOrWhiteSpace(rider.Name)));
     }
 
     private static void AdvanceToRaceDue(CareerHubHost host)

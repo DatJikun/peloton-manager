@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Peloton.Domain;
 
@@ -47,4 +48,56 @@ public sealed record RacePreparationProjection(
 public sealed record RacePreparationCheckpoint(
     string RaceScenarioId,
     bool PlanConfirmed,
-    IReadOnlyList<SquadAssignment>? Assignments = null);
+    IReadOnlyList<SquadAssignment>? Assignments = null)
+{
+    public bool Equals(RacePreparationCheckpoint? other)
+    {
+        if (other is null)
+        {
+            return false;
+        }
+
+        if (!string.Equals(RaceScenarioId, other.RaceScenarioId, StringComparison.Ordinal) ||
+            PlanConfirmed != other.PlanConfirmed)
+        {
+            return false;
+        }
+
+        return AssignmentsEqual(Assignments, other.Assignments);
+    }
+
+    public override int GetHashCode()
+    {
+        HashCode hash = new();
+        hash.Add(RaceScenarioId, StringComparer.Ordinal);
+        hash.Add(PlanConfirmed);
+        foreach (SquadAssignment assignment in Assignments ?? Array.Empty<SquadAssignment>())
+        {
+            hash.Add(assignment);
+        }
+
+        return hash.ToHashCode();
+    }
+
+    private static bool AssignmentsEqual(
+        IReadOnlyList<SquadAssignment>? left,
+        IReadOnlyList<SquadAssignment>? right)
+    {
+        IReadOnlyList<SquadAssignment> first = left ?? Array.Empty<SquadAssignment>();
+        IReadOnlyList<SquadAssignment> second = right ?? Array.Empty<SquadAssignment>();
+        if (first.Count != second.Count)
+        {
+            return false;
+        }
+
+        for (int index = 0; index < first.Count; index++)
+        {
+            if (first[index] != second[index])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+}
