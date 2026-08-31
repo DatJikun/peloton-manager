@@ -1,0 +1,17 @@
+{
+  "packId": "peloton.wt-2026",
+  "packVersion": "0.1.0-draft",
+  "contentSchemaVersion": 1,
+  "notes": "Draft WorldTour 2026 identities. Not referenced by scenario.peloton.skeleton. Physiology/wages/budgets are estimated gameplay bands.",
+  "resources": [
+    {
+      "kind": "organizations",
+      "path": "organizations.json"
+    },
+    {
+      "kind": "calendar",
+      "path": "calendar.json"
+    }
+  ],
+  "dependencies": []
+}
