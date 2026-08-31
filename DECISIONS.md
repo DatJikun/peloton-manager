@@ -130,3 +130,17 @@ Headless komenda `watch` jest na razie skrótem decyzji (start / pauza / meta), 
 On a race-due day the Hub primary time-progress control relabels to **Race next** and enters `RacePreparationFlow`. Inbox remains a queue of items and does not launch the race.
 
 Normal Hub primary action stays **Advance Day** (D-006). The `AdvanceDay` command still cannot skip a due race. Race next only opens preparation; starting the race remains a later prep-menu command.
+
+## D-035 — Sequential core-loop build order
+Jedna rzecz na raz. Skład → oglądanie → kalendarz → Hub. Nie równolegle baza zawodników + negocjacje + native HTML.
+
+1. **Posprzątać Watch.** Wpuścić czas filmu i trasę. Radio/DS osobno, tylko jeśli po oglądaniu właściciel chce. Stare PR-y kariery (Hub/inbox/debrief) olewać — to już w `main`.
+2. **Kadra świata.** 12 nazwanych kolarzy, 3 ekipy, wyścig z ludzi kariery. Manager osobno. Bez transferów. `race` CLI zostaje ze starym goldenem.
+3. **Właściciel ogląda etap.** Czy historia się klei, czy decyzja ma dwa wyjścia, czy chce kolejny. Testy tego nie zamykają. §49 zostaje `NOT VERIFIED` aż właściciel powie.
+4. **Kalendarz 2–3 wyścigów.** Nie jeden co 12 dni. Inne ekipy też jadą.
+5. **Hub w Godocie, cienki.** Advance Day, Race next, skrzynka, wejście w Watch. Wygląd z labu, nie KPI dashboard.
+6. **Przygotowanie z czwórki.** Kogo stawiasz, po co.
+7. **Więcej decyzji w wyścigu.** Tylko jeśli punkt 3 wypadł dobrze. Nie doklejać fizjologii.
+8. **Potem, nie teraz.** Dossier/agent, transfery, sponsorzy, AI na rynku, lider GC (`D-032`), awatarzy na oko właściciela.
+
+Kolejny krok zaczyna się dopiero gdy poprzedni wylądował. Radio/DS (PR #25) nie wchodzi w krok 1. Godot Hub / look-lab (PR #27, #28) czekają na krok 5.

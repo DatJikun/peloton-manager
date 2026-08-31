@@ -1423,7 +1423,8 @@ There is one canonical race engine.
 
 - renderer receives race ViewState (route, rider positions, speeds, observed gaps),
 - simulation can pause on human DecisionRequest,
-- speeds may include ×1 / ×2 / ×5 / ×20 (`D-033`): the watch clock is supervisory
+- Godot Watch picks film duration (30 s–5 min, default 2 min) and derives rate;
+  headless CLI still uses ×1 / ×2 / ×5 / ×20 (`D-033`): the watch clock is supervisory
   and simulation stays continuous so map icons follow actual speed,
 - renderer may interpolate between physics steps for smoothness,
 - renderer does not drive physics and must not teleport riders across quiet time.

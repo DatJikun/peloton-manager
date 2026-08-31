@@ -36,7 +36,9 @@ When proposing a change, explain the problem it solves and which current decisio
 
 ## Current priorities
 
-Still pre-production. `UI_SITEMAP_v0.1.md`, `GAME_STATES_v0.1.md`, and `DATA_MODEL_v0.1.md` exist as DRAFT documents. Race Engine Design v0.2 exists from cycling research. Review the draft contracts and continue the remaining pre-code documentation gate before a small headless Race Engine prototype/spike. Do not begin broad gameplay implementation yet.
+Core loop follows `D-035` in `DECISIONS.md`: one thing at a time. Roster → watching → calendar → Hub. Do not parallelize rider database, negotiations, and native HTML.
+
+This tree is step 1 (Watch film duration + route). Next is step 2 (12 named riders, 3 teams). Owner §49 playtest is step 3 and is not closed by tests. Radio/DS, Godot Hub, transfers, sponsors, and avatars wait.
 
 ## Core invariants
 
@@ -55,6 +57,7 @@ Still pre-production. `UI_SITEMAP_v0.1.md`, `GAME_STATES_v0.1.md`, and `DATA_MOD
 - Race gameplay must contain meaningful decisions; realism does not excuse boredom.
 - Race dropping is emergent from required power, realizable power, gaps and shelter; no generic stamina-zero rule.
 - Race decisions use observations/interpretations, not hidden physiological truth.
+- Core-loop work follows `D-035`: one step at a time (Watch film+route → roster → owner watch → calendar → Hub).
 
 
 ## Before writing code

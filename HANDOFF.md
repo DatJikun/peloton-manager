@@ -10,13 +10,13 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`Watch Race on Godot (D-033)`
+`D-035 sequential core loop — step 1 Watch film + route`
 
 ### Goal
-First playable Watch Race window: prep → Confirm → `StartRaceCommand` → D-033 supervising clock, interpolated map icons, decision pause, Results from `LastRace`. Do not close §49.
+Clean the existing Watch window: film duration plus a readable route profile. Then stop. Next tree is world roster (step 2). Do not close §49.
 
 ### Status
-Godot Watch Race is a presentation client over the existing Application clock. Open `src/Peloton.Client.Godot/project.godot` in Godot 4.4 .NET. The player confirms prep, picks a film length (30 s / 1 min / 2 min default / 3 min / 5 min), watches focal-rider icons interpolate along a library-backed route profile, answers a knowledge-bounded decision (or the DS default), and sees the official winner from `LastRace`. Renderer does not drive physics. Career shell is not in this window. HTML lab (`08e` / `14-race.html`) stays a look reference, not the game. Headless CLI is unchanged and still uses ×1 / ×2 / ×5 / ×20. §49 remains `NOT VERIFIED`. `D-032` remains deferred. SchemaVersion remains 1.
+Godot Watch Race is a presentation client over the existing Application clock. Open `src/Peloton.Client.Godot/project.godot` in Godot 4.4 .NET. The player confirms prep, picks a film length (30 s / 1 min / 2 min default / 3 min / 5 min), watches focal-rider icons interpolate along a library-backed route profile, answers a knowledge-bounded decision (or the DS default), and sees the official winner from `LastRace`. Renderer does not drive physics. Career shell is not in this window. HTML lab (`08e` / `14-race.html`) stays a look reference, not the game. Headless CLI is unchanged and still uses ×1 / ×2 / ×5 / ×20. §49 remains `NOT VERIFIED`. `D-032` remains deferred. SchemaVersion remains 1. Build order is `D-035`: one step at a time.
 
 ## What works now
 - [x] High-level game design v0.7
@@ -75,7 +75,7 @@ Godot Watch Race is a presentation client over the existing Application clock. O
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task
-`Owner §49 playtest of Godot Watch Race. Do not close §49 with automations. Do not implement D-032. Do not build the rejected Career Hub.`
+`D-035 step 2 — world roster: 12 named riders, 3 teams, race from career people. Manager separate. No transfers. Keep the race CLI golden. Do not start calendar, Godot Hub, radio/DS, or more race decisions.`
 
 ## Known blockers
 - None.
@@ -133,6 +133,7 @@ dostał powiadomienie.
 - `2026-08-26` — W wieloetapowym wyścigu słaby wyznaczony lider, który nie ma już realistycznych szans, powinien wspierać kolegę z najlepszymi pozostałymi szansami. Ocena knowledge-bounded; AI też podejmuje tę decyzję, czasem dobrze, czasem źle, zależnie od cech (np. teamwork / `formSensitivity` / `leaderLoyalty`). `D-032`, deferred poza obecnym race prototype.
 - `2026-08-26` — Wstępny playtest §49: decyzje prototypu „póki co chyba tak”, jeśli oglądanie nie jest godzinami 1:1. Doprecyzowanie: zegar oglądania nadzoruje, symulacja jest płynna (mapa/ikony z prędkości), nie skok 1s=100s. `D-033`. Gate niezamknięty (brak UI).
 - `2026-08-26` — Skrzynka nie otwiera wyścigu. Na dniu wyścigu główny guzik postępu (Advance Day) zmienia nazwę na Race next i wchodzi w menu przygotowania. `D-034`.
+- `2026-08-31` — Kolejność core loopu: jedna rzecz na raz. Skład → oglądanie → kalendarz → Hub. Radio/DS tylko po oglądaniu, jeśli właściciel chce. Stare PR-y kariery olewać (już w `main`). Potem, nie teraz: dossier, transfery, sponsorzy, AI rynku, lider GC, awatarzy. `D-035`.
 
 ## Owner feedback / project experience
 Wcześniejszy Ping-Pong Manager był rozwijany przez miesiące z AI i technicznie osiągnął sporo, ale ostatecznie główny gameplay okazał się nudny, ponieważ w trakcie meczu brakowało ciekawych decyzji. W Peloton Managerze jest to jawna lekcja projektowa: nie budować kolejnych warstw na pętli, która nie przeszła ręcznego testu fun/decision density.
@@ -140,6 +141,8 @@ Wcześniejszy Ping-Pong Manager był rozwijany przez miesiące z AI i techniczni
 2026-08-26: właściciel uznał dwie decyzje prototypu (pościg vs czekanie na rywali) za wstępnie ciekawe. Oglądanie ma być płynnym filmem z nadzorującym zegarem i ikonami według prędkości, nie highlightem ze skokami czasu. Nie zamyka to §49.
 
 2026-08-28: po pierwszym Watch w Godot — etap za szybki, trasa kanciasta i bez szczegółów. Czas filmu zamiast ×N. Profile nie tylko gładsze: baza ~3 kształtów na rodzaj terenu (płasko, podjazd, zjazd, faliste, wiatr/węższa jezdnia) i generator, który z nich składa mapę. Fizyka prototypu zostaje na 3 grubych segmentach, żeby nie ruszać goldenu.
+
+2026-08-31: właściciel zablokował kolejność. Najpierw posprzątać Watch (czas filmu + trasa). Potem kadra świata, dopiero wtedy oglądanie. Kalendarz 2–3 wyścigów, cienki Hub w Godocie, przygotowanie z czwórki — później, po kolei. Nie równolegle. `D-035`.
 
 ## Relevant docs
 ```text
@@ -197,7 +200,7 @@ src/Peloton.Client.Godot/project.godot
 
 ## Things the next AI must NOT do
 - Nie traktuj race prototype jako ukończonego `RACE_ENGINE_DESIGN_v0.2.md`; przeczytaj `KNOWN_DIFFERENCE_FROM_CODE.md`.
-- Nie twierdź, że §49 fun gate przeszedł; Godot Watch istnieje, ale właściciel musi oglądać ręcznie.
+- Nie twierdź, że §49 fun gate przeszedł; Godot Watch istnieje, ale właściciel musi oglądać ręcznie. Testy tego nie zamykają.
 - Nie przywracaj `StubRaceEngine` jako źródła oficjalnych wyników.
 - Nie przenoś logiki gameplayowej do Godot UI.
 - Nie twórz `new Random()` w systemach gameplayowych.
@@ -205,9 +208,15 @@ src/Peloton.Client.Godot/project.godot
 - Nie traktuj starych dokumentów jako aktualnych bez sprawdzenia statusu.
 - Nie rozszerzaj scope'u taska bez wskazania PLAYER VALUE.
 - Nie zamykaj OQ-TS-001 ani OQ-DM-001 na podstawie checksumy lub allocatora szkieletowego.
+- Nie skacz po `D-035`. Jedna rzecz na raz. Po tym drzewie następna jest kadra świata, nie kalendarz, nie Hub, nie radio/DS.
+- Nie wpuszczaj PR #25 (radio/DS board) dopóki właściciel nie obejrzy etapu i nie poprosi.
+- Nie wracaj do starych PR-ów kariery #13–#16 (Hub/inbox/debrief) — to już w `main`.
+- Nie buduj teraz dossier/agenta, transferów, sponsorów, AI na rynku, lidera GC ani awatarów na oko.
+- Nie rób równolegle „baza zawodników + negocjacje + native HTML”.
+- Nie ruszaj goldenu `race` CLI przy kadrze świata.
 
 ## Handoff summary
-Milestone 0 still supplies the headless .NET 8 spine. The race prototype is the official result path: `PrototypeRaceEngine` plus `content/peloton.race-prototype`, Application commands `StartRaceCommand` / `AdvanceRaceCommand` / `RespondToRaceDecisionCommand` / `BeginRaceWatchCommand` / `AdvanceRaceWatchCommand` / `AbandonRaceLiveCommand`, and SimRunner `race`. A pending DecisionRequest stays in `RaceLive`. SimRunner `watch` and career `day --watch-from-prep` keep the D-033 supervising clock. Godot Watch Race (`src/Peloton.Client.Godot`) is presentation only: it issues those commands, interpolates `RaceWatch` snapshots, and shows Results from `LastRace`. Visible in Godot: prep confirm, film duration, library-backed route profile, moving icons, decision pause, winner. Still CLI-only: Hub/inbox/calendar, 10-year soak, standalone `watch` markdown, Simulate-from-prep. After Simulate/Watch, `RaceResultProjection` and `RaceDebriefProjection` present the committed result without a second `RunBatch`. Spy OFF/ON must match checksum and finish order. `StubRaceEngine` is gone from production assemblies. SQLite `SchemaVersion` remains 1. Owner §49 remains `NOT VERIFIED`. `D-032` is deferred.
+Milestone 0 still supplies the headless .NET 8 spine. The race prototype is the official result path: `PrototypeRaceEngine` plus `content/peloton.race-prototype`, Application commands `StartRaceCommand` / `AdvanceRaceCommand` / `RespondToRaceDecisionCommand` / `BeginRaceWatchCommand` / `AdvanceRaceWatchCommand` / `AbandonRaceLiveCommand`, and SimRunner `race`. A pending DecisionRequest stays in `RaceLive`. SimRunner `watch` and career `day --watch-from-prep` keep the D-033 supervising clock. Godot Watch Race (`src/Peloton.Client.Godot`) is presentation only: it issues those commands, interpolates `RaceWatch` snapshots, and shows Results from `LastRace`. Visible in Godot: prep confirm, film duration, library-backed route profile, moving icons, decision pause, winner. Still CLI-only: Hub/inbox/calendar, 10-year soak, standalone `watch` markdown, Simulate-from-prep. After Simulate/Watch, `RaceResultProjection` and `RaceDebriefProjection` present the committed result without a second `RunBatch`. Spy OFF/ON must match checksum and finish order. `StubRaceEngine` is gone from production assemblies. SQLite `SchemaVersion` remains 1. Owner §49 remains `NOT VERIFIED`. `D-032` is deferred. Core-loop order is `D-035`: this tree is Watch film + route only; next is world roster.
 
 This tree joins that career loop onto `main` without dropping the HTML UI lab. The paragraph below preserves the pre-bootstrap design context and owner lessons; implementation status is given above and in `CODEBASE_MAP.md`.
 
@@ -231,3 +240,4 @@ Peloton Manager jest na etapie pre-production. Celem jest modularny, determinist
 - `2026-08-27` — Właściciel kazał złączyć pętlę kariery z `main`. Jedno drzewo: PrototypeRaceEngine + Hub/inbox/prep/Watch razem z HTML labem (`08e` / `10` / `12` / `14-race.html`). Godot Watch i §49 nadal otwarte.
 - `2026-08-28` — Pierwszy Watch Race w Godot (D-033): okno oglądania etapu, nie Career Hub. §49 nadal `NOT VERIFIED`.
 - `2026-08-28` — Watch: czas filmu (domyślnie 2 min) zamiast ×N w Godot; mapa z biblioteki profili (3 warianty na rodzaj terenu) i generatora. CLI nadal ×1/×2/×5/×20. Fizyka prototypu bez zmiany goldenu.
+- `2026-08-31` — `D-035`: kolejność core loopu zablokowana. To drzewo wpuszcza krok 1 (czas filmu + trasa). Radio/DS, kalendarz, Hub Godot, kadra i reszta czekają na swoje kroki. Stare PR-y kariery olewać.
