@@ -62,7 +62,7 @@ public sealed class CareerWorldTourPhase4Tests
     }
 
     [Fact]
-    public void SchemaVersionFourRoundTripsContractsWagesLoyaltyAndNullableOrganization()
+    public void SchemaVersionFiveRoundTripsContractsWagesLoyaltyAndNullableOrganization()
     {
         using TemporaryDirectory temp = new();
         string savePath = Path.Combine(temp.Path, "career-contracts.peloton");

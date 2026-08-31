@@ -239,7 +239,7 @@ public static class CareerDayCommand
                                 }
 
                                 CommandResult simulate = application.Execute(new SimulateRaceCommand(
-                                    PrototypeRaceScenarioId));
+                                    ResolveCurrentRaceContentId(application)));
                                 if (!simulate.Succeeded)
                                 {
                                     return 1;
@@ -283,6 +283,9 @@ public static class CareerDayCommand
         return 0;
     }
 
+    private static string ResolveCurrentRaceContentId(GameApplication application) =>
+        application.World?.TryGetTodaysRaceContentId() ?? PrototypeRaceScenarioId;
+
     private static CommandResult RunSkeletonRace(GameApplication application, string autosaveDirectory)
     {
         Directory.CreateDirectory(autosaveDirectory);
@@ -298,7 +301,8 @@ public static class CareerDayCommand
             return confirm;
         }
 
-        CommandResult simulate = application.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId));
+        CommandResult simulate = application.Execute(new SimulateRaceCommand(
+            ResolveCurrentRaceContentId(application)));
         if (!simulate.Succeeded)
         {
             return simulate;
@@ -328,7 +332,7 @@ public static class CareerDayCommand
         Directory.CreateDirectory(autosaveDirectory);
         CommandResult start = application.Execute(new StartRaceCommand(
             Path.Combine(autosaveDirectory, "watch-pre-race.peloton"),
-            PrototypeRaceScenarioId));
+            ResolveCurrentRaceContentId(application)));
         if (!start.Succeeded)
         {
             return 1;

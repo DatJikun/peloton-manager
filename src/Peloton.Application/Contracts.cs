@@ -3,7 +3,18 @@ using Peloton.Domain;
 
 namespace Peloton.Application;
 
-public sealed record OrganizationDefinition(string Id, string Name);
+public sealed record OrganizationDefinition(
+    string Id,
+    string Name,
+    string Country = "",
+    string Division = "Skeleton",
+    int LicenceYearsRemaining = 0,
+    string TitleSponsor = "",
+    string Bike = "",
+    string Groupset = "",
+    long EstimatedBudgetEur = 0);
+
+public sealed record CalendarRaceDefinition(string Id, string Name, int DayNumber);
 
 public sealed record TeamRaceMappingDefinition(string OrganizationId, string RaceTeamId);
 
@@ -28,7 +39,9 @@ public sealed record RiderDefinition(
     double TacticalAwareness,
     int AnnualWage,
     int ContractEndDay,
-    double Loyalty01 = 0.5);
+    double Loyalty01 = 0.5,
+    string? Nationality = null,
+    int? BirthYear = null);
 
 public sealed record WorldRecipe(
     ContentIdentity ContentIdentity,
@@ -37,7 +50,10 @@ public sealed record WorldRecipe(
     IReadOnlyList<OrganizationDefinition> Organizations,
     IReadOnlyList<TeamRaceMappingDefinition> TeamRaceMappings,
     IReadOnlyList<RiderDefinition> Riders,
-    ManagerDefinition Manager);
+    ManagerDefinition Manager,
+    IReadOnlyList<CalendarRaceDefinition> CalendarRaces,
+    bool GeneratePeriodicRaces,
+    string DefaultRaceTemplateId);
 
 public interface IScenarioCatalog
 {

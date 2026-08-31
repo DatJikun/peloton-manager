@@ -13,7 +13,7 @@ namespace Peloton.Persistence;
 
 public sealed class SqliteWorldSaveStore : IWorldSaveStore
 {
-    public const int SchemaVersion = 4;
+    public const int SchemaVersion = 5;
 
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
 
@@ -256,9 +256,27 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         WorldEntityId Id,
         string OriginDefinitionId,
         string Name,
-        int DaysSimulated)
+        int DaysSimulated,
+        string Country = "",
+        string Division = "Skeleton",
+        int LicenceYearsRemaining = 0,
+        string TitleSponsor = "",
+        string Bike = "",
+        string Groupset = "",
+        long EstimatedBudgetEur = 0)
     {
-        public Organization ToDomain() => new(Id, OriginDefinitionId, Name, DaysSimulated);
+        public Organization ToDomain() => new(
+            Id,
+            OriginDefinitionId,
+            Name,
+            DaysSimulated,
+            Country,
+            Division,
+            LicenceYearsRemaining,
+            TitleSponsor,
+            Bike,
+            Groupset,
+            EstimatedBudgetEur);
     }
 
     private sealed record RaceDto(
@@ -432,7 +450,8 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         IReadOnlyList<CalendarEntryDto>? CalendarEntries = null,
         IReadOnlyList<RiderCareerDto>? RiderCareers = null,
         IReadOnlyList<OrganizationRaceEntryDto>? OrganizationRaceEntries = null,
-        IReadOnlyList<RiderContractDto>? RiderContracts = null)
+        IReadOnlyList<RiderContractDto>? RiderContracts = null,
+        bool GeneratePeriodicRaces = true)
     {
         public static WorldSnapshotDto FromDomain(WorldState world)
         {
@@ -453,7 +472,14 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                         organization.Id,
                         organization.OriginDefinitionId,
                         organization.Name,
-                        organization.DaysSimulated))
+                        organization.DaysSimulated,
+                        organization.Country,
+                        organization.Division,
+                        organization.LicenceYearsRemaining,
+                        organization.TitleSponsor,
+                        organization.Bike,
+                        organization.Groupset,
+                        organization.EstimatedBudgetEur))
                     .ToArray(),
                 world.DecisionAuthorities.ToArray(),
                 world.RaceCount,
@@ -480,7 +506,8 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                 world.OrganizationRaceEntries
                     .Select(OrganizationRaceEntryDto.FromDomain)
                     .ToArray(),
-                world.RiderContracts.Select(RiderContractDto.FromDomain).ToArray());
+                world.RiderContracts.Select(RiderContractDto.FromDomain).ToArray(),
+                world.GeneratePeriodicRaces);
         }
 
         public WorldState ToDomain()
@@ -511,7 +538,8 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                 (OrganizationRaceEntries ?? Array.Empty<OrganizationRaceEntryDto>())
                     .Select(entry => entry.ToDomain()),
                 (RiderContracts ?? Array.Empty<RiderContractDto>())
-                    .Select(contract => contract.ToDomain()));
+                    .Select(contract => contract.ToDomain()),
+                GeneratePeriodicRaces);
         }
     }
 }

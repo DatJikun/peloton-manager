@@ -64,7 +64,8 @@ public sealed class WorldState
         IEnumerable<CalendarEntry>? calendarEntries = null,
         IEnumerable<RiderCareer>? riderCareers = null,
         IEnumerable<OrganizationRaceEntry>? organizationRaceEntries = null,
-        IEnumerable<RiderContract>? riderContracts = null)
+        IEnumerable<RiderContract>? riderContracts = null,
+        bool generatePeriodicRaces = true)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(worldId);
         ArgumentNullException.ThrowIfNull(contentIdentity);
@@ -104,6 +105,7 @@ public sealed class WorldState
         this.riderContracts = (riderContracts ?? Array.Empty<RiderContract>())
             .OrderBy(contract => contract.Id.Value)
             .ToList();
+        GeneratePeriodicRaces = generatePeriodicRaces;
     }
 
     public string WorldId { get; }
@@ -150,6 +152,8 @@ public sealed class WorldState
 
     public IReadOnlyList<RiderContract> RiderContracts => riderContracts;
 
+    public bool GeneratePeriodicRaces { get; }
+
     public RiderCareer? TryGetRiderCareer(WorldEntityId riderCareerId) =>
         riderCareers.FirstOrDefault(career => career.Id == riderCareerId);
 
@@ -161,8 +165,10 @@ public sealed class WorldState
 
     public bool IsCalendarRaceDue =>
         CurrentDate.DayNumber > 0 &&
-        CurrentDate.DayNumber % CalendarPeriodDays == 0 &&
-        LastCompletedRaceDay != CurrentDate.DayNumber;
+        calendarEntries.Any(entry =>
+            entry.Kind == CalendarEntryKind.Race &&
+            entry.DayNumber == CurrentDate.DayNumber &&
+            LastCompletedRaceDay != CurrentDate.DayNumber);
 
     public bool IsRaceDue => IsCalendarRaceDue;
 
@@ -229,7 +235,15 @@ public sealed class WorldState
                 return CurrentDate.DayNumber;
             }
 
-            return ((CurrentDate.DayNumber / CalendarPeriodDays) + 1) * CalendarPeriodDays;
+            CalendarEntry? nextEntry = calendarEntries
+                .Where(entry =>
+                    entry.Kind == CalendarEntryKind.Race &&
+                    entry.DayNumber >= CurrentDate.DayNumber &&
+                    LastCompletedRaceDay < entry.DayNumber)
+                .OrderBy(entry => entry.DayNumber)
+                .ThenBy(entry => entry.Id.Value)
+                .FirstOrDefault();
+            return nextEntry?.DayNumber ?? CurrentDate.DayNumber;
         }
     }
 
@@ -327,7 +341,10 @@ public sealed class WorldState
                 raceContentId);
         }
 
-        EnsureUpcomingRaceEntry(raceContentId);
+        if (GeneratePeriodicRaces)
+        {
+            EnsureUpcomingRaceEntry(raceContentId);
+        }
     }
 
     public bool AcknowledgeRaceResult(WorldEntityId entryId)
@@ -350,7 +367,16 @@ public sealed class WorldState
 
     public void EnsureUpcomingRaceEntry(string? raceContentId = null)
     {
-        int nextRaceDay = NextRaceDayNumber;
+        if (!GeneratePeriodicRaces)
+        {
+            return;
+        }
+
+        int nextRaceDay = calendarEntries
+            .Where(entry => entry.Kind == CalendarEntryKind.Race && entry.DayNumber > CurrentDate.DayNumber)
+            .Select(entry => entry.DayNumber)
+            .DefaultIfEmpty(((CurrentDate.DayNumber / CalendarPeriodDays) + 1) * CalendarPeriodDays)
+            .Min();
         if (calendarEntries.Any(entry => entry.DayNumber == nextRaceDay))
         {
             return;

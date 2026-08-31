@@ -25,9 +25,9 @@ This is an explicit prototype boundary, not an accepted simplification of the fu
 - `RiderCareer.Id` is the official race `RiderId`; `LastRace` finish order and `RiderCareerResult` history use those world IDs.
 - `CreateWorld` materializes riders from `content/peloton.skeleton/skeleton-roster.json` (stable `OriginDefinitionId`s from the prototype pack).
 - Prep squad is the player employer's world roster (`RiderCareer.OrganizationId`; null = unattached).
-- SQLite `SchemaVersion` is **4** and includes `RiderCareer`, `RiderContract`, results, and `OrganizationRaceEntry`. Schema 1–3 saves may refuse to load.
-- World checksum label is `peloton-world-checksum-v4` (ten-season golden checksums changed again from v3).
-- `CalendarEntry.RaceContentId` stores the route/tuning scenario id.
+- SQLite `SchemaVersion` is **5** and includes `RiderCareer`, `RiderContract`, results, `OrganizationRaceEntry`, org metadata, and person nationality/birth year. Schema 1–4 saves may refuse to load.
+- World checksum label is `peloton-world-checksum-v5`.
+- `CalendarEntry.RaceContentId` stores the calendar race id (`race.wt2026.*` for WT; route template resolved via `DefaultRaceTemplateId`).
 
 Phase 1 out of scope (now landed in phase 3 headless): pre-season picker and strategy step are implemented as commands; Godot UI for them is still out of scope. Remaining: 2026 WT pack wired to `CreateWorld`, Career Hub.
 
@@ -47,9 +47,17 @@ Phase 1 out of scope (now landed in phase 3 headless): pre-season picker and str
 - `ClubRosterProjection` exposes employer roster wages, contract end day, and loyalty (headless only).
 - World checksum label is `peloton-world-checksum-v4`. Schema 3 saves may refuse to load.
 
-Phase 5 specified (not in code yet): `scenario.peloton.wt-2026` CreateWorld, thin 4-rider squads, 12-starter prototype cap, calendar-from-content, SchemaVersion 5. Route geometry remains the synthetic proof circuit.
+## WorldTour 2026 pack (D-036 phase 5 landed)
 
-Phase 5+ out of scope: transfer market, 150-rider pelotons, real cobble profiles, AI managers, D-032, tenth GameState.
+- `scenario.peloton.wt-2026` CreateWorld: 18 orgs, 72 thin 4-rider squads, 36 content calendar races, employer Alpecin.
+- Physiology, wages, and budgets are estimated gameplay bands (`content/peloton.wt-2026/README.md`).
+- Official start lists capped at **12 riders** (prototype engine limit); not a UCI field size.
+- Route geometry remains the **synthetic proof circuit** (`race-scenario.peloton.prototype-v0`); WT `RaceContentId` values map to that template at assemble time.
+- `GeneratePeriodicRaces` is false for WT; skeleton keeps periodic race generation.
+- Race-due uses calendar entries, not `day % CalendarPeriodDays`.
+- SQLite SchemaVersion **5** / checksum `peloton-world-checksum-v5`. Skeleton worlds also save as v5.
+
+Phase 6 out of scope: thin club cash / title-sponsor economy.
 
 ## Day state (D-036 phase 2 landed)
 

@@ -197,6 +197,8 @@ Person
     PersonId
     OriginDefinitionId?
     identity/profile references
+    Nationality?                // ISO3; WT pack phase 5
+    BirthYear?                  // WT pack phase 5; not a full lifecycle date
     birth/death or lifecycle dates where applicable
     lifecycle status
 ```

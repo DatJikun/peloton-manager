@@ -16,7 +16,7 @@
 The people in the club are the people who race. Results become career history. Then form-on-day, pre-season race picks, pre-race strategy, contracts, and a 2026 WorldTour content pack. Do not close §49 with automations. Do not build Career Hub.
 
 ### Status
-Owner (player) directed the slice on 2026-08-31 (D-036–D-042). **Phase 1 world–race bind landed** (2026-08-31): career `RiderCareer` rows are the official start list; SchemaVersion 2; see `KNOWN_DIFFERENCE_FROM_CODE.md`. **Phase 2 day state landed** (2026-08-31): rest tick on Advance Day, race load on `RecordRace`, readiness-scaled CP/Pmax in `WorldRaceScenarioAssembler`; tests in `CareerWorldTourPhase2Tests`. **Phase 3 planning windows landed** (2026-08-31): `OrganizationRaceEntry`, pre-season draft/confirm/cancel, pre-race `SetRacePreparationStrategyCommand`, delegated auto-sim on skipped race days, SQLite SchemaVersion 3; tests in `CareerWorldTourPhase3Tests`. **Phase 4 contracts landed** (2026-08-31): `RiderContract` wage/expiry, nullable `RiderCareer.OrganizationId`, `ClubRosterProjection`, SQLite SchemaVersion 4; tests in `CareerWorldTourPhase4Tests`.
+Owner (player) directed the slice on 2026-08-31 (D-036–D-042). **Phase 1 world–race bind landed** (2026-08-31): career `RiderCareer` rows are the official start list; SchemaVersion 2; see `KNOWN_DIFFERENCE_FROM_CODE.md`. **Phase 2 day state landed** (2026-08-31): rest tick on Advance Day, race load on `RecordRace`, readiness-scaled CP/Pmax in `WorldRaceScenarioAssembler`; tests in `CareerWorldTourPhase2Tests`. **Phase 3 planning windows landed** (2026-08-31): `OrganizationRaceEntry`, pre-season draft/confirm/cancel, pre-race `SetRacePreparationStrategyCommand`, delegated auto-sim on skipped race days, SQLite SchemaVersion 3; tests in `CareerWorldTourPhase3Tests`. **Phase 4 contracts landed** (2026-08-31): `RiderContract` wage/expiry, nullable `RiderCareer.OrganizationId`, `ClubRosterProjection`, SQLite SchemaVersion 4; tests in `CareerWorldTourPhase4Tests`. **Phase 5 WT pack landed** (2026-08-31): `scenario.peloton.wt-2026` CreateWorld, 18 orgs, 72 riders, 36-race calendar, 12-starter cap, `calendar-from-content`, SQLite SchemaVersion 5; tests in `CareerWorldTourPhase5Tests`.
 
 ## Gdzie jest gra (dla właściciela)
 Nie ma jeszcze pełnej gry managerskiej.
@@ -27,14 +27,14 @@ Działa:
 - wynik zapisuje się na karierze kolarza (`RiderCareerResult`);
 - Advance Day zmienia formę / świeżość / zmęczenie; wyścig używa readiness na CP/Pmax (faza 2);
 - przedsezonowy wybór startów (`PreSeasonPlanningFlow`) i strategia przed Confirm w prep (faza 3);
-- kontrakty kolarzy (`RiderContract`), wypłaty, wygaśnięcie i `ClubRosterProjection` (faza 4).
+- kontrakty kolarzy (`RiderContract`), wypłaty, wygaśnięcie i `ClubRosterProjection` (faza 4);
+- paczka WorldTour 2026 (`scenario.peloton.wt-2026`): 18 ekip, 72 kolarzy, kalendarz 36 wyścigów, cap 12 na starcie (faza 5).
 
 Właśnie budujemy:
-- paczkę WorldTour 2026 (faza 5).
+- cienką ekonomię (faza 6).
 
 Jeszcze nie:
 - nie ma scoutingu, sponsorów ani AI managerów;
-- kalendarz 2026 i 18 ekip WT leżą jako szkic treści, nie są podpięte do New Game;
 - nie ma Career Hub (odrzucony);
 - §49 nie jest zaliczone — to ręczny playtest właściciela.
 
@@ -104,11 +104,12 @@ Baza 2026: najpierw 18 ekip męskiego WorldTour. Liczby fizjologii i budżetów 
 - [x] Career WorldTour slice phase 2 — form / freshness / fatigue on Advance Day and in official races
 - [x] Career WorldTour slice phase 3 — pre-season entry + pre-race strategy (`OrganizationRaceEntry`, SchemaVersion 3)
 - [x] Career WorldTour slice phase 4 — rider contracts (`RiderContract`, `ClubRosterProjection`, SchemaVersion 4)
-- [ ] Career WorldTour slice phases 5–6 — WT pack, thin economy
+- [x] Career WorldTour slice phase 5 — WT 2026 pack (`scenario.peloton.wt-2026`, SchemaVersion 5, 12-rider cap)
+- [ ] Career WorldTour slice phase 6 — thin economy
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task
-`2026 WorldTour content pack (CAREER_WORLDTOUR_SLICE_v0.1.md phase 5). scenario.peloton.wt-2026 CreateWorld, thin 4-rider squads, 12-rider prototype cap, calendar-from-content. Keep skeleton as the 10-season soak. No tenth GameState. Do not close §49. Do not build Career Hub. Do not start AI managers.`
+`Thin club economy (CAREER_WORLDTOUR_SLICE_v0.1.md phase 6). Club cash, wage sum, one title sponsor. No tenth GameState. Do not close §49. Do not build Career Hub.`
 
 ## Known blockers
 - None.
@@ -128,6 +129,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
+- `2026-08-31` — **Phase 5 landed (Composer):** `scenario.peloton.wt-2026` CreateWorld, 18 orgs, 72 riders, 36-race calendar, 12-starter prototype cap, `calendar-from-content`, SchemaVersion 5 / checksum v5. Skeleton soak unchanged.
 - `2026-08-31` — **Phase 5 specified:** `scenario.peloton.wt-2026` CreateWorld, 18 orgs, thin 4-rider estimated squads, 36-race content calendar, prototype 12-starter cap, SchemaVersion 5. Skeleton soak stays.
 - `2026-08-31` — **Phase 4 landed (Composer):** `RiderContract` wage/expiry, nullable `RiderCareer.OrganizationId`, `ClubRosterProjection`, contract expiry on Advance Day, SQLite SchemaVersion 4 / checksum v4. Independently rechecked: 7/7 `CareerWorldTourPhase4` tests pass.
 - `2026-08-31` — **Phase 4 specified:** `RiderContract` (not manager `Employment`), wage + inclusive expiry, nullable club id, SchemaVersion 4. Loyalty stored/queried only. No transfer market this phase.

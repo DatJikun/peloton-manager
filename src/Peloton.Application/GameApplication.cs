@@ -903,7 +903,8 @@ public sealed class GameApplication
     {
         ArgumentNullException.ThrowIfNull(World);
         WorldRecipe recipe = scenarioCatalog.Resolve(World.ContentIdentity.ScenarioId);
-        RaceScenarioTemplate template = raceScenarioCatalog.ResolveTemplate(raceScenarioId);
+        string templateId = ResolveRouteTemplateId(raceScenarioId, recipe);
+        RaceScenarioTemplate template = raceScenarioCatalog.ResolveTemplate(templateId);
         RacePreparationStrategy? strategy = null;
         WorldEntityId? playerOrganizationId = null;
         if (includePlayerStrategy &&
@@ -925,6 +926,16 @@ public sealed class GameApplication
             raceScenarioId,
             strategy,
             playerOrganizationId);
+    }
+
+    private static string ResolveRouteTemplateId(string raceContentId, WorldRecipe recipe)
+    {
+        if (raceContentId.StartsWith("race.wt2026.", StringComparison.Ordinal))
+        {
+            return recipe.DefaultRaceTemplateId;
+        }
+
+        return raceContentId;
     }
 
     private string ResolvePreparationObjective(
@@ -990,7 +1001,17 @@ public sealed class GameApplication
         {
             WorldEntityId organizationId = allocator.Allocate();
             organizationIds[definition.Id] = organizationId;
-            organizations.Add(new Organization(organizationId, definition.Id, definition.Name));
+            organizations.Add(new Organization(
+                organizationId,
+                definition.Id,
+                definition.Name,
+                country: definition.Country,
+                division: definition.Division,
+                licenceYearsRemaining: definition.LicenceYearsRemaining,
+                titleSponsor: definition.TitleSponsor,
+                bike: definition.Bike,
+                groupset: definition.Groupset,
+                estimatedBudgetEur: definition.EstimatedBudgetEur));
         }
 
         List<Person> persons = new();
@@ -1004,7 +1025,12 @@ public sealed class GameApplication
             WorldEntityId riderCareerId = allocator.Allocate();
             WorldEntityId contractId = allocator.Allocate();
             WorldEntityId organizationId = organizationIds[definition.OrganizationId];
-            persons.Add(new Person(personId, definition.Name, definition.Id));
+            persons.Add(new Person(
+                personId,
+                definition.Name,
+                definition.Id,
+                definition.Nationality,
+                definition.BirthYear));
             riderCareers.Add(new RiderCareer(
                 riderCareerId,
                 personId,
@@ -1047,16 +1073,29 @@ public sealed class GameApplication
             null);
         DecisionAuthority authority = new(authorityId, DecisionAuthorityKind.HumanInput);
         int calendarPeriodDays = ReadCalendarPeriodDays(recipe);
-        WorldEntityId initialRaceEntryId = allocator.Allocate();
-        IReadOnlyList<CalendarEntry> calendarEntries = new[]
+        List<CalendarEntry> calendarEntries = new();
+        if (recipe.CalendarRaces.Count > 0)
         {
-            new CalendarEntry(
-                initialRaceEntryId,
+            foreach (CalendarRaceDefinition race in recipe.CalendarRaces)
+            {
+                calendarEntries.Add(new CalendarEntry(
+                    allocator.Allocate(),
+                    race.DayNumber,
+                    CalendarEntryKind.Race,
+                    race.Name,
+                    RaceContentId: race.Id));
+            }
+        }
+        else
+        {
+            calendarEntries.Add(new CalendarEntry(
+                allocator.Allocate(),
                 calendarPeriodDays,
                 CalendarEntryKind.Race,
                 "Skeleton race",
-                RaceContentId: RacePreparationDefaults.PrototypeScenarioId),
-        };
+                RaceContentId: RacePreparationDefaults.PrototypeScenarioId));
+        }
+
         List<OrganizationRaceEntry> organizationRaceEntries = new();
         foreach (Organization organization in organizations)
         {
@@ -1087,13 +1126,20 @@ public sealed class GameApplication
             calendarEntries: calendarEntries,
             riderCareers: riderCareers,
             organizationRaceEntries: organizationRaceEntries,
-            riderContracts: riderContracts);
+            riderContracts: riderContracts,
+            generatePeriodicRaces: recipe.GeneratePeriodicRaces);
     }
 
     private static int ReadCalendarPeriodDays(WorldRecipe recipe)
     {
         RulesModuleIdentity? calendar = recipe.RulesModules.FirstOrDefault(
             module => string.Equals(module.Slot, "calendarStructure", StringComparison.Ordinal));
+        if (calendar is not null &&
+            string.Equals(calendar.ParameterIdentity, "calendar-from-content", StringComparison.Ordinal))
+        {
+            return 365;
+        }
+
         const string prefix = "days-per-season:";
         if (calendar is not null &&
             calendar.ParameterIdentity.StartsWith(prefix, StringComparison.Ordinal) &&

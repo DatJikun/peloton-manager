@@ -16,7 +16,7 @@ public static class WorldChecksum
         using MemoryStream buffer = new();
         using (BinaryWriter writer = new(buffer, Encoding.UTF8, leaveOpen: true))
         {
-            writer.Write("peloton-world-checksum-v4");
+            writer.Write("peloton-world-checksum-v5");
             writer.Write(world.WorldId);
             writer.Write(world.MasterSeed);
             writer.Write(world.RngContractVersion);
@@ -40,6 +40,8 @@ public static class WorldChecksum
                 writer.Write(person.Id.Value);
                 writer.Write(person.Name);
                 writer.Write(person.OriginDefinitionId ?? string.Empty);
+                writer.Write(person.Nationality ?? string.Empty);
+                writer.Write(person.BirthYear ?? 0);
             }
 
             foreach (RiderCareer career in world.RiderCareers.OrderBy(career => career.Id.Value))
@@ -106,6 +108,13 @@ public static class WorldChecksum
                 writer.Write(organization.OriginDefinitionId);
                 writer.Write(organization.Name);
                 writer.Write(organization.DaysSimulated);
+                writer.Write(organization.Country);
+                writer.Write(organization.Division);
+                writer.Write(organization.LicenceYearsRemaining);
+                writer.Write(organization.TitleSponsor);
+                writer.Write(organization.Bike);
+                writer.Write(organization.Groupset);
+                writer.Write(organization.EstimatedBudgetEur);
             }
 
             foreach (DecisionAuthority authority in world.DecisionAuthorities.OrderBy(authority => authority.Id.Value))
@@ -128,6 +137,7 @@ public static class WorldChecksum
 
             writer.Write(world.CalendarPeriodDays);
             writer.Write(world.LastCompletedRaceDay);
+            writer.Write(world.GeneratePeriodicRaces);
             writer.Write(world.LastDayNotes.Count);
             foreach (string note in world.LastDayNotes)
             {
