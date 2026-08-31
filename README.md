@@ -1,11 +1,12 @@
 # Peloton Manager
 
-Headless .NET 8 architecture skeleton plus a race prototype. It creates a tiny JSON-defined world, advances the whole world, runs a deterministic prototype race, and saves/loads a career from an embedded SQLite file.
+Headless .NET 8 architecture skeleton plus a race prototype, with a first Godot Watch Race window. It creates a tiny JSON-defined world, advances the whole world, runs a deterministic prototype race, and saves/loads a career from an embedded SQLite file.
 
 ## Requirements
 
 - a .NET SDK capable of targeting `net8.0`;
-- no Godot installation for build or test;
+- no Godot installation for headless build or test;
+- Godot 4.4 .NET only if opening the Watch Race window;
 - Windows, Linux, or another .NET 8-supported headless environment.
 
 ## Build and test
@@ -38,12 +39,12 @@ The skeleton calendar is deliberately short: one season is 12 calls to `AdvanceD
 
 ## Godot boundary
 
-`src/Peloton.Client.Godot` is an empty compile-time stub. Future Godot code will call Application Commands and Queries; it will not own World State or write SQLite. Godot was not used to implement or verify Milestone 0 or the race prototype.
+`src/Peloton.Client.Godot` is a Watch Race presentation client (Godot 4.4 .NET). Open `src/Peloton.Client.Godot/project.godot`. It issues Application Commands and Queries, interpolates `RaceWatch` icons, pauses on a knowledge-bounded decision, and shows Results from `LastRace`. It does not own World State, does not write SQLite, and does not drive race physics. It is not a Career Hub. Headless tests and `Peloton.SimRunner` remain the default verification surfaces; Godot is not required for `dotnet test`.
 
 ## UI lab
 
-Static HTML prototypes live at the repository root (`08e-constructivist-desk.html`, `10-dashboard-constructivist.html`, `12-dashboard-team-mid.html`, `14-race.html`). Rejected variants are under `archive/`. The avatar experiment is `experiments/avatar_prototype/`. These are not Godot and not the headless career loop.
+Static HTML prototypes live at the repository root (`08e-constructivist-desk.html`, `10-dashboard-constructivist.html`, `12-dashboard-team-mid.html`, `14-race.html`). Rejected variants are under `archive/`. The avatar experiment is `experiments/avatar_prototype/`. These are look references, not Godot and not the headless career loop.
 
 ## Known difference from the race contract
 
-Official results come from `PrototypeRaceEngine`, not a seed-ranked stub. The prototype is still below `RACE_ENGINE_DESIGN_v0.2.md`: one-second `double` steps, synthetic content, simplified shelter/knowledge, no Godot, and the owner §49 fun gate is not verified. See `KNOWN_DIFFERENCE_FROM_CODE.md`.
+Official results come from `PrototypeRaceEngine`, not a seed-ranked stub. The prototype is still below `RACE_ENGINE_DESIGN_v0.2.md`: one-second `double` steps, synthetic content not bound to the career roster, simplified shelter/knowledge. Godot Watch exists; the owner §49 fun gate is not verified. See `KNOWN_DIFFERENCE_FROM_CODE.md`.

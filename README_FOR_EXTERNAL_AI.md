@@ -4,19 +4,20 @@
 
 1. `VISION.md`
 2. `DECISIONS.md`
-3. `HANDOFF.md`
+3. `HANDOFF.md` (live snapshot)
 4. `DOCS.md`
-5. `ARCHITECTURE.md`
-6. `DETERMINISM_AND_EVENT_CONTRACTS_v0.1.md`
-7. `DESIGN_PRINCIPLES_AND_ANTI_PATTERNS.md`
-8. `Peloton_Manager_design_notes_v1.0.md`
-9. `AI_MANAGER_SYSTEM_v0.2.md`
-10. `LONG_SAVE_AND_PERFORMANCE_v0.2.md`
-11. `RACE_ENGINE_DESIGN_v0.2.md`
-`RACE_SPY_DEBUGGING_v0.1.md`
-`WORLD_SPY_AND_DECISION_TRACING_v0.1.md`
-12. `RACE_ENGINE_RESEARCH_2026-08-25.md`
-13. `DOCS_GOVERNANCE.md`
+5. `CODEBASE_MAP.md` and `KNOWN_DIFFERENCE_FROM_CODE.md`
+6. `ARCHITECTURE.md`
+7. `DETERMINISM_AND_EVENT_CONTRACTS_v0.1.md`
+8. `DESIGN_PRINCIPLES_AND_ANTI_PATTERNS.md`
+9. `Peloton_Manager_design_notes_v1.0.md`
+10. `AI_MANAGER_SYSTEM_v0.2.md`
+11. `LONG_SAVE_AND_PERFORMANCE_v0.2.md`
+12. `RACE_ENGINE_DESIGN_v0.2.md`
+13. `RACE_SPY_DEBUGGING_v0.1.md`
+14. `WORLD_SPY_AND_DECISION_TRACING_v0.1.md`
+15. `RACE_ENGINE_RESEARCH_2026-08-25.md`
+16. `DOCS_GOVERNANCE.md`
 
 
 ## What we want from you
@@ -36,7 +37,11 @@ When proposing a change, explain the problem it solves and which current decisio
 
 ## Current priorities
 
-Still pre-production. `UI_SITEMAP_v0.1.md`, `GAME_STATES_v0.1.md`, and `DATA_MODEL_v0.1.md` exist as DRAFT documents. Race Engine Design v0.2 exists from cycling research. Review the draft contracts and continue the remaining pre-code documentation gate before a small headless Race Engine prototype/spike. Do not begin broad gameplay implementation yet.
+Pre-production, but the architecture skeleton and race prototype already exist in code. `HANDOFF.md` and `CODEBASE_MAP.md` are the live snapshot. `UI_SITEMAP_v0.1.md`, `GAME_STATES_v0.1.md`, and `DATA_MODEL_v0.1.md` remain DRAFT contracts; several identities from the data model are not in code yet (knowledge stores, recruitment, rider careers bound to race).
+
+Godot Watch Race is a presentation window, not a completed game and not a Career Hub. Owner fun gate `RACE_ENGINE_DESIGN_v0.2.md` §49 is `NOT VERIFIED` — do not close it with automations.
+
+Do not begin a new gameplay system until `HANDOFF.md` Next task (or the owner) says so. Do not treat stale README sentences as current. If code and an accepted document conflict, follow `DOCS_GOVERNANCE.md`: decide whether it is a bug, stale docs, or a later decision.
 
 ## Core invariants
 
@@ -60,6 +65,7 @@ Still pre-production. `UI_SITEMAP_v0.1.md`, `GAME_STATES_v0.1.md`, and `DATA_MOD
 ## Before writing code
 
 Read:
+- `AGENTS.md`
 - `AI_DEVELOPMENT_RULES_v0.1.md`
 - `GITHUB_WORKFLOW_v0.1.md`
 - `CODEBASE_MAP.md`

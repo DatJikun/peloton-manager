@@ -10,13 +10,28 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`Watch Race on Godot (D-033)`
+`Watch Race on Godot (D-033)` — waiting on owner playtest / feedback
 
 ### Goal
-First playable Watch Race window: prep → Confirm → `StartRaceCommand` → D-033 supervising clock, interpolated map icons, decision pause, Results from `LastRace`. Do not close §49.
+First playable Watch Race window exists. Owner (player) judges feel. Do not close §49 with automations.
 
 ### Status
-Godot Watch Race is a presentation client over the existing Application clock. Open `src/Peloton.Client.Godot/project.godot` in Godot 4.4 .NET. The player confirms prep, picks ×1/×2/×5/×20, watches focal-rider icons interpolate between official 1s physics snapshots, answers a knowledge-bounded decision (or the DS default), and sees the official winner from `LastRace`. Renderer does not drive physics. Career shell is not in this window. HTML lab (`08e` / `14-race.html`) stays a look reference, not the game. Headless CLI is unchanged. §49 remains `NOT VERIFIED`. `D-032` remains deferred. SchemaVersion remains 1.
+Godot Watch Race is a presentation client over the existing Application clock. Open `src/Peloton.Client.Godot/project.godot` in Godot 4.4 .NET. The player confirms prep, picks ×1/×2/×5/×20, watches focal-rider icons interpolate between official 1s physics snapshots, answers a knowledge-bounded decision (or the DS default), and sees the official winner from `LastRace`. Renderer does not drive physics. Career shell is not in this window. HTML lab (`08e` / `14-race.html`) stays a look reference, not the game. Headless CLI is unchanged. §49 remains `NOT VERIFIED`. `D-032` remains deferred. SchemaVersion remains 1. Coding subagents default to Composer 2.5 (D-035).
+
+## Gdzie jest gra (dla właściciela)
+Nie ma jeszcze pełnej gry managerskiej.
+
+Działa:
+- w Godot okno Watch Race — jeden syntetyczny etap (ikony, tempo, decyzja, zwycięzca);
+- w CLI pętla dnia: Advance Day, Race next, przygotowanie, Simulate albo Watch, wynik.
+
+Jeszcze nie:
+- skład kariery nie jest tymi samymi ludźmi co w wyścigu;
+- nie ma scoutingu, kontraktów kolarzy, sponsorów, treningu ani AI managerów;
+- nie ma Career Hub (odrzucony);
+- §49 nie jest zaliczone — to ręczny playtest właściciela.
+
+Następny kawałek kodu czeka na feedback właściciela. Nie wymyślamy nowego systemu bez tej decyzji.
 
 ## What works now
 - [x] High-level game design v0.7
@@ -63,7 +78,7 @@ Godot Watch Race is a presentation client over the existing Application clock. O
 - [x] World Spy / shared Decision Trace Framework v0.1
 - [x] AI Development Rules v0.1
 - [x] GitHub Workflow v0.1
-- [x] Codebase Map template
+- [x] Codebase Map (ACTIVE navigation, not a blank template)
 - [x] UI Sitemap v0.1 (DRAFT)
 - [x] Game States v0.1 (DRAFT)
 - [x] Minimal Data Model v0.1 (DRAFT)
@@ -71,10 +86,11 @@ Godot Watch Race is a presentation client over the existing Application clock. O
 - [x] Rulesets v0.1 (DRAFT)
 - [x] Save Format v0.1 (DRAFT)
 - [x] Testing v0.1 (DRAFT)
+- [x] Docs snapshot 2026-08-31: Godot Watch is real (not a stub); Composer 2.5 coding lock (D-035)
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task
-`Owner §49 playtest of Godot Watch Race. Do not close §49 with automations. Do not implement D-032. Do not build the rejected Career Hub.`
+`Waiting for owner (player) feedback. Do not close §49 with automations. Do not implement D-032. Do not build the rejected Career Hub. Do not start a new backend system until the owner says so.`
 
 ## Known blockers
 - None.
@@ -94,6 +110,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
+- `2026-08-31` — Composer 2.5 is the default coding subagent; Grok 4.6 High writes docs and reviews (D-035). Owner is a player giving feedback, not a programmer.
 - `2026-08-25` — Nie wysyłać właścicielowi maili o zmianach; status tylko w czacie agenta.
 - `2026-08-25` — Mergować, gdy high-level check jest OK; nie czekać na „merguj”. Nie mergować tylko przy poważnych problemach.
 - `2026-08-24` — Windows jest pierwszym targetem; preferowany stack to Godot .NET + C#.
@@ -143,6 +160,7 @@ Wcześniejszy Ping-Pong Manager był rozwijany przez miesiące z AI i techniczni
 VISION.md
 DECISIONS.md
 DOCS.md
+AGENTS.md
 Peloton_Manager_design_notes_v1.0.md
 ARCHITECTURE.md
 UI_SITEMAP_v0.1.md
@@ -158,6 +176,7 @@ DESIGN_PRINCIPLES_AND_ANTI_PATTERNS.md
 AI_MANAGER_SYSTEM_v0.2.md
 LONG_SAVE_AND_PERFORMANCE_v0.2.md
 RACE_ENGINE_DESIGN_v0.2.md
+KNOWN_DIFFERENCE_FROM_CODE.md
 RACE_SPY_DEBUGGING_v0.1.md
 WORLD_SPY_AND_DECISION_TRACING_v0.1.md
 AI_DEVELOPMENT_RULES_v0.1.md
@@ -199,8 +218,10 @@ src/Peloton.Client.Godot/project.godot
 - Nie przenoś logiki gameplayowej do Godot UI.
 - Nie twórz `new Random()` w systemach gameplayowych.
 - Nie zmieniaj schema save/content bez migration planu.
-- Nie traktuj starych dokumentów jako aktualnych bez sprawdzenia statusu.
-- Nie rozszerzaj scope'u taska bez wskazania PLAYER VALUE.
+- Nie traktuj starych dokumentów jako aktualnych bez sprawdzenia statusu (`HANDOFF.md`, `CODEBASE_MAP.md`, `KNOWN_DIFFERENCE_FROM_CODE.md`).
+- Nie twierdź, że Godot jest pustym stubem — Watch Race jest oknem prezentacji.
+- Nie odpalaj kodujących subagentów z `inherit` (to Grok); kod to Composer 2.5 (D-035).
+- Nie rozszerzaj scope'u taska bez wskazania PLAYER VALUE i bez decyzji właściciela.
 - Nie zamykaj OQ-TS-001 ani OQ-DM-001 na podstawie checksumy lub allocatora szkieletowego.
 
 ## Handoff summary
@@ -227,3 +248,4 @@ Peloton Manager jest na etapie pre-production. Celem jest modularny, determinist
 - `2026-08-26` — Skill `peloton-avatars` przetestowany na obcym agencie (dodanie fryzury wyłącznie z instrukcji). Test wykrył realny defekt: literówka w kluczu przepisu (`excludes_tags` zamiast `excludes`) przechodziła całą bramkę i publikowała asset bez reguły blokującej. Naprawione: `check_recipe` odrzuca nieznane klucze, nieznane style i nieznane tagi z podpowiedzią; doszedł `scripts/asset_usage.py` (udział assetu w puli + licznik naruszeń blokady); `asset_pack_version` dostaje odcisk liczony ze stylu, tabeli assetów i bajtów wszystkich PNG (wcześniej `flat` i `flat_outline` miały tę samą wersję, czyli kolizję cache), a `asset_table_hash` pilnuje, żeby plansza porównania stylów nie mieszała świeżych i nieświeżych pakietów. Self-test: 45 asercji.
 - `2026-08-27` — Właściciel kazał złączyć pętlę kariery z `main`. Jedno drzewo: PrototypeRaceEngine + Hub/inbox/prep/Watch razem z HTML labem (`08e` / `10` / `12` / `14-race.html`). Godot Watch i §49 nadal otwarte.
 - `2026-08-28` — Pierwszy Watch Race w Godot (D-033): okno oglądania etapu, nie Career Hub. §49 nadal `NOT VERIFIED`.
+- `2026-08-31` — Dokumenty zsynchronizowane ze stanem kodu: Godot Watch nie jest stubem; `CODEBASE_MAP.md` ACTIVE; Composer 2.5 lock (D-035). Czekamy na feedback właściciela, bez nowego systemu z urzędu.

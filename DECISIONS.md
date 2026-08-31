@@ -122,9 +122,17 @@ Zegar oglądania (Watch Race) jest nadzorujący: gracz wybiera tempo (np. ×1 / 
 
 Fizyka zostaje kanoniczna (`R-001`). Prototype `dt = 1s` to krok referencyjny silnika, nie klatka filmu. Renderer może interpolować pozycje między krokami. `DecisionRequest` pauzuje zegar oglądania. Renderer nie steruje fizyką.
 
-Headless komenda `watch` jest na razie skrótem decyzji (start / pauza / meta), nie modelem Watch Race.
+Headless `watch` implements this supervising clock (rates, pause on `DecisionRequest`, RNG-neutral motion). Godot Watch Race is the presentation renderer over the same clock. CLI markdown output is not the owner §49 playtest.
 
 ## D-034 — Race next is the Hub primary on race day
 On a race-due day the Hub primary time-progress control relabels to **Race next** and enters `RacePreparationFlow`. Inbox remains a queue of items and does not launch the race.
 
 Normal Hub primary action stays **Advance Day** (D-006). The `AdvanceDay` command still cannot skip a due race. Race next only opens preparation; starting the race remains a later prep-menu command.
+
+## D-035 — Composer 2.5 is the coding subagent
+When this repo is developed with a main Cloud Agent plus subagents, the split is:
+
+- main agent = Grok 4.6 High (not fast): Markdown, design contracts, review;
+- Composer 2.5: code.
+
+Coding `Task` launches must set the subagent model to Composer 2.5. They must not inherit the main agent and must not use Composer 2.5 Fast unless the owner asked for speed. Composer is not the primary author of VISION, DECISIONS, ARCHITECTURE, HANDOFF, UI sitemap, GAME_STATES, DATA_MODEL, ADRs, or similar governance docs. Operational detail lives in `AGENTS.md` and `.cursor/rules/composer-coding-subagent.mdc`.
