@@ -16,7 +16,7 @@ This file is a navigation map, not implementation documentation. Design contract
 | `src/Peloton.Persistence` | SQLite schema version 1, verified candidate save, envelope identity, snapshot round trip, integrity checks. |
 | `src/Peloton.Content` | JSON pack loaders: skeleton `scenarios` and `racePrototypeScenarios`. |
 | `src/Peloton.Infrastructure` | Composition root connecting Application ports to Content, Persistence, and Simulation. |
-| `src/Peloton.Client.Godot` | Godot 4.4 .NET Watch Race window. Presentation only: Commands + Queries, interpolated `RaceWatch` icons, decision overlay, Results from `LastRace`. Uses Infrastructure as composition root; does not hold World State or open SQLite. |
+| `src/Peloton.Client.Godot` | Thin Career Hub plus Watch Race. Presentation only: Commands + Queries. Hub: Advance Day / Race next / inbox / calendar / prep seats / Watch. Watch: interpolated icons, decision overlay, Results from `LastRace`. |
 | `tools/Peloton.SimRunner` | Headless CLI: `run` for skeleton seasons, `race` for the prototype gate, `watch` for rate-controlled supervising-clock output, `day` for Hub, prep, calendar/inbox, result/debrief, and race-due flows. |
 
 Static content lives in `content/peloton.skeleton` and `content/peloton.race-prototype`. `KNOWN_DIFFERENCE_FROM_CODE.md` records remaining prototype limits versus the accepted Race Engine contract.
@@ -47,8 +47,9 @@ Static content lives in `content/peloton.skeleton` and `content/peloton.race-pro
 | Headless Watch clock | `Peloton.Simulation/Race/RaceWatch.cs`, `tools/Peloton.SimRunner/RaceWatchCommand.cs` | `D-033` clock contract | `RaceWatchTests`, `SimRunnerContractTests` |
 | Route profile library | `Peloton.Simulation/Race/RouteProfileLibrary.cs`, `RouteProfileGenerator.cs` | presentation profiles; physics stays coarse prototype segments | `RouteProfileTests` |
 | Godot Watch Race | `src/Peloton.Client.Godot` (`WatchRaceHost`, `WatchRaceScreen`, `WatchRouteProfile`, `project.godot`) | `D-033` renderer; `UI_SITEMAP` RaceLive; §49 still owner-only | `WatchRaceHostTests`, `WatchMotionInterpolatorTests`, `WatchFilmDurationTests`, `WatchRouteProfileTests` |
+| Godot Career Hub | `src/Peloton.Client.Godot` (`CareerHubHost`, `CareerHubScreen`, `CareerHub.tscn`) | `D-035` thin Hub from HTML lab look; not a KPI dashboard | `CareerHubHostTests` |
 | Career Hub query | `Peloton.Application/CareerDay.cs` | `GAME_STATES_v0.1.md` Advance Day; Hub primary action (`advance-day` / `race-next`); Management only; not a UI dashboard | Application tests, `day` SimRunner |
-| Race preparation | `Peloton.Application/RacePreparation.cs`, `CareerRaceBinder.cs`, `GameApplication.cs` | career squad from the player's four named riders; session checkpoint plan | Application + Persistence tests |
+| Race preparation | `Peloton.Application/RacePreparation.cs`, `CareerRaceBinder.cs`, `GameApplication.cs` | four named seats with Leader / Card / Worker and a why line; session checkpoint plan | Application + Persistence + Godot Hub tests |
 | Race result / debrief | `Peloton.Application/RaceResultDebrief.cs`, `GameApplication.cs` | committed `LastRace` + calendar; knowledge-bounded notes; checkpoint not World | Application + Persistence tests |
 | Career calendar | `Peloton.Domain/CalendarEntry.cs`, `SkeletonCalendar.cs`, `Peloton.Application/CareerCalendarInbox.cs` | three named races per 12-day season; stored entries + derived status | Application tests |
 | Career inbox query | `Peloton.Application/CareerCalendarInbox.cs`, `ArchiveInboxItemCommand` | rebuilt race-due + race-result items; dismiss lock on race-due | Application tests |
@@ -57,7 +58,7 @@ Static content lives in `content/peloton.skeleton` and `content/peloton.race-pro
 | Career scenarios | `content/peloton.skeleton`, `JsonScenarioCatalog.cs` | `CONTENT_FORMAT_v0.1.md`; 12 named riders, 3 teams, manager off roster | Application tests |
 | Rules modules | `Peloton.Rules`, scenario JSON | `RULESETS_v0.1.md` | Application + Architecture tests |
 
-Recruitment, contracts, sponsors, knowledge records, Career Hub UI, and `D-032` multi-stage leadership transfer are not implemented. Godot Watch is the first playable race window, not the career shell. The skeleton calendar is three races per season, not a full WT year.
+Recruitment, contracts, sponsors, knowledge records, and `D-032` multi-stage leadership transfer are not implemented. Godot Hub is a thin desk (Advance Day / Race next / inbox / Watch), not a KPI dashboard. The skeleton calendar is three races per season, not a full WT year.
 
 ## Dependency direction
 

@@ -312,7 +312,7 @@ public sealed class SimRunnerContractTests
         Assert.Contains("stopped=RACE_DAY_PENDING", stdout, StringComparison.Ordinal);
         Assert.Contains("state=RacePreparationFlow", stdout, StringComparison.Ordinal);
         Assert.Contains(
-            "prep=title=Opening Classic objective=StageWin squad=4,5,6,7 planConfirmed=false canStart=false canSimulate=false",
+            "prep=title=Opening Classic objective=StageWin squad=4,5,6,7 seats=Dawid Rutka:Card,Piotr Kowalczyk:Leader,Marek Zieliński:Worker,Tomasz Barski:Worker planConfirmed=false canStart=false canSimulate=false",
             stdout,
             StringComparison.Ordinal);
         Assert.Contains("primaryAction=race-next", stdout, StringComparison.Ordinal);

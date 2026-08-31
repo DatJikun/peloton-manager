@@ -411,8 +411,9 @@ public static class CareerDayCommand
         }
 
         string squad = string.Join(",", prep.Squad.Select(id => id.Value.ToString(CultureInfo.InvariantCulture)));
+        string seats = string.Join(",", prep.Seats.Select(seat => $"{seat.Name}:{seat.Role}"));
         output.WriteLine(
-            $"prep=title={prep.Title} objective={prep.Objective} squad={squad} planConfirmed={prep.PlanConfirmed.ToString().ToLowerInvariant()} canStart={prep.CanStart.ToString().ToLowerInvariant()} canSimulate={prep.CanSimulate.ToString().ToLowerInvariant()}");
+            $"prep=title={prep.Title} objective={prep.Objective} squad={squad} seats={seats} planConfirmed={prep.PlanConfirmed.ToString().ToLowerInvariant()} canStart={prep.CanStart.ToString().ToLowerInvariant()} canSimulate={prep.CanSimulate.ToString().ToLowerInvariant()}");
     }
 
     private static void WriteResult(TextWriter output, GameApplication application)

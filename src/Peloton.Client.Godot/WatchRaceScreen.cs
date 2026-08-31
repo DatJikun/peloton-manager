@@ -31,6 +31,7 @@ public sealed partial class WatchRaceScreen : Control
     private Button? pauseButton;
     private Button? exitButton;
     private Button? continueButton;
+    public WatchRaceHost? ExternalHost { get; set; }
 
     public override void _Ready()
     {
@@ -116,16 +117,28 @@ public sealed partial class WatchRaceScreen : Control
         root.AddChild(continueButton);
 
         string autosavePath = Path.Combine(Path.GetTempPath(), "peloton-watch-prerace.peloton");
-        host = new WatchRaceHost(
-            ApplicationFactory.Create(WatchContentPath.FindContentRoot()),
-            autosavePath);
-        CommandResult opened = host.OpenPrototype(91234);
-        if (!opened.Succeeded)
+        if (ExternalHost is not null)
         {
-            status.Text = $"Nie udało się otworzyć prototypu ({opened.ReasonCode}).";
-            confirmButton.Disabled = true;
-            startButton.Disabled = true;
-            return;
+            host = ExternalHost;
+        }
+        else
+        {
+            host = new WatchRaceHost(
+                ApplicationFactory.Create(WatchContentPath.FindContentRoot()),
+                autosavePath);
+            CommandResult opened = host.OpenPrototype(91234);
+            if (!opened.Succeeded)
+            {
+                status.Text = $"Nie udało się otworzyć prototypu ({opened.ReasonCode}).";
+                confirmButton.Disabled = true;
+                startButton.Disabled = true;
+                return;
+            }
+        }
+
+        if (host.Course is not null && map is not null)
+        {
+            map.ShowCourse(host.Course);
         }
 
         RefreshFilmButtons();

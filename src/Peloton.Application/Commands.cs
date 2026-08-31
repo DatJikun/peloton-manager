@@ -16,6 +16,8 @@ public sealed record CancelRacePreparationCommand;
 
 public sealed record ConfirmRacePreparationPlanCommand;
 
+public sealed record AssignSquadRoleCommand(WorldEntityId RiderId, string Role);
+
 public sealed record FollowHubPrimaryActionCommand;
 
 public sealed record StartRaceCommand(

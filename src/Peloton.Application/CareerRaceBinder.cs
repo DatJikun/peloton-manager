@@ -107,6 +107,101 @@ public static class CareerRaceBinder
             ?.OrganizationId;
     }
 
+    public static SquadAssignment[] DefaultAssignments(WorldState world)
+    {
+        return PlayerSquad(world)
+            .Select(id => new SquadAssignment(id, DefaultRole(world, id)))
+            .ToArray();
+    }
+
+    public static IReadOnlyList<SquadSeat> Seats(WorldState world, IReadOnlyList<SquadAssignment>? assignments)
+    {
+        ArgumentNullException.ThrowIfNull(world);
+        Dictionary<long, string> roles = ResolveRoles(world, assignments);
+        return PlayerSquad(world)
+            .Select(id =>
+            {
+                string role = roles[id.Value];
+                string name = world.Persons.First(person => person.Id == id).Name;
+                return new SquadSeat(id, name, role, SquadRoles.Why(role));
+            })
+            .ToArray();
+    }
+
+    public static IReadOnlyList<SquadAssignment> AssignRole(
+        WorldState world,
+        IReadOnlyList<SquadAssignment>? assignments,
+        WorldEntityId riderId,
+        string role)
+    {
+        Dictionary<long, string> roles = ResolveRoles(world, assignments);
+        if (role is SquadRoles.Leader or SquadRoles.Card)
+        {
+            foreach (long existing in roles.Keys.ToArray())
+            {
+                if (roles[existing] == role && existing != riderId.Value)
+                {
+                    roles[existing] = SquadRoles.Worker;
+                }
+            }
+        }
+
+        roles[riderId.Value] = role;
+        return PlayerSquad(world)
+            .Select(id => new SquadAssignment(id, roles[id.Value]))
+            .ToArray();
+    }
+
+    public static bool HasLeaderAndCard(WorldState world, IReadOnlyList<SquadAssignment>? assignments)
+    {
+        IReadOnlyList<SquadSeat> seats = Seats(world, assignments);
+        return seats.Count(seat => seat.Role == SquadRoles.Leader) == 1 &&
+            seats.Count(seat => seat.Role == SquadRoles.Card) == 1;
+    }
+
+    private static Dictionary<long, string> ResolveRoles(
+        WorldState world,
+        IReadOnlyList<SquadAssignment>? assignments)
+    {
+        Dictionary<long, string> roles = DefaultAssignments(world)
+            .ToDictionary(assignment => assignment.RiderId.Value, assignment => assignment.Role);
+        if (assignments is null)
+        {
+            return roles;
+        }
+
+        foreach (SquadAssignment assignment in assignments)
+        {
+            if (roles.ContainsKey(assignment.RiderId.Value) && SquadRoles.IsKnown(assignment.Role))
+            {
+                roles[assignment.RiderId.Value] = assignment.Role;
+            }
+        }
+
+        return roles;
+    }
+
+    private static string DefaultRole(WorldState world, WorldEntityId riderId)
+    {
+        RosterRider? rider = world.RosterRiders.FirstOrDefault(item => item.PersonId == riderId);
+        if (rider is null)
+        {
+            return SquadRoles.Worker;
+        }
+
+        if (rider.RacePrototypeRiderId.EndsWith("-leader", StringComparison.Ordinal))
+        {
+            return SquadRoles.Leader;
+        }
+
+        if (rider.RacePrototypeRiderId.EndsWith("-card", StringComparison.Ordinal))
+        {
+            return SquadRoles.Card;
+        }
+
+        return SquadRoles.Worker;
+    }
+
     private static RosterRider Seat(Dictionary<string, RosterRider> seats, string prototypeRiderId)
     {
         if (!seats.TryGetValue(prototypeRiderId, out RosterRider? seat))

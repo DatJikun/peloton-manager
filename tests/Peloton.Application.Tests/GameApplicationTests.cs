@@ -105,6 +105,14 @@ public sealed class GameApplicationTests
         Assert.Equal(SkeletonCalendar.OpeningClassic, prep.Title);
         Assert.Equal("StageWin", prep.Objective);
         Assert.Equal(new long[] { 4, 5, 6, 7 }, prep.Squad.Select(id => id.Value));
+        Assert.Equal(4, prep.Seats.Count);
+        Assert.Equal("Dawid Rutka", prep.Seats[0].Name);
+        Assert.Equal(SquadRoles.Card, prep.Seats[0].Role);
+        Assert.Equal("The result rider.", prep.Seats[0].Why);
+        Assert.Equal("Piotr Kowalczyk", prep.Seats[1].Name);
+        Assert.Equal(SquadRoles.Leader, prep.Seats[1].Role);
+        Assert.Equal("Leads the finale.", prep.Seats[1].Why);
+        Assert.All(prep.Seats, seat => Assert.False(string.IsNullOrWhiteSpace(seat.Why)));
         Assert.False(prep.PlanConfirmed);
         Assert.False(prep.CanStart);
         Assert.False(prep.CanSimulate);

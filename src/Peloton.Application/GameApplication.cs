@@ -47,10 +47,14 @@ public sealed class GameApplication
             WorldEntityId[] squad = World is null
                 ? Array.Empty<WorldEntityId>()
                 : CareerRaceBinder.PlayerSquad(World);
+            IReadOnlyList<SquadSeat> seats = World is null
+                ? Array.Empty<SquadSeat>()
+                : CareerRaceBinder.Seats(World, racePreparation.Assignments);
             return new RacePreparationProjection(
                 CurrentRaceTitle(World),
                 RacePreparationDefaults.Objective,
                 Array.AsReadOnly(squad),
+                seats,
                 racePreparation.PlanConfirmed,
                 racePreparation.PlanConfirmed,
                 racePreparation.PlanConfirmed);
@@ -275,7 +279,8 @@ public sealed class GameApplication
         State = GameState.RacePreparationFlow;
         racePreparation = new RacePreparationCheckpoint(
             RacePreparationDefaults.PrototypeScenarioId,
-            PlanConfirmed: false);
+            PlanConfirmed: false,
+            CareerRaceBinder.DefaultAssignments(World));
         return CommandResult.Success;
     }
 
@@ -300,7 +305,40 @@ public sealed class GameApplication
             return CommandResult.Reject("GAME_STATE_INVALID");
         }
 
+        if (World is null ||
+            !CareerRaceBinder.HasLeaderAndCard(World, racePreparation.Assignments))
+        {
+            return CommandResult.Reject("PREP_ROLES_INCOMPLETE");
+        }
+
         racePreparation = racePreparation with { PlanConfirmed = true };
+        return CommandResult.Success;
+    }
+
+    public CommandResult Execute(AssignSquadRoleCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.RacePreparationFlow || racePreparation is null || World is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        if (!SquadRoles.IsKnown(command.Role))
+        {
+            return CommandResult.Reject("PREP_ROLE_INVALID");
+        }
+
+        WorldEntityId[] squad = CareerRaceBinder.PlayerSquad(World);
+        if (!squad.Contains(command.RiderId))
+        {
+            return CommandResult.Reject("PREP_RIDER_NOT_IN_SQUAD");
+        }
+
+        racePreparation = racePreparation with
+        {
+            PlanConfirmed = false,
+            Assignments = CareerRaceBinder.AssignRole(World, racePreparation.Assignments, command.RiderId, command.Role),
+        };
         return CommandResult.Success;
     }
 

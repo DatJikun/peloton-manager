@@ -38,7 +38,7 @@ When proposing a change, explain the problem it solves and which current decisio
 
 Core loop follows `D-035` in `DECISIONS.md`: one thing at a time. Roster → watching → calendar → Hub. Do not parallelize rider database, negotiations, and native HTML.
 
-This tree is through step 4 (calendar of three races per season). Owner §49 playtest is step 3 and is not closed by tests. Thin Godot Hub is step 5. Radio/DS, transfers, sponsors, and avatars wait.
+This tree is through step 6 (Hub + prep from the four). Owner §49 playtest is step 3 and is not closed by tests. More race decisions (step 7) wait on that watch. Radio/DS, transfers, sponsors, and avatars wait.
 
 ## Core invariants
 
