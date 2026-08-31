@@ -315,7 +315,7 @@ public sealed partial class CareerShellScreen : Control
         settingsWindow = new Window
         {
             Title = "Ustawienia",
-            Size = new Vector2I(440, 320),
+            Size = new Vector2I(480, 380),
             Unresizable = true,
             Exclusive = true,
         };
@@ -405,7 +405,7 @@ public sealed partial class CareerShellScreen : Control
         {
             dateMeta.Text = day is null
                 ? "Szkielet świata"
-                : string.Create(CultureInfo.InvariantCulture, $"Dzień {day.DayNumber} · {day.ManagerName}");
+                : string.Create(CultureInfo.InvariantCulture, $"Szkielet · dzień {day.DayNumber}");
         }
 
         if (racePill is not null)
