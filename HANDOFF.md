@@ -10,13 +10,13 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`D-036 default race day is results; film optional`
+`D-037 results table and per-team filter`
 
 ### Goal
-Default Hub race path: prep the four, headless simulate, show official result and headline events. Watch film is a presentation setting, off by default. Document how race day works for the player. Do not close §49. Do not start extra in-race decisions.
+Show the official result as a table (place, rider, team) with a presentation-only filter per team. Keep Watch film optional and off by default. Do not add more in-race decisions. Do not close §49.
 
 ### Status
-Skeleton career has 12 named riders, 3 teams, manager off the roster. A 12-day season has Opening Classic, Hill Classic, and Season Finale; all three teams start. Godot main scene is the thin Career Hub: Advance Day / Race next, calendar, inbox, prep seats, **result + events by default**. Film Watch is opt-in (`FILM: WYŁ/WŁ`). Standalone `race` CLI keeps the old golden. §49 remains `NOT VERIFIED`. SchemaVersion remains 1.
+Skeleton career has 12 named riders, 3 teams, manager off the roster. A 12-day season has Opening Classic, Hill Classic, and Season Finale; all three teams start. Godot main scene is the thin Career Hub: Advance Day / Race next, calendar, inbox, prep seats, **result table + events by default**, team filter on the desk. Film Watch is opt-in (`FILM: WYŁ/WŁ`). Standalone `race` CLI keeps the old golden. §49 remains `NOT VERIFIED`. SchemaVersion remains 1.
 
 ## What works now
 - [x] High-level game design v0.7
@@ -56,9 +56,10 @@ Skeleton career has 12 named riders, 3 teams, manager off the roster. A 12-day s
 - [x] Godot Watch film duration (30 s–5 min) plus authored route-profile library (3 variants per terrain kind) and a seeded route generator for the map
 - [x] Career world roster: 12 named riders, 3 teams, manager person off the roster; career races bind prototype physiology onto those people
 - [x] Career calendar of three races per 12-day season (Opening Classic, Hill Classic, Season Finale); all three teams start; inbox still cannot dismiss race deadlines
-- [x] Thin Godot Career Hub: Advance Day, Race next, calendar, inbox, prep seats, default result + events, optional Watch film
+- [x] Thin Godot Career Hub: Advance Day, Race next, calendar, inbox, prep seats, default result table + events, optional Watch film
 - [x] Race preparation from the player's four: Leader / Card / Worker with a one-line why
 - [x] Default race day is headless simulate → official result and headline events (`D-036`); Watch film is a presentation setting, off by default
+- [x] Results table (place, rider, team) with a presentation-only per-team filter (`D-037`); no extra in-race decisions
 - [x] Headless domain/application/persistence/architecture tests
 
 ## What is currently being changed
@@ -79,7 +80,7 @@ Skeleton career has 12 named riders, 3 teams, manager off the roster. A 12-day s
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task
-`D-035 steps 3 and 7 wait on the owner.` Lista 1–2 i 4–6 jest w kodzie. Film jest opcją (`D-036`). §49 stays `NOT VERIFIED`. Three questions: does the story stick; are chase/wait enough; do you want another in-race decision. Without a yes on the third, do not start step 7. Do not add dossier, transfers, sponsors, market AI, GC leader, avatars, or radio/DS.
+`D-035` 1–6 plus `D-036`/`D-037` are in code. Step 3 is answered (story is good enough). Step 7 is **not now** (owner asked for the results table, not more in-race decisions). Film stays optional, default off. §49 stays `NOT VERIFIED`. Do not add dossier, transfers, sponsors, market AI, GC leader, avatars, or radio/DS. Next management-layer work waits on the owner.
 
 ## Known blockers
 - None.
@@ -138,6 +139,7 @@ dostał powiadomienie.
 - `2026-08-26` — Wstępny playtest §49: decyzje prototypu „póki co chyba tak”, jeśli oglądanie nie jest godzinami 1:1. Doprecyzowanie: zegar oglądania nadzoruje, symulacja jest płynna (mapa/ikony z prędkości), nie skok 1s=100s. `D-033`. Gate niezamknięty (brak UI).
 - `2026-08-26` — Skrzynka nie otwiera wyścigu. Na dniu wyścigu główny guzik postępu (Advance Day) zmienia nazwę na Race next i wchodzi w menu przygotowania. `D-034`.
 - `2026-08-31` — Domyślny dzień wyścigu to wynik i wydarzenia, nie film. Film zostaje opcją w ustawieniach. `D-036`.
+- `2026-08-31` — Historia dnia wyścigu wystarcza. Bez nowych decyzji w wyścigu. Wynik to tabela miejsc z filtrem per zespół. `D-037`.
 
 ## Owner feedback / project experience
 Wcześniejszy Ping-Pong Manager był rozwijany przez miesiące z AI i technicznie osiągnął sporo, ale ostatecznie główny gameplay okazał się nudny, ponieważ w trakcie meczu brakowało ciekawych decyzji. W Peloton Managerze jest to jawna lekcja projektowa: nie budować kolejnych warstw na pętli, która nie przeszła ręcznego testu fun/decision density.
@@ -147,6 +149,8 @@ Wcześniejszy Ping-Pong Manager był rozwijany przez miesiące z AI i techniczni
 2026-08-28: po pierwszym Watch w Godot — etap za szybki, trasa kanciasta i bez szczegółów. Czas filmu zamiast ×N. Profile nie tylko gładsze: baza ~3 kształtów na rodzaj terenu (płasko, podjazd, zjazd, faliste, wiatr/węższa jezdnia) i generator, który z nich składa mapę. Fizyka prototypu zostaje na 3 grubych segmentach, żeby nie ruszać goldenu.
 
 2026-08-31: właściciel: film Watch na razie opcjonalny w ustawieniach, domyślnie wyłączony. Domyślny tryb to headless symulacja pokazana jako wyniki i najważniejsze wydarzenia. `D-036`.
+
+2026-08-31: właściciel: historia się trzyma na plus minus. Na razie same rezultaty — tabela wyników i filtr każdego zespołu osobno. Nie dokładać decyzji w wyścigu. Film zostaje dodatkiem. `D-037`.
 
 ## Relevant docs
 ```text
@@ -213,7 +217,7 @@ src/Peloton.Client.Godot/project.godot
 - Nie traktuj starych dokumentów jako aktualnych bez sprawdzenia statusu.
 - Nie rozszerzaj scope'u taska bez wskazania PLAYER VALUE.
 - Nie zamykaj OQ-TS-001 ani OQ-DM-001 na podstawie checksumy lub allocatora szkieletowego.
-- Nie skacz po `D-035`. Jedna rzecz na raz. Hub i przygotowanie z czwórki są w. Domyślny dzień wyścigu to wynik, nie film (`D-036`). Krok 7 (więcej decyzji) tylko gdy właściciel poprosi.
+- Nie skacz po `D-035`. Jedna rzecz na raz. Hub, przygotowanie z czwórki, wynik i tabela z filtrem zespołu są w (`D-036`, `D-037`). Krok 7 (więcej decyzji w wyścigu) jest **not now**.
 - Nie wpuszczaj PR #25 (radio/DS board) dopóki właściciel nie poprosi o więcej decyzji w wyścigu.
 - Nie wracaj do starych PR-ów kariery #13–#16 (Hub/inbox/debrief) — to już w `main`.
 - Nie buduj teraz dossier/agenta, transferów, sponsorów, AI na rynku, lidera GC ani awatarów na oko.
@@ -221,7 +225,7 @@ src/Peloton.Client.Godot/project.godot
 - Nie ruszaj goldenu `race` CLI przy kadrze świata.
 
 ## Handoff summary
-Milestone 0 still supplies the headless .NET 8 spine. The race prototype is the official result path. Career Simulate/Watch bind the prototype onto the skeleton roster (12 named riders, 3 teams, manager off the roster). A 12-day season has three named races; all three teams start. Godot main scene is the thin Career Hub (Advance Day / Race next / inbox / calendar / prep seats / result + events). Watch film is a presentation setting, off by default (`D-036`). Standalone `race` CLI keeps synthetic IDs and the old golden. After Simulate/Watch, result and debrief projections use committed `LastRace` without a second `RunBatch`. SQLite `SchemaVersion` remains 1. Owner §49 remains `NOT VERIFIED`. `D-032` is deferred. Core-loop order is `D-035`: steps 1–2 and 4–6 are in code; step 3 is answered by `D-036` (film optional); step 7 waits; step 8 is not now.
+Milestone 0 still supplies the headless .NET 8 spine. The race prototype is the official result path. Career Simulate/Watch bind the prototype onto the skeleton roster (12 named riders, 3 teams, manager off the roster). A 12-day season has three named races; all three teams start. Godot main scene is the thin Career Hub (Advance Day / Race next / inbox / calendar / prep seats / result table + events). Watch film is a presentation setting, off by default (`D-036`). The result table lists place, rider, and team, with a presentation-only per-team filter (`D-037`). Standalone `race` CLI keeps synthetic IDs and the old golden. After Simulate/Watch, result and debrief projections use committed `LastRace` without a second `RunBatch`. SQLite `SchemaVersion` remains 1. Owner §49 remains `NOT VERIFIED`. `D-032` is deferred. Core-loop order is `D-035`: steps 1–6 are in code; step 3 is answered; step 7 is not now; step 8 is not now.
 
 This tree joins that career loop onto `main` without dropping the HTML UI lab. The paragraph below preserves the pre-bootstrap design context and owner lessons; implementation status is given above and in `CODEBASE_MAP.md`.
 
@@ -246,3 +250,4 @@ Peloton Manager jest na etapie pre-production. Celem jest modularny, determinist
 - `2026-08-28` — Pierwszy Watch Race w Godot (D-033): okno oglądania etapu, nie Career Hub. §49 nadal `NOT VERIFIED`.
 - `2026-08-28` — Watch: czas filmu (domyślnie 2 min) zamiast ×N w Godot; mapa z biblioteki profili (3 warianty na rodzaj terenu) i generatora. CLI nadal ×1/×2/×5/×20. Fizyka prototypu bez zmiany goldenu.
 - `2026-08-31` — `D-036`: film Watch opcjonalny, domyślnie wyłączony. Domyślny dzień wyścigu: headless wynik + wydarzenia. Opis dla gracza: `HOW_RACE_DAY_WORKS.md`.
+- `2026-08-31` — `D-037`: tabela wyników i filtr per zespół. Bez nowych decyzji w wyścigu. Filtr nie jest World State.

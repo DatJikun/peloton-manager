@@ -16,7 +16,7 @@
 | `LONG_SAVE_AND_PERFORMANCE_v0.2.md` | REVIEW | 100-year saves, IDs, compaction, growth metrics |
 | `DOCS_GOVERNANCE.md` | REVIEW | Lifecycle i hierarchy of truth |
 | `HANDOFF.md` | ACTIVE | Żywy stan projektu |
-| `HOW_RACE_DAY_WORKS.md` | ACTIVE | Dzień wyścigu dla gracza: wynik domyślnie, film opcjonalnie (`D-036`) |
+| `HOW_RACE_DAY_WORKS.md` | ACTIVE | Dzień wyścigu dla gracza: wynik i tabela, film opcjonalnie (`D-036`, `D-037`) |
 | `UI_SITEMAP_v0.1.md` | DRAFT | Ekrany, nawigacja, modality, knowledge-bounded UI |
 | `GAME_STATES_v0.1.md` | DRAFT | Kanoniczne stany, przejścia, save/load i runtime barriers |
 | `DATA_MODEL_v0.1.md` | DRAFT | Minimalne byty, IDs, employment, authority, knowledge i event contracts |

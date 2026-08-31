@@ -16,7 +16,7 @@
 
 **Last reviewed:** 2026-08-25
 
-**Related decisions/ADRs:** D-004, D-005, D-006, D-008, D-009, D-013, D-014, D-031, D-034, D-036; OPEN - Hotseat RaceLive resolution
+**Related decisions/ADRs:** D-004, D-005, D-006, D-008, D-009, D-013, D-014, D-031, D-034, D-036, D-037; OPEN - Hotseat RaceLive resolution
 
 ---
 

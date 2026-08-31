@@ -246,7 +246,7 @@ Prize money
 
 Ten sam race engine działa dla live i instant simulation.
 
-Po fast sim gracz może zobaczyć Key Race Story. W szkielecie (`D-036`) są to oficjalny zwycięzca, miejsca czwórki i czy cel StageWin wyszedł — bez ukrytej fizjologii. Docelowo:
+Po fast sim gracz może zobaczyć Key Race Story. W szkielecie (`D-036`, `D-037`) są to oficjalny zwycięzca, tabela miejsc z zespołem, miejsca czwórki i czy cel StageWin wyszedł — bez ukrytej fizjologii. Docelowo:
 
 - kto pracował,
 - gdzie powstał problem,

@@ -143,9 +143,14 @@ Jedna rzecz na raz. Skład → oglądanie → kalendarz → Hub. Nie równolegle
 7. **Więcej decyzji w wyścigu.** Tylko jeśli punkt 3 wypadł dobrze. Nie doklejać fizjologii.
 8. **Potem, nie teraz.** Dossier/agent, transfery, sponsorzy, AI na rynku, lider GC (`D-032`), awatarzy na oko właściciela.
 
-Kolejny krok zaczyna się dopiero gdy poprzedni wylądował. Radio/DS (PR #25) nie wchodzi w krok 1. Godot Hub / look-lab (PR #27, #28) czekają na krok 5. Prezentacja dnia wyścigu: `D-036` (wynik domyślnie, film opcjonalnie).
+Kolejny krok zaczyna się dopiero gdy poprzedni wylądował. Radio/DS (PR #25) nie wchodzi w krok 1. Godot Hub / look-lab (PR #27, #28) czekają na krok 5. Prezentacja dnia wyścigu: `D-036` (wynik domyślnie, film opcjonalnie), `D-037` (tabela wyników i filtr per zespół; bez nowych decyzji w wyścigu).
 
 ## D-036 — Default race day is results, not film
-Owner 2026-08-31: film Watch jest **opcjonalnym ustawieniem prezentacji**, domyślnie **wyłączony**. Domyślna ścieżka dnia wyścigu to kanoniczny headless `SimulateRace` (ten sam silnik co Watch), potem `RaceResultsFlow` z oficjalnym wynikiem i knowledge-bounded wydarzeniami (miejsca czwórki, cel). Włączenie filmu nie zmienia wyniku. Ustawienie nie jest GameState ani World State (`D-031`): nie woła gameplay RNG i nie rusza goldenu. `D-033` zostaje dla ścieżki filmu. §49 zostaje `NOT VERIFIED`. Więcej decyzji w wyścigu (`D-035` pkt 7) nadal czeka; ta decyzja nie zamyka fun gate'u.
+Owner 2026-08-31: film Watch jest **opcjonalnym ustawieniem prezentacji**, domyślnie **wyłączony**. Domyślna ścieżka dnia wyścigu to kanoniczny headless `SimulateRace` (ten sam silnik co Watch), potem `RaceResultsFlow` z oficjalnym wynikiem i knowledge-bounded wydarzeniami (miejsca czwórki, cel). Włączenie filmu nie zmienia wyniku. Ustawienie nie jest GameState ani World State (`D-031`): nie woła gameplay RNG i nie rusza goldenu. `D-033` zostaje dla ścieżki filmu. §49 zostaje `NOT VERIFIED`.
+
+Opis dla gracza: `HOW_RACE_DAY_WORKS.md`.
+
+## D-037 — Results table and per-team filter; no extra in-race decisions
+Owner 2026-08-31: historia dnia wyścigu jest **wystarczająca na teraz**. **Nie dodajemy kolejnych decyzji w tym samym wyścigu** (`D-035` pkt 7 zostaje *not now*). Zamiast tego wynik ma **tabelę** (miejsce, zawodnik, zespół) i **filtr każdego zespołu osobno**. Miejsca w filtrze zostają globalne (2. miejsce nie staje się 1. po odfiltrowaniu). Filtr jest tylko prezentacją: nie jest GameState ani World State, nie woła gameplay RNG i nie rusza goldenu. Film zostaje opcją z `D-036` (domyślnie wył.). Core loop idzie w **headless symulację i warstwę zarządzania**; film jest dodatkiem, nie rdzeniem. §49 zostaje `NOT VERIFIED`.
 
 Opis dla gracza: `HOW_RACE_DAY_WORKS.md`.
