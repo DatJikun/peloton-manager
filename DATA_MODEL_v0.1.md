@@ -323,6 +323,13 @@ Organization
     organization identity and strategy references
     active manager EmploymentId?  // derived/indexed from Employment lifecycle
     OrganizationKnowledgeStoreId
+    Country?                    // ISO3; Career WorldTour slice phase 5
+    Division?                   // WorldTour / ProTeam / Continental / Skeleton
+    LicenceYearsRemaining?      // 3-year WT cycle; Picnic = 1
+    TitleSponsor?
+    Bike?
+    Groupset?
+    EstimatedBudgetEur?         // labelled estimated gameplay; economy spends it in phase 6
 ```
 
 `Employment` is the system of record for the relationship. If active-employment references are stored on ManagerCareer or Organization for efficient lookup, validation must keep them consistent with that lifecycle.

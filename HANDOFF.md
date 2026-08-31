@@ -108,7 +108,7 @@ Baza 2026: najpierw 18 ekip męskiego WorldTour. Liczby fizjologii i budżetów 
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task
-`2026 WorldTour content pack (CAREER_WORLDTOUR_SLICE_v0.1.md phase 5). Pack id peloton.wt-2026. Do not wire to CreateWorld until pack is ready. No transfer market. No tenth GameState. Do not close §49. Do not build Career Hub. Do not start AI managers.`
+`2026 WorldTour content pack (CAREER_WORLDTOUR_SLICE_v0.1.md phase 5). scenario.peloton.wt-2026 CreateWorld, thin 4-rider squads, 12-rider prototype cap, calendar-from-content. Keep skeleton as the 10-season soak. No tenth GameState. Do not close §49. Do not build Career Hub. Do not start AI managers.`
 
 ## Known blockers
 - None.
@@ -128,7 +128,8 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
-- `2026-08-31` — **Phase 4 landed (Composer):** `RiderContract` wage/expiry, nullable `RiderCareer.OrganizationId`, `ClubRosterProjection`, contract expiry on Advance Day, SQLite SchemaVersion 4 / checksum v4. Gate green: format/build/test (139 tests) + SimRunner gates.
+- `2026-08-31` — **Phase 5 specified:** `scenario.peloton.wt-2026` CreateWorld, 18 orgs, thin 4-rider estimated squads, 36-race content calendar, prototype 12-starter cap, SchemaVersion 5. Skeleton soak stays.
+- `2026-08-31` — **Phase 4 landed (Composer):** `RiderContract` wage/expiry, nullable `RiderCareer.OrganizationId`, `ClubRosterProjection`, contract expiry on Advance Day, SQLite SchemaVersion 4 / checksum v4. Independently rechecked: 7/7 `CareerWorldTourPhase4` tests pass.
 - `2026-08-31` — **Phase 4 specified:** `RiderContract` (not manager `Employment`), wage + inclusive expiry, nullable club id, SchemaVersion 4. Loyalty stored/queried only. No transfer market this phase.
 - `2026-08-31` — **Phase 3 landed (Composer):** pre-season `PreSeasonPlanningFlow` (draft entry by `RaceContentId`), `OrganizationRaceEntry`, player race-due gating, delegated auto-sim on skipped race days, `SetRacePreparationStrategyCommand` + `PREP_STRATEGY_INCOMPLETE`, SQLite SchemaVersion 3 / checksum v3. Gate green: format/build/test (132 tests) + SimRunner gates.
 - `2026-08-31` — **Phase 1 landed (Composer):** world–race bind.

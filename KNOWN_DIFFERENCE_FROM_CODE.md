@@ -47,7 +47,9 @@ Phase 1 out of scope (now landed in phase 3 headless): pre-season picker and str
 - `ClubRosterProjection` exposes employer roster wages, contract end day, and loyalty (headless only).
 - World checksum label is `peloton-world-checksum-v4`. Schema 3 saves may refuse to load.
 
-Phase 5+ out of scope: transfer market, 2026 WT pack wired to `CreateWorld`, AI managers, D-032, tenth GameState.
+Phase 5 specified (not in code yet): `scenario.peloton.wt-2026` CreateWorld, thin 4-rider squads, 12-starter prototype cap, calendar-from-content, SchemaVersion 5. Route geometry remains the synthetic proof circuit.
+
+Phase 5+ out of scope: transfer market, 150-rider pelotons, real cobble profiles, AI managers, D-032, tenth GameState.
 
 ## Day state (D-036 phase 2 landed)
 

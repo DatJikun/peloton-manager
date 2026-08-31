@@ -364,30 +364,190 @@ Transfer market, renew/sign/release commands, wage negotiation, personal sponsor
 
 ### Phase 5 — 2026 WorldTour pack
 
-Pack id `peloton.wt-2026`. Men’s 18 WT teams for the 2026–2028 cycle (UCI licence list). Seed team list:
+Pack id `peloton.wt-2026`. Men’s 18 WT teams for the 2026–2028 cycle (existing `organizations.json` is the team list; Picnic `licenceYearsRemaining=1`). **Honesty:** physiology, wages, and budgets are **estimated gameplay bands**, labelled in `content/peloton.wt-2026/README.md`. Real names are a thin public identity layer, not a licensed UCI dump and not a 28-rider official roster. Commercial licensing remains later. The engine must still run on `scenario.peloton.skeleton`.
 
-```text
-Alpecin–Premier Tech
-Bahrain Victorious
-Decathlon CMA CGM Team
-EF Education–EasyPost
-Groupama–FDJ United
-Ineos / Netcompany–INEOS (use UCI licence name; alias the other)
-Lidl–Trek
-Lotto–Intermarché
-Movistar Team
-NSN Cycling Team
-Red Bull–Bora–Hansgrohe
-Soudal Quick-Step
-Team Jayco AlUla
-Team Picnic PostNL          // one-year licence; store licenceYearsRemaining=1
-Team Visma | Lease a Bike
-UAE Team Emirates XRG
-Uno-X Mobility
-XDS Astana Team
-```
+Do **not** put 18×28 riders into `PrototypeRaceEngine`. Do **not** replace the skeleton SimRunner `run` gate.
 
-Each organization: country, division=`WorldTour`, licence cycle 2026–2028, bike/groupset when public, title sponsor name, **estimated** budget band. Each rider: name, nationality, birth year, estimated physiology, estimated wage band. Routes: WT calendar races with stage/route parameters where a public profile exists; otherwise a labelled estimated profile. Equipment: bike + groupset as organization equipment, not a tech tree.
+#### What “wired” means
+
+New scenario id `scenario.peloton.wt-2026`. `CreateWorldCommand("scenario.peloton.wt-2026", seed)` must succeed.
+
+Skeleton `scenario.peloton.skeleton` stays the 10-season soak and default `run` path. Existing CareerWorldTour phase 1–4 tests stay on skeleton.
+
+#### Content
+
+Extend `content/peloton.wt-2026/`:
+
+- Keep `organizations.json` / `calendar.json` (36 races).
+- Add `scenario.json` (`scenario.peloton.wt-2026`, `startDate: "2026-01-01"`, Dynamic/Advanced/Guessed, all 18 org ids).
+- Add `roster.json` (manager + 72 riders). Manager employer: `organization.wt2026.alpecin`, name `WT Manager`.
+- `pack.json` resources: `scenarios`, `roster`, existing `organizations` and `calendar`.
+- Rules module `calendarStructure` parameterIdentity: `calendar-from-content` (not `days-per-season:12`).
+- Competition module may reuse `rules.peloton.race.prototype-v0`.
+
+Each org already has country, division, licence, bike, groupset, title sponsor, estimated budget. Load those into domain `Organization` (not a tech tree).
+
+Each rider JSON: `id`, `name`, `organizationId`, `nationality` (ISO3), `birthYear`, physiology fields already used by `RiderDefinition`, `annualWage`, `contractEndDay` (10000), optional `loyalty01`.
+
+Rider id pattern: `rider.wt2026.{teamSlug}.{role}` with roles `leader`, `support-1`, `support-2`, `card`. Team slugs match org ids after `organization.wt2026.`.
+
+**Thin squad names (copy exactly):**
+
+| teamSlug | role | name | nationality | birthYear |
+|---|---|---|---|---|
+| alpecin | leader | Mathieu van der Poel | NED | 1995 |
+| alpecin | support-1 | Søren Wærenskjold | NOR | 2000 |
+| alpecin | support-2 | Quinten Hermans | BEL | 1995 |
+| alpecin | card | Jasper Philipsen | BEL | 1998 |
+| bahrain | leader | Santiago Buitrago | COL | 1999 |
+| bahrain | support-1 | Matej Mohorič | SLO | 1994 |
+| bahrain | support-2 | Pello Bilbao | ESP | 1990 |
+| bahrain | card | Phil Bauhaus | GER | 1994 |
+| decathlon | leader | Ben O'Connor | AUS | 1995 |
+| decathlon | support-1 | Paul Seixas | FRA | 2006 |
+| decathlon | support-2 | Bruno Armirail | FRA | 1994 |
+| decathlon | card | Bryan Coquard | FRA | 1992 |
+| ef | leader | Richard Carapaz | ECU | 1993 |
+| ef | support-1 | Ben Healy | IRL | 2000 |
+| ef | support-2 | Neilson Powless | USA | 1996 |
+| ef | card | Marijn van den Berg | NED | 1999 |
+| fdj | leader | David Gaudu | FRA | 1996 |
+| fdj | support-1 | Romain Grégoire | FRA | 2003 |
+| fdj | support-2 | Valentin Madouas | FRA | 1996 |
+| fdj | card | Paul Penhoët | FRA | 2001 |
+| ineos | leader | Carlos Rodríguez | ESP | 2001 |
+| ineos | support-1 | Thomas Pidcock | GBR | 1999 |
+| ineos | support-2 | Filippo Ganna | ITA | 1996 |
+| ineos | card | Oscar Onley | GBR | 2002 |
+| lidl-trek | leader | Giulio Ciccone | ITA | 1994 |
+| lidl-trek | support-1 | Tao Geoghegan Hart | GBR | 1995 |
+| lidl-trek | support-2 | Toms Skujiņš | LAT | 1991 |
+| lidl-trek | card | Jonathan Milan | ITA | 2000 |
+| lotto | leader | Arnaud De Lie | BEL | 2002 |
+| lotto | support-1 | Maxim Van Gils | BEL | 1999 |
+| lotto | support-2 | Lennert Van Eetvelt | BEL | 2001 |
+| lotto | card | Victor Campenaerts | BEL | 1991 |
+| movistar | leader | Enric Mas | ESP | 1995 |
+| movistar | support-1 | Oier Lazkano | ESP | 1996 |
+| movistar | support-2 | Iván García Cortina | ESP | 1995 |
+| movistar | card | Fernando Gaviria | COL | 1994 |
+| nsn | leader | Biniam Girmay | ERI | 2000 |
+| nsn | support-1 | Joseph Blackmore | GBR | 2003 |
+| nsn | support-2 | Alexey Lutsenko | KAZ | 1992 |
+| nsn | card | Ethan Vernon | GBR | 2000 |
+| redbull | leader | Primož Roglič | SLO | 1989 |
+| redbull | support-1 | Florian Lipowitz | GER | 2000 |
+| redbull | support-2 | Jai Hindley | AUS | 1996 |
+| redbull | card | Jordi Meeus | BEL | 1998 |
+| soudal | leader | Remco Evenepoel | BEL | 2000 |
+| soudal | support-1 | Mikel Landa | ESP | 1989 |
+| soudal | support-2 | Yves Lampaert | BEL | 1991 |
+| soudal | card | Tim Merlier | BEL | 1992 |
+| jayco | leader | Simon Yates | GBR | 1992 |
+| jayco | support-1 | Eddie Dunbar | IRL | 1996 |
+| jayco | support-2 | Michael Matthews | AUS | 1990 |
+| jayco | card | Dylan Groenewegen | NED | 1993 |
+| picnic | leader | Max Poole | GBR | 2003 |
+| picnic | support-1 | Frank van den Broek | NED | 2000 |
+| picnic | support-2 | Pavel Bittner | CZE | 2002 |
+| picnic | card | Tobias Lund Andresen | DEN | 2002 |
+| visma | leader | Jonas Vingegaard | DEN | 1996 |
+| visma | support-1 | Matteo Jorgenson | USA | 1999 |
+| visma | support-2 | Wout van Aert | BEL | 1994 |
+| visma | card | Olav Kooij | NED | 2001 |
+| uae | leader | Tadej Pogačar | SLO | 1998 |
+| uae | support-1 | João Almeida | POR | 1998 |
+| uae | support-2 | Isaac del Toro | MEX | 2003 |
+| uae | card | Jhonatan Narváez | ECU | 1997 |
+| unox | leader | Tobias Halland Johannessen | NOR | 1999 |
+| unox | support-1 | Jonas Abrahamsen | NOR | 1995 |
+| unox | support-2 | Rasmus Tiller | NOR | 1996 |
+| unox | card | Alexander Kristoff | NOR | 1987 |
+| astana | leader | Christian Scaroni | ITA | 1997 |
+| astana | support-1 | Diego Ulissi | ITA | 1989 |
+| astana | support-2 | Clément Berthet | FRA | 1997 |
+| astana | card | Cees Bol | NED | 1995 |
+
+**Estimated physiology / wage (write into JSON; do not re-derive at runtime):**
+
+Shared: `systemMassKg=8`, `cdAM2=0.29`, `baseCrr=0.004`, `wPrimeRecoveryJPerSecond` from role, positioning/handling/tacticalAwareness from role.
+
+| role | CP | W' | Pmax | Wrec | lowD | highD | mass | pos | han | tac | base wage |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| leader | 410 | 30000 | 1000 | 42 | 0.88 | 0.86 | 67 | 0.86 | 0.80 | 0.84 | 800000 |
+| support-1 | 375 | 26000 | 900 | 40 | 0.82 | 0.80 | 71 | 0.80 | 0.78 | 0.80 | 280000 |
+| support-2 | 360 | 23000 | 870 | 38 | 0.79 | 0.76 | 73 | 0.76 | 0.74 | 0.76 | 180000 |
+| card | 385 | 28000 | 1080 | 40 | 0.83 | 0.82 | 70 | 0.84 | 0.80 | 0.82 | 350000 |
+
+Budget band from the rider’s org (`organizations.json` `budgetBand`):
+
+| band | CP delta | wage multiplier |
+|---|---|---|
+| elite | +8 | 1.35 |
+| high | 0 | 1.00 |
+| mid | −8 | 0.75 |
+| tight | −15 | 0.55 |
+
+`criticalPowerW = roleCP + delta`. `peakPowerW = max(rolePmax + delta, criticalPowerW)`. `annualWage = round(baseWage * multiplier)` to nearest 1000. `contractEndDay = 10000`. `loyalty01` default 0.5.
+
+#### Domain / recipe
+
+- `Organization`: persist `Country`, `Division`, `LicenceYearsRemaining`, `TitleSponsor`, `Bike`, `Groupset`, `EstimatedBudgetEur`. Skeleton CreateWorld uses empty country, division `Skeleton`, licence 0, budget 0.
+- `Person`: persist optional `Nationality` and `BirthYear` (WT riders set them; skeleton may leave null).
+- `WorldState.GeneratePeriodicRaces`: `true` for skeleton (current `EnsureUpcomingRaceEntry` behaviour); `false` for WT (season is the 36 content races only).
+- `WorldRecipe` carries org metadata, calendar definitions, `GeneratePeriodicRaces`, and `DefaultRaceTemplateId` (`race-scenario.peloton.prototype-v0`).
+- Calendar: `DayNumber = (race.start date − scenario startDate).Days`. Title = race name. `RaceContentId` = calendar race id (`race.wt2026.tour_down_under`, …). First race (Tour Down Under, 2026-01-20) is **day 19**.
+
+#### Race-due
+
+Stop using “day % CalendarPeriodDays” as the only race-due signal.
+
+`IsCalendarRaceDue` = there is a `CalendarEntry` of kind Race on `CurrentDate.DayNumber` whose result is not yet recorded (`LastCompletedRaceDay != CurrentDate.DayNumber`), and `CurrentDate.DayNumber > 0`.
+
+`NextRaceDayNumber` = soonest Race entry with `DayNumber >= CurrentDate` that is still due; if none, `CurrentDate.DayNumber`.
+
+Skeleton still works: it already places entries on day 12, 24, … and `GeneratePeriodicRaces` keeps adding them. WT does not add extra races after Guangxi.
+
+#### Assembler (required for WT riders)
+
+Today the assembler indexes prototype origin ids (`rider.race-prototype.*`) and will throw on WT ids.
+
+- If every template starting-order origin id exists in the world (skeleton): keep the current path.
+- Else (WT):
+  - Starters: **cap 12**. Take the player employer’s roster (up to 4), then other **entered** orgs by `OriginDefinitionId`, up to 4 riders each, until 12. Order riders by `OriginDefinitionId`.
+  - Starting positions: that order, spacing 0.7 as today.
+  - Scripted template commands that reference missing origin ids: skip.
+  - Tactical plans: one per org that has a starter. Player org uses committed strategy when present; others use first two roster riders by Id, `StageWin` + `Chase`.
+- `BuildOfficialRaceScenario`: `RaceContentId` values like `race.wt2026.omloop` are **not** route files. Resolve the **route/tuning** template via `WorldRecipe.DefaultRaceTemplateId` (prototype circuit). Honesty: route geometry is still the synthetic proof circuit, labelled estimated — not Flanders cobbles.
+
+This cap is an explicit prototype limit (`KNOWN_DIFFERENCE_FROM_CODE.md`), not a UCI 176-rider field.
+
+World create still enters every org into every scheduled race (pre-season can skip). The cap, not entry, keeps the engine alive.
+
+#### Persistence
+
+SQLite **SchemaVersion 5**. Checksum label `peloton-world-checksum-v5`. Schema 1–4 may refuse to load. Include new org fields, person nationality/birth year, `GeneratePeriodicRaces`, and the larger calendar. Skeleton worlds also save as v5.
+
+#### Tests (`CareerWorldTourPhase5Tests`)
+
+- `CreateWorld` WT: 18 orgs; Picnic `licenceYearsRemaining == 1`; UAE/Visma/Ineos/RedBull/Lidl-Trek are `elite` budget; 72 riders; 72 contracts; 36 calendar races; TDU at day 19; Alpecin is employer; Pogačar / van der Poel names present.
+- Save/load SchemaVersion 5 round-trips WT world checksum.
+- Advance to day 19 (or `PrepareRace` on that day): official simulate produces a 12-rider start list of world `RiderCareer` ids; winner is one of those ids; career results append.
+- Assembler does not throw; start list length 12; player Alpecin riders are included when Alpecin is entered.
+- Skeleton CreateWorld + 10-season runner **unchanged in behaviour** (still 12 skeleton riders, still 10 races / day 120). Update schema-version assertions from 4 → 5 where they read the live store constant.
+- Catalog validation still fails on missing WT rider wage/end day.
+
+#### Gate
+
+Same skeleton commands as today, **plus**:
+
+`dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.wt-2026 --seed 91234 --days 20 --simulate-from-prep --through-results`
+
+That should pass TDU (day 19) and print a world WT rider as winner. Do not add a 10-year WT soak.
+
+#### Out of scope for phase 5
+
+Real cobbled/mountain route profiles, 28-rider rosters, 150-rider pelotons, living promotion/relegation, Women’s WT, Godot Hub, tenth GameState, AI managers, transfer market, club cash / title-sponsor economy (phase 6), closing §49, restoring `StubRaceEngine`.
 
 ### Phase 6 — thin economy
 
