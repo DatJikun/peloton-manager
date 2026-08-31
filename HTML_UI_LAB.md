@@ -6,7 +6,7 @@
 **Chrome ancestor:** `08e-constructivist-desk.html`  
 **Race card (shell, not RaceLive):** `14-race.html`
 
-Open the HTML in a browser. Do not wire it to Application Commands. Godot `.NET` is the client and copies this look (`CareerShell.tscn`).
+Open the HTML in a browser. Do not wire it to Application Commands. Godot `.NET` is the client and copies this look (`CareerShell.tscn`). Empty management domains in Godot use `CareerLookCatalog` — the same names and numbers as this file — as presentation only.
 
 ## What to copy into Godot
 
@@ -39,7 +39,7 @@ POC names are look labels. `UI_SITEMAP_v0.1.md` stays the domain contract.
 
 ## Demo only (do not ship as truth)
 
-Names (Beskid–Vetter, Kowalczyk, …), invented races, OVR/POT bars, fatigue %, star ratings, cash figures, and CSS geometric avatars are placeholder fiction.
+Names (Beskid–Vetter, Kowalczyk, …), invented races, OVR/POT bars, fatigue %, star ratings, cash figures, and CSS geometric avatars are placeholder fiction. Godot may show them on staff / finance / scouting / market / look calendar so the shell is not empty; they still must not become World State or true ability.
 
 - Player-facing ratings must stay **knowledge-bounded** (D-003, D-010, D-014). Do not treat POC OVR as true ability.
 - The race engine has no generic stamina bar; do not read `fatigue %` as physics.

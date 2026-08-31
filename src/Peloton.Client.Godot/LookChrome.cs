@@ -146,6 +146,117 @@ internal static class LookChrome
         return panel;
     }
 
+    public static Label Chip(string text, string kind = "")
+    {
+        Color background = kind switch
+        {
+            "red" => Red,
+            "inv" => Black,
+            "ok" => White,
+            "warn" => Paper,
+            _ => White,
+        };
+        Color foreground = kind is "red" or "inv" ? Paper : Black;
+        Label label = Body(text, 11, foreground, bold: true);
+        label.AddThemeStyleboxOverride("normal", ChipBox(background));
+        return label;
+    }
+
+    public static PanelContainer Avatar(string name, bool mini = false)
+    {
+        int size = mini ? 36 : 52;
+        PanelContainer panel = new();
+        panel.CustomMinimumSize = new Vector2(size, size);
+        panel.AddThemeStyleboxOverride("panel", ChipBox(White));
+        Label initials = Display(CareerLookCatalog.Initials(name), mini ? 12 : 18, Black);
+        initials.HorizontalAlignment = HorizontalAlignment.Center;
+        initials.VerticalAlignment = VerticalAlignment.Center;
+        initials.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        panel.AddChild(initials);
+        return panel;
+    }
+
+    public static HBoxContainer Stat(string label, int value)
+    {
+        value = Math.Clamp(value, 0, 100);
+        HBoxContainer row = new();
+        row.AddThemeConstantOverride("separation", 8);
+        Label name = Body(label, 12, Gray, bold: true);
+        name.CustomMinimumSize = new Vector2(110, 0);
+        row.AddChild(name);
+
+        ColorRect track = Block(Hair);
+        track.CustomMinimumSize = new Vector2(80, 10);
+        track.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        track.SizeFlagsVertical = Control.SizeFlags.ShrinkCenter;
+        ColorRect fill = Block(Team);
+        fill.SetAnchorsPreset(Control.LayoutPreset.LeftWide);
+        fill.AnchorRight = value / 100f;
+        fill.OffsetRight = 0;
+        track.AddChild(fill);
+        row.AddChild(track);
+
+        Label number = Body(value.ToString(System.Globalization.CultureInfo.InvariantCulture), 12, Black, bold: true);
+        number.CustomMinimumSize = new Vector2(28, 0);
+        number.HorizontalAlignment = HorizontalAlignment.Right;
+        row.AddChild(number);
+        return row;
+    }
+
+    public static HBoxContainer Kv(string label, string value)
+    {
+        HBoxContainer row = new();
+        row.AddThemeConstantOverride("separation", 10);
+        Label left = Body(label, 12, Gray, bold: true);
+        left.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        Label right = Body(value, 13, Black, bold: true);
+        right.HorizontalAlignment = HorizontalAlignment.Right;
+        row.AddChild(left);
+        row.AddChild(right);
+        return row;
+    }
+
+    public static ColorRect Hairline()
+    {
+        ColorRect line = Block(Hair);
+        line.CustomMinimumSize = new Vector2(0, 2);
+        return line;
+    }
+
+    public static PanelContainer ClickRow(bool active, Action onPressed)
+    {
+        PanelContainer panel = new();
+        panel.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+        panel.MouseFilter = Control.MouseFilterEnum.Stop;
+        panel.AddThemeStyleboxOverride("panel", active ? Fill(Black, 10, 8) : Fill(Paper, 10, 8));
+        panel.GuiInput += e =>
+        {
+            if (e is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left })
+            {
+                onPressed();
+                panel.AcceptEvent();
+            }
+        };
+        return panel;
+    }
+
+    public static StyleBoxFlat ChipBox(Color background)
+    {
+        return new StyleBoxFlat
+        {
+            BgColor = background,
+            BorderColor = Black,
+            BorderWidthLeft = 2,
+            BorderWidthTop = 2,
+            BorderWidthRight = 2,
+            BorderWidthBottom = 2,
+            ContentMarginLeft = 8,
+            ContentMarginRight = 8,
+            ContentMarginTop = 4,
+            ContentMarginBottom = 4,
+        };
+    }
+
     public static StyleBoxFlat Frame(Color background)
     {
         return new StyleBoxFlat
