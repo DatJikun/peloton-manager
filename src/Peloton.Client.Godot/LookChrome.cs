@@ -17,12 +17,25 @@ internal static class LookChrome
     private static FontFile? display;
     private static FontFile? body;
     private static FontFile? bodyBold;
+    private static bool fontsResolved;
 
     public static void EnsureFonts()
     {
-        display ??= GD.Load<FontFile>("res://fonts/Anton-Regular.ttf");
-        body ??= GD.Load<FontFile>("res://fonts/PTSans-Regular.ttf");
-        bodyBold ??= GD.Load<FontFile>("res://fonts/PTSans-Bold.ttf");
+        if (fontsResolved)
+        {
+            return;
+        }
+
+        fontsResolved = true;
+        display = LoadFont("res://fonts/Anton-Regular.ttf");
+        body = LoadFont("res://fonts/PTSans-Regular.ttf");
+        bodyBold = LoadFont("res://fonts/PTSans-Bold.ttf");
+    }
+
+    private static FontFile? LoadFont(string path)
+    {
+        FontFile font = new();
+        return font.LoadDynamicFont(path) == Error.Ok ? font : null;
     }
 
     public static Label Display(string text, int size, Color color)
