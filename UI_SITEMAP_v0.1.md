@@ -65,7 +65,7 @@ UI refresh ← Query projection ← Knowledge stores (via AccessContext)
 
 Queries and forecasts are read-only, RNG-neutral, and knowledge-bounded (D-014, D-027).
 
-**Look reference:** career-shell chrome and layout start from `HTML_UI_LAB.md` / `peloton-manager-full-ui-poc-v3.html`. That HTML is not a client and does not change this sitemap's domains, Commands, or knowledge rules.
+**Look reference:** career-shell chrome and layout start from `HTML_UI_LAB.md` / `peloton-manager-full-ui-poc-v3.html`. Godot `CareerShell.tscn` copies that chrome. The HTML is not a client and does not change this sitemap's domains, Commands, or knowledge rules.
 
 ---
 

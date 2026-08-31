@@ -6,7 +6,7 @@
 **Chrome ancestor:** `08e-constructivist-desk.html`  
 **Race card (shell, not RaceLive):** `14-race.html`
 
-Open the HTML in a browser. Do not wire it to Application Commands. Do not port it as a playable frontend. Godot `.NET` remains the client; it copies this look.
+Open the HTML in a browser. Do not wire it to Application Commands. Godot `.NET` is the client and copies this look (`CareerShell.tscn`).
 
 ## What to copy into Godot
 

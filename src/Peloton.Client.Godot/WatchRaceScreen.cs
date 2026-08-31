@@ -28,9 +28,20 @@ public sealed partial class WatchRaceScreen : Control
     private VBoxContainer? decisionBox;
     private Button? confirmButton;
     private Button? startButton;
+    private Button? deskButton;
     private Button? pauseButton;
     private Button? exitButton;
     private Button? continueButton;
+    private bool attached;
+    private bool returned;
+
+    public event Action? ReturnedToManagement;
+
+    public void Attach(WatchRaceHost existing)
+    {
+        host = existing ?? throw new ArgumentNullException(nameof(existing));
+        attached = true;
+    }
 
     public override void _Ready()
     {
@@ -62,7 +73,9 @@ public sealed partial class WatchRaceScreen : Control
 
         confirmButton = MakeButton("POTWIERDŹ PLAN", onPressed: OnConfirm);
         startButton = MakeButton("OGLĄDAJ ETAP", onPressed: OnStart);
-        root.AddChild(WrapRow(confirmButton, startButton));
+        deskButton = MakeButton("WRÓĆ DO BIURKA", onPressed: OnBackToDesk);
+        deskButton.Visible = attached;
+        root.AddChild(WrapRow(confirmButton, startButton, deskButton));
 
         rateRow = new HBoxContainer();
         rateRow.AddThemeConstantOverride("separation", 8);
@@ -112,17 +125,20 @@ public sealed partial class WatchRaceScreen : Control
         continueButton.Visible = false;
         root.AddChild(continueButton);
 
-        string autosavePath = Path.Combine(Path.GetTempPath(), "peloton-watch-prerace.peloton");
-        host = new WatchRaceHost(
-            ApplicationFactory.Create(WatchContentPath.FindContentRoot()),
-            autosavePath);
-        CommandResult opened = host.OpenPrototype(91234);
-        if (!opened.Succeeded)
+        if (host is null)
         {
-            status.Text = $"Nie udało się otworzyć prototypu ({opened.ReasonCode}).";
-            confirmButton.Disabled = true;
-            startButton.Disabled = true;
-            return;
+            string autosavePath = Path.Combine(Path.GetTempPath(), "peloton-watch-prerace.peloton");
+            host = new WatchRaceHost(
+                ApplicationFactory.Create(WatchContentPath.FindContentRoot()),
+                autosavePath);
+            CommandResult opened = host.OpenPrototype(91234);
+            if (!opened.Succeeded)
+            {
+                status.Text = $"Nie udało się otworzyć prototypu ({opened.ReasonCode}).";
+                confirmButton.Disabled = true;
+                startButton.Disabled = true;
+                return;
+            }
         }
 
         RefreshRateButtons();
@@ -179,6 +195,22 @@ public sealed partial class WatchRaceScreen : Control
         {
             map.ShowCourse(host.Course);
         }
+    }
+
+    private void OnBackToDesk()
+    {
+        if (host is null)
+        {
+            return;
+        }
+
+        if (host.State == GameState.RacePreparationFlow)
+        {
+            Apply(host.CancelPreparation());
+            return;
+        }
+
+        NotifyReturned();
     }
 
     private void OnTogglePause()
@@ -240,6 +272,7 @@ public sealed partial class WatchRaceScreen : Control
         bool prep = host.State == GameState.RacePreparationFlow;
         confirmButton!.Visible = prep;
         startButton!.Visible = prep;
+        deskButton!.Visible = attached && (prep || host.State == GameState.Management);
         rateRow!.Visible = prep || live;
         liveRow!.Visible = live;
         continueButton!.Visible = host.State is GameState.RaceResultsFlow or GameState.RaceDebriefFlow;
@@ -250,16 +283,25 @@ public sealed partial class WatchRaceScreen : Control
         if (prep)
         {
             title!.Text = "WATCH RACE";
-            status!.Text = $"Seed 91234 · tempo ×{host.SelectedRate} · potwierdź plan i oglądaj.";
+            status!.Text = attached
+                ? $"Kariera · tempo ×{host.SelectedRate} · potwierdź plan albo wróć do biurka."
+                : $"Seed 91234 · tempo ×{host.SelectedRate} · potwierdź plan i oglądaj.";
             clock!.Text = "zegar oglądania czeka na StartRace.";
         }
 
         if (host.State == GameState.Management)
         {
             title!.Text = "WATCH RACE";
-            status!.Text = "Etap zamknięty. To nie jest Career Hub.";
+            status!.Text = attached
+                ? "Etap zamknięty. Wracasz do biurka."
+                : "Etap zamknięty. To nie jest Career Hub.";
             liveRow!.Visible = false;
             decisionBox!.Visible = false;
+            if (attached)
+            {
+                NotifyReturned();
+                return;
+            }
         }
 
         if (live && host.Interpolated is InterpolatedWatchView view)
@@ -450,5 +492,16 @@ public sealed partial class WatchRaceScreen : Control
         button.AddThemeStyleboxOverride("pressed", hover);
         button.Pressed += onPressed;
         return button;
+    }
+
+    private void NotifyReturned()
+    {
+        if (!attached || returned)
+        {
+            return;
+        }
+
+        returned = true;
+        ReturnedToManagement?.Invoke();
     }
 }

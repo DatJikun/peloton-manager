@@ -5,9 +5,9 @@ config_version=5
 
 [application]
 
-config/name="Peloton Manager — Watch Race"
-config/description="First playable Watch Race. Commands and queries only."
-run/main_scene="res://WatchRace.tscn"
+config/name="Peloton Manager"
+config/description="Career shell (POC v3 look) plus Watch Race. Commands and queries only."
+run/main_scene="res://CareerShell.tscn"
 config/features=PackedStringArray("4.4", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 

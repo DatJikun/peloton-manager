@@ -16,7 +16,7 @@
 First playable Watch Race window: prep → Confirm → `StartRaceCommand` → D-033 supervising clock, interpolated map icons, decision pause, Results from `LastRace`. Do not close §49.
 
 ### Status
-Godot Watch Race is a presentation client over the existing Application clock. Open `src/Peloton.Client.Godot/project.godot` in Godot 4.4 .NET. The player confirms prep, picks ×1/×2/×5/×20, watches focal-rider icons interpolate between official 1s physics snapshots, answers a knowledge-bounded decision (or the DS default), and sees the official winner from `LastRace`. Renderer does not drive physics. Career shell is not in this window. HTML look lab (`HTML_UI_LAB.md`, `peloton-manager-full-ui-poc-v3.html`) is the owner-accepted look for **most management screens**; it is not the game. `08e` / `14-race.html` remain ancestors. Headless CLI is unchanged. §49 remains `NOT VERIFIED`. `D-032` remains deferred. SchemaVersion remains 1.
+Open `src/Peloton.Client.Godot/project.godot` in Godot 4.4 .NET. Main scene is the career shell (`CareerShell.tscn`): sidebar + desk from `peloton-manager-full-ui-poc-v3.html`, filled with Hub / calendar / inbox / people queries. Primary CTA is `Advance Day`, or **Race next** on a race-due day. RaceLive still opens the blocking Watch Race window. HTML look lab stays the drawing, not a second client. Empty domains (staff, sponsors, market, …) stay empty — no OVR from the HTML. Headless CLI is unchanged. §49 remains `NOT VERIFIED`. `D-032` remains deferred. SchemaVersion remains 1.
 
 ## What works now
 - [x] High-level game design v0.7
@@ -53,6 +53,7 @@ Godot Watch Race is a presentation client over the existing Application clock. O
 - [x] Race result and debrief projections after Simulate/Watch; debrief uses committed LastRace facts, not TacticalPlans
 - [x] Career Watch from prep uses the D-033 supervising clock on the live RaceLive session
 - [x] Godot Watch Race window: Commands + Queries, interpolated icons, decision pause, Results from LastRace
+- [x] Godot career shell: POC v3 chrome over Hub/calendar/inbox/people; Watch Race remains the blocking stage window
 - [x] Career calendar entries (domain system of record) and inbox query (race-due + race-result); archive cannot dismiss race deadlines
 - [x] Headless domain/application/persistence/architecture tests
 - [x] Owner look lab: `peloton-manager-full-ui-poc-v3.html` indexed by `HTML_UI_LAB.md` (chrome only; not the game)
@@ -75,7 +76,7 @@ Godot Watch Race is a presentation client over the existing Application clock. O
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task
-`Owner §49 playtest of Godot Watch Race. Do not close §49 with automations. Do not implement D-032. Do not build the rejected Career Hub.`
+`Owner playtest of Godot career shell + Watch Race. Do not close §49 with automations. Do not implement D-032. Do not fill empty domains with HTML dummy OVR.`
 
 ## Known blockers
 - None.
@@ -192,6 +193,8 @@ Godot Watch Race (Godot 4.4 .NET, not required for headless tests):
 src/Peloton.Client.Godot/project.godot
 ```
 
+Main scene is `CareerShell.tscn`. `WatchRace.tscn` remains a standalone RaceLive window.
+
 `race --scenario race.prototype.gate` is an alias for the same fixture.
 
 ## Things the next AI must NOT do
@@ -199,7 +202,8 @@ src/Peloton.Client.Godot/project.godot
 - Nie twierdź, że §49 fun gate przeszedł; Godot Watch istnieje, ale właściciel musi oglądać ręcznie.
 - Nie przywracaj `StubRaceEngine` jako źródła oficjalnych wyników.
 - Nie przenoś logiki gameplayowej do Godot UI.
-- Nie buduj gry w HTML i nie podłączaj `peloton-manager-full-ui-poc-v3.html` do Commandów. To look lab.
+- Nie buduj gry w HTML i nie podłączaj `peloton-manager-full-ui-poc-v3.html` do Commandów. To look lab. Godot `CareerShell.tscn` kopiuje chrome i czyta Query.
+- Nie wstawiaj OVR/POT/zmęczenia z HTML na puste ekrany (Sztab, Sponsorzy, Finanse, Skauting, Rynek).
 - Nie twórz `new Random()` w systemach gameplayowych.
 - Nie zmieniaj schema save/content bez migration planu.
 - Nie traktuj starych dokumentów jako aktualnych bez sprawdzenia statusu.
@@ -207,7 +211,7 @@ src/Peloton.Client.Godot/project.godot
 - Nie zamykaj OQ-TS-001 ani OQ-DM-001 na podstawie checksumy lub allocatora szkieletowego.
 
 ## Handoff summary
-Milestone 0 still supplies the headless .NET 8 spine. The race prototype is the official result path: `PrototypeRaceEngine` plus `content/peloton.race-prototype`, Application commands `StartRaceCommand` / `AdvanceRaceCommand` / `RespondToRaceDecisionCommand` / `BeginRaceWatchCommand` / `AdvanceRaceWatchCommand` / `AbandonRaceLiveCommand`, and SimRunner `race`. A pending DecisionRequest stays in `RaceLive`. SimRunner `watch` and career `day --watch-from-prep` keep the D-033 supervising clock. Godot Watch Race (`src/Peloton.Client.Godot`) is presentation only: it issues those commands, interpolates `RaceWatch` snapshots, and shows Results from `LastRace`. Visible in Godot: prep confirm, rate, moving icons, decision pause, winner. Still CLI-only: Hub/inbox/calendar, 10-year soak, standalone `watch` markdown, Simulate-from-prep. The owner look for most career screens is `peloton-manager-full-ui-poc-v3.html` (`HTML_UI_LAB.md`); it is not a second game client. After Simulate/Watch, `RaceResultProjection` and `RaceDebriefProjection` present the committed result without a second `RunBatch`. Spy OFF/ON must match checksum and finish order. `StubRaceEngine` is gone from production assemblies. SQLite `SchemaVersion` remains 1. Owner §49 remains `NOT VERIFIED`. `D-032` is deferred.
+Milestone 0 still supplies the headless .NET 8 spine. The race prototype is the official result path: `PrototypeRaceEngine` plus `content/peloton.race-prototype`, Application commands `StartRaceCommand` / `AdvanceRaceCommand` / `RespondToRaceDecisionCommand` / `BeginRaceWatchCommand` / `AdvanceRaceWatchCommand` / `AbandonRaceLiveCommand`, and SimRunner `race`. A pending DecisionRequest stays in `RaceLive`. SimRunner `watch` and career `day --watch-from-prep` keep the D-033 supervising clock. Godot (`src/Peloton.Client.Godot`) presents the career shell (`CareerShell.tscn`, POC v3 chrome, Hub/calendar/inbox/people) and the blocking Watch Race window. Renderer does not drive physics. Empty management domains stay empty. The owner look drawing remains `peloton-manager-full-ui-poc-v3.html` (`HTML_UI_LAB.md`). After Simulate/Watch, `RaceResultProjection` and `RaceDebriefProjection` present the committed result without a second `RunBatch`. Spy OFF/ON must match checksum and finish order. `StubRaceEngine` is gone from production assemblies. SQLite `SchemaVersion` remains 1. Owner §49 remains `NOT VERIFIED`. `D-032` is deferred.
 
 This tree joins that career loop onto `main` without dropping the HTML UI lab. The paragraph below preserves the pre-bootstrap design context and owner lessons; implementation status is given above and in `CODEBASE_MAP.md`.
 
@@ -231,3 +235,4 @@ Peloton Manager jest na etapie pre-production. Celem jest modularny, determinist
 - `2026-08-27` — Właściciel kazał złączyć pętlę kariery z `main`. Jedno drzewo: PrototypeRaceEngine + Hub/inbox/prep/Watch razem z HTML labem (`08e` / `10` / `12` / `14-race.html`). Godot Watch i §49 nadal otwarte.
 - `2026-08-28` — Pierwszy Watch Race w Godot (D-033): okno oglądania etapu, nie Career Hub. §49 nadal `NOT VERIFIED`.
 - `2026-08-31` — Właściciel wskazał `peloton-manager-full-ui-poc-v3.html` jako dobry wstęp wyglądu **większości** ekranów kariery (konstruktywizm 08e, niebieska szyna, Biurko + sidebar). To look lab, nie druga gra. RaceLive zostaje osobnym oknem. Nie wdrażać OVR/POT z PoC jako true ability.
+- `2026-08-31` — Właściciel kazał przenieść ten wygląd do Godota. `CareerShell.tscn` kopiuje chrome; Biurko/kalendarz/skrzynka/ludzie biorą Query ze szkieletu. Puste działy zostają puste. Watch Race nadal blokuje powłokę.

@@ -166,6 +166,20 @@ public sealed class GameApplication
     public IReadOnlyList<InboxItemProjection> Inbox =>
         World is null ? Array.Empty<InboxItemProjection>() : CareerProjectionQueries.BuildInbox(World);
 
+    public IReadOnlyList<PersonNameProjection> People =>
+        World is null
+            ? Array.Empty<PersonNameProjection>()
+            : World.Persons
+                .Select(person => new PersonNameProjection(person.Id, person.Name))
+                .ToArray();
+
+    public IReadOnlyList<OrganizationNameProjection> Organizations =>
+        World is null
+            ? Array.Empty<OrganizationNameProjection>()
+            : World.Organizations
+                .Select(organization => new OrganizationNameProjection(organization.Id, organization.Name))
+                .ToArray();
+
     public CommandResult Execute(CreateWorldCommand command)
     {
         ArgumentNullException.ThrowIfNull(command);

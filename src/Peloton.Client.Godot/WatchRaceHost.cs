@@ -83,6 +83,11 @@ public sealed class WatchRaceHost
         return application.Execute(new ConfirmRacePreparationPlanCommand());
     }
 
+    public CommandResult CancelPreparation()
+    {
+        return application.Execute(new CancelRacePreparationCommand());
+    }
+
     public CommandResult SelectRate(int rate)
     {
         if (application.State == GameState.RaceLive)

@@ -1,5 +1,9 @@
-# Godot client stub
+# Godot client
 
-This project reserves the future client boundary and references only `Peloton.Application`.
+Presentation only. Open `project.godot` in Godot 4.4 .NET.
 
-Milestone 0 contains no Godot SDK dependency, scenes, nodes, HQ UI, cards, or race visualization. Headless tests and `Peloton.SimRunner` are the executable surfaces. A later Godot client must use Application Commands and knowledge-bounded Queries rather than owning World State or opening SQLite directly.
+- Main scene: `CareerShell.tscn` — management chrome copied from `peloton-manager-full-ui-poc-v3.html`, filled with Hub / calendar / inbox / people queries. No OVR from the HTML.
+- `WatchRace.tscn` — blocking RaceLive window. Career shell hides while a stage is watched.
+- Hosts (`CareerShellHost`, `WatchRaceHost`) are Godot-free and covered by `tests/Peloton.Client.Godot.Tests`.
+
+The client issues Application Commands and reads knowledge-bounded Queries. It does not own World State or open SQLite.

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Peloton.Domain;
 
 namespace Peloton.Application;
 
@@ -25,3 +26,7 @@ public sealed record CareerDayProjection(
     int RaceCount,
     string PrimaryAction,
     string PrimaryLabel);
+
+public sealed record PersonNameProjection(WorldEntityId Id, string Name);
+
+public sealed record OrganizationNameProjection(WorldEntityId Id, string Name);
