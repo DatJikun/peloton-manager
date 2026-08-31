@@ -16,20 +16,20 @@ public sealed partial class CareerShellScreen
         content.AddChild(BuildWorldStrip());
 
         HBoxContainer top = Row();
-        VBoxContainer list = Panel("01  NADCHODZĄCE WYŚCIGI", BuildUpcomingList());
+        VBoxContainer list = Panel("NADCHODZĄCE WYŚCIGI", BuildUpcomingList());
         list.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         list.SizeFlagsStretchRatio = 5;
         VBoxContainer raceCol = new();
         raceCol.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         raceCol.SizeFlagsStretchRatio = 7;
         raceCol.AddThemeConstantOverride("separation", 14);
-        raceCol.AddChild(Panel("02  WYŚCIG", BuildUpcomingDetail()));
+        raceCol.AddChild(Panel("WYŚCIG", BuildUpcomingDetail()));
         if (host!.Preparation is not null)
         {
             raceCol.AddChild(Panel("PRZYGOTOWANIE", BuildPrepSeats()));
         }
 
-        raceCol.AddChild(Panel("03  INBOX", BuildDeskInbox()));
+        raceCol.AddChild(Panel("INBOX", BuildDeskInbox()));
         top.AddChild(list);
         top.AddChild(raceCol);
         content.AddChild(top);
@@ -268,7 +268,7 @@ public sealed partial class CareerShellScreen
                 int fresh = key is "name" or "role" ? 1 : -1;
                 deskSquadSort = CareerLookCatalog.Toggle(deskSquadSort, key, fresh);
                 RebuildContent();
-            }));
+            }, numeric: IsNumericColumn(key)));
         }
 
         box.AddChild(heads);
@@ -276,10 +276,11 @@ public sealed partial class CareerShellScreen
         {
             HBoxContainer row = new();
             row.AddThemeConstantOverride("separation", 8);
+            row.SizeFlagsHorizontal = SizeFlags.ExpandFill;
             row.AddChild(Cell(rider.Name, true));
             row.AddChild(Cell(rider.Role, false));
-            row.AddChild(Cell(CareerLookCatalog.Stars(rider.Rate) + "  " + rider.Rate + "/" + rider.Pot, true));
-            row.AddChild(Cell(CareerLookCatalog.Trend(rider.Trend), false));
+            row.AddChild(Cell(CareerLookCatalog.Stars(rider.Rate) + "  " + rider.Rate + "/" + rider.Pot, true, numeric: true));
+            row.AddChild(Cell(CareerLookCatalog.Trend(rider.Trend), false, numeric: true));
             row.AddChild(LookChrome.Chip(rider.Status, rider.Healthy ? "ok" : "warn"));
             box.AddChild(row);
         }
@@ -481,7 +482,7 @@ public sealed partial class CareerShellScreen
             {
                 squadSort = CareerLookCatalog.Toggle(squadSort, key);
                 RebuildContent();
-            }));
+            }, numeric: IsNumericColumn(key)));
         }
 
         heads.AddChild(LookChrome.Body("Status", 11, LookChrome.Gray, bold: true));
@@ -497,16 +498,18 @@ public sealed partial class CareerShellScreen
                 negotiating = false;
                 RebuildContent();
             });
+            row.SizeFlagsHorizontal = SizeFlags.ExpandFill;
             HBoxContainer inner = new();
+            inner.SizeFlagsHorizontal = SizeFlags.ExpandFill;
             inner.AddChild(Cell(captured.First, true, fg));
             inner.AddChild(Cell(captured.Last + "\n" + captured.Nat, true, fg));
             inner.AddChild(Cell(captured.Role, false, fg));
-            inner.AddChild(Cell(captured.Age.ToString(CultureInfo.InvariantCulture), false, fg));
-            inner.AddChild(Cell(captured.Rate.ToString(CultureInfo.InvariantCulture), true, fg));
-            inner.AddChild(Cell(captured.Pot.ToString(CultureInfo.InvariantCulture), false, fg));
-            inner.AddChild(Cell(captured.Form.ToString(CultureInfo.InvariantCulture), false, fg));
-            inner.AddChild(Cell(captured.Fatigue + "%", false, fg));
-            inner.AddChild(Cell(captured.ContractEnd[^4..], false, fg));
+            inner.AddChild(Cell(captured.Age.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
+            inner.AddChild(Cell(captured.Rate.ToString(CultureInfo.InvariantCulture), true, fg, numeric: true));
+            inner.AddChild(Cell(captured.Pot.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
+            inner.AddChild(Cell(captured.Form.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
+            inner.AddChild(Cell(captured.Fatigue + "%", false, fg, numeric: true));
+            inner.AddChild(Cell(captured.ContractEnd[^4..], false, fg, numeric: true));
             inner.AddChild(LookChrome.Chip(captured.Status == "Zdrowy" ? "zdrowy" : "uraz", captured.Status == "Zdrowy" ? "ok" : "warn"));
             row.AddChild(inner);
             box.AddChild(row);
@@ -523,7 +526,6 @@ public sealed partial class CareerShellScreen
         box.AddChild(ProfileHead(rider.FullName, $"{rider.Nat} · {rider.Age} lat · {rider.Role}"));
         box.AddChild(LookChrome.Kv("OVR / POT", rider.Rate + " / " + rider.Pot));
         box.AddChild(LookChrome.Kv("Forma / morale", rider.Form + " / " + rider.Morale));
-        box.AddChild(LookChrome.Kv("Wartość", CareerLookCatalog.Zloty(rider.Value)));
         foreach ((string Label, int Value) stat in new[]
                  {
                      ("Góry", rider.Mountain), ("Pagórki", rider.Hill), ("Sprint", rider.Sprint), ("TT", rider.Tt),
@@ -860,7 +862,7 @@ public sealed partial class CareerShellScreen
         detail.AddThemeConstantOverride("separation", 8);
         detail.AddChild(LookChrome.Display(current.Name.ToUpperInvariant(), 22, LookChrome.Black));
         detail.AddChild(LookChrome.Body(current.Tier, 13, LookChrome.Gray, bold: true));
-        detail.AddChild(LookChrome.Kv("Wartość", current.Value));
+        detail.AddChild(LookChrome.Kv("Kwota umowy", current.Value));
         detail.AddChild(LookChrome.Kv("Do", current.Until));
         detail.AddChild(LookChrome.Kv("Relacja", current.Mood + "/100"));
         detail.AddChild(LookChrome.Kv("Status", "aktywny"));
@@ -1054,7 +1056,7 @@ public sealed partial class CareerShellScreen
         foreach ((string Label, string Key) col in new[]
                  {
                      ("Imię", "first"), ("Nazwisko", "last"), ("Wiek", "age"), ("Profil", "role"),
-                     ("OVR", "rate"), ("POT", "pot"), ("Forma", "form"), ("Wartość", "value"), ("Zainteres.", "interest"),
+                     ("OVR", "rate"), ("POT", "pot"), ("Forma", "form"), ("Pensja", "salary"), ("Zainteres.", "interest"),
                  })
         {
             string key = col.Key;
@@ -1063,7 +1065,7 @@ public sealed partial class CareerShellScreen
                 int fresh = key is "first" or "last" or "role" ? 1 : -1;
                 marketSort = CareerLookCatalog.Toggle(marketSort, key, fresh);
                 RebuildContent();
-            }));
+            }, numeric: IsNumericColumn(key)));
         }
 
         table.AddChild(heads);
@@ -1079,15 +1081,16 @@ public sealed partial class CareerShellScreen
                 RebuildContent();
             });
             HBoxContainer inner = new();
+            inner.SizeFlagsHorizontal = SizeFlags.ExpandFill;
             inner.AddChild(Cell(captured.First, false, fg));
             inner.AddChild(Cell(captured.Last + "\n" + captured.Nat, true, fg));
-            inner.AddChild(Cell(captured.Age.ToString(CultureInfo.InvariantCulture), false, fg));
+            inner.AddChild(Cell(captured.Age.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
             inner.AddChild(Cell(captured.Role, false, fg));
-            inner.AddChild(Cell(captured.Rate.ToString(CultureInfo.InvariantCulture), true, fg));
-            inner.AddChild(Cell(captured.Pot.ToString(CultureInfo.InvariantCulture), false, fg));
-            inner.AddChild(Cell(captured.Form.ToString(CultureInfo.InvariantCulture), false, fg));
-            inner.AddChild(Cell(CareerLookCatalog.Zloty(captured.Value), false, fg));
-            inner.AddChild(Cell(captured.Interest.ToString(CultureInfo.InvariantCulture), true, fg));
+            inner.AddChild(Cell(captured.Rate.ToString(CultureInfo.InvariantCulture), true, fg, numeric: true));
+            inner.AddChild(Cell(captured.Pot.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
+            inner.AddChild(Cell(captured.Form.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
+            inner.AddChild(Cell(CareerLookCatalog.Zloty(captured.Salary), false, fg, numeric: true));
+            inner.AddChild(Cell(captured.Interest.ToString(CultureInfo.InvariantCulture), true, fg, numeric: true));
             line.AddChild(inner);
             table.AddChild(line);
         }
@@ -1108,8 +1111,7 @@ public sealed partial class CareerShellScreen
         box.AddChild(LookChrome.Kv("OVR / POT", row.Rate + " / " + row.Pot));
         box.AddChild(LookChrome.Kv("Klub", row.Team));
         box.AddChild(LookChrome.Kv("Kontrakt", row.Contract));
-        box.AddChild(LookChrome.Kv("Wartość", CareerLookCatalog.Zloty(row.Value)));
-        box.AddChild(LookChrome.Kv("Oczekiwana pensja", CareerLookCatalog.Zloty(row.Salary) + " / mies."));
+        box.AddChild(LookChrome.Kv("Pensja", CareerLookCatalog.Zloty(row.Salary) + " / mies."));
         string interestKind = row.Interest >= 75 ? "ok" : row.Interest < 55 ? "warn" : string.Empty;
         box.AddChild(LookChrome.Kv("Zainteresowanie", row.Interest + "/100"));
         box.AddChild(LookChrome.Chip(row.Interest + "/100", interestKind));
@@ -1311,19 +1313,30 @@ public sealed partial class CareerShellScreen
         return head;
     }
 
-    private static Button SortHead(string label, string key, LookSort sort, Action onPressed)
+    private static Button SortHead(string label, string key, LookSort sort, Action onPressed, bool numeric = false)
     {
         string mark = sort.Key == key ? (sort.Dir > 0 ? " ▲" : " ▼") : string.Empty;
         Button button = LookChrome.Solid(label + mark, onPressed, LookChrome.White, LookChrome.Black, compact: true);
+        button.CustomMinimumSize = new Vector2(numeric ? 52 : 80, 36);
         button.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        button.SizeFlagsStretchRatio = numeric ? 0.7f : 1.4f;
+        button.Alignment = numeric ? HorizontalAlignment.Center : HorizontalAlignment.Left;
         return button;
     }
 
-    private static Label Cell(string text, bool bold, Color? color = null)
+    private static Label Cell(string text, bool bold, Color? color = null, bool numeric = false)
     {
-        Label label = LookChrome.Body(text, 12, color ?? LookChrome.Black, bold);
+        Label label = LookChrome.Body(text, 13, color ?? LookChrome.Black, bold);
         label.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        label.SizeFlagsStretchRatio = numeric ? 0.7f : 1.4f;
+        label.HorizontalAlignment = numeric ? HorizontalAlignment.Center : HorizontalAlignment.Left;
+        label.VerticalAlignment = VerticalAlignment.Center;
         return label;
+    }
+
+    private static bool IsNumericColumn(string key)
+    {
+        return key is "age" or "rate" or "pot" or "form" or "fatigue" or "interest" or "salary" or "trend";
     }
 
     private static HBoxContainer Row()

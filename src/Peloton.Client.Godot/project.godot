@@ -13,10 +13,17 @@ config/icon="res://icon.svg"
 
 [display]
 
-window/size/viewport_width=1440
+window/size/viewport_width=1600
 window/size/viewport_height=900
-window/stretch/mode="canvas_items"
-window/stretch/aspect="expand"
+window/stretch/mode="disabled"
+window/dpi/allow_hidpi=true
+
+[gui]
+
+common/snap_controls_to_pixels=true
+theme/default_font_antialiasing=1
+theme/default_font_hinting=1
+theme/default_font_subpixel_positioning=1
 
 [dotnet]
 
@@ -24,4 +31,7 @@ project/assembly_name="Peloton.Client.Godot"
 
 [rendering]
 
+textures/canvas_textures/default_texture_filter=1
+2d/snap/snap_2d_transforms_to_pixel=true
+2d/snap/snap_2d_vertices_to_pixel=true
 environment/defaults/default_clear_color=Color(0.952941, 0.929412, 0.882353, 1)

@@ -381,7 +381,7 @@ public sealed partial class CareerShellScreen : Control
         box.AddThemeConstantOverride("separation", 12);
         settingsWindow.AddChild(box);
 
-        box.AddChild(LookChrome.Display("04  USTAWIENIA", 18, LookChrome.Black));
+        box.AddChild(LookChrome.Display("USTAWIENIA", 18, LookChrome.Black));
         box.AddChild(LookChrome.Body("Zapis i wczytanie idą przez Application Commands. To nie jest demo z HTML.", 13, LookChrome.Gray));
         box.AddChild(LookChrome.Solid("Zapisz karierę", OnSave, LookChrome.Paper, LookChrome.Black, compact: true));
         box.AddChild(LookChrome.Solid("Wczytaj karierę", OnLoad, LookChrome.Paper, LookChrome.Black, compact: true));

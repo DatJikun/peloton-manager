@@ -153,6 +153,8 @@ Wcześniejszy Ping-Pong Manager był rozwijany przez miesiące z AI i techniczni
 
 2026-08-31: właściciel: historia się trzyma na plus minus. Na razie same rezultaty — tabela wyników i filtr każdego zespołu osobno. Nie dokładać decyzji w wyścigu. Film zostaje dodatkiem. `D-037`.
 
+2026-08-31: powłoka kariery — UI nie może wyglądać jak 480p (bez rozciągania viewportu). Numery `01/02/03` z nagłówków sekcji precz. Liczby w tabeli składu na środku. Zawodnik nie ma ustalonej wartości w pieniądzu; pieniądz to kontrakt (pensja), nie market value.
+
 ## Relevant docs
 ```text
 VISION.md
@@ -261,3 +263,4 @@ Peloton Manager jest na etapie pre-production. Celem jest modularny, determinist
 - `2026-08-31` — `D-036`: film Watch opcjonalny, domyślnie wyłączony. Domyślny dzień wyścigu: headless wynik + wydarzenia. Opis dla gracza: `HOW_RACE_DAY_WORKS.md`.
 - `2026-08-31` — `D-037`: tabela wyników i filtr per zespół. Bez nowych decyzji w wyścigu. Filtr nie jest World State.
 - `2026-08-31` — Właściciel: playtest ma pokazywać powłokę z PR #28 (niebieska szyna), nie cienkie czerwone biurko. Pętla D-035/D-036/D-037 zostaje w tej powłoce.
+- `2026-08-31` — UI: bez numerów sekcji `01/02/03`. Tabela składu: liczby na środku. Brak rynkowej „wartości” zawodnika w pieniądzu — tylko kontrakt/pensja. Viewport bez upscalowania (ostrość).
