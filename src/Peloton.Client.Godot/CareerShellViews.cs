@@ -328,6 +328,7 @@ public sealed partial class CareerShellScreen
         table.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         table.SizeFlagsStretchRatio = 7;
         VBoxContainer card = Panel("KARTA ZAWODNIKA", BuildRiderCard());
+        card.CustomMinimumSize = new Vector2(340, 0);
         card.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         card.SizeFlagsStretchRatio = 5;
         grid.AddChild(table);
@@ -469,7 +470,9 @@ public sealed partial class CareerShellScreen
         }
 
         grid.AddChild(Stretch(Panel("PRACOWNICY", list), 7));
-        grid.AddChild(Stretch(Panel("PROFIL PRACOWNIKA", BuildStaffCard()), 5));
+        VBoxContainer staffCard = Stretch(Panel("PROFIL PRACOWNIKA", BuildStaffCard()), 5);
+        staffCard.CustomMinimumSize = new Vector2(340, 0);
+        grid.AddChild(staffCard);
         content.AddChild(grid);
     }
 
@@ -914,7 +917,9 @@ public sealed partial class CareerShellScreen
         }
 
         grid.AddChild(Stretch(Panel("DOSTĘPNI ZAWODNICY", table), 8));
-        grid.AddChild(Stretch(Panel("ZAWODNIK", BuildMarketCard()), 4));
+        VBoxContainer marketCard = Stretch(Panel("ZAWODNIK", BuildMarketCard()), 4);
+        marketCard.CustomMinimumSize = new Vector2(340, 0);
+        grid.AddChild(marketCard);
         content.AddChild(grid);
     }
 
