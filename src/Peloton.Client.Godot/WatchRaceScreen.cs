@@ -380,7 +380,7 @@ public sealed partial class WatchRaceScreen : Control
             InterpolatedRiderView rider = view.Riders[index];
             lines[index] = string.Create(
                 CultureInfo.InvariantCulture,
-                $"{rider.RiderId}  {WatchObservationText.Speed(rider.SpeedMps)}  {WatchObservationText.Gap(rider.GapM)}  {WatchObservationText.Shelter(rider.ShelterMultiplier)}  {WatchObservationText.Terrain(rider.Gradient)}");
+                $"{(string.IsNullOrWhiteSpace(rider.Name) ? rider.RiderId.ToString(CultureInfo.InvariantCulture) : rider.Name)}  {WatchObservationText.Speed(rider.SpeedMps)}  {WatchObservationText.Gap(rider.GapM)}  {WatchObservationText.Shelter(rider.ShelterMultiplier)}  {WatchObservationText.Terrain(rider.Gradient)}");
         }
 
         return string.Join('\n', lines);

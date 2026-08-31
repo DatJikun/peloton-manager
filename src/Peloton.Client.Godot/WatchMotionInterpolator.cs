@@ -12,7 +12,8 @@ public sealed record InterpolatedRiderView(
     double SpeedMps,
     double ShelterMultiplier,
     double Gradient,
-    double Progress);
+    double Progress,
+    string Name);
 
 public sealed record InterpolatedWatchView(
     int WatchSecond,
@@ -71,7 +72,8 @@ public static class WatchMotionInterpolator
             Math.Max(0.0, speedMps),
             Math.Clamp(shelter, 0.0, 1.0),
             gradient,
-            progress);
+            progress,
+            string.Empty);
     }
 
     private static double Lerp(double from, double to, double t) => from + ((to - from) * t);

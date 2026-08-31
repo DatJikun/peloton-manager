@@ -17,7 +17,7 @@ public sealed class RaceResultDebriefTests
     private const long GateSeed = 91234;
     private static readonly string[] CommittedResultNotes =
     {
-        "Oficjalny zwycięzca: rider.race-prototype.beta-leader.",
+        "Oficjalny zwycięzca: Marco Anconi.",
     };
     private static readonly string[] UncertainStaffNotes =
     {
@@ -43,14 +43,14 @@ public sealed class RaceResultDebriefTests
         Assert.Null(application.RaceDebrief);
         Assert.Equal("Skeleton race", result.Title);
         Assert.Equal("race-route.peloton.synthetic-proof-v0", result.RouteId);
-        Assert.Equal(1006, result.WinnerId.Value);
-        Assert.Equal("rider.race-prototype.beta-leader", result.WinnerLabel);
+        Assert.Equal(9, result.WinnerId.Value);
+        Assert.Equal("Marco Anconi", result.WinnerLabel);
         Assert.Equal(12, result.FinishOrder.Count);
-        Assert.Equal("rider.race-prototype.beta-leader", result.FinishOrder[0].Label);
+        Assert.Equal("Marco Anconi", result.FinishOrder[0].Label);
         Assert.Equal(application.World!.LastRace!.FinishOrder, result.FinishOrder.Select(place => place.RiderId));
         Assert.All(
             result.FinishOrder,
-            place => Assert.StartsWith("rider.race-prototype.", place.Label, StringComparison.Ordinal));
+            place => Assert.False(string.IsNullOrWhiteSpace(place.Label)));
         Assert.Equal(1, engine.RunBatchCalls);
         Assert.Equal(0, engine.CreateSessionCalls);
 
@@ -161,7 +161,7 @@ public sealed class RaceResultDebriefTests
         GameApplication loadedResults = TestApplication.Create();
         Assert.True(loadedResults.Execute(new LoadGameCommand(resultsPath)).Succeeded);
         Assert.Equal(GameState.RaceResultsFlow, loadedResults.State);
-        Assert.Equal("rider.race-prototype.beta-leader", loadedResults.RaceResult!.WinnerLabel);
+        Assert.Equal("Marco Anconi", loadedResults.RaceResult!.WinnerLabel);
         Assert.True(loadedResults.Execute(new AcknowledgeRaceResultsCommand()).Succeeded);
         Assert.Equal("StageWin", loadedResults.RaceDebrief!.Objective);
         Assert.True(loadedResults.Execute(new SaveGameCommand(debriefPath)).Succeeded);

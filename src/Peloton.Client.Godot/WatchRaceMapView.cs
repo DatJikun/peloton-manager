@@ -87,7 +87,7 @@ public sealed partial class WatchRaceMapView : Control
                 DrawArc(point, radius + 5f, 0, Mathf.Tau, 24, Red, 2f, antialiased: true);
             }
 
-            DrawCaption(point + new Vector2(12, -8), $"{rider.RiderId}", Black, 13);
+            DrawCaption(point + new Vector2(12, -8), string.IsNullOrWhiteSpace(rider.Name) ? $"{rider.RiderId}" : rider.Name, Black, 13);
         }
     }
 

@@ -44,14 +44,9 @@ public sealed class GameApplication
                 return null;
             }
 
-            RaceScenario scenario = raceScenarioCatalog.Resolve(racePreparation.RaceScenarioId);
-            WorldEntityId organizationId = new(
-                scenario.Riders.Min(rider => rider.OrganizationId.Value));
-            WorldEntityId[] squad = scenario.Riders
-                .Where(rider => rider.OrganizationId == organizationId)
-                .Select(rider => rider.RiderId)
-                .OrderBy(id => id.Value)
-                .ToArray();
+            WorldEntityId[] squad = World is null
+                ? Array.Empty<WorldEntityId>()
+                : CareerRaceBinder.PlayerSquad(World);
             return new RacePreparationProjection(
                 RacePreparationDefaults.Title,
                 RacePreparationDefaults.Objective,
@@ -349,7 +344,7 @@ public sealed class GameApplication
 
         try
         {
-            RaceScenario scenario = raceScenarioCatalog.Resolve(command.RaceScenarioId);
+            RaceScenario scenario = ResolveCareerScenario(command.RaceScenarioId);
             long raceSeed = DeriveRaceSeed(World, scenario);
             activeRaceSession = raceEngine.CreateSession(scenario, raceSeed);
             watchClock = null;
@@ -379,7 +374,7 @@ public sealed class GameApplication
 
         try
         {
-            RaceScenario scenario = raceScenarioCatalog.Resolve(command.RaceScenarioId);
+            RaceScenario scenario = ResolveCareerScenario(command.RaceScenarioId);
             RaceResult result = raceEngine.RunBatch(scenario, DeriveRaceSeed(World, scenario));
             CommitOfficialResult(result);
             return CommandResult.Success;
@@ -640,6 +635,12 @@ public sealed class GameApplication
             GameState.RaceDebriefFlow;
     }
 
+    private RaceScenario ResolveCareerScenario(string scenarioId)
+    {
+        RaceScenario fixture = raceScenarioCatalog.Resolve(scenarioId);
+        return World is null ? fixture : CareerRaceBinder.Bind(fixture, World);
+    }
+
     private static long DeriveRaceSeed(WorldState world, RaceScenario scenario)
     {
         return unchecked((long)StableSeedDerivation.Derive(
@@ -651,31 +652,55 @@ public sealed class GameApplication
     {
         WorldEntityIdAllocator allocator = new();
         List<Organization> organizations = new(recipe.Organizations.Count);
+        Dictionary<string, WorldEntityId> organizationIds = new(StringComparer.Ordinal);
         foreach (OrganizationDefinition definition in recipe.Organizations)
         {
+            WorldEntityId organizationId = allocator.Allocate();
+            organizationIds.Add(definition.Id, organizationId);
             organizations.Add(new Organization(
-                allocator.Allocate(),
+                organizationId,
                 definition.Id,
-                definition.Name));
+                definition.Name,
+                daysSimulated: 0,
+                definition.RacePrototypeTeamId));
         }
 
-        List<Person> persons = new(recipe.Organizations.Count);
-        for (int index = 0; index < recipe.Organizations.Count; index++)
+        List<RiderDefinition> orderedRiders = recipe.Riders
+            .OrderBy(rider => rider.RacePrototypeRiderId, StringComparer.Ordinal)
+            .ToList();
+        List<Person> persons = new(orderedRiders.Count + 1);
+        List<RosterRider> roster = new(orderedRiders.Count);
+        foreach (RiderDefinition rider in orderedRiders)
         {
-            persons.Add(new Person(allocator.Allocate(), $"Skeleton Rider {index + 1}"));
+            WorldEntityId personId = allocator.Allocate();
+            persons.Add(new Person(personId, rider.Name));
+            roster.Add(new RosterRider(
+                personId,
+                organizationIds[rider.OrganizationId],
+                rider.Id,
+                rider.RacePrototypeRiderId));
         }
 
+        WorldEntityId managerPersonId = allocator.Allocate();
+        persons.Add(new Person(managerPersonId, recipe.Manager.Name));
         WorldEntityId managerCareerId = allocator.Allocate();
         WorldEntityId employmentId = allocator.Allocate();
-        WorldEntityId authorityId = allocator.Allocate();
-        ManagerCareer managerCareer = new(managerCareerId, persons[0].Id, employmentId);
+        WorldEntityId humanAuthorityId = allocator.Allocate();
+        WorldEntityId firstAiAuthorityId = allocator.Allocate();
+        WorldEntityId secondAiAuthorityId = allocator.Allocate();
+        ManagerCareer managerCareer = new(managerCareerId, managerPersonId, employmentId);
         Employment employment = new(
             employmentId,
             managerCareerId,
             organizations[0].Id,
             new WorldDate(0),
             null);
-        DecisionAuthority authority = new(authorityId, DecisionAuthorityKind.HumanInput);
+        DecisionAuthority[] authorities =
+        {
+            new(humanAuthorityId, DecisionAuthorityKind.HumanInput),
+            new(firstAiAuthorityId, DecisionAuthorityKind.AIInput),
+            new(secondAiAuthorityId, DecisionAuthorityKind.AIInput),
+        };
         int calendarPeriodDays = ReadCalendarPeriodDays(recipe);
         WorldEntityId initialRaceEntryId = allocator.Allocate();
         IReadOnlyList<CalendarEntry> calendarEntries = new[]
@@ -696,11 +721,12 @@ public sealed class GameApplication
             new[] { managerCareer },
             new[] { employment },
             organizations,
-            new[] { authority },
+            authorities,
             raceCount: 0,
             lastRace: null,
             calendarPeriodDays: calendarPeriodDays,
-            calendarEntries: calendarEntries);
+            calendarEntries: calendarEntries,
+            rosterRiders: roster);
     }
 
     private static int ReadCalendarPeriodDays(WorldRecipe recipe)

@@ -5,9 +5,99 @@
   "difficulty": "Advanced",
   "attributeVisibility": "Guessed",
   "organizations": [
-    "organization.skeleton.red",
-    "organization.skeleton.blue",
-    "organization.skeleton.green"
+    {
+      "id": "organization.skeleton.red",
+      "name": "Beskid–Vetter",
+      "racePrototypeTeamId": "organization.race-prototype.alpha"
+    },
+    {
+      "id": "organization.skeleton.blue",
+      "name": "Fala–Karpaty",
+      "racePrototypeTeamId": "organization.race-prototype.beta"
+    },
+    {
+      "id": "organization.skeleton.green",
+      "name": "Ost-Wind",
+      "racePrototypeTeamId": "organization.race-prototype.gamma"
+    }
+  ],
+  "manager": {
+    "id": "person.skeleton.manager",
+    "name": "Adam Wroński"
+  },
+  "riders": [
+    {
+      "id": "person.skeleton.rutka",
+      "name": "Dawid Rutka",
+      "organizationId": "organization.skeleton.red",
+      "racePrototypeRiderId": "rider.race-prototype.alpha-card"
+    },
+    {
+      "id": "person.skeleton.kowalczyk",
+      "name": "Piotr Kowalczyk",
+      "organizationId": "organization.skeleton.red",
+      "racePrototypeRiderId": "rider.race-prototype.alpha-leader"
+    },
+    {
+      "id": "person.skeleton.zielinski",
+      "name": "Marek Zieliński",
+      "organizationId": "organization.skeleton.red",
+      "racePrototypeRiderId": "rider.race-prototype.alpha-support-1"
+    },
+    {
+      "id": "person.skeleton.barski",
+      "name": "Tomasz Barski",
+      "organizationId": "organization.skeleton.red",
+      "racePrototypeRiderId": "rider.race-prototype.alpha-support-2"
+    },
+    {
+      "id": "person.skeleton.duarte",
+      "name": "André Duarte",
+      "organizationId": "organization.skeleton.blue",
+      "racePrototypeRiderId": "rider.race-prototype.beta-card"
+    },
+    {
+      "id": "person.skeleton.anconi",
+      "name": "Marco Anconi",
+      "organizationId": "organization.skeleton.blue",
+      "racePrototypeRiderId": "rider.race-prototype.beta-leader"
+    },
+    {
+      "id": "person.skeleton.kragh",
+      "name": "Jonas Kragh",
+      "organizationId": "organization.skeleton.blue",
+      "racePrototypeRiderId": "rider.race-prototype.beta-support-1"
+    },
+    {
+      "id": "person.skeleton.lindqvist",
+      "name": "Erik Lindqvist",
+      "organizationId": "organization.skeleton.blue",
+      "racePrototypeRiderId": "rider.race-prototype.beta-support-2"
+    },
+    {
+      "id": "person.skeleton.vandenberg",
+      "name": "Bram Vandenberg",
+      "organizationId": "organization.skeleton.green",
+      "racePrototypeRiderId": "rider.race-prototype.gamma-card"
+    },
+    {
+      "id": "person.skeleton.nowak",
+      "name": "Paweł Nowak",
+      "organizationId": "organization.skeleton.green",
+      "racePrototypeRiderId": "rider.race-prototype.gamma-leader"
+    },
+    {
+      "id": "person.skeleton.brandt",
+      "name": "Karl Brandt",
+      "organizationId": "organization.skeleton.green",
+      "racePrototypeRiderId": "rider.race-prototype.gamma-support-1"
+    },
+    {
+      "id": "person.skeleton.okafor",
+      "name": "Samuel Okafor",
+      "organizationId": "organization.skeleton.green",
+      "racePrototypeRiderId": "rider.race-prototype.gamma-support-2"
+    }
   ],
   "modules": [
     {

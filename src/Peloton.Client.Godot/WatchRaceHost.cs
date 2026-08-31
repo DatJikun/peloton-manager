@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Peloton.Application;
 using Peloton.Domain;
 using Peloton.Simulation.Race;
@@ -50,6 +51,14 @@ public sealed class WatchRaceHost
 
     public bool PresentationPaused => presentationPaused;
 
+    public string RiderLabel(WorldEntityId riderId)
+    {
+        Person? person = application.World?.Persons.FirstOrDefault(item => item.Id == riderId);
+        return person is null || string.IsNullOrWhiteSpace(person.Name)
+            ? riderId.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)
+            : person.Name;
+    }
+
     public InterpolatedWatchView? Interpolated
     {
         get
@@ -59,12 +68,16 @@ public sealed class WatchRaceHost
                 return null;
             }
 
-            return WatchMotionInterpolator.Project(
+            InterpolatedWatchView projected = WatchMotionInterpolator.Project(
                 previousFrame,
                 application.RaceWatch,
                 application.PendingRaceDecision is null && !presentationPaused
                     ? watchAccumulator / WatchSecondDuration
                     : 1.0);
+            InterpolatedRiderView[] named = projected.Riders
+                .Select(rider => rider with { Name = RiderLabel(new WorldEntityId(rider.RiderId)) })
+                .ToArray();
+            return projected with { Riders = named };
         }
     }
 

@@ -37,6 +37,7 @@ public sealed class WorldState
     private readonly List<DecisionAuthority> decisionAuthorities;
     private readonly List<RulesModuleIdentity> rulesModules;
     private readonly List<CalendarEntry> calendarEntries;
+    private readonly List<RosterRider> rosterRiders;
 
     public WorldState(
         string worldId,
@@ -57,7 +58,8 @@ public sealed class WorldState
         int calendarPeriodDays = 12,
         int lastCompletedRaceDay = 0,
         IEnumerable<string>? lastDayNotes = null,
-        IEnumerable<CalendarEntry>? calendarEntries = null)
+        IEnumerable<CalendarEntry>? calendarEntries = null,
+        IEnumerable<RosterRider>? rosterRiders = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(worldId);
         ArgumentNullException.ThrowIfNull(contentIdentity);
@@ -87,6 +89,9 @@ public sealed class WorldState
         LastCompletedRaceDay = lastCompletedRaceDay;
         this.lastDayNotes = (lastDayNotes ?? Array.Empty<string>()).ToList();
         this.calendarEntries = SortCalendarEntries(calendarEntries ?? Array.Empty<CalendarEntry>());
+        this.rosterRiders = (rosterRiders ?? Array.Empty<RosterRider>())
+            .OrderBy(rider => rider.PersonId.Value)
+            .ToList();
     }
 
     public string WorldId { get; }
@@ -126,6 +131,8 @@ public sealed class WorldState
     public IReadOnlyList<string> LastDayNotes => lastDayNotes;
 
     public IReadOnlyList<CalendarEntry> CalendarEntries => calendarEntries;
+
+    public IReadOnlyList<RosterRider> RosterRiders => rosterRiders;
 
     public bool IsRaceDue =>
         CurrentDate.DayNumber > 0 &&

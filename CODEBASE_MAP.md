@@ -8,11 +8,11 @@ This file is a navigation map, not implementation documentation. Design contract
 
 | Project | Current responsibility |
 |---|---|
-| `src/Peloton.Domain` | World root, stable IDs, people, ManagerCareer, Employment, Organization, DecisionAuthority, AccessContext, `CalendarEntry`, content/rules identity, DecisionTrace / Spy sinks. |
+| `src/Peloton.Domain` | World root, stable IDs, people, `RosterRider`, ManagerCareer, Employment, Organization, DecisionAuthority, AccessContext, `CalendarEntry`, content/rules identity, DecisionTrace / Spy sinks. |
 | `src/Peloton.Rules` | Stable rules-module identity and deterministic aggregate identity. No full legal engine yet. |
 | `src/Peloton.Simulation` | Versioned seed derivation, isolated deterministic RNG, whole-world day scheduler, checksum, `PrototypeRaceEngine`. |
 | `src/Peloton.Simulation/Race` | Physics, capability, groups/shelter, `RaceSession.Step`, chase decisions, Race Spy export, headless Watch clock, public motion projection, authored route-profile library and seeded generator (map/presentation; not prototype physics). |
-| `src/Peloton.Application` | Canonical nine-state machine, Commands, prep/result/debrief projections, prep checkpoint, save/content/race ports, world creation, RaceLive isolation, skeleton-season orchestration. |
+| `src/Peloton.Application` | Canonical nine-state machine, Commands, prep/result/debrief projections, prep checkpoint, save/content/race ports, world creation, `CareerRaceBinder`, RaceLive isolation, skeleton-season orchestration. |
 | `src/Peloton.Persistence` | SQLite schema version 1, verified candidate save, envelope identity, snapshot round trip, integrity checks. |
 | `src/Peloton.Content` | JSON pack loaders: skeleton `scenarios` and `racePrototypeScenarios`. |
 | `src/Peloton.Infrastructure` | Composition root connecting Application ports to Content, Persistence, and Simulation. |
@@ -48,13 +48,13 @@ Static content lives in `content/peloton.skeleton` and `content/peloton.race-pro
 | Route profile library | `Peloton.Simulation/Race/RouteProfileLibrary.cs`, `RouteProfileGenerator.cs` | presentation profiles; physics stays coarse prototype segments | `RouteProfileTests` |
 | Godot Watch Race | `src/Peloton.Client.Godot` (`WatchRaceHost`, `WatchRaceScreen`, `WatchRouteProfile`, `project.godot`) | `D-033` renderer; `UI_SITEMAP` RaceLive; §49 still owner-only | `WatchRaceHostTests`, `WatchMotionInterpolatorTests`, `WatchFilmDurationTests`, `WatchRouteProfileTests` |
 | Career Hub query | `Peloton.Application/CareerDay.cs` | `GAME_STATES_v0.1.md` Advance Day; Hub primary action (`advance-day` / `race-next`); Management only; not a UI dashboard | Application tests, `day` SimRunner |
-| Race preparation | `Peloton.Application/RacePreparation.cs`, `GameApplication.cs` | fixture-backed projection; session checkpoint plan; no career roster | Application + Persistence tests |
+| Race preparation | `Peloton.Application/RacePreparation.cs`, `CareerRaceBinder.cs`, `GameApplication.cs` | career squad from the player's four named riders; session checkpoint plan | Application + Persistence tests |
 | Race result / debrief | `Peloton.Application/RaceResultDebrief.cs`, `GameApplication.cs` | committed `LastRace` + calendar; knowledge-bounded notes; checkpoint not World | Application + Persistence tests |
 | Career calendar | `Peloton.Domain/CalendarEntry.cs`, `Peloton.Application/CareerCalendarInbox.cs` | stored entries + derived status | Application tests |
 | Career inbox query | `Peloton.Application/CareerCalendarInbox.cs`, `ArchiveInboxItemCommand` | rebuilt race-due + race-result items; dismiss lock on race-due | Application tests |
 | AI managers | Not implemented | `AI_MANAGER_SYSTEM_v0.2.md` | Not implemented |
 | Save / SQLite | `Peloton.Persistence` | `SAVE_FORMAT_v0.1.md` | Persistence + Application tests |
-| Career scenarios | `content/peloton.skeleton`, `JsonScenarioCatalog.cs` | `CONTENT_FORMAT_v0.1.md` | Application tests |
+| Career scenarios | `content/peloton.skeleton`, `JsonScenarioCatalog.cs` | `CONTENT_FORMAT_v0.1.md`; 12 named riders, 3 teams, manager off roster | Application tests |
 | Rules modules | `Peloton.Rules`, scenario JSON | `RULESETS_v0.1.md` | Application + Architecture tests |
 
 Recruitment, contracts, sponsors, knowledge records, full calendar beyond skeleton races, Career Hub UI, and `D-032` multi-stage leadership transfer are not implemented. Godot Watch is the first playable race window, not the career shell.

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using Peloton.Application;
 using Peloton.Content;
 using Peloton.Domain;
@@ -36,7 +37,9 @@ public sealed class CareerWatchTests
         Assert.Equal(1, watchEngine.CreateSessionCalls);
         Assert.Equal(0, watchEngine.RunBatchCalls);
         RaceResultProjection watchResult = Assert.IsType<RaceResultProjection>(watched.RaceResult);
-        Assert.Equal(1006, watchResult.WinnerId.Value);
+        WorldEntityId anconi = watched.World!.Persons.Single(person => person.Name == "Marco Anconi").Id;
+        Assert.Equal(anconi, watchResult.WinnerId);
+        Assert.Equal("Marco Anconi", watchResult.WinnerLabel);
         Assert.Null(watched.CareerDay);
 
         CountingRaceEngine simulateEngine = new();
@@ -65,7 +68,9 @@ public sealed class CareerWatchTests
 
         Assert.Equivalent(rateOne.Application.World!.LastRace, rateTwenty.Application.World!.LastRace, strict: true);
         Assert.Equal(rateOne.Application.LastOfficialChecksum, rateTwenty.Application.LastOfficialChecksum);
-        Assert.Equal(1006, rateOne.Application.World.LastRace!.WinnerId.Value);
+        Assert.Equal(
+            rateOne.Application.World.Persons.Single(person => person.Name == "Marco Anconi").Id,
+            rateOne.Application.World.LastRace!.WinnerId);
         Assert.True(rateOne.WatchSecond > rateTwenty.WatchSecond);
         Assert.Equal(
             WorldChecksum.Compute(rateOne.Application.World),

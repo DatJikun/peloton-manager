@@ -311,7 +311,7 @@ public sealed class SimRunnerContractTests
         Assert.Contains("stopped=RACE_DAY_PENDING", stdout, StringComparison.Ordinal);
         Assert.Contains("state=RacePreparationFlow", stdout, StringComparison.Ordinal);
         Assert.Contains(
-            "prep=title=Skeleton race objective=StageWin squad=1001,1002,1003,1004 planConfirmed=false canStart=false canSimulate=false",
+            "prep=title=Skeleton race objective=StageWin squad=4,5,6,7 planConfirmed=false canStart=false canSimulate=false",
             stdout,
             StringComparison.Ordinal);
         Assert.Contains("primaryAction=race-next", stdout, StringComparison.Ordinal);
@@ -346,13 +346,13 @@ public sealed class SimRunnerContractTests
         string stdout = output.ToString().Replace("\r\n", "\n", StringComparison.Ordinal);
         Assert.Equal(0, exitCode);
         Assert.Contains("state=RaceResultsFlow", stdout, StringComparison.Ordinal);
-        Assert.Contains("winner=1006", stdout, StringComparison.Ordinal);
+        Assert.Contains("winner=9", stdout, StringComparison.Ordinal);
         Assert.Contains("result=title=Skeleton race", stdout, StringComparison.Ordinal);
-        Assert.Contains("winnerLabel=rider.race-prototype.beta-leader", stdout, StringComparison.Ordinal);
+        Assert.Contains("winnerLabel=Marco Anconi", stdout, StringComparison.Ordinal);
         Assert.Contains("routeId=race-route.peloton.synthetic-proof-v0", stdout, StringComparison.Ordinal);
-        Assert.Contains("finishOrder=rider.race-prototype.beta-leader", stdout, StringComparison.Ordinal);
+        Assert.Contains("finishOrder=Marco Anconi", stdout, StringComparison.Ordinal);
         Assert.Contains("state=RaceDebriefFlow", stdout, StringComparison.Ordinal);
-        Assert.Contains("debrief=objective=StageWin notes=Oficjalny zwycięzca: rider.race-prototype.beta-leader.", stdout, StringComparison.Ordinal);
+        Assert.Contains("debrief=objective=StageWin notes=Oficjalny zwycięzca: Marco Anconi.", stdout, StringComparison.Ordinal);
         Assert.DoesNotContain("Widoczny rozjazd", stdout, StringComparison.Ordinal);
         Assert.DoesNotContain("LeaderPositionBand", stdout, StringComparison.Ordinal);
         Assert.DoesNotContain("ResourceEstimate", stdout, StringComparison.Ordinal);
@@ -399,8 +399,8 @@ public sealed class SimRunnerContractTests
         Assert.Contains("paused=true", stdout, StringComparison.Ordinal);
         Assert.Contains("state=RaceResultsFlow", stdout, StringComparison.Ordinal);
         Assert.Contains("result=title=Skeleton race", stdout, StringComparison.Ordinal);
-        Assert.Contains("winner=1006", stdout, StringComparison.Ordinal);
-        Assert.Contains("winnerLabel=rider.race-prototype.beta-leader", stdout, StringComparison.Ordinal);
+        Assert.Contains("winner=9", stdout, StringComparison.Ordinal);
+        Assert.Contains("winnerLabel=Marco Anconi", stdout, StringComparison.Ordinal);
         Assert.DoesNotContain("state=RaceDebriefFlow", stdout, StringComparison.Ordinal);
         Assert.DoesNotContain("Widoczny rozjazd", stdout, StringComparison.Ordinal);
         Assert.DoesNotContain("WPrime", stdout, StringComparison.OrdinalIgnoreCase);
@@ -420,7 +420,7 @@ public sealed class SimRunnerContractTests
         Assert.Equal(0, rateTwenty.ExitCode);
         Assert.Equal(ParseTextKey(rateOne.Output, "winner"), ParseTextKey(rateTwenty.Output, "winner"));
         Assert.Equal(ParseTextKey(rateOne.Output, "checksum"), ParseTextKey(rateTwenty.Output, "checksum"));
-        Assert.Equal("1006", ParseTextKey(rateOne.Output, "winner"));
+        Assert.Equal("9", ParseTextKey(rateOne.Output, "winner"));
         Assert.Equal(
             ParseTextKey(rateOne.Output, "result"),
             ParseTextKey(rateTwenty.Output, "result"));
@@ -458,7 +458,7 @@ public sealed class SimRunnerContractTests
         Assert.Equal(0, exitCode);
         Assert.Contains("prep=title=Skeleton race", stdout, StringComparison.Ordinal);
         Assert.Contains("state=RaceResultsFlow", stdout, StringComparison.Ordinal);
-        Assert.Contains("winner=1006", stdout, StringComparison.Ordinal);
+        Assert.Contains("winner=9", stdout, StringComparison.Ordinal);
         Assert.DoesNotContain("state=RaceLive", stdout, StringComparison.Ordinal);
         Assert.True(string.IsNullOrWhiteSpace(error.ToString()));
     }
@@ -488,7 +488,7 @@ public sealed class SimRunnerContractTests
         string stdout = output.ToString();
         Assert.Equal(0, exitCode);
         Assert.Contains("crashed=false", stdout, StringComparison.Ordinal);
-        Assert.Contains("calendar=day=12 kind=race status=completed title=Skeleton race result=Winner 1006", stdout, StringComparison.Ordinal);
+        Assert.Contains("calendar=day=12 kind=race status=completed title=Skeleton race result=Winner 9", stdout, StringComparison.Ordinal);
         Assert.Contains("category=race-result", stdout, StringComparison.Ordinal);
         Assert.Contains("day=13", stdout, StringComparison.Ordinal);
         Assert.DoesNotContain("stopped=RACE_DAY_PENDING", stdout, StringComparison.Ordinal);

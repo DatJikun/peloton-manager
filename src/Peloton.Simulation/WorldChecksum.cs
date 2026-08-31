@@ -41,6 +41,14 @@ public static class WorldChecksum
                 writer.Write(person.Name);
             }
 
+            foreach (RosterRider rider in world.RosterRiders.OrderBy(rider => rider.PersonId.Value))
+            {
+                writer.Write(rider.PersonId.Value);
+                writer.Write(rider.OrganizationId.Value);
+                writer.Write(rider.OriginDefinitionId);
+                writer.Write(rider.RacePrototypeRiderId);
+            }
+
             foreach (ManagerCareer manager in world.ManagerCareers.OrderBy(manager => manager.Id.Value))
             {
                 writer.Write(manager.Id.Value);
@@ -62,6 +70,7 @@ public static class WorldChecksum
                 writer.Write(organization.Id.Value);
                 writer.Write(organization.OriginDefinitionId);
                 writer.Write(organization.Name);
+                writer.Write(organization.RacePrototypeTeamId);
                 writer.Write(organization.DaysSimulated);
             }
 

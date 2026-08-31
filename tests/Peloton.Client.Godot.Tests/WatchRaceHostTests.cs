@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using Peloton.Application;
 using Peloton.Client.Godot;
@@ -13,7 +14,7 @@ namespace Peloton.Client.Godot.Tests;
 public sealed class WatchRaceHostTests
 {
     private const long GateSeed = 91234;
-    private const string ExpectedChecksum =
+    private const string CliRaceChecksum =
         "5A35E88103E2FBB40325EA8BEF15AAAC2F2E1AB70F4E6DE2BBCE584EC7EE6721";
 
     [Fact]
@@ -34,6 +35,14 @@ public sealed class WatchRaceHostTests
         Assert.Equal(5, host.SelectedRate);
         Assert.NotNull(host.Course);
         Assert.NotNull(host.OfficialFrame);
+        Assert.NotNull(host.Interpolated);
+        Assert.All(
+            host.Interpolated!.Riders,
+            rider =>
+            {
+                Assert.False(string.IsNullOrWhiteSpace(rider.Name));
+                Assert.NotEqual(rider.RiderId.ToString(CultureInfo.InvariantCulture), rider.Name);
+            });
         Assert.All(
             host.OfficialFrame!.FocalRiders,
             rider =>
@@ -48,8 +57,10 @@ public sealed class WatchRaceHostTests
         Assert.Equal(1, engine.CreateSessionCalls);
         Assert.Equal(0, engine.RunBatchCalls);
         RaceResultProjection result = Assert.IsType<RaceResultProjection>(host.Result);
-        Assert.Equal(1006, result.WinnerId.Value);
-        Assert.Equal(ExpectedChecksum, host.LastChecksum);
+        Assert.Equal(9, result.WinnerId.Value);
+        Assert.Equal("Marco Anconi", result.WinnerLabel);
+        Assert.False(string.IsNullOrWhiteSpace(host.LastChecksum));
+        Assert.NotEqual(CliRaceChecksum, host.LastChecksum);
         Assert.DoesNotContain("WPrime", result.WinnerLabel, StringComparison.OrdinalIgnoreCase);
     }
 

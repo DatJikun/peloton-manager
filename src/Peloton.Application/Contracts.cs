@@ -3,13 +3,23 @@ using Peloton.Domain;
 
 namespace Peloton.Application;
 
-public sealed record OrganizationDefinition(string Id, string Name);
+public sealed record OrganizationDefinition(string Id, string Name, string RacePrototypeTeamId);
+
+public sealed record RiderDefinition(
+    string Id,
+    string Name,
+    string OrganizationId,
+    string RacePrototypeRiderId);
+
+public sealed record ManagerDefinition(string Id, string Name);
 
 public sealed record WorldRecipe(
     ContentIdentity ContentIdentity,
     IReadOnlyList<RulesModuleIdentity> RulesModules,
     string RulesIdentity,
-    IReadOnlyList<OrganizationDefinition> Organizations);
+    IReadOnlyList<OrganizationDefinition> Organizations,
+    IReadOnlyList<RiderDefinition> Riders,
+    ManagerDefinition Manager);
 
 public interface IScenarioCatalog
 {

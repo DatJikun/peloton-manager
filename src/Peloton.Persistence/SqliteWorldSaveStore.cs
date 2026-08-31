@@ -256,9 +256,10 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         WorldEntityId Id,
         string OriginDefinitionId,
         string Name,
-        int DaysSimulated)
+        int DaysSimulated,
+        string RacePrototypeTeamId = "")
     {
-        public Organization ToDomain() => new(Id, OriginDefinitionId, Name, DaysSimulated);
+        public Organization ToDomain() => new(Id, OriginDefinitionId, Name, DaysSimulated, RacePrototypeTeamId);
     }
 
     private sealed record RaceDto(
@@ -299,7 +300,8 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         int CalendarPeriodDays,
         int LastCompletedRaceDay,
         IReadOnlyList<string> LastDayNotes,
-        IReadOnlyList<CalendarEntryDto>? CalendarEntries = null)
+        IReadOnlyList<CalendarEntryDto>? CalendarEntries = null,
+        IReadOnlyList<RosterRider>? RosterRiders = null)
     {
         public static WorldSnapshotDto FromDomain(WorldState world)
         {
@@ -320,7 +322,8 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                         organization.Id,
                         organization.OriginDefinitionId,
                         organization.Name,
-                        organization.DaysSimulated))
+                        organization.DaysSimulated,
+                        organization.RacePrototypeTeamId))
                     .ToArray(),
                 world.DecisionAuthorities.ToArray(),
                 world.RaceCount,
@@ -341,7 +344,8 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                         entry.Title,
                         entry.OfficialResult,
                         entry.ResultAcknowledged))
-                    .ToArray());
+                    .ToArray(),
+                world.RosterRiders.ToArray());
         }
 
         public WorldState ToDomain()
@@ -366,7 +370,8 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                 LastCompletedRaceDay,
                 LastDayNotes ?? Array.Empty<string>(),
                 (CalendarEntries ?? Array.Empty<CalendarEntryDto>())
-                    .Select(entry => entry.ToDomain()));
+                    .Select(entry => entry.ToDomain()),
+                RosterRiders ?? Array.Empty<RosterRider>());
         }
     }
 }
