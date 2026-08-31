@@ -33,6 +33,18 @@ mkdir -p "${OUT}"
 
 "${GODOT}" --headless --path "${ROOT}/src/Peloton.Client.Godot" --export-release "Windows Desktop" "${OUT}/PelotonManager.exe"
 
+if [[ ! -f "${OUT}/PelotonManager.exe" ]]; then
+  echo "Export did not write PelotonManager.exe" >&2
+  exit 1
+fi
+
+# C# assemblies are embedded in the .exe/.pck. A template-only binary is ~94MB.
+size="$(stat -c%s "${OUT}/PelotonManager.exe")"
+if (( size < 120000000 )); then
+  echo "Export looks like a template-only binary (${size} bytes); C# publish probably failed." >&2
+  exit 1
+fi
+
 mkdir -p "${ZIP_DIR}"
 cp -a "${OUT}/." "${ZIP_DIR}/"
 mkdir -p "${ZIP_DIR}/content"

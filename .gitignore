@@ -1,6 +1,7 @@
-dist/
+**/bin/
 **/obj/
 **/.godot/
+dist/
 .vs/
 TestResults/
 *.user
