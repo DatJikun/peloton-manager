@@ -550,33 +550,43 @@ public sealed partial class CareerShellScreen
         nav.AddChild(next);
         box.AddChild(nav);
 
-        GridContainer head = new() { Columns = 7 };
+        HBoxContainer head = LookEqualCell.Strip();
         foreach (string dow in new[] { "Pon", "Wt", "Śr", "Czw", "Pt", "Sob", "Nie" })
         {
+            LookEqualCell slot = new(LookEqualCell.HeadHeight);
             Label label = LookChrome.Body(dow, 11, LookChrome.Gray, bold: true);
             label.HorizontalAlignment = HorizontalAlignment.Center;
-            head.AddChild(label);
+            label.VerticalAlignment = VerticalAlignment.Center;
+            label.ClipText = true;
+            slot.AddChild(label);
+            head.AddChild(slot);
         }
 
         box.AddChild(head);
-        GridContainer days = new() { Columns = 7 };
-        days.AddThemeConstantOverride("h_separation", 4);
-        days.AddThemeConstantOverride("v_separation", 4);
-        foreach (LookCalendarCell cell in CareerLookCatalog.Cells(month))
+        IReadOnlyList<LookCalendarCell> cells = CareerLookCatalog.Cells(month);
+        VBoxContainer weeks = new();
+        weeks.AddThemeConstantOverride("separation", 4);
+        weeks.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        for (int week = 0; week < 6; week++)
         {
-            days.AddChild(BuildDayCell(cell));
+            HBoxContainer row = LookEqualCell.Strip();
+            for (int col = 0; col < LookEqualCell.CalendarColumns; col++)
+            {
+                row.AddChild(BuildDayCell(cells[(week * LookEqualCell.CalendarColumns) + col]));
+            }
+
+            weeks.AddChild(row);
         }
 
-        box.AddChild(days);
+        box.AddChild(weeks);
         return box;
     }
 
-    private PanelContainer BuildDayCell(LookCalendarCell cell)
+    private LookEqualCell BuildDayCell(LookCalendarCell cell)
     {
-        PanelContainer panel = new();
-        panel.CustomMinimumSize = new Vector2(0, 72);
-        panel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        LookEqualCell slot = new(LookEqualCell.DayHeight);
         bool selected = cell.Race is not null && cell.Race.Id == lookCalRaceId;
+        PanelContainer panel = new();
         panel.AddThemeStyleboxOverride(
             "panel",
             LookChrome.ChipBox(cell.IsToday ? LookChrome.Paper : selected ? LookChrome.Black : LookChrome.White));
@@ -585,29 +595,79 @@ public sealed partial class CareerShellScreen
             panel.Modulate = new Color(1, 1, 1, 0.45f);
         }
 
-        VBoxContainer inner = new();
-        inner.AddThemeConstantOverride("separation", 2);
-        Color numColor = selected ? LookChrome.Paper : LookChrome.Gray;
-        inner.AddChild(LookChrome.Body(cell.Day.ToString(CultureInfo.InvariantCulture), 11, numColor, bold: true));
         if (cell.Race is LookCalendarRace race)
         {
             LookCalendarRace captured = race;
-            Button ev = LookChrome.Solid(
-                captured.Name + "\n" + captured.Category,
-                () =>
+            panel.MouseDefaultCursorShape = CursorShape.PointingHand;
+            panel.GuiInput += e =>
+            {
+                if (e is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left })
                 {
                     lookCalRaceId = captured.Id;
                     RebuildContent();
-                },
-                captured.Category == "Monument" ? LookChrome.Red : LookChrome.Team,
-                LookChrome.Paper,
-                compact: true);
-            ev.CustomMinimumSize = new Vector2(0, 36);
-            inner.AddChild(ev);
+                    panel.AcceptEvent();
+                }
+            };
         }
 
-        panel.AddChild(inner);
-        return panel;
+        VBoxContainer inner = new();
+        inner.AddThemeConstantOverride("separation", 2);
+        Color numColor = selected ? LookChrome.Paper : LookChrome.Gray;
+        Label number = LookChrome.Body(cell.Day.ToString(CultureInfo.InvariantCulture), 11, numColor, bold: true);
+        number.ClipText = true;
+        inner.AddChild(number);
+        if (cell.Race is LookCalendarRace eventRace)
+        {
+            Color eventFg = selected ? LookChrome.Black : LookChrome.Paper;
+            Label name = LookChrome.Body(eventRace.Name, 10, eventFg, bold: true);
+            name.AutowrapMode = TextServer.AutowrapMode.Arbitrary;
+            name.ClipText = true;
+            name.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+            name.SizeFlagsVertical = SizeFlags.ExpandFill;
+            name.MouseFilter = MouseFilterEnum.Ignore;
+            Label cat = LookChrome.Body(eventRace.Category, 10, eventFg);
+            cat.ClipText = true;
+            cat.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+            cat.MouseFilter = MouseFilterEnum.Ignore;
+            ColorRect chip = LookChrome.Block(eventRace.Category == "Monument" ? LookChrome.Red : LookChrome.Team);
+            if (selected)
+            {
+                chip.Color = LookChrome.Paper;
+            }
+
+            chip.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+            chip.SizeFlagsVertical = SizeFlags.ExpandFill;
+            chip.MouseFilter = MouseFilterEnum.Ignore;
+            VBoxContainer ev = new();
+            ev.SetAnchorsPreset(LayoutPreset.FullRect);
+            ev.OffsetLeft = 4;
+            ev.OffsetTop = 3;
+            ev.OffsetRight = -4;
+            ev.OffsetBottom = -3;
+            ev.MouseFilter = MouseFilterEnum.Ignore;
+            ev.AddChild(name);
+            ev.AddChild(cat);
+            chip.AddChild(ev);
+            inner.AddChild(chip);
+        }
+        else
+        {
+            Control spacer = new();
+            spacer.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+            spacer.SizeFlagsVertical = SizeFlags.ExpandFill;
+            spacer.MouseFilter = MouseFilterEnum.Ignore;
+            inner.AddChild(spacer);
+        }
+
+        MarginContainer pad = new();
+        pad.AddThemeConstantOverride("margin_left", 6);
+        pad.AddThemeConstantOverride("margin_top", 4);
+        pad.AddThemeConstantOverride("margin_right", 6);
+        pad.AddThemeConstantOverride("margin_bottom", 4);
+        pad.AddChild(inner);
+        panel.AddChild(pad);
+        slot.AddChild(panel);
+        return slot;
     }
 
     private VBoxContainer BuildCalendarRaceDetail()

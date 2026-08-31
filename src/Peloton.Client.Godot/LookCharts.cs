@@ -159,3 +159,55 @@ internal sealed partial class LookRaceMap : Control
         DrawString(font, new Vector2(200 * sx, 16 * sy), climb, HorizontalAlignment.Left, -1, 11, LookChrome.Team);
     }
 }
+
+/// <summary>
+/// One slot in an equal strip. Reports zero minimum width so a wide child
+/// (race name, button) cannot stretch its column past the others.
+/// </summary>
+internal sealed partial class LookEqualCell : Container
+{
+    public const int CalendarColumns = 7;
+    public const float DayHeight = 88;
+    public const float HeadHeight = 28;
+
+    private readonly float height;
+
+    public LookEqualCell(float height)
+    {
+        this.height = height;
+        ClipContents = true;
+        SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        SizeFlagsStretchRatio = 1;
+        CustomMinimumSize = new Vector2(0, height);
+    }
+
+    public override Vector2 _GetMinimumSize()
+    {
+        return new Vector2(0, height);
+    }
+
+    public override void _Notification(int what)
+    {
+        if (what != NotificationSortChildren)
+        {
+            return;
+        }
+
+        Rect2 rect = new(Vector2.Zero, Size);
+        foreach (Node node in GetChildren())
+        {
+            if (node is Control child && child.Visible)
+            {
+                FitChildInRect(child, rect);
+            }
+        }
+    }
+
+    public static HBoxContainer Strip()
+    {
+        HBoxContainer row = new();
+        row.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        row.AddThemeConstantOverride("separation", 4);
+        return row;
+    }
+}
