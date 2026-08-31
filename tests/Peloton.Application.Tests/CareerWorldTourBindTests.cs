@@ -21,7 +21,7 @@ public sealed class CareerWorldTourBindTests
         Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", GateSeed)).Succeeded);
         WorldEntityId[] knownIds = application.World!.RiderCareers.Select(career => career.Id).ToArray();
         Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(application).Succeeded);
         Assert.True(application.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId)).Succeeded);
 
         CareerWorldTestSupport.AssertFinishOrderUsesWorldRiderCareers(application);
@@ -44,14 +44,14 @@ public sealed class CareerWorldTourBindTests
     }
 
     [Fact]
-    public void SchemaVersionTwoRoundTripsRiderCareersAndResults()
+    public void SchemaVersionThreeRoundTripsRiderCareersAndResults()
     {
         using TemporaryDirectory temp = new();
         string savePath = Path.Combine(temp.Path, "career-bind.peloton");
         GameApplication source = TestApplication.Create();
         Assert.True(source.Execute(new CreateWorldCommand("scenario.peloton.skeleton", GateSeed)).Succeeded);
         Assert.True(source.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(source.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(source).Succeeded);
         Assert.True(source.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId)).Succeeded);
         Assert.True(source.Execute(new SaveGameCommand(savePath)).Succeeded);
 
@@ -82,7 +82,7 @@ public sealed class CareerWorldTourBindTests
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", seed)).Succeeded);
         Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(application).Succeeded);
         Assert.True(application.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId)).Succeeded);
         return application;
     }

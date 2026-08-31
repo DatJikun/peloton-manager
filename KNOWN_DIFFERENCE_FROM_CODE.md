@@ -25,11 +25,22 @@ This is an explicit prototype boundary, not an accepted simplification of the fu
 - `RiderCareer.Id` is the official race `RiderId`; `LastRace` finish order and `RiderCareerResult` history use those world IDs.
 - `CreateWorld` materializes riders from `content/peloton.skeleton/skeleton-roster.json` (stable `OriginDefinitionId`s from the prototype pack).
 - Prep squad is the player employer's world roster (`RiderCareer.OrganizationId`).
-- SQLite `SchemaVersion` is **2** and includes `RiderCareer` + results. Schema 1 skeleton saves may refuse to load.
-- World checksum label is `peloton-world-checksum-v2` (ten-season golden checksums changed).
+- SQLite `SchemaVersion` is **3** and includes `RiderCareer`, results, and `OrganizationRaceEntry`. Schema 1–2 saves may refuse to load.
+- World checksum label is `peloton-world-checksum-v3` (ten-season golden checksums changed again from v2).
 - `CalendarEntry.RaceContentId` stores the route/tuning scenario id.
 
-Phase 1 out of scope: pre-season picker, strategy window UI, contracts, 2026 WT pack, Career Hub.
+Phase 1 out of scope (now landed in phase 3 headless): pre-season picker and strategy step are implemented as commands; Godot UI for them is still out of scope. Remaining: contracts, 2026 WT pack, Career Hub.
+
+## Planning windows (D-036 phase 3 landed)
+
+- `OrganizationRaceEntry` (organization, `RaceContentId`, entered) persisted at SQLite SchemaVersion **3**; world create enters every org into every scheduled race content id.
+- `BeginPreSeasonPlanningCommand` / `SetSeasonRaceEntryCommand` / `ConfirmPreSeasonPlanCommand` / `CancelPreSeasonPlanningCommand` — draft until confirm; time does not advance.
+- Official start list = `RiderCareer` rows whose organization is entered for that race's `RaceContentId`.
+- Player race-due (`Race next` / blocked `AdvanceDay`) = calendar race today **and** employer entered; skipped entry allows `AdvanceDay`, which auto-simulates entered teams with delegated defaults then advances the day.
+- `SetRacePreparationStrategyCommand` (leader/support/objective/briefing) required before `ConfirmRacePreparationPlanCommand`; assembler honours player strategy; checkpoint round-trips in saves.
+- World checksum label is `peloton-world-checksum-v3`. Schema 2 saves may refuse to load.
+
+Phase 3+ out of scope: contracts, 2026 WT pack wired to `CreateWorld`, AI managers, D-032, tenth GameState.
 
 ## Day state (D-036 phase 2 landed)
 
@@ -37,6 +48,6 @@ Phase 1 out of scope: pre-season picker, strategy window UI, contracts, 2026 WT 
 - `WorldState.RecordRace` applies the locked race-load formula to every starter before appending `RiderCareerResult`.
 - `WorldRaceScenarioAssembler.ToRaceProfile` scales `CriticalPowerW` / `PeakPowerW` by readiness from stored form/freshness/fatigue; stored physiology is unchanged.
 - `TeamRaceObservation.DecisionAuthorityId` uses the world's human `DecisionAuthority` id (not `organizationId + 100`).
-- Career day races after 12 advance days now differ from immediate race-on-create (readiness drift); SimRunner day goldens use winner `7` / `alpha-leader` for seed `91234`.
+- Career day races after 12 advance days now differ from immediate race-on-create (readiness drift); SimRunner day goldens use winner `15` / `beta-leader` for seed `91234` (with default prep strategy).
 
 Owner slice contract: `CAREER_WORLDTOUR_SLICE_v0.1.md`.

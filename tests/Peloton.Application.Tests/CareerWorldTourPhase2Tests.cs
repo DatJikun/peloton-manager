@@ -31,7 +31,7 @@ public sealed class CareerWorldTourPhase2Tests
         (double Form01, double Freshness01, double Fatigue01)[] before =
             CareerWorldTestSupport.DayStateSnapshot(application);
         Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(application).Succeeded);
         Assert.True(application.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId)).Succeeded);
 
         (double Form01, double Freshness01, double Fatigue01)[] after =
@@ -82,7 +82,11 @@ public sealed class CareerWorldTourPhase2Tests
             .Resolve(application.World.ContentIdentity.ScenarioId);
         RaceScenarioTemplate template = new JsonRacePrototypeCatalog(TestApplication.ContentRoot)
             .ResolveTemplate(PrototypeRaceScenarioId);
-        RaceScenario scenario = WorldRaceScenarioAssembler.Assemble(application.World, recipe, template);
+        RaceScenario scenario = WorldRaceScenarioAssembler.Assemble(
+            application.World,
+            recipe,
+            template,
+            PrototypeRaceScenarioId);
 
         Assert.All(
             scenario.TacticalPlans,
@@ -103,7 +107,7 @@ public sealed class CareerWorldTourPhase2Tests
         }
 
         Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(application).Succeeded);
         Assert.True(application.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId)).Succeeded);
         return CareerWorldTestSupport.DayStateSnapshot(application);
     }

@@ -38,6 +38,7 @@ public sealed class WorldState
     private readonly List<RulesModuleIdentity> rulesModules;
     private readonly List<CalendarEntry> calendarEntries;
     private readonly List<RiderCareer> riderCareers;
+    private readonly List<OrganizationRaceEntry> organizationRaceEntries;
 
     public WorldState(
         string worldId,
@@ -59,7 +60,8 @@ public sealed class WorldState
         int lastCompletedRaceDay = 0,
         IEnumerable<string>? lastDayNotes = null,
         IEnumerable<CalendarEntry>? calendarEntries = null,
-        IEnumerable<RiderCareer>? riderCareers = null)
+        IEnumerable<RiderCareer>? riderCareers = null,
+        IEnumerable<OrganizationRaceEntry>? organizationRaceEntries = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(worldId);
         ArgumentNullException.ThrowIfNull(contentIdentity);
@@ -91,6 +93,10 @@ public sealed class WorldState
         this.calendarEntries = SortCalendarEntries(calendarEntries ?? Array.Empty<CalendarEntry>());
         this.riderCareers = (riderCareers ?? Array.Empty<RiderCareer>())
             .OrderBy(career => career.Id.Value)
+            .ToList();
+        this.organizationRaceEntries = (organizationRaceEntries ?? Array.Empty<OrganizationRaceEntry>())
+            .OrderBy(entry => entry.OrganizationId.Value)
+            .ThenBy(entry => entry.RaceContentId, StringComparer.Ordinal)
             .ToList();
     }
 
@@ -134,6 +140,8 @@ public sealed class WorldState
 
     public IReadOnlyList<RiderCareer> RiderCareers => riderCareers;
 
+    public IReadOnlyList<OrganizationRaceEntry> OrganizationRaceEntries => organizationRaceEntries;
+
     public RiderCareer? TryGetRiderCareer(WorldEntityId riderCareerId) =>
         riderCareers.FirstOrDefault(career => career.Id == riderCareerId);
 
@@ -143,16 +151,72 @@ public sealed class WorldState
             .OrderBy(career => career.OriginDefinitionId, StringComparer.Ordinal)
             .ToArray();
 
-    public bool IsRaceDue =>
+    public bool IsCalendarRaceDue =>
         CurrentDate.DayNumber > 0 &&
         CurrentDate.DayNumber % CalendarPeriodDays == 0 &&
         LastCompletedRaceDay != CurrentDate.DayNumber;
+
+    public bool IsRaceDue => IsCalendarRaceDue;
+
+    public string? TryGetTodaysRaceContentId()
+    {
+        if (!IsCalendarRaceDue)
+        {
+            return null;
+        }
+
+        CalendarEntry? entry = calendarEntries.FirstOrDefault(
+            item => item.DayNumber == CurrentDate.DayNumber && item.Kind == CalendarEntryKind.Race);
+        return entry?.RaceContentId;
+    }
+
+    public bool IsOrganizationEnteredForRace(WorldEntityId organizationId, string raceContentId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(raceContentId);
+        OrganizationRaceEntry? entry = organizationRaceEntries.FirstOrDefault(
+            item => item.OrganizationId == organizationId &&
+                    string.Equals(item.RaceContentId, raceContentId, StringComparison.Ordinal));
+        return entry?.Entered ?? false;
+    }
+
+    public bool IsRaceDueForOrganization(WorldEntityId organizationId)
+    {
+        return TryGetTodaysRaceContentId() is string raceContentId &&
+               IsOrganizationEnteredForRace(organizationId, raceContentId);
+    }
+
+    public bool HasEnteredTeamsForTodaysRace()
+    {
+        if (TryGetTodaysRaceContentId() is not string raceContentId)
+        {
+            return false;
+        }
+
+        return organizationRaceEntries.Any(
+            entry => string.Equals(entry.RaceContentId, raceContentId, StringComparison.Ordinal) && entry.Entered);
+    }
+
+    public void SetOrganizationRaceEntry(WorldEntityId organizationId, string raceContentId, bool entered)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(raceContentId);
+        int index = organizationRaceEntries.FindIndex(
+            entry => entry.OrganizationId == organizationId &&
+                     string.Equals(entry.RaceContentId, raceContentId, StringComparison.Ordinal));
+        if (index >= 0)
+        {
+            organizationRaceEntries[index] = new OrganizationRaceEntry(organizationId, raceContentId, entered);
+            return;
+        }
+
+        organizationRaceEntries.Add(new OrganizationRaceEntry(organizationId, raceContentId, entered));
+        organizationRaceEntries.Sort(CompareOrganizationRaceEntries);
+    }
 
     public int NextRaceDayNumber
     {
         get
         {
-            if (IsRaceDue)
+            if (IsCalendarRaceDue)
             {
                 return CurrentDate.DayNumber;
             }
@@ -301,9 +365,18 @@ public sealed class WorldState
             lastDayNotes.Add("The rest of the world advanced.");
         }
 
-        if (IsRaceDue)
+        if (access.CurrentOrganizationId is WorldEntityId organizationId &&
+            IsRaceDueForOrganization(organizationId))
         {
             lastDayNotes.Add("A race is due today.");
         }
+    }
+
+    private static int CompareOrganizationRaceEntries(OrganizationRaceEntry left, OrganizationRaceEntry right)
+    {
+        int organizationComparison = left.OrganizationId.Value.CompareTo(right.OrganizationId.Value);
+        return organizationComparison != 0
+            ? organizationComparison
+            : string.Compare(left.RaceContentId, right.RaceContentId, StringComparison.Ordinal);
     }
 }

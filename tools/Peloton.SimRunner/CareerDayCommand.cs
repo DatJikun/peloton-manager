@@ -232,7 +232,7 @@ public static class CareerDayCommand
 
                             if (options.SimulateFromPrep || options.ThroughResults)
                             {
-                                CommandResult confirm = application.Execute(new ConfirmRacePreparationPlanCommand());
+                                CommandResult confirm = RacePreparationSupport.ConfirmWithDefaultStrategy(application);
                                 if (!confirm.Succeeded)
                                 {
                                     return 1;
@@ -292,7 +292,7 @@ public static class CareerDayCommand
             return prepare;
         }
 
-        CommandResult confirm = application.Execute(new ConfirmRacePreparationPlanCommand());
+        CommandResult confirm = RacePreparationSupport.ConfirmWithDefaultStrategy(application);
         if (!confirm.Succeeded)
         {
             return confirm;
@@ -319,7 +319,7 @@ public static class CareerDayCommand
         string autosaveDirectory,
         TextWriter output)
     {
-        CommandResult confirm = application.Execute(new ConfirmRacePreparationPlanCommand());
+        CommandResult confirm = RacePreparationSupport.ConfirmWithDefaultStrategy(application);
         if (!confirm.Succeeded)
         {
             return 1;

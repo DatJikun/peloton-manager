@@ -54,6 +54,11 @@ public enum DecisionAuthorityKind
 
 public sealed record DecisionAuthority(WorldEntityId Id, DecisionAuthorityKind Kind);
 
+public sealed record OrganizationRaceEntry(
+    WorldEntityId OrganizationId,
+    string RaceContentId,
+    bool Entered);
+
 public readonly record struct AccessContext(
     WorldEntityId? ViewerPersonId,
     WorldEntityId? CurrentOrganizationId,

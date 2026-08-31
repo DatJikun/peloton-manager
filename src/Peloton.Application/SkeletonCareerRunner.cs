@@ -40,7 +40,7 @@ public sealed class SkeletonCareerRunner
                 }
 
                 Ensure(application.Execute(new PrepareRaceCommand()));
-                Ensure(application.Execute(new ConfirmRacePreparationPlanCommand()));
+                Ensure(RacePreparationSupport.ConfirmWithDefaultStrategy(application));
                 string autosavePath = Path.Combine(autosaveDirectory, $"season-{season}-pre-race.peloton");
                 Ensure(application.Execute(new StartRaceCommand(
                     autosavePath,

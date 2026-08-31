@@ -51,7 +51,7 @@ public sealed class SqliteWorldSaveStoreTests
 
         using SqliteConnection connection = new($"Data Source={savePath};Mode=ReadOnly;Pooling=False");
         connection.Open();
-        Assert.Equal("2", ReadMetadata(connection, "schema_version"));
+        Assert.Equal("3", ReadMetadata(connection, "schema_version"));
         Assert.Equal(source.World!.ContentIdentity.AggregateHash, ReadMetadata(connection, "content_identity"));
         Assert.Equal(source.World.RulesIdentity, ReadMetadata(connection, "rules_identity"));
     }
@@ -98,14 +98,14 @@ public sealed class SqliteWorldSaveStoreTests
     }
 
     [Fact]
-    public void OfficialRaceRoundTripKeepsSchemaVersionTwoAndLastRaceJsonShape()
+    public void OfficialRaceRoundTripKeepsSchemaVersionThreeAndLastRaceJsonShape()
     {
         using TemporaryDirectory temp = new();
         string savePath = Path.Combine(temp.Path, "post-race.peloton");
         GameApplication source = CreateApplication();
         Assert.True(source.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 717)).Succeeded);
         Assert.True(source.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(source.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(source).Succeeded);
         Assert.True(source.Execute(new StartRaceCommand(
             Path.Combine(temp.Path, "pre-race.peloton"),
             "race-scenario.peloton.prototype-v0")).Succeeded);
@@ -114,7 +114,7 @@ public sealed class SqliteWorldSaveStoreTests
 
         using SqliteConnection connection = new($"Data Source={savePath};Mode=ReadOnly;Pooling=False");
         connection.Open();
-        Assert.Equal("2", ReadMetadata(connection, "schema_version"));
+        Assert.Equal("3", ReadMetadata(connection, "schema_version"));
         string payload = ReadSnapshot(connection);
         Assert.Contains("\"lastRace\":{\"routeId\":", payload, StringComparison.Ordinal);
         Assert.Contains("\"winnerId\":", payload, StringComparison.Ordinal);
@@ -139,14 +139,14 @@ public sealed class SqliteWorldSaveStoreTests
     }
 
     [Fact]
-    public void ConfirmedPreparationRoundTripKeepsSessionPlanAtSchemaVersionTwo()
+    public void ConfirmedPreparationRoundTripKeepsSessionPlanAtSchemaVersionThree()
     {
         using TemporaryDirectory temp = new();
         string savePath = Path.Combine(temp.Path, "confirmed-prep.peloton");
         GameApplication source = CreateApplication();
         Assert.True(source.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 717)).Succeeded);
         Assert.True(source.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(source.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(source).Succeeded);
         string worldChecksum = WorldChecksum.Compute(source.World!);
 
         Assert.True(source.Execute(new SaveGameCommand(savePath)).Succeeded);
@@ -154,7 +154,7 @@ public sealed class SqliteWorldSaveStoreTests
         using (SqliteConnection connection = new($"Data Source={savePath};Mode=ReadOnly;Pooling=False"))
         {
             connection.Open();
-            Assert.Equal("2", ReadMetadata(connection, "schema_version"));
+            Assert.Equal("3", ReadMetadata(connection, "schema_version"));
         }
 
         WorldCheckpoint stored = new SqliteWorldSaveStore().Load(savePath);

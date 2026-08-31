@@ -23,7 +23,7 @@ public sealed class CareerWatchTests
         GameApplication watched = Create(watchEngine);
         Assert.True(watched.Execute(new CreateWorldCommand("scenario.peloton.skeleton", GateSeed)).Succeeded);
         Assert.True(watched.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(watched.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(watched).Succeeded);
         Assert.True(watched.Execute(new StartRaceCommand(
             Path.Combine(temp.Path, "watch-pre-race.peloton"),
             PrototypeRaceScenarioId)).Succeeded);
@@ -43,7 +43,7 @@ public sealed class CareerWatchTests
         GameApplication simulated = Create(simulateEngine);
         Assert.True(simulated.Execute(new CreateWorldCommand("scenario.peloton.skeleton", GateSeed)).Succeeded);
         Assert.True(simulated.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(simulated.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(simulated).Succeeded);
         Assert.True(simulated.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId)).Succeeded);
 
         Assert.Equal(1, simulateEngine.RunBatchCalls);
@@ -79,7 +79,7 @@ public sealed class CareerWatchTests
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", GateSeed)).Succeeded);
         Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(application).Succeeded);
         Assert.True(application.Execute(new StartRaceCommand(
             Path.Combine(autosaveDirectory, "pre-race.peloton"),
             PrototypeRaceScenarioId)).Succeeded);

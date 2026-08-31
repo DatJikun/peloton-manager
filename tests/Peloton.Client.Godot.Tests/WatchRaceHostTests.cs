@@ -22,6 +22,7 @@ public sealed class WatchRaceHostTests
 
         Assert.True(host.OpenPrototype(GateSeed).Succeeded);
         Assert.Equal(GameState.RacePreparationFlow, host.State);
+        Assert.True(host.SetDefaultStrategy().Succeeded);
         Assert.True(host.ConfirmPreparation().Succeeded);
         Assert.True(host.SelectRate(5).Succeeded);
         Assert.True(host.StartWatch().Succeeded);
@@ -53,6 +54,7 @@ public sealed class WatchRaceHostTests
         using TemporaryDirectory temp = new();
         WatchRaceHost host = CreateHost(temp.Path, new PrototypeRaceEngine());
         Assert.True(host.OpenPrototype(GateSeed).Succeeded);
+        Assert.True(host.SetDefaultStrategy().Succeeded);
         Assert.True(host.ConfirmPreparation().Succeeded);
         Assert.True(host.StartWatch().Succeeded);
         int startWatch = host.OfficialFrame!.WatchSecond;
@@ -94,6 +96,7 @@ public sealed class WatchRaceHostTests
         string autosave = Path.Combine(temp.Path, "pre-race.peloton");
         WatchRaceHost host = CreateHost(temp.Path, new PrototypeRaceEngine());
         Assert.True(host.OpenPrototype(GateSeed).Succeeded);
+        Assert.True(host.SetDefaultStrategy().Succeeded);
         Assert.True(host.ConfirmPreparation().Succeeded);
         Assert.True(host.StartWatch().Succeeded);
         Assert.True(File.Exists(autosave));

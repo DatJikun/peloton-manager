@@ -11,11 +11,15 @@ public static class WorldRaceScenarioAssembler
     public static RaceScenario Assemble(
         WorldState world,
         WorldRecipe recipe,
-        RaceScenarioTemplate template)
+        RaceScenarioTemplate template,
+        string raceContentId,
+        RacePreparationStrategy? playerStrategy = null,
+        WorldEntityId? playerOrganizationId = null)
     {
         ArgumentNullException.ThrowIfNull(world);
         ArgumentNullException.ThrowIfNull(recipe);
         ArgumentNullException.ThrowIfNull(template);
+        ArgumentException.ThrowIfNullOrWhiteSpace(raceContentId);
 
         Dictionary<string, Organization> organizationsByOrigin = world.Organizations
             .ToDictionary(organization => organization.OriginDefinitionId, StringComparer.Ordinal);
@@ -27,8 +31,14 @@ public static class WorldRaceScenarioAssembler
         Dictionary<string, RiderCareer> careersByOrigin = world.RiderCareers
             .ToDictionary(career => career.OriginDefinitionId, StringComparer.Ordinal);
         WorldEntityId humanAuthorityId = ResolveHumanAuthorityId(world);
+        HashSet<WorldEntityId> enteredOrganizationIds = world.OrganizationRaceEntries
+            .Where(entry =>
+                string.Equals(entry.RaceContentId, raceContentId, StringComparison.Ordinal) && entry.Entered)
+            .Select(entry => entry.OrganizationId)
+            .ToHashSet();
 
         RaceRiderProfile[] riders = world.RiderCareers
+            .Where(career => enteredOrganizationIds.Contains(career.OrganizationId))
             .OrderBy(career => career.OriginDefinitionId, StringComparer.Ordinal)
             .Select(career => ToRaceProfile(career))
             .ToArray();
@@ -38,9 +48,11 @@ public static class WorldRaceScenarioAssembler
             .Select((originId, index) => new RaceStartingPosition(
                 careersByOrigin[originId].Id,
                 (startingOrder.Count - 1 - index) * 0.7))
+            .Where(position => riders.Any(rider => rider.RiderId == position.RiderId))
             .ToArray();
 
         RaceCommand[] commands = template.Commands
+            .Where(command => enteredOrganizationIds.Contains(raceTeamToOrganization[command.TeamId]))
             .Select(command => new RaceCommand(
                 command.SimulationSecond,
                 raceTeamToOrganization[command.TeamId],
@@ -49,13 +61,26 @@ public static class WorldRaceScenarioAssembler
             .ToArray();
 
         RaceTacticalPlan[] tacticalPlans = template.TacticalPlans
+            .Where(plan => enteredOrganizationIds.Contains(raceTeamToOrganization[plan.TeamId]))
             .Select(plan =>
             {
                 RaceTeamTemplate team = template.Teams[plan.TeamId];
                 WorldEntityId organizationId = raceTeamToOrganization[plan.TeamId];
+                WorldEntityId supportRiderId = careersByOrigin[plan.SupportRiderId].Id;
+                RaceObjective objective = team.Objective;
+                RaceBriefing briefing = team.Briefing;
+                if (playerOrganizationId is not null &&
+                    playerStrategy is not null &&
+                    organizationId == playerOrganizationId.Value)
+                {
+                    supportRiderId = playerStrategy.SupportId;
+                    objective = playerStrategy.Objective;
+                    briefing = new RaceBriefing(playerStrategy.BriefingKind, team.Briefing.ConsultManager);
+                }
+
                 return new RaceTacticalPlan(
                     plan.TriggerSecond,
-                    careersByOrigin[plan.SupportRiderId].Id,
+                    supportRiderId,
                     new TeamRaceObservation(
                         organizationId,
                         humanAuthorityId,
@@ -64,9 +89,9 @@ public static class WorldRaceScenarioAssembler
                         plan.LeaderPositionBand,
                         plan.ResourceEstimate,
                         plan.ThreatEstimate,
-                        team.Objective,
+                        objective,
                         plan.Confidence),
-                    team.Briefing);
+                    briefing);
             })
             .ToArray();
 

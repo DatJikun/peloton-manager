@@ -35,7 +35,7 @@ public sealed class RaceResultDebriefTests
         Assert.Null(application.RaceResult);
 
         Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(application).Succeeded);
         Assert.True(application.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId)).Succeeded);
 
         Assert.Equal(1, engine.RunBatchCalls);
@@ -68,7 +68,7 @@ public sealed class RaceResultDebriefTests
         GameApplication watched = Create(watchEngine);
         Assert.True(watched.Execute(new CreateWorldCommand("scenario.peloton.skeleton", GateSeed)).Succeeded);
         Assert.True(watched.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(watched.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(watched).Succeeded);
         Assert.True(watched.Execute(new StartRaceCommand(
             Path.Combine(temp.Path, "pre-race.peloton"),
             PrototypeRaceScenarioId)).Succeeded);
@@ -78,7 +78,7 @@ public sealed class RaceResultDebriefTests
         GameApplication simulated = Create(simulateEngine);
         Assert.True(simulated.Execute(new CreateWorldCommand("scenario.peloton.skeleton", GateSeed)).Succeeded);
         Assert.True(simulated.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(simulated.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(simulated).Succeeded);
         Assert.True(simulated.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId)).Succeeded);
 
         Assert.Equal(0, watchEngine.RunBatchCalls);
@@ -99,7 +99,7 @@ public sealed class RaceResultDebriefTests
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", GateSeed)).Succeeded);
         Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(application).Succeeded);
         Assert.True(application.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId)).Succeeded);
         Assert.Null(application.RaceDebrief);
 
@@ -142,7 +142,7 @@ public sealed class RaceResultDebriefTests
         GameApplication source = TestApplication.Create();
         Assert.True(source.Execute(new CreateWorldCommand("scenario.peloton.skeleton", GateSeed)).Succeeded);
         Assert.True(source.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(source.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(source).Succeeded);
         string worldChecksum = WorldChecksum.Compute(source.World!);
         Assert.True(source.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId)).Succeeded);
         Assert.Null(source.RacePreparation);
@@ -191,7 +191,7 @@ public sealed class RaceResultDebriefTests
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 42)).Succeeded);
         Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(application).Succeeded);
         Assert.True(application.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId)).Succeeded);
 
         Assert.Null(application.CareerDay);
