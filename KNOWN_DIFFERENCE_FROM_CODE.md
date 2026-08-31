@@ -17,4 +17,6 @@ The prototype is still below the accepted Race Engine contract. Remaining intent
 
 This is an explicit prototype boundary, not an accepted simplification of the future Race Engine. Deeper physiology, career calendars bound to race, and fun/decision-density claims wait on owner playtest.
 
-The Milestone 0 checksum and shared high-water ID allocator are likewise skeleton contracts. They do not close OQ-TS-001 or OQ-DM-001; changing their durable representation later requires normal schema/version review and migration. SQLite `SchemaVersion` remains 1; the persisted last-race JSON shape is unchanged.
+The Milestone 0 checksum and shared high-water ID allocator are likewise skeleton contracts. They do not close OQ-TS-001 or OQ-DM-001; changing their durable representation later requires normal schema/version review and migration. SQLite `SchemaVersion` remains 1 until the world–race bind (D-036) lands SchemaVersion 2. The persisted last-race JSON shape is unchanged until that bind.
+
+Owner slice contract: `CAREER_WORLDTOUR_SLICE_v0.1.md`. The disconnected race fixture is an explicit gap the slice removes; it is not an accepted simplification.

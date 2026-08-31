@@ -136,3 +136,24 @@ When this repo is developed with a main Cloud Agent plus subagents, the split is
 - Composer 2.5: code.
 
 Coding `Task` launches must set the subagent model to Composer 2.5. They must not inherit the main agent and must not use Composer 2.5 Fast unless the owner asked for speed. Composer is not the primary author of VISION, DECISIONS, ARCHITECTURE, HANDOFF, UI sitemap, GAME_STATES, DATA_MODEL, ADRs, or similar governance docs. Operational detail lives in `AGENTS.md` and `.cursor/rules/composer-coding-subagent.mdc`.
+
+## D-036 — Career riders are the people who race
+Official start lists, finish order, and `LastRace` IDs are world `RiderCareer` identities. A disconnected race-only fixture is not the official result path once this bind exists. Race results append to that career’s history. Same person in the club, on the start list, and in the chronicle.
+
+## D-037 — Pre-season entry and pre-race strategy stay in the nine states
+Pre-season: the player chooses which races the organization enters (`PreSeasonPlanningFlow`). Pre-race: a strategy step (roles, objective, briefing) sits inside `RacePreparationFlow` before Confirm. Neither adds a tenth GameState (D-031). Career Hub stays rejected.
+
+## D-038 — 2026 WorldTour content first; lower tiers are architecture
+First real-cycling pack is men’s UCI WorldTour 2026 (18 teams, 2026–2028 licence cycle). Physiology, wages, and budgets may be estimated gameplay numbers and must be labelled as such. Organization records store division and licence-years-remaining so a 3-year WorldTour licence and ProTeam/Continental tiers can exist later. Living promotion/relegation and a full lower-category grid are not required for the first playable season. Commercial licensing of real names is a later problem; the engine must still run on fictional packs.
+
+## D-039 — Rider contracts in; loyalty thin; sponsor-loop overkill
+Rider contracts (club, wage, dates) are required. Loyalty is a stored trait, not a minigame. Personal rider sponsors and marketability-as-a-game are overkill for this slice. A quiet marketability number may arrive later with the sponsor economy.
+
+## D-040 — Staff is never a minigame
+Staff (DS, coach, medical, recruitment) may modify briefing quality, training, or knowledge. They do not get their own minigames.
+
+## D-041 — AI managers wait for the owner
+Do not implement AI managers in this slice. Human/AI symmetry (D-002) still applies to the bind: the same commands and world rules, even if only the human authority is wired.
+
+## D-042 — Attribute visibility is All / Guessed / None
+The knowledge spine serves the existing New Game visibility axis. It is not a fourth fog-of-war mode. All may show OVR/POT. Guessed shows ranges and confidence. None does not show rival attributes; results are evidence. Do not build a scouting/dossier game until the owner asks.

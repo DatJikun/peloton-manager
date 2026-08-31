@@ -16,7 +16,7 @@
 
 **Last reviewed:** 2026-08-25
 
-**Related decisions/ADRs:** D-002, D-003, D-004, D-005, D-007, D-009, D-010, D-013, D-014, D-015, D-024, D-025, D-027, D-031
+**Related decisions/ADRs:** D-002, D-003, D-004, D-005, D-007, D-009, D-010, D-013, D-014, D-015, D-024, D-025, D-027, D-031, D-036
 
 ---
 
@@ -236,6 +236,26 @@ ManagerCareer
 ```
 
 `ManagerCareer` does not contain a `PlayerTeam` flag and does not become a different type when controlled by a human.
+
+### 6.4 RiderCareer (career slice)
+
+`RiderCareer` is the racing career of a `Person`. Official race `RiderId` values are `RiderCareer.Id`.
+
+Minimum contract for the WorldTour slice (`CAREER_WORLDTOUR_SLICE_v0.1.md`, D-036):
+
+```text
+RiderCareer
+    RiderCareerId
+    PersonId
+    OrganizationId              // active club until rider Employment exists
+    OriginDefinitionId
+    physiology used by the race engine
+    Form01 / Freshness01 / Fatigue01
+    Loyalty01
+    Results                     // append-only career race history
+```
+
+Full training, health, and development fields remain later system documents.
 
 ---
 

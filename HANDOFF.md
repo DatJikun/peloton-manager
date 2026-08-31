@@ -10,13 +10,13 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`Watch Race on Godot (D-033)` — waiting on owner playtest / feedback
+`Career WorldTour slice` — world–race bind first (`CAREER_WORLDTOUR_SLICE_v0.1.md`)
 
 ### Goal
-First playable Watch Race window exists. Owner (player) judges feel. Do not close §49 with automations.
+The people in the club are the people who race. Results become career history. Then form-on-day, pre-season race picks, pre-race strategy, contracts, and a 2026 WorldTour content pack. Do not close §49 with automations. Do not build Career Hub.
 
 ### Status
-Godot Watch Race is a presentation client over the existing Application clock. Open `src/Peloton.Client.Godot/project.godot` in Godot 4.4 .NET. The player confirms prep, picks ×1/×2/×5/×20, watches focal-rider icons interpolate between official 1s physics snapshots, answers a knowledge-bounded decision (or the DS default), and sees the official winner from `LastRace`. Renderer does not drive physics. Career shell is not in this window. HTML lab (`08e` / `14-race.html`) stays a look reference, not the game. Headless CLI is unchanged. §49 remains `NOT VERIFIED`. `D-032` remains deferred. SchemaVersion remains 1. Coding subagents default to Composer 2.5 (D-035).
+Owner (player) directed the slice on 2026-08-31 (D-036–D-042). Code still has a disconnected race fixture. Next implementation is the bind.
 
 ## Gdzie jest gra (dla właściciela)
 Nie ma jeszcze pełnej gry managerskiej.
@@ -25,13 +25,22 @@ Działa:
 - w Godot okno Watch Race — jeden syntetyczny etap (ikony, tempo, decyzja, zwycięzca);
 - w CLI pętla dnia: Advance Day, Race next, przygotowanie, Simulate albo Watch, wynik.
 
+Właśnie budujemy:
+- most świat–wyścig: ten sam człowiek w klubie, na starcie i w historii wyników.
+
 Jeszcze nie:
-- skład kariery nie jest tymi samymi ludźmi co w wyścigu;
+- skład kariery nie jest tymi samymi ludźmi co w wyścigu (to jest pierwszy kod tego slice);
 - nie ma scoutingu, kontraktów kolarzy, sponsorów, treningu ani AI managerów;
 - nie ma Career Hub (odrzucony);
 - §49 nie jest zaliczone — to ręczny playtest właściciela.
 
-Następny kawałek kodu czeka na feedback właściciela. Nie wymyślamy nowego systemu bez tej decyzji.
+Tryby All / Guessed / None (widać / częściowo / ukryte OVR i POT) zostają. Nie dokładamy czwartej mgły.
+
+„Eventy dnia” = po Advance Day świat coś robi (forma, regeneracja, terminy), nie tylko +1 na dacie.
+
+Pieniądze: budżet i płace, sponsor płaci rachunki — bez ukrytego podatku. Cienka ekonomia dopiero po kontraktach.
+
+Baza 2026: najpierw 18 ekip męskiego WorldTour. Liczby fizjologii i budżetów będą oszacowane. 3 lata licencji WT i niższe ligi są w modelu, nie w pierwszej grywalnej siatce.
 
 ## What works now
 - [x] High-level game design v0.7
@@ -87,10 +96,11 @@ Następny kawałek kodu czeka na feedback właściciela. Nie wymyślamy nowego s
 - [x] Save Format v0.1 (DRAFT)
 - [x] Testing v0.1 (DRAFT)
 - [x] Docs snapshot 2026-08-31: Godot Watch is real (not a stub); Composer 2.5 coding lock (D-035)
+- [ ] Career WorldTour slice (D-036–D-042) — world–race bind first
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task
-`Waiting for owner (player) feedback. Do not close §49 with automations. Do not implement D-032. Do not build the rejected Career Hub. Do not start a new backend system until the owner says so.`
+`World–race bind (D-036, CAREER_WORLDTOUR_SLICE_v0.1.md phase 1). Do not close §49 with automations. Do not implement D-032. Do not build the rejected Career Hub. Do not start AI managers (D-041).`
 
 ## Known blockers
 - None.
@@ -110,6 +120,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
+- `2026-08-31` — Career WorldTour slice: bind world to race; 2026 WT pack; contracts; no minigames; All/Guessed/None stay the visibility model; AI managers wait (D-036–D-042).
 - `2026-08-31` — Composer 2.5 is the default coding subagent; Grok 4.6 High writes docs and reviews (D-035). Owner is a player giving feedback, not a programmer.
 - `2026-08-25` — Nie wysyłać właścicielowi maili o zmianach; status tylko w czacie agenta.
 - `2026-08-25` — Mergować, gdy high-level check jest OK; nie czekać na „merguj”. Nie mergować tylko przy poważnych problemach.
@@ -183,6 +194,7 @@ AI_DEVELOPMENT_RULES_v0.1.md
 GITHUB_WORKFLOW_v0.1.md
 CODEBASE_MAP.md
 RACE_ENGINE_RESEARCH_2026-08-25.md
+CAREER_WORLDTOUR_SLICE_v0.1.md
 ```
 
 ## Commands to run first
@@ -249,3 +261,4 @@ Peloton Manager jest na etapie pre-production. Celem jest modularny, determinist
 - `2026-08-27` — Właściciel kazał złączyć pętlę kariery z `main`. Jedno drzewo: PrototypeRaceEngine + Hub/inbox/prep/Watch razem z HTML labem (`08e` / `10` / `12` / `14-race.html`). Godot Watch i §49 nadal otwarte.
 - `2026-08-28` — Pierwszy Watch Race w Godot (D-033): okno oglądania etapu, nie Career Hub. §49 nadal `NOT VERIFIED`.
 - `2026-08-31` — Dokumenty zsynchronizowane ze stanem kodu: Godot Watch nie jest stubem; `CODEBASE_MAP.md` ACTIVE; Composer 2.5 lock (D-035). Czekamy na feedback właściciela, bez nowego systemu z urzędu.
+- `2026-08-31` — Owner slice: most świat–wyścig, historia kariery, WT 2026, kontrakty, bez minigier (D-036–D-042). `CAREER_WORLDTOUR_SLICE_v0.1.md`.

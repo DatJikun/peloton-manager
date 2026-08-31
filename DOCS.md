@@ -32,6 +32,7 @@
 | `RULESETS_v0.1.md` | DRAFT | Składane moduły reguł, compatibility i effective-dated transitions |
 | `SAVE_FORMAT_v0.1.md` | DRAFT | SQLite save contract, schema versions, migrations, content identity i recovery |
 | `TESTING_v0.1.md` | DRAFT | Test layers, golden scenarios, probes, invariants, soak and playtest gates |
+| `CAREER_WORLDTOUR_SLICE_v0.1.md` | DRAFT | Owner 2026-08-31 career slice: world–race bind, WT 2026 pack, contracts, no minigames |
 
 ## Read order for a new AI session
 
@@ -67,6 +68,7 @@ Not in code yet, though named in `DATA_MODEL_v0.1.md`: `RiderCareer` as a world 
 
 Remaining system design (do not treat as the next coding task unless `HANDOFF.md` says so):
 
+- Owner slice: `CAREER_WORLDTOUR_SLICE_v0.1.md` (world–race bind first)
 - Rider Performance / Training / Development
 - Calendar / Recruitment / Contracts / Economy-Sponsors
 
