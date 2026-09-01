@@ -8,6 +8,7 @@ namespace Peloton.Simulation.Race;
 public static class BunchSprintResolver
 {
     public const double LaunchDistanceM = 800.0;
+    public const double KickDistanceM = 250.0;
     public const double FinishGradientWindowM = 2_000.0;
     public const double MaximumMeanGradient = 0.015;
     public const double LeadGroupGapM = 15.0;

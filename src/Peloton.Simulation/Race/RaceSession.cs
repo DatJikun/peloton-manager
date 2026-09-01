@@ -29,6 +29,7 @@ public sealed class RaceSession
     private const double ConserveSpeedDecreaseMps = 0.8;
     private const double ClassifiedFlatSitInMaxGradient = 0.005;
     private const double ClassifiedFlatSitInMaxWindMps = 1.5;
+    private const double ClassifiedFlatSitInShelterMultiplier = 0.62;
 
     private readonly RaceScenario scenario;
     private readonly RiderRuntime[] riders;
@@ -133,8 +134,9 @@ public sealed class RaceSession
 
             RaceRouteSegment segment = scenario.Definition.SegmentAt(rider.DistanceM);
             double remainingM = scenario.Definition.TotalLengthM - rider.DistanceM;
-            AtmosphereSample atmosphere = AtmosphereForPhysics(segment, remainingM);
-            if (rider.Intent == RaceCommandKind.LaunchSprint)
+            AtmosphereSample atmosphere = AtmosphereForPhysics(segment);
+            if (rider.Intent == RaceCommandKind.LaunchSprint &&
+                remainingM <= BunchSprintResolver.KickDistanceM)
             {
                 solves.Add(rider.Profile.RiderId, SolveLaunchSprint(rider, segment));
                 continue;
@@ -159,6 +161,7 @@ public sealed class RaceSession
             double relativeAirSpeedMps = Math.Sqrt(
                 Math.Pow(Math.Max(0.0, desiredSpeedMps + headwindMps), 2.0) +
                 Math.Pow(crosswindMps, 2.0));
+            double shelterMultiplier = ShelterForPhysics(rider.ShelterMultiplier, remainingM);
             RequiredPowerBreakdown demand = RequiredPowerSolver.Calculate(new RequiredPowerInput(
                 desiredSpeedMps,
                 desiredAccelerationMps2,
@@ -166,7 +169,7 @@ public sealed class RaceSession
                 scenario.Definition.AirDensityKgPerM3,
                 relativeAirSpeedMps,
                 rider.Profile.CdAM2,
-                rider.ShelterMultiplier,
+                shelterMultiplier,
                 EffectiveCrr(rider.Profile.BaseCrr, rider.Profile.Handling, segment.Surface),
                 rider.Profile.TotalMassKg));
             CapabilityResult capability = CapabilitySolver.Evaluate(
@@ -245,6 +248,7 @@ public sealed class RaceSession
 
     private StepSolve SolveLaunchSprint(RiderRuntime rider, RaceRouteSegment segment)
     {
+        AtmosphereSample atmosphere = AtmosphereForPhysics(segment);
         CapabilityResult capability = CapabilitySolver.Evaluate(
             rider.Profile,
             rider.Physiology,
@@ -252,10 +256,10 @@ public sealed class RaceSession
             StepSeconds);
         double targetSpeedMps = BunchSprintResolver.SpeedForPowerW(
             capability.RealizablePowerW,
-            segment.Gradient,
+            atmosphere.Gradient,
             scenario.Definition.AirDensityKgPerM3,
-            segment.WindSpeedMps,
-            segment.WindYawDegrees,
+            atmosphere.WindSpeedMps,
+            atmosphere.WindYawDegrees,
             rider.Profile.CdAM2,
             shelterMultiplier: 1.0,
             EffectiveCrr(rider.Profile.BaseCrr, rider.Profile.Handling, segment.Surface),
@@ -505,7 +509,7 @@ public sealed class RaceSession
                 RaceRouteSegment segment = scenario.Definition.SegmentAt(rider.DistanceM);
                 double remainingM = scenario.Definition.TotalLengthM - rider.DistanceM;
                 bool sitIn = IsClassifiedFlatSitIn(remainingM);
-                double basePaceMps = BasePaceMps(AtmosphereForPhysics(segment, remainingM).Gradient);
+                double basePaceMps = BasePaceMps(AtmosphereForPhysics(segment).Gradient);
                 return rider.Intent switch
                 {
                     RaceCommandKind.ForcePace => sitIn
@@ -539,7 +543,7 @@ public sealed class RaceSession
 
         RaceRouteSegment segment = scenario.Definition.SegmentAt(leader.DistanceM);
         double remainingM = scenario.Definition.TotalLengthM - leader.DistanceM;
-        AtmosphereSample atmosphere = AtmosphereForPhysics(segment, remainingM);
+        AtmosphereSample atmosphere = AtmosphereForPhysics(segment);
         GroupResolution resolution = PositionAndGroupResolver.Resolve(new GroupResolutionInput(
             segment.RoadWidthM,
             atmosphere.WindSpeedMps,
@@ -668,11 +672,21 @@ public sealed class RaceSession
 
     private bool IsClassifiedFlatSitIn(double remainingM) =>
         scenario.ClassifiedStageType == ClassifiedStageType.Flat &&
-        remainingM > BunchSprintResolver.LaunchDistanceM;
+        remainingM > BunchSprintResolver.KickDistanceM;
 
-    private AtmosphereSample AtmosphereForPhysics(RaceRouteSegment segment, double remainingM)
+    private double ShelterForPhysics(double shelterMultiplier, double remainingM)
     {
         if (!IsClassifiedFlatSitIn(remainingM))
+        {
+            return shelterMultiplier;
+        }
+
+        return Math.Min(shelterMultiplier, ClassifiedFlatSitInShelterMultiplier);
+    }
+
+    private AtmosphereSample AtmosphereForPhysics(RaceRouteSegment segment)
+    {
+        if (scenario.ClassifiedStageType != ClassifiedStageType.Flat)
         {
             return new AtmosphereSample(segment.Gradient, segment.WindSpeedMps, segment.WindYawDegrees);
         }
