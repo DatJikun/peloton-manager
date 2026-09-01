@@ -196,4 +196,4 @@ Owner lock 2026-09-01: the next playable slice is **not** CdA split, sponsor mar
 2. **Choose which calendar events that club enters** (pre-season, per event — Tour is one tick, not 21).
 3. **Choose a designated leader for each entered event**, so the year is not one default captain on every start.
 
-Race-day prep may still override. Do not grow a 28-man roster, aging, season rollover, or infinite career in the same tree. Manager identity stays `ManagerCareer` (D-004): the club is a job, not a permanent skin. Watch film stays off by default. Do not rebuild Career Hub.
+Race-day prep may still override. Do not grow a 28-man roster, aging, season rollover, or infinite career in the same tree. Manager identity stays `ManagerCareer` (D-004): the club is a job, not a permanent skin. Watch film stays off by default. Do not rebuild Career Hub. Contract: `CAREER_CLUB_CALENDAR_LEADERS_v0.1.md`.
