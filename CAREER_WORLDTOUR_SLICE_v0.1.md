@@ -514,15 +514,15 @@ Today the assembler indexes prototype origin ids (`rider.race-prototype.*`) and 
 
 - If every template starting-order origin id exists in the world (skeleton): keep the current path.
 - Else (WT):
-  - Starters: **cap 12**. Take the player employer’s roster (up to 4), then other **entered** orgs by `OriginDefinitionId`, up to 4 riders each, until 12. Order riders by `OriginDefinitionId`.
+  - Starters: **all entered pack riders** (up to 4 per entered org; 72 when every WT team is entered). Order riders by `OriginDefinitionId`. The original phase-5 **cap 12** was lifted — it was an assembler convenience, not a physics ceiling. JSON catalog allows 512 riders.
   - Starting positions: that order, spacing 0.7 as today.
   - Scripted template commands that reference missing origin ids: skip.
   - Tactical plans: one per org that has a starter. Player org uses committed strategy when present; others use squad slot order (`.leader` then `.card`), `StageWin` + `Chase`.
-- `BuildOfficialRaceScenario`: `RaceContentId` values like `race.wt2026.omloop` are **not** route files. Resolve the **route/tuning** template via `WorldRecipe.DefaultRaceTemplateId` (prototype circuit). Honesty: route geometry is still the synthetic proof circuit, labelled estimated — not Flanders cobbles.
+- `BuildOfficialRaceScenario`: `RaceContentId` values like `race.wt2026.omloop` are calendar ids. **D-047:** official WT Simulate compiles the stored `CourseProfile` for that stage. Skeleton soak and standalone SimRunner `race` / `watch` still use the synthetic proof circuit.
 
-This cap is an explicit prototype limit (`KNOWN_DIFFERENCE_FROM_CODE.md`), not a UCI 176-rider field.
+This pack size is an explicit content limit (`KNOWN_DIFFERENCE_FROM_CODE.md`), not a UCI 176-rider field.
 
-World create still enters every org into every scheduled race (pre-season can skip). The cap, not entry, keeps the engine alive.
+World create still enters every org into every scheduled race (pre-season can skip). Field size is pack × entries, not a 12-rider engine ceiling.
 
 #### Persistence
 
@@ -532,8 +532,8 @@ SQLite **SchemaVersion 5**. Checksum label `peloton-world-checksum-v5`. Schema 1
 
 - `CreateWorld` WT: 18 orgs; Picnic `licenceYearsRemaining == 1`; UAE/Visma/Ineos/RedBull/Lidl-Trek are `elite` budget; 72 riders; 72 contracts; 36 calendar races; TDU at day 19; Alpecin is employer; Pogačar / van der Poel names present.
 - Save/load SchemaVersion 5 round-trips WT world checksum.
-- Advance to day 19 (or `PrepareRace` on that day): official simulate produces a 12-rider start list of world `RiderCareer` ids; winner is one of those ids; career results append.
-- Assembler does not throw; start list length 12; player Alpecin riders are included when Alpecin is entered.
+- Advance to day 19 (or `PrepareRace` on that day): official simulate produces a **72-rider** start list of world `RiderCareer` ids; winner is one of those ids; career results append.
+- Assembler does not throw; start list length 72; player Alpecin riders are included when Alpecin is entered.
 - Skeleton CreateWorld + 10-season runner **unchanged in behaviour** (still 12 skeleton riders, still 10 races / day 120). Update schema-version assertions from 4 → 5 where they read the live store constant.
 - Catalog validation still fails on missing WT rider wage/end day.
 

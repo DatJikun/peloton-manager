@@ -51,9 +51,10 @@ Phase 1 out of scope for Godot: Career Hub UI is deleted (D-048). WT CreateWorld
 ## WorldTour 2026 pack (D-036 phase 5 landed)
 
 - `scenario.peloton.wt-2026` CreateWorld: 18 orgs, 72 thin 4-rider squads, 36 content calendar races, employer Alpecin.
-- Physiology, wages, and budgets are estimated gameplay bands (`content/peloton.wt-2026/README.md`). Riders use per-person `archetype` / `wageBand` (not a slot×org-budget copy-paste). Squad order is captain → protected card → helpers. Remaining gaps (wrong clubs for a few stars, `contractEndDay=10000`, 4 names per team): `WT_2026_PHYSIOLOGY_AND_CONTRACTS_RESEARCH_2026-09-01.md`.
-- Official start lists capped at **12 riders** (prototype engine limit); not a UCI field size.
-- Route geometry remains the **synthetic proof circuit** (`race-scenario.peloton.prototype-v0`); WT `RaceContentId` values map to that template at assemble time.
+- Physiology, wages, and budgets are estimated gameplay bands (`content/peloton.wt-2026/README.md`). Riders use per-person `archetype` / `wageBand`. Squad order is captain → protected card → helpers. Evenepoel 2026 is Red Bull `.leader`. Contract end days are varied (not `10000` placeholders). Pack is still 4 names per team: `WT_2026_PHYSIOLOGY_AND_CONTRACTS_RESEARCH_2026-09-01.md`.
+- Official WT start lists use the **full entered pack (72 riders)** — all four riders per entered team; still not a UCI 150–200 rider field.
+- Prototype race session remains **1-second sequential** `RaceSession.Step` (not real-time or sub-second physics).
+- Route geometry at phase-5 landing was still the synthetic proof circuit. **Superseded by D-047:** official WT Simulate compiles the stored `CourseProfile` for that calendar stage. Skeleton soak and standalone SimRunner `race` / `watch` still use the proof circuit.
 - `GeneratePeriodicRaces` is false for WT; skeleton keeps periodic race generation.
 - Race-due uses calendar entries, not `day % CalendarPeriodDays`.
 - SQLite SchemaVersion **5** / checksum `peloton-world-checksum-v5`. Skeleton worlds also save as v5. (Superseded by phase 6 — see below.)
@@ -104,6 +105,9 @@ Landed:
 
 Remaining limits:
 
+- Official WT field is the 4-rider pack (72 when every team is entered), not a UCI 150–200 peloton. JSON catalog allows 512 riders; that is a content ceiling, not a physics hard cap.
+- Classified Flat still does not produce a bunch-sprint win for the sprinter (feel probe, seed 91234). Prototype lacks a real bunch-sprint finish; CP still wins “flat”.
+- Prototype race session is sequential 1-second `RaceSession.Step` for every rider; wall-clock is CPU-fast, not real-time.
 - No yearly re-generation after season 2026 in play yet (generator exists; Advance Day does not roll new seasons).
 - No full GC jersey UI; stage times are stored only.
 - §49 still `NOT VERIFIED`.

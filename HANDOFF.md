@@ -18,6 +18,8 @@ Readable rider strengths/weaknesses (derived 1–99 ratings from real physiology
 ### Status
 Owner (player) directed this on 2026-09-01. **D-046 / D-047 landed.** Ratings 1–99 are a view of physiology. WorldTour CreateWorld stores dense ~25 m courses and one calendar entry per racing stage. Official WT Simulate uses that day’s course. Skeleton soak still uses the short proof circuit. SQLite SchemaVersion 8.
 
+**2026-09-01 follow-up landed:** WT pack keeps captain-first cards and archetype/wage bands; Evenepoel is Red Bull; official WT starts are the **full entered pack (72)**; route generator respects identity mins/maxes (Copenhagen stays flat). Classified Flat still does **not** make the sprinter beat the climber. §49 stays open.
+
 Godot career shell (`CareerShell.tscn`) is the main scene: POC v3 chrome. Hub date, Advance Day / Race next, inbox, save/load, and skeleton people stay Application Queries. Staff / sponsors / finance / scouting / market / look calendar / look OVR come from `CareerLookCatalog` (POC fiction, not World). Those actions toast and do not mutate save. Watch Race is an optional overlay, **off by default** (D-043 / D-048). HTML look lab stays the drawing, not a second client. §49 remains `NOT VERIFIED`. `D-032` remains deferred.
 
 ## Gdzie jest gra (dla właściciela)
@@ -34,7 +36,7 @@ Działa:
 - Advance Day zmienia formę / świeżość / zmęczenie; wyścig używa readiness na CP/Pmax (faza 2);
 - przedsezonowy wybór startów i strategia przed Confirm (faza 3);
 - kontrakty, wypłaty, wygaśnięcie, **cienkie negocjacje** oferty pensji/daty (D-044);
-- paczka WorldTour 2026: 18 ekip, 72 kolarzy, 36 imprez (etapy osobno w kalendarzu), cap 12 na starcie;
+- paczka WorldTour 2026: 18 ekip, 72 kolarzy, 36 imprez (etapy osobno w kalendarzu), **72 na starcie** (4 na ekipę, nie pole UCI 150–200);
 - cienka ekonomia: kasa, sponsor vs płace, notatka o debecie;
 - Godot: powłoka kariery (wygląd z laboratorium HTML); puste działy to rysunek, nie świat;
 - paczka Windows do ręcznego playtestu: `playtest/PelotonManager-playtest-windows.zip` (`playtest/CZYTAJ_MNIE.txt`).
@@ -54,7 +56,7 @@ Tryby All / Guessed / None (widać / częściowo / ukryte OVR i POT) zostają. N
 
 Pieniądze: kasa klubu, płace kolarzy, sponsor tytułowy płaci dzienną opłatę — bez ukrytego podatku.
 
-Baza 2026: 18 ekip męskiego WorldTour w `scenario.peloton.wt-2026`. Fizjologia i płace są oszacowanymi pasmami na osobę (kapitan / sprinter / pomocnik / neo), nie jedną liczbą na klub. 3 lata licencji WT i niższe ligi są w modelu; silnik wyścigu ma cap 12 na starcie.
+Baza 2026: 18 ekip męskiego WorldTour w `scenario.peloton.wt-2026`. Fizjologia i płace są oszacowanymi pasmami na osobę (kapitan / sprinter / pomocnik / neo), nie jedną liczbą na klub. Evenepoel 2026 jedzie w Red Bull. 3 lata licencji WT i niższe ligi są w modelu. Oficjalny start WT to cały wpisany peleton paczki (72), nie cap 12. JSON katalogu pozwala na 512 kolarzy; to nie jest twardy sufit fizyki. Symulacja idzie sekundą po sekundzie po każdym kolarzu — na CPU kończy się w sekundy ścienne, nie w czasie rzeczywistym.
 
 ## What works now
 - [x] High-level game design v0.7
@@ -113,19 +115,20 @@ Baza 2026: 18 ekip męskiego WorldTour w `scenario.peloton.wt-2026`. Fizjologia 
 - [x] Manager-games + cycling-as-management research (RESEARCH SOURCE, 2026-08-31) — nie zmienia locków
 - [x] WT 2026 physiology + contracts/wages research (RESEARCH SOURCE, 2026-09-01)
 - [x] WT 2026 card calibration — archetype/wage bands + captain-first squad order
+- [x] WT 2026 full pack starts (72) + Evenepoel at Red Bull + identity-constrained route fill
 - [x] Docs snapshot 2026-08-31: Godot Watch is real (not a stub); Composer 2.5 coding lock (D-035)
 - [x] Career WorldTour slice phase 1 — world–race bind (`RiderCareer`, SchemaVersion 2, career results)
 - [x] Career WorldTour slice phase 2 — form / freshness / fatigue on Advance Day and in official races
 - [x] Career WorldTour slice phase 3 — pre-season entry + pre-race strategy (`OrganizationRaceEntry`, SchemaVersion 3)
 - [x] Career WorldTour slice phase 4 — rider contracts (`RiderContract`, `ClubRosterProjection`, SchemaVersion 4)
-- [x] Career WorldTour slice phase 5 — WT 2026 pack (`scenario.peloton.wt-2026`, SchemaVersion 5, 12-rider cap)
+- [x] Career WorldTour slice phase 5 — WT 2026 pack (`scenario.peloton.wt-2026`, SchemaVersion 5; start-list cap 12 later lifted to full pack 72)
 - [x] Career WorldTour slice phase 6 — thin economy (`CashEur`, `ClubFinanceProjection`, SchemaVersion 6)
 - [x] Career WorldTour slice phase 7 — results filter by any org (D-043) + thin contract negotiation (D-044, SchemaVersion 7)
 - [x] D-046 / D-047 — derived rider ratings + detailed course engine (`RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`, SchemaVersion 8)
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task
-Waiting on owner: §49 manual playtest and visual avatar review. Career Hub is deleted (D-048). Watch film stays in the game, off by default. No tenth GameState.
+Waiting on owner. Honest remaining feel: classified Flat still does not give the sprinter the win (bunch-sprint finish is not in the prototype). Pack is still 4 names per team, not a UCI 150-rider field. §49 manual playtest and visual avatar review stay owner-only. Career Hub is deleted (D-048). Watch film stays in the game, off by default. No tenth GameState.
 
 ## Known blockers
 - None.
@@ -154,6 +157,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
+- `2026-09-01` — **Calibrate 2026 pack from physiology/wage research; lift the 12-starter cap; keep routes diverse.** Research file is a source, not a lock. Keep captain-first cards. Evenepoel 2026 is Red Bull. Official WT Simulate starts the full entered 4-man cards (72). Do not claim a UCI 150–200 field. Do not fake a sprinter win on Flat.
 - `2026-09-01` — **Career Hub deleted; Watch film stays off by default (D-048).** Remove `CareerHub.tscn` / host / screen. Desk is the career shell. Watch Race remains optional (`FILM: WYŁ` default). Do not rebuild the PR #4 dashboard. Do not merge leftover Watch radio/DS PRs.
 - `2026-09-01` — **D-046 / D-047 landed:** derived 1–99 ratings + WT archetype calibration; dense course catalog at CreateWorld; SchemaVersion 8 / checksum v8. TDU stage 1 ~140 km. Replay onto current `main` (career shell kept).
 - `2026-09-01` — **Normal rider stats + real routes (D-046, D-047).** Ratings 1–99 are a view of physiology, not a second magic engine. Courses are dense polylines with a yearly generator under race-identity constraints. Not a five-chunk mock. Contract: `RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`. (D-045 on `main` is the merge-to-main lock.)
@@ -287,6 +291,7 @@ src/Peloton.Client.Godot/project.godot
 - Nie twierdź, że Godot jest pustym stubem — `CareerShell.tscn` jest oknem kariery; Watch Race zostaje opcjonalnym filmem, domyślnie wyłączonym.
 - Nie ustawiaj Watch Race jako domyślnej ścieżki gry (D-043). Nie odbudowuj Career Hub (D-048). Nie merguj starych PR-ów radia/DS Watch na `main`.
 - Nie zostawiaj gotowej pracy na otwartym PR (D-045). Zielony gate → merge do `main` w tej samej sesji. Nie zlewaj stosu starych branchy jeden na drugi.
+- Nie przywracaj cap 12 na oficjalnym starcie WT. Nie twierdź, że sprinter wygrywa sklasyfikowane płaskie, dopóki feel probe tego nie pokaże. Nie zamykaj §49.
 - Nie zapisuj OVR/POT/kasy/skautingu z `CareerLookCatalog` do World, SQLite ani Commandów. To nie true ability.
 - Nie odpalaj kodujących subagentów z `inherit` (to Grok); kod to Composer 2.5 (D-035).
 - Nie rozszerzaj scope'u taska bez wskazania PLAYER VALUE i bez decyzji właściciela.
@@ -302,6 +307,7 @@ Peloton Manager jest na etapie pre-production. Celem jest modularny, determinist
 - `2026-09-01` — Paczka WT: pasma archetypu i płacy na osobę; czwórka = kapitan / karta / dwaj pomocnicy; default lider to `.leader`, nie `.card` alfabetycznie. Nadal estimated (`D-038`). Research zaktualizowany.
 
 - `2026-09-01` — Research źródłowy `WT_2026_PHYSIOLOGY_AND_CONTRACTS_RESEARCH_2026-09-01.md`: pasma mocy i mas sezonu 2026 oraz minima/średnie/top pensji UCI+dziennikarstwo vs cienka paczka `peloton.wt-2026`. Nie zmienia locków. D-038 (estimated, labelled) zostaje.
+- `2026-09-01` — Evenepoel 2026 w Red Bull; pełny start WT = 72; generator tras trzyma min/max tożsamości (Kopenhaga płaska). Feel probe: góry rozróżniają; płaskie nadal nie dają sprintu. Cap 12 nie wraca. Karty kapitana z `main` zostają.
 
 - `2026-08-31` — Research źródłowy `MANAGER_GAMES_AND_CYCLING_RESEARCH_2026-08-31.md`: kolarstwo poza rowerem (sponsor-vehiculum, licencje UCI, kalendarz szczytów, rynek bez okna FIFA) oraz gatunek menedżerów (FM/CM/OOTP/PCM/F1/MM). Nie zmienia locków; potwierdza VISION/DECISIONS i uzupełnia lukę obok researchu wyścigu.
 
