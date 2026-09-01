@@ -1,6 +1,6 @@
-# Zadanie na noc — UI Godota dociągnięte do wzorca HTML
+# Zadania — agent główny: UI Godota dociągnięte do wzorca HTML (plus domknięcie D-054)
 
-**Dla:** osobnego Cloud Agenta uruchomionego przez właściciela na noc 2026-09-01/02.  
+**Dla:** agenta głównego tej sesji (właściciel 2026-09-01: „chcę, żebyś ty zajął się UI”). Agent główny kończy też **D-054** (Composer już koduje na `cursor/d054-position-selection-9a2c`): przegląd → gate → merge → CI. Agent nocny ma D-055, md i release: `2026-09-01-night-agent-engine-release.md`.  
 **Cel:** powłoka kariery w Godocie (`src/Peloton.Client.Godot`, scena `CareerShell.tscn`) ma wyglądać jak `peloton-manager-full-ui-poc-v3.html` — właściciel ocenił, że dziś jest „trochę średnia” w porównaniu z HTML-em, który jest **celem do osiągnięcia**.
 
 ## Przeczytaj najpierw (w tej kolejności)
@@ -12,9 +12,9 @@
 6. `tests/Peloton.Client.Godot.Tests/` (host testowany bez edytora Godota)
 7. `.cursor/skills/peloton-avatars/SKILL.md` **tylko** jeśli ruszasz awatary na kartach (geometryczne awatary D-052 zostają, nie wprowadzaj nowego systemu portretów)
 
-## Granice (ważne — równolegle pracuje agent główny)
-- **Wolno edytować:** `src/Peloton.Client.Godot/**`, `tests/Peloton.Client.Godot.Tests/**`, ten plik (sekcja „Postęp”), jeden wiersz Godota w `CODEBASE_MAP.md`, **jedna** linia w `HANDOFF.md` → „Recent owner decisions” po wylądowaniu.
-- **Nie wolno:** `src/Peloton.Simulation/**`, `src/Peloton.Application/**` (chyba że brakuje Query czysto prezentacyjnego — wtedy osobny, mały commit i wyraźna notatka), `src/Peloton.Domain/**`, `src/Peloton.Persistence/**`, `content/**`, `tests/Peloton.Application.Tests/**`, `RACE_*.md`, `DECISIONS.md`, `KNOWN_DIFFERENCE_FROM_CODE.md`. Agent główny ląduje tam D-054/D-055 (silnik wyścigu, schema 10).
+## Granice (ważne — równolegle pracuje agent nocny nad D-055)
+- **Wolno edytować:** `src/Peloton.Client.Godot/**` (UI) oraz — tylko dla domknięcia D-054 — pliki z gałęzi `cursor/d054-position-selection-9a2c`, `tests/Peloton.Client.Godot.Tests/**`, ten plik (sekcja „Postęp”), jeden wiersz Godota w `CODEBASE_MAP.md`, **jedna** linia w `HANDOFF.md` → „Recent owner decisions” po wylądowaniu.
+- **Nie wolno:** `src/Peloton.Simulation/**`, `src/Peloton.Application/**` (chyba że brakuje Query czysto prezentacyjnego — wtedy osobny, mały commit i wyraźna notatka), `src/Peloton.Domain/**`, `src/Peloton.Persistence/**`, `content/**`, `tests/Peloton.Application.Tests/**`, `RACE_*.md`, `DECISIONS.md`, `KNOWN_DIFFERENCE_FROM_CODE.md`. Agent nocny ląduje tam D-055 (schema 10); wyjątek: agent główny domyka D-054 w silniku, bo Composer już to koduje.
 - Przed każdym merge: `git fetch origin main` i rebase/merge swojej gałęzi na aktualny `main`; potem gate.
 - Nie commituj `playtest/*.zip` (D-053). Nie otwieraj wielu PR-ów; jedna gałąź `cursor/godot-ui-html-parity-<suffix>`, po zielonym gate merge do `main`.
 
@@ -38,7 +38,8 @@
 - Żadna zmiana nie przesunęła logiki do UI; testy hosta przechodzą; gate i CI zielone; zmiana jest na `main`.
 - Watch nadal WYŁ domyślnie; katalog wyglądu nadal oznaczony jako niedziałający.
 
-## Postęp (wypełnia agent nocny)
+## Postęp (wypełnia agent główny)
+- [ ] D-054: przegląd raportu Composera, gate, merge do `main`, CI zielone
 - [ ] gap list (tabela poniżej)
 - [ ] LookChrome / theme
 - [ ] Biurko
