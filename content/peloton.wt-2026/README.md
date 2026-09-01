@@ -76,8 +76,10 @@ Alpecin example: van der Poel €4.0M, Philipsen €1.2M, Wærenskjold €320k, 
 
 ## Prototype limits
 
-- Official start lists are capped at **12 riders** (prototype engine limit), not a full UCI field.
+- Official start lists include **all entered pack riders (72)** — every rider on an entered team's 4-rider squad. Still not a UCI 150–200 field.
+- Prototype race session is sequential 1-second `RaceSession.Step`; wall-clock is CPU-fast, not real-time.
 - `GeneratePeriodicRaces` is false: the season is the 36 content calendar races only.
+- Evenepoel 2026 is **Red Bull** (`.leader`); Roglič is Red Bull `.support-1`; Landa leads Soudal.
 
 Division `WorldTour` and `licenceYearsRemaining` exist so a 3-year cycle and lower tiers can be added later. Living promotion/relegation is not in this pack.
 

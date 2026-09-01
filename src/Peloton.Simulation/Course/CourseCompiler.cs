@@ -36,7 +36,7 @@ public static class CourseCompiler
     }
 
     public static int MaximumDurationSeconds(CourseProfile profile) =>
-        Math.Max(3600, (int)Math.Ceiling(profile.LengthM / 3.0) + 1800);
+        Math.Max(3600, (int)Math.Ceiling(profile.LengthM / 2.2) + 3600);
 
     public static double EffectiveRollingResistance(double baseCrr, double handling, CourseSurface surface)
     {

@@ -58,6 +58,44 @@ public sealed class RiderRatingTests
     }
 
     [Fact]
+    public void EvenepoelMassIsBelowSixtyFiveKilograms()
+    {
+        GameApplication application = TestApplication.Create();
+        Assert.True(application.Execute(new CreateWorldCommand(WtScenarioId, GateSeed)).Succeeded);
+        RiderCareer evenepoel = FindByOrigin(application.World!, "rider.wt2026.redbull.leader");
+        Assert.True(evenepoel.BodyMassKg < 65);
+    }
+
+    [Fact]
+    public void VanAertMassIsAboveSeventyTwoKilograms()
+    {
+        GameApplication application = TestApplication.Create();
+        Assert.True(application.Execute(new CreateWorldCommand(WtScenarioId, GateSeed)).Succeeded);
+        RiderCareer vanAert = FindByOrigin(application.World!, "rider.wt2026.visma.support-2");
+        Assert.True(vanAert.BodyMassKg > 72);
+    }
+
+    [Fact]
+    public void PogacarWageIsAtLeastFourMillion()
+    {
+        GameApplication application = TestApplication.Create();
+        Assert.True(application.Execute(new CreateWorldCommand(WtScenarioId, GateSeed)).Succeeded);
+        RiderCareer pogacar = FindByOrigin(application.World!, "rider.wt2026.uae.leader");
+        RiderContract pogacarContract = application.World!.TryGetActiveContract(pogacar.Id)!;
+        Assert.True(pogacarContract.AnnualWage >= 4_000_000);
+    }
+
+    [Fact]
+    public void PhilipsenPeakPowerPerKgIsAtMostTwentyThree()
+    {
+        GameApplication application = TestApplication.Create();
+        Assert.True(application.Execute(new CreateWorldCommand(WtScenarioId, GateSeed)).Succeeded);
+        RiderCareer philipsen = FindByOrigin(application.World!, "rider.wt2026.alpecin.card");
+        double peakPerKg = philipsen.PeakPowerW / philipsen.BodyMassKg;
+        Assert.True(peakPerKg <= 23);
+    }
+
+    [Fact]
     public void EachWorldTourTeamHasDistinctRatingShapes()
     {
         GameApplication application = TestApplication.Create();

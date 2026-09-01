@@ -91,7 +91,7 @@ public sealed class CareerWorldTourPhase5Tests
     }
 
     [Fact]
-    public void TourDownUnderProducesTwelveRiderStartListAndCareerResults()
+    public void TourDownUnderProducesFullPackStartListAndCareerResults()
     {
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand(WtScenarioId, GateSeed)).Succeeded);
@@ -111,13 +111,13 @@ public sealed class CareerWorldTourPhase5Tests
                 string.Equals(result.RaceContentId, TduRaceContentId, StringComparison.Ordinal)))
             .Select(career => career.Id)
             .ToArray();
-        Assert.Equal(12, starters.Length);
+        Assert.Equal(72, starters.Length);
         Assert.Contains(application.World.LastRace!.WinnerId, starters);
         Assert.All(starters, id => Assert.NotNull(application.World.TryGetRiderCareer(id)));
     }
 
     [Fact]
-    public void AssemblerCapsWorldTourStartListAndIncludesPlayerAlpecinRiders()
+    public void AssemblerStartsFullWorldTourPackAndIncludesPlayerAlpecinRiders()
     {
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand(WtScenarioId, GateSeed)).Succeeded);
@@ -142,7 +142,7 @@ public sealed class CareerWorldTourPhase5Tests
             new RacePreparationStrategy(squad[0], squad[1], RaceObjective.StageWin, RaceBriefingKind.Chase),
             employerId);
 
-        Assert.Equal(12, scenario.Riders.Count);
+        Assert.Equal(72, scenario.Riders.Count);
         Assert.Contains(scenario.Riders, rider => rider.OrganizationId == employerId);
     }
 

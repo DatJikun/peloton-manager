@@ -9,7 +9,6 @@ namespace Peloton.Application;
 
 public static class WorldRaceScenarioAssembler
 {
-    private const int PrototypeStarterCap = 12;
     private const int StartersPerOrganization = 4;
 
     public static RaceScenario Assemble(
@@ -185,33 +184,16 @@ public static class WorldRaceScenarioAssembler
         Dictionary<WorldEntityId, Organization> organizationsById = world.Organizations
             .ToDictionary(organization => organization.Id);
         List<RiderCareer> selectedCareers = new();
-        if (playerOrganizationId is WorldEntityId playerOrgId &&
-            enteredOrganizationIds.Contains(playerOrgId))
-        {
-            selectedCareers.AddRange(
-                world.GetRiderCareersForOrganization(playerOrgId).Take(StartersPerOrganization));
-        }
-
         foreach (Organization organization in world.Organizations
                      .Where(organization => enteredOrganizationIds.Contains(organization.Id))
                      .OrderBy(organization => organization.OriginDefinitionId, StringComparer.Ordinal))
         {
-            if (playerOrganizationId is WorldEntityId playerOrg && organization.Id == playerOrg)
-            {
-                continue;
-            }
-
             selectedCareers.AddRange(
                 world.GetRiderCareersForOrganization(organization.Id).Take(StartersPerOrganization));
-            if (selectedCareers.Count >= PrototypeStarterCap)
-            {
-                break;
-            }
         }
 
         RiderCareer[] starters = selectedCareers
             .OrderBy(career => career.OriginDefinitionId, StringComparer.Ordinal)
-            .Take(PrototypeStarterCap)
             .ToArray();
         RaceRiderProfile[] riders = starters.Select(career => ToRaceProfile(career)).ToArray();
         RaceStartingPosition[] startingPositions = starters

@@ -13,18 +13,32 @@ public static class CourseBricks
         int count = VertexCount(lengthM);
         List<CourseSampleVertex> vertices = new(count);
         double elevation = baseElevationM;
+        double maxGain = Math.Min(600, lengthM * 0.003);
+        double minGain = -maxGain;
+        double accumulated = 0;
         for (int i = 0; i < count; i++)
         {
             double distance = i * CourseMetrics.SampleSpacingM;
             if (i > 0)
             {
-                double noise = (rng.NextUnit() - 0.5) * 0.16;
-                if (i % 20 == 0)
+                double noise = (rng.NextUnit() - 0.5) * 0.012;
+                if (i % 40 == 0)
                 {
-                    noise += 0.025 * (rng.NextUnit() > 0.5 ? 1 : -1);
+                    noise += 0.004 * (rng.NextUnit() > 0.5 ? 1 : -1);
                 }
 
-                elevation += noise * CourseMetrics.SampleSpacingM;
+                double step = noise * CourseMetrics.SampleSpacingM;
+                if (accumulated + step > maxGain)
+                {
+                    step = Math.Max(-CourseMetrics.SampleSpacingM * 0.01, maxGain - accumulated);
+                }
+                else if (accumulated + step < minGain)
+                {
+                    step = Math.Min(CourseMetrics.SampleSpacingM * 0.01, minGain - accumulated);
+                }
+
+                elevation += step;
+                accumulated += step;
             }
 
             vertices.Add(new CourseSampleVertex(

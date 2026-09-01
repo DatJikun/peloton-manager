@@ -27,12 +27,12 @@
       "handling": 0.93,
       "tacticalAwareness": 0.86,
       "annualWage": 4000000,
-      "contractEndDay": 10000,
+      "contractEndDay": 1095,
       "potentialOvr": 96
     },
     {
       "id": "rider.wt2026.alpecin.support-1",
-      "name": "S\u00f8ren W\u00e6renskjold",
+      "name": "Søren Wærenskjold",
       "organizationId": "organization.wt2026.alpecin",
       "nationality": "NOR",
       "birthYear": 2000,
@@ -52,7 +52,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.78,
       "annualWage": 320000,
-      "contractEndDay": 10000,
+      "contractEndDay": 535,
       "potentialOvr": 86
     },
     {
@@ -77,7 +77,7 @@
       "handling": 0.84,
       "tacticalAwareness": 0.86,
       "annualWage": 180000,
-      "contractEndDay": 10000,
+      "contractEndDay": 644,
       "potentialOvr": 84
     },
     {
@@ -102,7 +102,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.78,
       "annualWage": 1200000,
-      "contractEndDay": 10000,
+      "contractEndDay": 730,
       "potentialOvr": 92
     },
     {
@@ -127,12 +127,12 @@
       "handling": 0.82,
       "tacticalAwareness": 0.84,
       "annualWage": 1100000,
-      "contractEndDay": 10000,
+      "contractEndDay": 1387,
       "potentialOvr": 90
     },
     {
       "id": "rider.wt2026.bahrain.support-1",
-      "name": "Matej Mohori\u010d",
+      "name": "Matej Mohorič",
       "organizationId": "organization.wt2026.bahrain",
       "nationality": "SLO",
       "birthYear": 1994,
@@ -152,7 +152,7 @@
       "handling": 0.88,
       "tacticalAwareness": 0.86,
       "annualWage": 450000,
-      "contractEndDay": 10000,
+      "contractEndDay": 685,
       "potentialOvr": 88
     },
     {
@@ -177,7 +177,7 @@
       "handling": 0.82,
       "tacticalAwareness": 0.84,
       "annualWage": 180000,
-      "contractEndDay": 10000,
+      "contractEndDay": 1087,
       "potentialOvr": 82
     },
     {
@@ -202,7 +202,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.78,
       "annualWage": 550000,
-      "contractEndDay": 10000,
+      "contractEndDay": 1042,
       "potentialOvr": 86
     },
     {
@@ -227,7 +227,7 @@
       "handling": 0.82,
       "tacticalAwareness": 0.84,
       "annualWage": 1200000,
-      "contractEndDay": 10000,
+      "contractEndDay": 774,
       "potentialOvr": 91
     },
     {
@@ -252,7 +252,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.8,
       "annualWage": 280000,
-      "contractEndDay": 10000,
+      "contractEndDay": 793,
       "potentialOvr": 94
     },
     {
@@ -277,7 +277,7 @@
       "handling": 0.78,
       "tacticalAwareness": 0.82,
       "annualWage": 250000,
-      "contractEndDay": 10000,
+      "contractEndDay": 631,
       "potentialOvr": 85
     },
     {
@@ -302,7 +302,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.78,
       "annualWage": 500000,
-      "contractEndDay": 10000,
+      "contractEndDay": 484,
       "potentialOvr": 86
     },
     {
@@ -327,7 +327,7 @@
       "handling": 0.82,
       "tacticalAwareness": 0.84,
       "annualWage": 1500000,
-      "contractEndDay": 10000,
+      "contractEndDay": 949,
       "potentialOvr": 92
     },
     {
@@ -352,7 +352,7 @@
       "handling": 0.9,
       "tacticalAwareness": 0.86,
       "annualWage": 400000,
-      "contractEndDay": 10000,
+      "contractEndDay": 576,
       "potentialOvr": 88
     },
     {
@@ -377,7 +377,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.78,
       "annualWage": 280000,
-      "contractEndDay": 10000,
+      "contractEndDay": 909,
       "potentialOvr": 84
     },
     {
@@ -402,7 +402,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.78,
       "annualWage": 450000,
-      "contractEndDay": 10000,
+      "contractEndDay": 990,
       "potentialOvr": 85
     },
     {
@@ -427,12 +427,12 @@
       "handling": 0.82,
       "tacticalAwareness": 0.84,
       "annualWage": 1000000,
-      "contractEndDay": 10000,
+      "contractEndDay": 1123,
       "potentialOvr": 89
     },
     {
       "id": "rider.wt2026.fdj.support-1",
-      "name": "Romain Gr\u00e9goire",
+      "name": "Romain Grégoire",
       "organizationId": "organization.wt2026.fdj",
       "nationality": "FRA",
       "birthYear": 2003,
@@ -452,7 +452,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.8,
       "annualWage": 220000,
-      "contractEndDay": 10000,
+      "contractEndDay": 683,
       "potentialOvr": 91
     },
     {
@@ -477,12 +477,12 @@
       "handling": 0.9,
       "tacticalAwareness": 0.86,
       "annualWage": 350000,
-      "contractEndDay": 10000,
+      "contractEndDay": 739,
       "potentialOvr": 86
     },
     {
       "id": "rider.wt2026.fdj.card",
-      "name": "Paul Penho\u00ebt",
+      "name": "Paul Penhoët",
       "organizationId": "organization.wt2026.fdj",
       "nationality": "FRA",
       "birthYear": 2001,
@@ -502,12 +502,12 @@
       "handling": 0.8,
       "tacticalAwareness": 0.78,
       "annualWage": 280000,
-      "contractEndDay": 10000,
+      "contractEndDay": 479,
       "potentialOvr": 84
     },
     {
       "id": "rider.wt2026.ineos.leader",
-      "name": "Carlos Rodr\u00edguez",
+      "name": "Carlos Rodríguez",
       "organizationId": "organization.wt2026.ineos",
       "nationality": "ESP",
       "birthYear": 2001,
@@ -527,7 +527,7 @@
       "handling": 0.82,
       "tacticalAwareness": 0.84,
       "annualWage": 2000000,
-      "contractEndDay": 10000,
+      "contractEndDay": 1155,
       "potentialOvr": 93
     },
     {
@@ -552,7 +552,7 @@
       "handling": 0.9,
       "tacticalAwareness": 0.86,
       "annualWage": 1800000,
-      "contractEndDay": 10000,
+      "contractEndDay": 1337,
       "potentialOvr": 93
     },
     {
@@ -577,7 +577,7 @@
       "handling": 0.78,
       "tacticalAwareness": 0.82,
       "annualWage": 1200000,
-      "contractEndDay": 10000,
+      "contractEndDay": 987,
       "potentialOvr": 93
     },
     {
@@ -602,7 +602,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.8,
       "annualWage": 200000,
-      "contractEndDay": 10000,
+      "contractEndDay": 482,
       "potentialOvr": 90
     },
     {
@@ -627,7 +627,7 @@
       "handling": 0.82,
       "tacticalAwareness": 0.84,
       "annualWage": 1400000,
-      "contractEndDay": 10000,
+      "contractEndDay": 1334,
       "potentialOvr": 91
     },
     {
@@ -652,12 +652,12 @@
       "handling": 0.82,
       "tacticalAwareness": 0.84,
       "annualWage": 500000,
-      "contractEndDay": 10000,
+      "contractEndDay": 539,
       "potentialOvr": 87
     },
     {
       "id": "rider.wt2026.lidl-trek.support-2",
-      "name": "Toms Skuji\u0146\u0161",
+      "name": "Toms Skujiņš",
       "organizationId": "organization.wt2026.lidl-trek",
       "nationality": "LAT",
       "birthYear": 1991,
@@ -677,7 +677,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.78,
       "annualWage": 220000,
-      "contractEndDay": 10000,
+      "contractEndDay": 626,
       "potentialOvr": 82
     },
     {
@@ -702,7 +702,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.78,
       "annualWage": 1100000,
-      "contractEndDay": 10000,
+      "contractEndDay": 987,
       "potentialOvr": 91
     },
     {
@@ -727,7 +727,7 @@
       "handling": 0.9,
       "tacticalAwareness": 0.86,
       "annualWage": 1300000,
-      "contractEndDay": 10000,
+      "contractEndDay": 1336,
       "potentialOvr": 91
     },
     {
@@ -752,7 +752,7 @@
       "handling": 0.82,
       "tacticalAwareness": 0.84,
       "annualWage": 350000,
-      "contractEndDay": 10000,
+      "contractEndDay": 735,
       "potentialOvr": 86
     },
     {
@@ -777,7 +777,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.8,
       "annualWage": 180000,
-      "contractEndDay": 10000,
+      "contractEndDay": 988,
       "potentialOvr": 89
     },
     {
@@ -802,7 +802,7 @@
       "handling": 0.78,
       "tacticalAwareness": 0.82,
       "annualWage": 200000,
-      "contractEndDay": 10000,
+      "contractEndDay": 923,
       "potentialOvr": 83
     },
     {
@@ -827,7 +827,7 @@
       "handling": 0.82,
       "tacticalAwareness": 0.84,
       "annualWage": 1500000,
-      "contractEndDay": 10000,
+      "contractEndDay": 802,
       "potentialOvr": 91
     },
     {
@@ -852,12 +852,12 @@
       "handling": 0.9,
       "tacticalAwareness": 0.86,
       "annualWage": 300000,
-      "contractEndDay": 10000,
+      "contractEndDay": 979,
       "potentialOvr": 85
     },
     {
       "id": "rider.wt2026.movistar.support-2",
-      "name": "Iv\u00e1n Garc\u00eda Cortina",
+      "name": "Iván García Cortina",
       "organizationId": "organization.wt2026.movistar",
       "nationality": "ESP",
       "birthYear": 1995,
@@ -877,7 +877,7 @@
       "handling": 0.9,
       "tacticalAwareness": 0.86,
       "annualWage": 200000,
-      "contractEndDay": 10000,
+      "contractEndDay": 1030,
       "potentialOvr": 83
     },
     {
@@ -902,7 +902,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.78,
       "annualWage": 400000,
-      "contractEndDay": 10000,
+      "contractEndDay": 990,
       "potentialOvr": 85
     },
     {
@@ -927,7 +927,7 @@
       "handling": 0.86,
       "tacticalAwareness": 0.78,
       "annualWage": 1600000,
-      "contractEndDay": 10000,
+      "contractEndDay": 827,
       "potentialOvr": 92
     },
     {
@@ -952,7 +952,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.8,
       "annualWage": 150000,
-      "contractEndDay": 10000,
+      "contractEndDay": 606,
       "potentialOvr": 88
     },
     {
@@ -977,7 +977,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.78,
       "annualWage": 180000,
-      "contractEndDay": 10000,
+      "contractEndDay": 455,
       "potentialOvr": 82
     },
     {
@@ -1002,12 +1002,37 @@
       "handling": 0.78,
       "tacticalAwareness": 0.82,
       "annualWage": 200000,
-      "contractEndDay": 10000,
+      "contractEndDay": 921,
       "potentialOvr": 84
     },
     {
       "id": "rider.wt2026.redbull.leader",
-      "name": "Primo\u017e Rogli\u010d",
+      "name": "Remco Evenepoel",
+      "organizationId": "organization.wt2026.redbull",
+      "nationality": "BEL",
+      "birthYear": 2000,
+      "archetype": "super-gc",
+      "wageBand": "star",
+      "criticalPowerW": 425,
+      "wPrimeCapacityJ": 27000,
+      "peakPowerW": 1100,
+      "wPrimeRecoveryJPerSecond": 42,
+      "lowIntensityDurability": 0.94,
+      "highIntensityDurability": 0.9,
+      "bodyMassKg": 61,
+      "systemMassKg": 8.0,
+      "cdAM2": 0.25,
+      "baseCrr": 0.0036,
+      "positioning": 0.84,
+      "handling": 0.82,
+      "tacticalAwareness": 0.88,
+      "annualWage": 6600000,
+      "contractEndDay": 1095,
+      "potentialOvr": 97
+    },
+    {
+      "id": "rider.wt2026.redbull.support-1",
+      "name": "Primož Roglič",
       "organizationId": "organization.wt2026.redbull",
       "nationality": "SLO",
       "birthYear": 1989,
@@ -1027,33 +1052,8 @@
       "handling": 0.82,
       "tacticalAwareness": 0.84,
       "annualWage": 3800000,
-      "contractEndDay": 10000,
+      "contractEndDay": 730,
       "potentialOvr": 94
-    },
-    {
-      "id": "rider.wt2026.redbull.support-1",
-      "name": "Florian Lipowitz",
-      "organizationId": "organization.wt2026.redbull",
-      "nationality": "GER",
-      "birthYear": 2000,
-      "archetype": "neo",
-      "wageBand": "neo",
-      "criticalPowerW": 390,
-      "wPrimeCapacityJ": 26000,
-      "peakPowerW": 1000,
-      "wPrimeRecoveryJPerSecond": 40,
-      "lowIntensityDurability": 0.84,
-      "highIntensityDurability": 0.82,
-      "bodyMassKg": 63,
-      "systemMassKg": 8.0,
-      "cdAM2": 0.285,
-      "baseCrr": 0.0039,
-      "positioning": 0.78,
-      "handling": 0.8,
-      "tacticalAwareness": 0.8,
-      "annualWage": 450000,
-      "contractEndDay": 10000,
-      "potentialOvr": 93
     },
     {
       "id": "rider.wt2026.redbull.support-2",
@@ -1077,7 +1077,7 @@
       "handling": 0.82,
       "tacticalAwareness": 0.84,
       "annualWage": 700000,
-      "contractEndDay": 10000,
+      "contractEndDay": 547,
       "potentialOvr": 89
     },
     {
@@ -1102,42 +1102,17 @@
       "handling": 0.8,
       "tacticalAwareness": 0.78,
       "annualWage": 500000,
-      "contractEndDay": 10000,
+      "contractEndDay": 1025,
       "potentialOvr": 86
     },
     {
       "id": "rider.wt2026.soudal.leader",
-      "name": "Remco Evenepoel",
-      "organizationId": "organization.wt2026.soudal",
-      "nationality": "BEL",
-      "birthYear": 2000,
-      "archetype": "super-gc",
-      "wageBand": "star",
-      "criticalPowerW": 425,
-      "wPrimeCapacityJ": 27000,
-      "peakPowerW": 1100,
-      "wPrimeRecoveryJPerSecond": 42,
-      "lowIntensityDurability": 0.94,
-      "highIntensityDurability": 0.9,
-      "bodyMassKg": 61,
-      "systemMassKg": 8.0,
-      "cdAM2": 0.25,
-      "baseCrr": 0.0036,
-      "positioning": 0.84,
-      "handling": 0.82,
-      "tacticalAwareness": 0.88,
-      "annualWage": 6500000,
-      "contractEndDay": 10000,
-      "potentialOvr": 97
-    },
-    {
-      "id": "rider.wt2026.soudal.support-1",
       "name": "Mikel Landa",
       "organizationId": "organization.wt2026.soudal",
       "nationality": "ESP",
       "birthYear": 1989,
       "archetype": "gc",
-      "wageBand": "super-domestique",
+      "wageBand": "leader",
       "criticalPowerW": 385,
       "wPrimeCapacityJ": 26000,
       "peakPowerW": 1020,
@@ -1151,9 +1126,34 @@
       "positioning": 0.8,
       "handling": 0.82,
       "tacticalAwareness": 0.84,
-      "annualWage": 500000,
-      "contractEndDay": 10000,
+      "annualWage": 1200000,
+      "contractEndDay": 730,
       "potentialOvr": 86
+    },
+    {
+      "id": "rider.wt2026.soudal.support-1",
+      "name": "Florian Lipowitz",
+      "organizationId": "organization.wt2026.soudal",
+      "nationality": "GER",
+      "birthYear": 2000,
+      "archetype": "neo",
+      "wageBand": "neo",
+      "criticalPowerW": 390,
+      "wPrimeCapacityJ": 26000,
+      "peakPowerW": 1000,
+      "wPrimeRecoveryJPerSecond": 40,
+      "lowIntensityDurability": 0.84,
+      "highIntensityDurability": 0.82,
+      "bodyMassKg": 63,
+      "systemMassKg": 8.0,
+      "cdAM2": 0.285,
+      "baseCrr": 0.0039,
+      "positioning": 0.78,
+      "handling": 0.8,
+      "tacticalAwareness": 0.8,
+      "annualWage": 450000,
+      "contractEndDay": 1095,
+      "potentialOvr": 93
     },
     {
       "id": "rider.wt2026.soudal.support-2",
@@ -1177,7 +1177,7 @@
       "handling": 0.88,
       "tacticalAwareness": 0.86,
       "annualWage": 220000,
-      "contractEndDay": 10000,
+      "contractEndDay": 731,
       "potentialOvr": 83
     },
     {
@@ -1202,7 +1202,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.78,
       "annualWage": 900000,
-      "contractEndDay": 10000,
+      "contractEndDay": 900,
       "potentialOvr": 90
     },
     {
@@ -1227,7 +1227,7 @@
       "handling": 0.82,
       "tacticalAwareness": 0.84,
       "annualWage": 2000000,
-      "contractEndDay": 10000,
+      "contractEndDay": 1417,
       "potentialOvr": 92
     },
     {
@@ -1252,7 +1252,7 @@
       "handling": 0.82,
       "tacticalAwareness": 0.84,
       "annualWage": 280000,
-      "contractEndDay": 10000,
+      "contractEndDay": 1053,
       "potentialOvr": 85
     },
     {
@@ -1277,7 +1277,7 @@
       "handling": 0.9,
       "tacticalAwareness": 0.86,
       "annualWage": 400000,
-      "contractEndDay": 10000,
+      "contractEndDay": 488,
       "potentialOvr": 86
     },
     {
@@ -1302,7 +1302,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.78,
       "annualWage": 700000,
-      "contractEndDay": 10000,
+      "contractEndDay": 728,
       "potentialOvr": 88
     },
     {
@@ -1327,7 +1327,7 @@
       "handling": 0.82,
       "tacticalAwareness": 0.84,
       "annualWage": 600000,
-      "contractEndDay": 10000,
+      "contractEndDay": 978,
       "potentialOvr": 88
     },
     {
@@ -1352,7 +1352,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.78,
       "annualWage": 120000,
-      "contractEndDay": 10000,
+      "contractEndDay": 774,
       "potentialOvr": 80
     },
     {
@@ -1377,7 +1377,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.78,
       "annualWage": 100000,
-      "contractEndDay": 10000,
+      "contractEndDay": 880,
       "potentialOvr": 84
     },
     {
@@ -1402,7 +1402,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.78,
       "annualWage": 180000,
-      "contractEndDay": 10000,
+      "contractEndDay": 826,
       "potentialOvr": 85
     },
     {
@@ -1427,7 +1427,7 @@
       "handling": 0.85,
       "tacticalAwareness": 0.88,
       "annualWage": 5000000,
-      "contractEndDay": 10000,
+      "contractEndDay": 1095,
       "potentialOvr": 97
     },
     {
@@ -1452,7 +1452,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.78,
       "annualWage": 800000,
-      "contractEndDay": 10000,
+      "contractEndDay": 674,
       "potentialOvr": 90
     },
     {
@@ -1477,7 +1477,7 @@
       "handling": 0.9,
       "tacticalAwareness": 0.86,
       "annualWage": 4000000,
-      "contractEndDay": 10000,
+      "contractEndDay": 1095,
       "potentialOvr": 95
     },
     {
@@ -1502,12 +1502,12 @@
       "handling": 0.8,
       "tacticalAwareness": 0.78,
       "annualWage": 1000000,
-      "contractEndDay": 10000,
+      "contractEndDay": 872,
       "potentialOvr": 91
     },
     {
       "id": "rider.wt2026.uae.leader",
-      "name": "Tadej Poga\u010dar",
+      "name": "Tadej Pogačar",
       "organizationId": "organization.wt2026.uae",
       "nationality": "SLO",
       "birthYear": 1998,
@@ -1527,12 +1527,12 @@
       "handling": 0.86,
       "tacticalAwareness": 0.9,
       "annualWage": 8000000,
-      "contractEndDay": 10000,
+      "contractEndDay": 1460,
       "potentialOvr": 99
     },
     {
       "id": "rider.wt2026.uae.support-1",
-      "name": "Jo\u00e3o Almeida",
+      "name": "João Almeida",
       "organizationId": "organization.wt2026.uae",
       "nationality": "POR",
       "birthYear": 1998,
@@ -1552,7 +1552,7 @@
       "handling": 0.76,
       "tacticalAwareness": 0.84,
       "annualWage": 1200000,
-      "contractEndDay": 10000,
+      "contractEndDay": 772,
       "potentialOvr": 91
     },
     {
@@ -1577,12 +1577,12 @@
       "handling": 0.8,
       "tacticalAwareness": 0.8,
       "annualWage": 350000,
-      "contractEndDay": 10000,
+      "contractEndDay": 731,
       "potentialOvr": 94
     },
     {
       "id": "rider.wt2026.uae.card",
-      "name": "Jhonatan Narv\u00e1ez",
+      "name": "Jhonatan Narváez",
       "organizationId": "organization.wt2026.uae",
       "nationality": "ECU",
       "birthYear": 1997,
@@ -1602,7 +1602,7 @@
       "handling": 0.84,
       "tacticalAwareness": 0.86,
       "annualWage": 400000,
-      "contractEndDay": 10000,
+      "contractEndDay": 667,
       "potentialOvr": 86
     },
     {
@@ -1627,7 +1627,7 @@
       "handling": 0.82,
       "tacticalAwareness": 0.84,
       "annualWage": 700000,
-      "contractEndDay": 10000,
+      "contractEndDay": 1094,
       "potentialOvr": 88
     },
     {
@@ -1652,7 +1652,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.78,
       "annualWage": 180000,
-      "contractEndDay": 10000,
+      "contractEndDay": 444,
       "potentialOvr": 82
     },
     {
@@ -1677,7 +1677,7 @@
       "handling": 0.9,
       "tacticalAwareness": 0.86,
       "annualWage": 160000,
-      "contractEndDay": 10000,
+      "contractEndDay": 445,
       "potentialOvr": 82
     },
     {
@@ -1702,7 +1702,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.78,
       "annualWage": 300000,
-      "contractEndDay": 10000,
+      "contractEndDay": 393,
       "potentialOvr": 84
     },
     {
@@ -1727,7 +1727,7 @@
       "handling": 0.82,
       "tacticalAwareness": 0.84,
       "annualWage": 700000,
-      "contractEndDay": 10000,
+      "contractEndDay": 1009,
       "potentialOvr": 87
     },
     {
@@ -1752,12 +1752,12 @@
       "handling": 0.9,
       "tacticalAwareness": 0.86,
       "annualWage": 200000,
-      "contractEndDay": 10000,
+      "contractEndDay": 676,
       "potentialOvr": 82
     },
     {
       "id": "rider.wt2026.astana.support-2",
-      "name": "Cl\u00e9ment Berthet",
+      "name": "Clément Berthet",
       "organizationId": "organization.wt2026.astana",
       "nationality": "FRA",
       "birthYear": 1997,
@@ -1777,7 +1777,7 @@
       "handling": 0.82,
       "tacticalAwareness": 0.84,
       "annualWage": 150000,
-      "contractEndDay": 10000,
+      "contractEndDay": 772,
       "potentialOvr": 81
     },
     {
@@ -1802,7 +1802,7 @@
       "handling": 0.8,
       "tacticalAwareness": 0.78,
       "annualWage": 280000,
-      "contractEndDay": 10000,
+      "contractEndDay": 530,
       "potentialOvr": 84
     }
   ]

@@ -81,56 +81,9 @@ public static class CourseCatalogGenerator
         int restDays = Math.Max(0, span - stageCount);
         List<int> stageDays = DistributeStageDays(race.StartDayNumber, race.EndDayNumber, stageCount, restDays, rng);
 
-        int ittCount = PickCount(rng, constraints.IttMin, constraints.IttMax);
-        int tttCount = PickCount(rng, constraints.TttMin, constraints.TttMax);
-        int summitCount = PickCount(rng, constraints.SummitFinishMin, constraints.SummitFinishMax);
-        int mountainCount = PickCount(rng, constraints.MountainMin, constraints.MountainMax);
-        int hillyCount = PickCount(rng, constraints.HillyMin, constraints.HillyMax);
-        int flatCount = PickCount(rng, constraints.FlatMin, constraints.FlatMax);
-
-        List<string> types = new();
-        for (int i = 0; i < ittCount; i++)
-        {
-            types.Add("itt");
-        }
-
-        for (int i = 0; i < tttCount; i++)
-        {
-            types.Add("ttt");
-        }
-
-        for (int i = 0; i < summitCount; i++)
-        {
-            types.Add("summit");
-        }
-
-        int remainingMountain = Math.Max(0, mountainCount - summitCount);
-        for (int i = 0; i < remainingMountain; i++)
-        {
-            types.Add("mountain");
-        }
-
-        for (int i = 0; i < hillyCount; i++)
-        {
-            types.Add("hilly");
-        }
-
-        while (types.Count < stageCount)
-        {
-            if (flatCount > 0 || types.Count < stageCount)
-            {
-                types.Add("flat");
-            }
-            else
-            {
-                types.Add("rolling");
-            }
-        }
-
-        while (types.Count > stageCount)
-        {
-            types.RemoveAt(types.Count - 1);
-        }
+        List<string> types = stageCount == 1
+            ? new List<string> { PickOneDayStageType(constraints, rng) }
+            : BuildMultiStageTypeList(constraints, stageCount, rng);
 
         Shuffle(types, rng);
         double totalKmTarget = constraints.TotalKmMin +
@@ -144,6 +97,261 @@ public static class CourseCatalogGenerator
 
         return plans;
     }
+
+    private static string PickOneDayStageType(RaceIdentityConstraints constraints, DeterministicRng rng)
+    {
+        if (constraints.FlatMin >= 1 && constraints.FlatMax > 0)
+        {
+            return "flat";
+        }
+
+        List<string> allowed = BuildAllowedStageTypes(constraints);
+        if (allowed.Count == 0)
+        {
+            return "flat";
+        }
+
+        return WeightedPick(allowed, constraints.TerrainPalette, rng);
+    }
+
+    private static List<string> BuildMultiStageTypeList(
+        RaceIdentityConstraints constraints,
+        int stageCount,
+        DeterministicRng rng)
+    {
+        Dictionary<string, int> counts = new(StringComparer.Ordinal)
+        {
+            ["itt"] = 0,
+            ["ttt"] = 0,
+            ["summit"] = 0,
+            ["mountain"] = 0,
+            ["hilly"] = 0,
+            ["flat"] = 0,
+            ["rolling"] = 0,
+        };
+
+        void AddMinimum(string type, int min)
+        {
+            for (int i = 0; i < min; i++)
+            {
+                counts[type]++;
+            }
+        }
+
+        int summitCount = PickCount(rng, constraints.SummitFinishMin, constraints.SummitFinishMax);
+        AddMinimum("summit", summitCount);
+        int mountainMin = constraints.MountainMin;
+        int mountainExtras = Math.Max(0, mountainMin - counts["summit"]);
+        AddMinimum("mountain", mountainExtras);
+        AddMinimum("itt", constraints.IttMin);
+        AddMinimum("ttt", constraints.TttMin);
+        AddMinimum("hilly", constraints.HillyMin);
+        AddMinimum("flat", constraints.FlatMin);
+
+        int total = counts.Values.Sum();
+        if (total > stageCount)
+        {
+            ReduceExtrasAboveMinimum(counts, stageCount, constraints);
+        }
+
+        while (counts.Values.Sum() < stageCount)
+        {
+            List<string> candidates = BuildFillCandidates(constraints, counts);
+            if (candidates.Count == 0)
+            {
+                counts["rolling"]++;
+                continue;
+            }
+
+            string picked = WeightedPick(candidates, constraints.TerrainPalette, rng);
+            counts[picked]++;
+        }
+
+        List<string> types = new(stageCount);
+        foreach (KeyValuePair<string, int> pair in counts.OrderBy(item => item.Key, StringComparer.Ordinal))
+        {
+            for (int i = 0; i < pair.Value; i++)
+            {
+                types.Add(pair.Key);
+            }
+        }
+
+        while (types.Count > stageCount)
+        {
+            types.RemoveAt(types.Count - 1);
+        }
+
+        return types;
+    }
+
+    private static void ReduceExtrasAboveMinimum(
+        Dictionary<string, int> counts,
+        int stageCount,
+        RaceIdentityConstraints constraints)
+    {
+        Dictionary<string, int> minimums = new(StringComparer.Ordinal)
+        {
+            ["itt"] = constraints.IttMin,
+            ["ttt"] = constraints.TttMin,
+            ["summit"] = constraints.SummitFinishMin,
+            ["mountain"] = Math.Max(0, constraints.MountainMin - counts["summit"]),
+            ["hilly"] = constraints.HillyMin,
+            ["flat"] = constraints.FlatMin,
+            ["rolling"] = 0,
+        };
+
+        string[] reductionOrder = { "rolling", "hilly", "mountain", "flat", "summit", "itt", "ttt" };
+        while (counts.Values.Sum() > stageCount)
+        {
+            bool removed = false;
+            foreach (string type in reductionOrder)
+            {
+                int floor = minimums[type];
+                if (counts[type] > floor)
+                {
+                    counts[type]--;
+                    removed = true;
+                    break;
+                }
+            }
+
+            if (!removed)
+            {
+                break;
+            }
+        }
+    }
+
+    private static List<string> BuildAllowedStageTypes(RaceIdentityConstraints constraints)
+    {
+        List<string> allowed = new();
+        if (constraints.IttMax > 0)
+        {
+            allowed.Add("itt");
+        }
+
+        if (constraints.TttMax > 0)
+        {
+            allowed.Add("ttt");
+        }
+
+        if (constraints.SummitFinishMax > 0)
+        {
+            allowed.Add("summit");
+        }
+
+        if (constraints.MountainMax > 0)
+        {
+            allowed.Add("mountain");
+        }
+
+        if (constraints.HillyMax > 0)
+        {
+            allowed.Add("hilly");
+        }
+
+        if (constraints.FlatMax > 0)
+        {
+            allowed.Add("flat");
+        }
+
+        if (allowed.Count == 0)
+        {
+            allowed.Add("rolling");
+        }
+
+        return allowed;
+    }
+
+    private static List<string> BuildFillCandidates(
+        RaceIdentityConstraints constraints,
+        Dictionary<string, int> counts)
+    {
+        List<string> candidates = new();
+        TryAddCandidate(candidates, "itt", counts["itt"], constraints.IttMax);
+        TryAddCandidate(candidates, "ttt", counts["ttt"], constraints.TttMax);
+        TryAddCandidate(candidates, "summit", counts["summit"], constraints.SummitFinishMax);
+        TryAddCandidate(candidates, "mountain", counts["mountain"] + counts["summit"], constraints.MountainMax);
+        TryAddCandidate(candidates, "hilly", counts["hilly"], constraints.HillyMax);
+        TryAddCandidate(candidates, "flat", counts["flat"], constraints.FlatMax);
+        if (candidates.Count == 0)
+        {
+            candidates.Add("rolling");
+        }
+
+        return candidates;
+    }
+
+    private static void TryAddCandidate(List<string> candidates, string type, int current, int max)
+    {
+        if (max <= 0)
+        {
+            return;
+        }
+
+        if (current < max)
+        {
+            candidates.Add(type);
+        }
+    }
+
+    private static string WeightedPick(
+        IReadOnlyList<string> candidates,
+        IReadOnlyList<string> terrainPalette,
+        DeterministicRng rng)
+    {
+        double[] weights = new double[candidates.Count];
+        double total = 0;
+        for (int i = 0; i < candidates.Count; i++)
+        {
+            weights[i] = PaletteWeight(candidates[i], terrainPalette);
+            total += weights[i];
+        }
+
+        if (total <= 0)
+        {
+            return candidates[(int)(rng.NextUInt64() % (ulong)candidates.Count)];
+        }
+
+        double roll = rng.NextUnit() * total;
+        double cursor = 0;
+        for (int i = 0; i < candidates.Count; i++)
+        {
+            cursor += weights[i];
+            if (roll <= cursor)
+            {
+                return candidates[i];
+            }
+        }
+
+        return candidates[^1];
+    }
+
+    private static double PaletteWeight(string stageType, IReadOnlyList<string> terrainPalette)
+    {
+        double weight = 0.2;
+        foreach (string palette in terrainPalette)
+        {
+            if (PaletteMatchesStageType(palette, stageType))
+            {
+                weight += 1.0;
+            }
+        }
+
+        return weight;
+    }
+
+    private static bool PaletteMatchesStageType(string palette, string stageType) =>
+        palette switch
+        {
+            "flat" => stageType is "flat" or "rolling",
+            "rolling" => stageType is "flat" or "hilly" or "rolling",
+            "hilly" or "valley" => stageType is "hilly" or "rolling",
+            "climb" => stageType is "mountain" or "summit",
+            "summit" => stageType is "summit" or "mountain",
+            "cobble" => stageType is "flat" or "hilly" or "rolling",
+            _ => string.Equals(palette, stageType, StringComparison.Ordinal),
+        };
 
     private static List<GeneratedStageCourse> BuildRaceProfiles(
         RaceIdentityConstraints constraints,
@@ -179,7 +387,11 @@ public static class CourseCatalogGenerator
                 constraints,
                 stageRng);
             samples = CourseBricks.SmoothJoins(samples);
-            samples = FitSamplesToTargetLength(samples, targetM, stageRng);
+            samples = FitSamplesToTargetLength(samples, targetM, stageRng, plan.StageType);
+            if (!IsMonumentComposerRace(constraints.RaceContentId))
+            {
+                samples = EnsurePlannedClassification(samples, plan.StageType, stageRng);
+            }
             (double lengthM, double gainM, double lossM, double cobbleM, double gravelM, double maxGrad, double minGrad) =
                 CourseMetrics.Compute(samples);
             CourseKind kind = plan.StageType switch
@@ -251,13 +463,15 @@ public static class CourseCatalogGenerator
         {
             "itt" => CourseBricks.BuildIttOutAndBack(rng, targetM, baseElev),
             "ttt" => CourseBricks.BuildIttOutAndBack(rng, targetM * 0.9, baseElev),
-            "summit" => CourseBricks.BuildSummitFinish(
-                rng,
-                targetM * 0.45,
-                targetM * 0.55,
-                0.075 + rng.NextUnit() * 0.02,
-                baseElev,
-                PickClimbShape(rng)),
+            "summit" => CapElevationGain(
+                CourseBricks.BuildSummitFinish(
+                    rng,
+                    targetM * 0.45,
+                    targetM * 0.55,
+                    0.065 + rng.NextUnit() * 0.015,
+                    baseElev,
+                    PickClimbShape(rng)),
+                targetM <= 120_000 ? 5500 : 5000),
             "mountain" => ComposeMountainStage(rng, targetM, baseElev),
             "hilly" => ComposeHillyStage(rng, targetM, baseElev),
             "flat" => CourseBricks.BuildFlatRoad(rng, targetM, baseElev),
@@ -273,39 +487,43 @@ public static class CourseCatalogGenerator
         List<CourseSampleVertex> climb = CourseBricks.BuildClimb(
             rng,
             climbM,
-            0.07 + rng.NextUnit() * 0.02,
+            0.06 + rng.NextUnit() * 0.015,
             approach[^1].ElevationM,
             PickClimbShape(rng));
         List<CourseSampleVertex> finish = CourseBricks.BuildDescent(
             rng,
             approachM * 0.4,
             climb[^1].ElevationM,
-            climbM * 0.06);
-        return CourseBricks.Concatenate(
+            climbM * 0.05);
+        List<CourseSampleVertex> combined = CourseBricks.Concatenate(
             CourseBricks.Concatenate(approach, climb, skipFirst: true),
             finish,
             skipFirst: true);
+        double maxGain = targetM <= 120_000 ? 5500 : 5000;
+        return CapElevationGain(combined, maxGain);
     }
 
     private static List<CourseSampleVertex> ComposeHillyStage(DeterministicRng rng, double targetM, double baseElev)
     {
         List<CourseSampleVertex> result = CourseBricks.BuildRolling(rng, targetM * 0.4, baseElev);
-        for (int wall = 0; wall < 3; wall++)
+        int walls = 2 + (int)(rng.NextUnit() * 2);
+        for (int wall = 0; wall < walls; wall++)
         {
-            double bergLen = 600 + rng.NextUnit() * 800;
+            double bergLen = 500 + rng.NextUnit() * 600;
             List<CourseSampleVertex> berg = CourseBricks.BuildBerg(
                 rng,
                 bergLen,
-                0.08 + rng.NextUnit() * 0.03,
+                0.06 + rng.NextUnit() * 0.02,
                 result[^1].ElevationM);
             result = CourseBricks.Concatenate(result, berg, skipFirst: true);
-            List<CourseSampleVertex> link = CourseBricks.BuildRolling(rng, 3000 + rng.NextUnit() * 2000, result[^1].ElevationM);
+            List<CourseSampleVertex> link = CourseBricks.BuildRolling(rng, 2500 + rng.NextUnit() * 1500, result[^1].ElevationM);
             result = CourseBricks.Concatenate(result, link, skipFirst: true);
         }
 
         double remaining = Math.Max(targetM - result[^1].DistanceM, 5000);
         List<CourseSampleVertex> tail = CourseBricks.BuildRolling(rng, remaining, result[^1].ElevationM);
-        return CourseBricks.Concatenate(result, tail, skipFirst: true);
+        result = CourseBricks.Concatenate(result, tail, skipFirst: true);
+        return CapElevationGain(result, 2200);
     }
 
     private static List<CourseSampleVertex> ComposeCobbleClassic(
@@ -382,15 +600,15 @@ public static class CourseCatalogGenerator
     private static List<CourseSampleVertex> FitSamplesToTargetLength(
         List<CourseSampleVertex> samples,
         double targetM,
-        DeterministicRng rng)
+        DeterministicRng rng,
+        string stageType)
     {
         double current = samples[^1].DistanceM;
         if (current < targetM * 0.95)
         {
-            List<CourseSampleVertex> pad = CourseBricks.BuildFlatRoad(
-                rng,
-                targetM - current,
-                samples[^1].ElevationM);
+            List<CourseSampleVertex> pad = string.Equals(stageType, "flat", StringComparison.Ordinal)
+                ? CourseBricks.BuildFlatRoad(rng, targetM - current, samples[^1].ElevationM)
+                : CourseBricks.BuildRolling(rng, targetM - current, samples[^1].ElevationM);
             return CourseBricks.Concatenate(samples, pad, skipFirst: true);
         }
 
@@ -404,6 +622,58 @@ public static class CourseCatalogGenerator
         }
 
         return samples;
+    }
+
+    private static bool IsMonumentComposerRace(string raceContentId) =>
+        string.Equals(raceContentId, "race.wt2026.roubaix", StringComparison.Ordinal) ||
+        string.Equals(raceContentId, "race.wt2026.ronde", StringComparison.Ordinal) ||
+        string.Equals(raceContentId, "race.wt2026.milano_sanremo", StringComparison.Ordinal) ||
+        string.Equals(raceContentId, "race.wt2026.strade_bianche", StringComparison.Ordinal);
+
+    private static List<CourseSampleVertex> EnsurePlannedClassification(
+        List<CourseSampleVertex> samples,
+        string stageType,
+        DeterministicRng rng)
+    {
+        if (!string.Equals(stageType, "flat", StringComparison.Ordinal))
+        {
+            return samples;
+        }
+
+        (double lengthM, double gainM, _, double cobbleM, _, _, _) = CourseMetrics.Compute(samples);
+        ClassifiedStageType classified = CourseClassifier.Classify(
+            CourseKind.Road,
+            samples,
+            lengthM,
+            gainM,
+            cobbleM);
+        if (classified is ClassifiedStageType.Flat or ClassifiedStageType.Mixed && gainM < 1000)
+        {
+            return samples;
+        }
+
+        return CourseBricks.BuildFlatRoad(rng, lengthM, samples[0].ElevationM);
+    }
+
+    private static List<CourseSampleVertex> CapElevationGain(List<CourseSampleVertex> samples, double maxGainM)
+    {
+        (double _, double gainM, _, _, _, _, _) = CourseMetrics.Compute(samples);
+        if (gainM <= maxGainM)
+        {
+            return samples;
+        }
+
+        double scale = maxGainM / gainM;
+        double startElev = samples[0].ElevationM;
+        List<CourseSampleVertex> capped = new(samples.Count);
+        for (int i = 0; i < samples.Count; i++)
+        {
+            CourseSampleVertex vertex = samples[i];
+            double relative = vertex.ElevationM - startElev;
+            capped.Add(vertex with { ElevationM = startElev + relative * scale });
+        }
+
+        return capped;
     }
 
     private static void ValidateRace(RaceIdentityConstraints constraints, IReadOnlyList<CourseProfile> profiles)

@@ -93,7 +93,7 @@ public sealed class WtRosterCalibrationTests
         RiderCareer philipsen = Find(world, "rider.wt2026.alpecin.card");
         RiderCareer mvdp = Find(world, "rider.wt2026.alpecin.leader");
         RiderCareer bauhaus = Find(world, "rider.wt2026.bahrain.card");
-        RiderCareer evenepoel = Find(world, "rider.wt2026.soudal.leader");
+        RiderCareer evenepoel = Find(world, "rider.wt2026.redbull.leader");
         RiderCareer vanAert = Find(world, "rider.wt2026.visma.support-2");
         RiderCareer hermans = Find(world, "rider.wt2026.alpecin.support-2");
 
@@ -116,7 +116,7 @@ public sealed class WtRosterCalibrationTests
 
         Assert.InRange(evenepoel.BodyMassKg, 60, 64);
         Assert.True(evenepoel.CriticalPowerW / evenepoel.BodyMassKg >= 6.4);
-        Assert.Equal(6_500_000, Wage(world, evenepoel));
+        Assert.Equal(6_600_000, Wage(world, evenepoel));
 
         Assert.InRange(vanAert.BodyMassKg, 76, 80);
         Assert.Equal(4_000_000, Wage(world, vanAert));

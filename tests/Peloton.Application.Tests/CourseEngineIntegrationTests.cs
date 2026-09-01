@@ -13,6 +13,54 @@ public sealed class CourseEngineIntegrationTests
     private const string WtScenarioId = "scenario.peloton.wt-2026";
 
     [Fact]
+    public void Seed91234CatalogHasAtLeastEightFlatStages()
+    {
+        GameApplication application = TestApplication.Create();
+        Assert.True(application.Execute(new CreateWorldCommand(WtScenarioId, GateSeed)).Succeeded);
+        int flatCount = application.World!.CourseProfiles
+            .Count(profile => profile.ClassifiedStageType == ClassifiedStageType.Flat);
+        Assert.True(flatCount >= 8);
+    }
+
+    [Fact]
+    public void CopenhagenSprintIsClassifiedFlatWithModestGain()
+    {
+        GameApplication application = TestApplication.Create();
+        Assert.True(application.Execute(new CreateWorldCommand(WtScenarioId, GateSeed)).Succeeded);
+        CourseProfile copenhagen = application.World!.CourseProfiles.Single(
+            profile => string.Equals(profile.RaceContentId, "race.wt2026.copenhagen_sprint", StringComparison.Ordinal));
+        Assert.Equal(ClassifiedStageType.Flat, copenhagen.ClassifiedStageType);
+        Assert.True(copenhagen.ElevationGainM < 2000);
+    }
+
+    [Fact]
+    public void TourDownUnderIncludesAtLeastOneFlatStage()
+    {
+        GameApplication application = TestApplication.Create();
+        Assert.True(application.Execute(new CreateWorldCommand(WtScenarioId, GateSeed)).Succeeded);
+        bool hasFlat = application.World!.CourseProfiles
+            .Where(profile => string.Equals(profile.RaceContentId, "race.wt2026.tour_down_under", StringComparison.Ordinal))
+            .Any(profile => profile.ClassifiedStageType == ClassifiedStageType.Flat);
+        Assert.True(hasFlat);
+    }
+
+    [Fact]
+    public void TourDeFranceHasFlatMountainAndIttWithoutExtremeGain()
+    {
+        GameApplication application = TestApplication.Create();
+        Assert.True(application.Execute(new CreateWorldCommand(WtScenarioId, GateSeed)).Succeeded);
+        CourseProfile[] tdf = application.World!.CourseProfiles
+            .Where(profile => string.Equals(profile.RaceContentId, "race.wt2026.tdf", StringComparison.Ordinal))
+            .OrderBy(profile => profile.StageIndex)
+            .ToArray();
+        Assert.Equal(21, tdf.Length);
+        Assert.Contains(tdf, stage => stage.ClassifiedStageType == ClassifiedStageType.Flat);
+        Assert.Contains(tdf, stage => stage.ClassifiedStageType is ClassifiedStageType.Mountain or ClassifiedStageType.MountainSummit);
+        Assert.Contains(tdf, stage => stage.ClassifiedStageType == ClassifiedStageType.IndividualTimeTrial);
+        Assert.All(tdf, stage => Assert.True(stage.ElevationGainM <= 8000));
+    }
+
+    [Fact]
     public void TourDeFrance2026HasTwentyOneDenseStages()
     {
         GameApplication application = TestApplication.Create();
