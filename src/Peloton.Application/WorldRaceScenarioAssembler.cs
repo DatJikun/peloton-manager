@@ -98,17 +98,12 @@ public static class WorldRaceScenarioAssembler
             .Where(career =>
                 career.OrganizationId is WorldEntityId organizationId &&
                 enteredOrganizationIds.Contains(organizationId))
-            .OrderBy(career => career.OriginDefinitionId, StringComparer.Ordinal)
             .Select(career => ToRaceProfile(career))
+            .OrderByDescending(profile => profile.Positioning)
+            .ThenBy(profile => profile.RiderId.Value)
             .ToArray();
 
-        IReadOnlyList<string> startingOrder = template.StartingOrderRiderIds;
-        RaceStartingPosition[] startingPositions = startingOrder
-            .Select((originId, index) => new RaceStartingPosition(
-                careersByOrigin[originId].Id,
-                (startingOrder.Count - 1 - index) * 0.7))
-            .Where(position => riders.Any(rider => rider.RiderId == position.RiderId))
-            .ToArray();
+        RaceStartingPosition[] startingPositions = BuildPositioningGrid(riders);
 
         RaceCommand[] commands = template.Commands
             .Where(command => enteredOrganizationIds.Contains(raceTeamToOrganization[command.TeamId]))
@@ -201,14 +196,11 @@ public static class WorldRaceScenarioAssembler
         }
 
         RiderCareer[] starters = selectedCareers
-            .OrderBy(career => career.OriginDefinitionId, StringComparer.Ordinal)
+            .OrderByDescending(career => career.Positioning)
+            .ThenBy(career => career.Id.Value)
             .ToArray();
         RaceRiderProfile[] riders = starters.Select(career => ToRaceProfile(career)).ToArray();
-        RaceStartingPosition[] startingPositions = starters
-            .Select((career, index) => new RaceStartingPosition(
-                career.Id,
-                (starters.Length - 1 - index) * 0.7))
-            .ToArray();
+        RaceStartingPosition[] startingPositions = BuildPositioningGrid(riders);
 
         HashSet<WorldEntityId> starterIds = starters.Select(career => career.Id).ToHashSet();
         Dictionary<string, WorldEntityId> raceTeamToOrganization = world.Organizations
@@ -327,6 +319,13 @@ public static class WorldRaceScenarioAssembler
 
         return identity.InviteOrganizationIds.ToHashSet(StringComparer.Ordinal);
     }
+
+    private static RaceStartingPosition[] BuildPositioningGrid(IReadOnlyList<RaceRiderProfile> riders) =>
+        riders
+            .Select((rider, index) => new RaceStartingPosition(
+                rider.RiderId,
+                (riders.Count - 1 - index) * RaceTuning.SlotSpacingM))
+            .ToArray();
 
     public static RaceRiderProfile ToRaceProfile(RiderCareer career)
     {

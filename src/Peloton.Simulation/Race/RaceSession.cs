@@ -19,7 +19,7 @@ public sealed record RaceMotionSnapshot(
 
 public sealed class RaceSession
 {
-    public const int PhysicsContractVersion = 1;
+    public const int PhysicsContractVersion = 2;
 
     private const double StepSeconds = 1.0;
     private const int AttackDurationSeconds = 18;
@@ -121,6 +121,7 @@ public sealed class RaceSession
                 $"Race '{scenario.Id}' exceeded its maximum duration without every rider finishing.");
         }
 
+        ResolveGroups();
         ApplyCommands();
         ApplyBunchSprintIntents();
         Dictionary<int, double> groupTargetSpeedMps = DetermineGroupTargetSpeeds();
@@ -161,7 +162,15 @@ public sealed class RaceSession
             double relativeAirSpeedMps = Math.Sqrt(
                 Math.Pow(Math.Max(0.0, desiredSpeedMps + headwindMps), 2.0) +
                 Math.Pow(crosswindMps, 2.0));
-            double shelterMultiplier = ShelterForPhysics(rider.ShelterMultiplier, remainingM);
+            double shelterMultiplier = ShelterForPhysics(
+                rider.ShelterMultiplier,
+                remainingM,
+                segment.Surface,
+                rider.Profile.Handling);
+            double cobbleSurgeMultiplier = CobbleSurgeMultiplier(
+                segment.Surface,
+                rider.Profile.Handling,
+                scenario.ClassifiedStageType);
             RequiredPowerBreakdown demand = RequiredPowerSolver.Calculate(new RequiredPowerInput(
                 desiredSpeedMps,
                 desiredAccelerationMps2,
@@ -172,6 +181,16 @@ public sealed class RaceSession
                 shelterMultiplier,
                 EffectiveCrr(rider.Profile.BaseCrr, rider.Profile.Handling, segment.Surface),
                 rider.Profile.TotalMassKg));
+            if (cobbleSurgeMultiplier > 1.0)
+            {
+                demand = demand with
+                {
+                    AerodynamicPowerW = demand.AerodynamicPowerW * cobbleSurgeMultiplier,
+                    RollingPowerW = demand.RollingPowerW * cobbleSurgeMultiplier,
+                    GravityPowerW = demand.GravityPowerW * cobbleSurgeMultiplier,
+                    AccelerationPowerW = demand.AccelerationPowerW * cobbleSurgeMultiplier,
+                };
+            }
             CapabilityResult capability = CapabilitySolver.Evaluate(
                 rider.Profile,
                 rider.Physiology,
@@ -181,7 +200,8 @@ public sealed class RaceSession
                 desiredSpeedMps,
                 demand.TotalPowerW,
                 capability.RealizablePowerW,
-                atmosphere.Gradient);
+                atmosphere.Gradient,
+                segment.Surface);
             solves.Add(rider.Profile.RiderId, new StepSolve(
                 realizedSpeedMps,
                 capability.RealizablePowerW,
@@ -217,7 +237,7 @@ public sealed class RaceSession
         }
 
         simulationSecond++;
-        ResolveGroups();
+        ApplyPositionDrift();
         ExpireIntents();
         if (riders.All(rider => rider.FinishTimeSeconds is not null))
         {
@@ -499,34 +519,243 @@ public sealed class RaceSession
     private Dictionary<int, double> DetermineGroupTargetSpeeds()
     {
         Dictionary<int, double> targets = new();
-        foreach (IGrouping<int, RiderRuntime> group in riders
-                     .Where(rider => rider.FinishTimeSeconds is null)
+        RiderRuntime[] unfinished = riders
+            .Where(rider => rider.FinishTimeSeconds is null)
+            .ToArray();
+        foreach (IGrouping<int, RiderRuntime> group in unfinished
                      .GroupBy(rider => rider.GroupId)
-                     .OrderBy(group => group.Key))
+                     .OrderBy(grouping => grouping.Key))
         {
+            RiderRuntime pacingReference = ResolvePacingReferenceRider(group);
+            RaceRouteSegment segment = scenario.Definition.SegmentAt(pacingReference.DistanceM);
+            double remainingM = scenario.Definition.TotalLengthM - pacingReference.DistanceM;
+            AtmosphereSample atmosphere = AtmosphereForPhysics(segment);
+            double basePaceMps = BasePaceMps(atmosphere.Gradient);
+            double selectiveTargetMps = IsSelectiveZone(segment, remainingM)
+                ? SelectiveGroupTargetMps(group, segment, atmosphere, remainingM)
+                : basePaceMps;
             double target = group.Max(rider =>
             {
-                RaceRouteSegment segment = scenario.Definition.SegmentAt(rider.DistanceM);
-                double remainingM = scenario.Definition.TotalLengthM - rider.DistanceM;
-                bool sitIn = IsClassifiedFlatSitIn(remainingM);
-                double basePaceMps = BasePaceMps(AtmosphereForPhysics(segment).Gradient);
+                double riderRemainingM = scenario.Definition.TotalLengthM - rider.DistanceM;
+                bool sitIn = IsClassifiedFlatSitIn(riderRemainingM);
                 return rider.Intent switch
                 {
                     RaceCommandKind.ForcePace => sitIn
                         ? basePaceMps
-                        : basePaceMps + ForcePaceSpeedIncreaseMps,
+                        : selectiveTargetMps + ForcePaceSpeedIncreaseMps,
                     RaceCommandKind.Attack => sitIn
                         ? basePaceMps
-                        : basePaceMps + AttackSpeedIncreaseMps,
+                        : selectiveTargetMps + AttackSpeedIncreaseMps,
                     RaceCommandKind.Conserve => basePaceMps - ConserveSpeedDecreaseMps,
-                    RaceCommandKind.LaunchSprint => basePaceMps,
-                    _ => basePaceMps,
+                    RaceCommandKind.LaunchSprint => selectiveTargetMps,
+                    _ => selectiveTargetMps,
                 };
             });
             targets.Add(group.Key, target);
         }
 
         return targets;
+    }
+
+    private double SelectiveGroupTargetMps(
+        IGrouping<int, RiderRuntime> group,
+        RaceRouteSegment segment,
+        AtmosphereSample atmosphere,
+        double remainingM)
+    {
+        double tempoFactor = remainingM <= RaceTuning.FinaleM
+            ? RaceTuning.TempoFactorFinale
+            : RaceTuning.TempoFactorOutsideFinale;
+        double referenceSpeedMps = BasePaceMps(atmosphere.Gradient);
+        RiderRuntime? setter = null;
+        double bestFrontSpeedMps = double.NegativeInfinity;
+        foreach (RiderRuntime rider in group.OrderBy(item => item.Profile.RiderId.Value))
+        {
+            CapabilityResult capability = CapabilitySolver.Evaluate(
+                rider.Profile,
+                rider.Physiology,
+                rider.Profile.CriticalPowerW,
+                StepSeconds);
+            double sustainablePowerW = capability.EffectiveCriticalPowerW * tempoFactor;
+            double frontSpeedMps = MaxSustainableFrontSpeedMps(
+                rider.Profile,
+                segment,
+                atmosphere,
+                sustainablePowerW);
+            if (frontSpeedMps > bestFrontSpeedMps ||
+                (Math.Abs(frontSpeedMps - bestFrontSpeedMps) < 1e-9 &&
+                 (setter is null || rider.Profile.RiderId.Value < setter.Profile.RiderId.Value)))
+            {
+                bestFrontSpeedMps = frontSpeedMps;
+                setter = rider;
+            }
+        }
+
+        if (setter is null)
+        {
+            return referenceSpeedMps;
+        }
+
+        return Math.Max(referenceSpeedMps, bestFrontSpeedMps);
+    }
+
+    private double MaxSustainableFrontSpeedMps(
+        RaceRiderProfile profile,
+        RaceRouteSegment segment,
+        AtmosphereSample atmosphere,
+        double sustainablePowerW)
+    {
+        if (sustainablePowerW <= 0.0)
+        {
+            return 0.0;
+        }
+
+        double low = 2.0;
+        double high = 15.0;
+        for (int iteration = 0; iteration < 24; iteration++)
+        {
+            double mid = (low + high) * 0.5;
+            RequiredPowerBreakdown demand = FrontRequiredPowerAtSpeed(mid, profile, segment, atmosphere);
+            if (demand.TotalPowerW <= sustainablePowerW)
+            {
+                low = mid;
+            }
+            else
+            {
+                high = mid;
+            }
+        }
+
+        return low;
+    }
+
+    private RequiredPowerBreakdown FrontRequiredPowerAtSpeed(
+        double speedMps,
+        RaceRiderProfile profile,
+        RaceRouteSegment segment,
+        AtmosphereSample atmosphere)
+    {
+        double yawRadians = atmosphere.WindYawDegrees * (Math.PI / 180.0);
+        double headwindMps = Math.Cos(yawRadians) * atmosphere.WindSpeedMps;
+        double crosswindMps = Math.Sin(yawRadians) * atmosphere.WindSpeedMps;
+        double relativeAirSpeedMps = Math.Sqrt(
+            Math.Pow(Math.Max(0.0, speedMps + headwindMps), 2.0) +
+            Math.Pow(crosswindMps, 2.0));
+        RequiredPowerBreakdown frontDemand = RequiredPowerSolver.Calculate(new RequiredPowerInput(
+            speedMps,
+            0.0,
+            atmosphere.Gradient,
+            scenario.Definition.AirDensityKgPerM3,
+            relativeAirSpeedMps,
+            profile.CdAM2,
+            1.0,
+            EffectiveCrr(profile.BaseCrr, profile.Handling, segment.Surface),
+            profile.TotalMassKg));
+        return ApplyCobbleDemandMultiplier(
+            frontDemand,
+            segment.Surface,
+            profile.Handling,
+            scenario.ClassifiedStageType);
+    }
+
+    private void ApplyPositionDrift()
+    {
+        RiderRuntime[] unfinished = riders
+            .Where(rider => rider.FinishTimeSeconds is null)
+            .ToArray();
+        foreach (IGrouping<int, RiderRuntime> group in unfinished
+                     .GroupBy(rider => rider.GroupId)
+                     .Where(grouping => grouping.Count() >= 2)
+                     .OrderBy(grouping => grouping.Key))
+        {
+            RiderRuntime leader = group
+                .OrderByDescending(rider => rider.DistanceM)
+                .ThenBy(rider => rider.Profile.RiderId.Value)
+                .First();
+            double leaderDistanceM = leader.DistanceM;
+            double remainingM = scenario.Definition.TotalLengthM - leaderDistanceM;
+            (WorldEntityId RiderId, double PeakPowerPerKg)[] peakPowerPerKg = group
+                .Select(rider => (rider.Profile.RiderId, rider.Profile.PeakPowerW / rider.Profile.BodyMassKg))
+                .ToArray();
+            RiderRuntime[] orderedByScore = group
+                .OrderByDescending(rider => PositionScoreResolver.Score(
+                    rider.Profile,
+                    rider.Intent,
+                    remainingM,
+                    scenario.ClassifiedStageType,
+                    peakPowerPerKg))
+                .ThenBy(rider => rider.Profile.RiderId.Value)
+                .ToArray();
+            Dictionary<WorldEntityId, int> slotTargets = new();
+            for (int index = 0; index < orderedByScore.Length; index++)
+            {
+                slotTargets[orderedByScore[index].Profile.RiderId] = index;
+            }
+
+            double maxDriftM = RaceTuning.DriftMps * StepSeconds;
+            double maxGapBehindAheadM = RaceTuning.GroupSplitGapM - 0.1;
+            foreach (RiderRuntime rider in orderedByScore.OrderBy(item => item.Profile.RiderId.Value))
+            {
+                int slotTarget = slotTargets[rider.Profile.RiderId];
+                double targetDistanceM = leaderDistanceM - (slotTarget * RaceTuning.SlotSpacingM);
+                double delta = Math.Clamp(targetDistanceM - rider.DistanceM, -maxDriftM, maxDriftM);
+                double newDistanceM = rider.DistanceM + delta;
+                newDistanceM = Math.Min(newDistanceM, leaderDistanceM);
+                RiderRuntime? riderAhead = orderedByScore
+                    .Where(item => slotTargets[item.Profile.RiderId] < slotTarget)
+                    .OrderByDescending(item => slotTargets[item.Profile.RiderId])
+                    .FirstOrDefault();
+                if (riderAhead is not null)
+                {
+                    double minimumDistanceM = riderAhead.DistanceM - maxGapBehindAheadM;
+                    newDistanceM = Math.Max(newDistanceM, minimumDistanceM);
+                }
+
+                rider.DistanceM = newDistanceM;
+            }
+        }
+    }
+
+    private RiderRuntime ResolvePacingReferenceRider(IGrouping<int, RiderRuntime> group)
+    {
+        RiderRuntime[] ordered = group
+            .OrderByDescending(rider => rider.DistanceM)
+            .ThenBy(rider => rider.Profile.RiderId.Value)
+            .ToArray();
+        RiderRuntime? cobbleRider = ordered.FirstOrDefault(rider =>
+            scenario.Definition.SegmentAt(rider.DistanceM).Surface == RouteSurface.Cobble);
+        if (cobbleRider is not null)
+        {
+            return cobbleRider;
+        }
+
+        RiderRuntime? steepRider = ordered.FirstOrDefault(rider =>
+            scenario.Definition.SegmentAt(rider.DistanceM).Gradient >= RaceTuning.SelectiveGradientThreshold);
+        if (steepRider is not null)
+        {
+            return steepRider;
+        }
+
+        return ordered[0];
+    }
+
+    private bool IsSelectiveZone(RaceRouteSegment segment, double remainingM)
+    {
+        if (segment.Surface == RouteSurface.Cobble || segment.Gradient >= RaceTuning.SelectiveGradientThreshold)
+        {
+            return true;
+        }
+
+        if (remainingM > RaceTuning.FinaleM)
+        {
+            return false;
+        }
+
+        return scenario.ClassifiedStageType is ClassifiedStageType.CobbleClassic
+            or ClassifiedStageType.Hilly
+            or ClassifiedStageType.Mixed
+            or ClassifiedStageType.Mountain
+            or ClassifiedStageType.MountainSummit;
     }
 
     private void ResolveGroups()
@@ -674,14 +903,53 @@ public sealed class RaceSession
         scenario.ClassifiedStageType == ClassifiedStageType.Flat &&
         remainingM > BunchSprintResolver.KickDistanceM;
 
-    private double ShelterForPhysics(double shelterMultiplier, double remainingM)
+    private double ShelterForPhysics(
+        double shelterMultiplier,
+        double remainingM,
+        RouteSurface surface,
+        double handling)
     {
-        if (!IsClassifiedFlatSitIn(remainingM))
+        double shelter = shelterMultiplier;
+        if (IsClassifiedFlatSitIn(remainingM))
         {
-            return shelterMultiplier;
+            shelter = Math.Min(shelter, ClassifiedFlatSitInShelterMultiplier);
         }
 
-        return Math.Min(shelterMultiplier, ClassifiedFlatSitInShelterMultiplier);
+        if (surface == RouteSurface.Cobble)
+        {
+            shelter = PositionScoreResolver.CobbleShelterMultiplier(shelter, handling);
+        }
+
+        return shelter;
+    }
+
+    private static double CobbleSurgeMultiplier(
+        RouteSurface surface,
+        double handling,
+        ClassifiedStageType? classifiedStageType) =>
+        surface == RouteSurface.Cobble
+            ? PositionScoreResolver.CobbleSurgeMultiplier(handling)
+            : 1.0;
+
+    private static RequiredPowerBreakdown ApplyCobbleDemandMultiplier(
+        RequiredPowerBreakdown demand,
+        RouteSurface surface,
+        double handling,
+        ClassifiedStageType? classifiedStageType)
+    {
+        double multiplier = CobbleSurgeMultiplier(surface, handling, classifiedStageType);
+        if (multiplier <= 1.0)
+        {
+            return demand;
+        }
+
+        return demand with
+        {
+            AerodynamicPowerW = demand.AerodynamicPowerW * multiplier,
+            RollingPowerW = demand.RollingPowerW * multiplier,
+            GravityPowerW = demand.GravityPowerW * multiplier,
+            AccelerationPowerW = demand.AccelerationPowerW * multiplier,
+        };
     }
 
     private AtmosphereSample AtmosphereForPhysics(RaceRouteSegment segment)
@@ -706,7 +974,8 @@ public sealed class RaceSession
         double desiredSpeedMps,
         double requiredPowerW,
         double realizablePowerW,
-        double gradient)
+        double gradient,
+        RouteSurface surface)
     {
         if (requiredPowerW <= 0.0 || realizablePowerW >= requiredPowerW)
         {
@@ -714,7 +983,7 @@ public sealed class RaceSession
         }
 
         double powerRatio = Math.Clamp(realizablePowerW / requiredPowerW, 0.0, 1.0);
-        double exponent = gradient >= 0.03 ? 0.85 : 1.0 / 3.0;
+        double exponent = gradient >= RaceTuning.SelectiveGradientThreshold ? 0.85 : 1.0 / 3.0;
         return desiredSpeedMps * Math.Pow(powerRatio, exponent);
     }
 
@@ -787,6 +1056,6 @@ public sealed class RaceSession
             _ => 0.0,
         };
 
-        return baseCrr + surfaceDelta * (1.35 - 0.50 * handling);
+        return baseCrr + (surfaceDelta * (1.35 - (0.50 * handling)));
     }
 }
