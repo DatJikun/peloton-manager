@@ -36,6 +36,7 @@
 | `SAVE_FORMAT_v0.1.md` | DRAFT | SQLite save contract, schema versions, migrations, content identity i recovery |
 | `TESTING_v0.1.md` | DRAFT | Test layers, golden scenarios, probes, invariants, soak and playtest gates |
 | `CAREER_WORLDTOUR_SLICE_v0.1.md` | DRAFT | Owner 2026-08-31 career slice: world–race bind, WT 2026 pack, contracts, no minigames |
+| `RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md` | DRAFT | D-046 derived 1–99 ratings; D-047 dense courses + yearly generator |
 
 ## Read order for a new AI session
 
@@ -65,15 +66,15 @@ These DRAFT contracts exist and still await owner REVIEW. They are not a reason 
 2. `CONTENT_FORMAT_v0.1.md`, `RULESETS_v0.1.md`, `SAVE_FORMAT_v0.1.md`, `TESTING_v0.1.md`
 3. `RACE_ENGINE_DESIGN_v0.2.md` — REVIEW; official results already use `PrototypeRaceEngine` below this contract
 
-Already in code (thin versus those contracts): Milestone 0 spine, nine GameStates, SQLite SchemaVersion 7, skeleton Advance Day with form tick and club cash, prototype race bound to world `RiderCareer` rows, pre-season entry + pre-race strategy, rider contracts and thin negotiation, results filter by any organization, `scenario.peloton.wt-2026` CreateWorld (18 teams, 12-starter cap), CLI Hub/inbox/prep/Simulate, Godot career shell (`CareerShell.tscn`) for Advance Day / Race next / simulate / results. Official race play path is Simulate then Results (D-043), not Watch Race. See `HANDOFF.md`.
+Already in code (thin versus those contracts): Milestone 0 spine, nine GameStates, SQLite SchemaVersion 8, skeleton Advance Day with form tick and club cash, prototype race bound to world `RiderCareer` rows, pre-season entry + pre-race strategy, rider contracts and thin negotiation, results filter by any organization, derived 1–99 ratings (D-046), dense WT courses + calendar-per-stage (D-047), `scenario.peloton.wt-2026` CreateWorld (18 teams, 12-starter cap), CLI Hub/inbox/prep/Simulate, Godot career shell (`CareerShell.tscn`) for Advance Day / Race next / simulate / results. Official race play path is Simulate then Results (D-043), not Watch Race. See `HANDOFF.md`.
 
 Not in code yet, though named in `DATA_MODEL_v0.1.md`: `OrganizationKnowledgeStore`, `PersonalKnowledge`, `RecruitmentCase`. AI managers, dynamic sponsor market, training, and a full legal rules engine are not implemented.
 
 Remaining system design (do not treat as the next coding task unless `HANDOFF.md` says so):
 
-- Owner slice: `CAREER_WORLDTOUR_SLICE_v0.1.md` (world–race bind first)
-- Rider Performance / Training / Development
-- Calendar / Recruitment / Contracts / Economy-Sponsors
+- Training / development that grows physiology toward POT
+- Yearly course re-generation after 2026 (generator exists; season rollover does not)
+- Recruitment / AI managers / dynamic sponsor market
 
 Do not close the owner §49 fun gate with automations. Do not build the rejected Career Hub.
 

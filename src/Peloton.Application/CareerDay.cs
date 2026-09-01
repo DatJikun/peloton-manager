@@ -21,7 +21,15 @@ public sealed record ClubRosterEntry(
     string OriginDefinitionId,
     int AnnualWage,
     int ContractEndDay,
-    double Loyalty01);
+    double Loyalty01,
+    int Climb,
+    int Hills,
+    int Flat,
+    int TimeTrial,
+    int Sprint,
+    int Cobbles,
+    int Ovr,
+    int PotentialOvr);
 
 public sealed record ClubRosterProjection(IReadOnlyList<ClubRosterEntry> Riders);
 

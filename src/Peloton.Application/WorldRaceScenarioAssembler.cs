@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Peloton.Domain;
+using Peloton.Simulation.Course;
 using Peloton.Simulation.Race;
 
 namespace Peloton.Application;
@@ -17,12 +18,26 @@ public static class WorldRaceScenarioAssembler
         RaceScenarioTemplate template,
         string raceContentId,
         RacePreparationStrategy? playerStrategy = null,
-        WorldEntityId? playerOrganizationId = null)
+        WorldEntityId? playerOrganizationId = null,
+        CourseProfile? courseProfile = null,
+        long? masterSeed = null)
     {
         ArgumentNullException.ThrowIfNull(world);
         ArgumentNullException.ThrowIfNull(recipe);
         ArgumentNullException.ThrowIfNull(template);
         ArgumentException.ThrowIfNullOrWhiteSpace(raceContentId);
+
+        RaceDefinition route = template.Route;
+        int maximumDurationSeconds = template.MaximumDurationSeconds;
+        if (courseProfile is not null && masterSeed is long seed)
+        {
+            CourseWeather weather = CourseWeatherFactory.FromSeed(
+                seed,
+                courseProfile.RaceContentId,
+                courseProfile.StageIndex);
+            route = CourseCompiler.ToRaceDefinition(courseProfile, weather, courseProfile.OriginDefinitionId);
+            maximumDurationSeconds = CourseCompiler.MaximumDurationSeconds(courseProfile);
+        }
 
         Dictionary<string, RiderCareer> careersByOrigin = world.RiderCareers
             .ToDictionary(career => career.OriginDefinitionId, StringComparer.Ordinal);
@@ -36,7 +51,9 @@ public static class WorldRaceScenarioAssembler
                 raceContentId,
                 careersByOrigin,
                 playerStrategy,
-                playerOrganizationId);
+                playerOrganizationId,
+                route,
+                maximumDurationSeconds);
         }
 
         return AssembleWorldTourPath(
@@ -45,7 +62,10 @@ public static class WorldRaceScenarioAssembler
             raceContentId,
             careersByOrigin,
             playerStrategy,
-            playerOrganizationId);
+            playerOrganizationId,
+            route,
+            maximumDurationSeconds,
+            courseProfile is not null);
     }
 
     private static RaceScenario AssembleSkeletonPath(
@@ -55,7 +75,9 @@ public static class WorldRaceScenarioAssembler
         string raceContentId,
         Dictionary<string, RiderCareer> careersByOrigin,
         RacePreparationStrategy? playerStrategy,
-        WorldEntityId? playerOrganizationId)
+        WorldEntityId? playerOrganizationId,
+        RaceDefinition route,
+        int maximumDurationSeconds)
     {
         Dictionary<string, Organization> organizationsByOrigin = world.Organizations
             .ToDictionary(organization => organization.OriginDefinitionId, StringComparer.Ordinal);
@@ -133,12 +155,12 @@ public static class WorldRaceScenarioAssembler
 
         return new RaceScenario(
             template.Id,
-            template.Route,
+            route,
             riders,
             startingPositions,
             commands,
             template.InitialSpeedMps,
-            template.MaximumDurationSeconds,
+            maximumDurationSeconds,
             tacticalPlans,
             template.TuningIdentity);
     }
@@ -149,7 +171,10 @@ public static class WorldRaceScenarioAssembler
         string raceContentId,
         Dictionary<string, RiderCareer> careersByOrigin,
         RacePreparationStrategy? playerStrategy,
-        WorldEntityId? playerOrganizationId)
+        WorldEntityId? playerOrganizationId,
+        RaceDefinition route,
+        int maximumDurationSeconds,
+        bool generatedCourse)
     {
         WorldEntityId humanAuthorityId = ResolveHumanAuthorityId(world);
         HashSet<WorldEntityId> enteredOrganizationIds = world.OrganizationRaceEntries
@@ -202,20 +227,22 @@ public static class WorldRaceScenarioAssembler
                 organization => organization.OriginDefinitionId,
                 organization => organization.Id,
                 StringComparer.Ordinal);
-        RaceCommand[] commands = template.Commands
-            .Where(command =>
-                careersByOrigin.TryGetValue(command.RiderId, out RiderCareer? career) &&
-                career.OrganizationId is WorldEntityId organizationId &&
-                enteredOrganizationIds.Contains(organizationId) &&
-                starterIds.Contains(career.Id) &&
-                raceTeamToOrganization.TryGetValue(command.TeamId, out WorldEntityId mappedOrg) &&
-                mappedOrg == organizationId)
-            .Select(command => new RaceCommand(
-                command.SimulationSecond,
-                raceTeamToOrganization[command.TeamId],
-                careersByOrigin[command.RiderId].Id,
-                command.Intent))
-            .ToArray();
+        RaceCommand[] commands = generatedCourse
+            ? Array.Empty<RaceCommand>()
+            : template.Commands
+                .Where(command =>
+                    careersByOrigin.TryGetValue(command.RiderId, out RiderCareer? career) &&
+                    career.OrganizationId is WorldEntityId organizationId &&
+                    enteredOrganizationIds.Contains(organizationId) &&
+                    starterIds.Contains(career.Id) &&
+                    raceTeamToOrganization.TryGetValue(command.TeamId, out WorldEntityId mappedOrg) &&
+                    mappedOrg == organizationId)
+                .Select(command => new RaceCommand(
+                    command.SimulationSecond,
+                    raceTeamToOrganization[command.TeamId],
+                    careersByOrigin[command.RiderId].Id,
+                    command.Intent))
+                .ToArray();
 
         HashSet<WorldEntityId> organizationsWithStarters = starters
             .Where(career => career.OrganizationId is not null)
@@ -264,12 +291,12 @@ public static class WorldRaceScenarioAssembler
 
         return new RaceScenario(
             template.Id,
-            template.Route,
+            route,
             riders,
             startingPositions,
             commands,
             template.InitialSpeedMps,
-            template.MaximumDurationSeconds,
+            maximumDurationSeconds,
             tacticalPlans.ToArray(),
             template.TuningIdentity);
     }

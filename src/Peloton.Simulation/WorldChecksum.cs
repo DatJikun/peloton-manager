@@ -16,7 +16,7 @@ public static class WorldChecksum
         using MemoryStream buffer = new();
         using (BinaryWriter writer = new(buffer, Encoding.UTF8, leaveOpen: true))
         {
-            writer.Write("peloton-world-checksum-v7");
+            writer.Write("peloton-world-checksum-v8");
             writer.Write(world.WorldId);
             writer.Write(world.MasterSeed);
             writer.Write(world.RngContractVersion);
@@ -67,6 +67,7 @@ public static class WorldChecksum
                 writer.Write(career.Freshness01);
                 writer.Write(career.Fatigue01);
                 writer.Write(career.Loyalty01);
+                writer.Write(career.PotentialOvr);
                 foreach (RiderCareerResult result in career.Results)
                 {
                     writer.Write(result.RaceContentId);
@@ -158,6 +159,41 @@ public static class WorldChecksum
                 writer.Write(entry.OfficialResult ?? string.Empty);
                 writer.Write(entry.ResultAcknowledged);
                 writer.Write(entry.RaceContentId ?? string.Empty);
+                writer.Write(entry.StageIndex);
+                writer.Write(entry.CourseProfileId?.Value ?? 0);
+            }
+
+            foreach (CourseProfile profile in world.CourseProfiles
+                         .OrderBy(item => item.OriginDefinitionId, StringComparer.Ordinal))
+            {
+                writer.Write(profile.CourseProfileId.Value);
+                writer.Write(profile.OriginDefinitionId);
+                writer.Write(profile.RaceContentId);
+                writer.Write(profile.SeasonYear);
+                writer.Write(profile.StageIndex);
+                writer.Write(profile.LengthM);
+                writer.Write(profile.Samples.Count);
+                foreach (CourseSampleVertex sample in profile.Samples)
+                {
+                    writer.Write(sample.DistanceM);
+                    writer.Write(sample.ElevationM);
+                    writer.Write(sample.WidthM);
+                    writer.Write(sample.HeadingDegrees);
+                    writer.Write((int)sample.Surface);
+                    writer.Write(sample.Curvature01);
+                    writer.Write(sample.Exposure01);
+                }
+            }
+
+            foreach (RiderStageTime stageTime in world.RiderStageTimes
+                         .OrderBy(item => item.RaceContentId, StringComparer.Ordinal)
+                         .ThenBy(item => item.StageIndex)
+                         .ThenBy(item => item.RiderId.Value))
+            {
+                writer.Write(stageTime.RaceContentId);
+                writer.Write(stageTime.StageIndex);
+                writer.Write(stageTime.RiderId.Value);
+                writer.Write(stageTime.FinishTimeSeconds);
             }
 
             foreach (OrganizationRaceEntry entry in world.OrganizationRaceEntries

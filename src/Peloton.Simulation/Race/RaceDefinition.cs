@@ -4,6 +4,14 @@ using System.Linq;
 
 namespace Peloton.Simulation.Race;
 
+public enum RouteSurface
+{
+    Asphalt,
+    Cobble,
+    Gravel,
+    WhiteRoad,
+}
+
 public sealed class RaceRouteSegment
 {
     public RaceRouteSegment(
@@ -12,7 +20,8 @@ public sealed class RaceRouteSegment
         double gradient,
         double roadWidthM,
         double windSpeedMps,
-        double windYawDegrees)
+        double windYawDegrees,
+        RouteSurface surface = RouteSurface.Asphalt)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         RequirePositive(lengthM, nameof(lengthM));
@@ -26,6 +35,7 @@ public sealed class RaceRouteSegment
         RoadWidthM = roadWidthM;
         WindSpeedMps = windSpeedMps;
         WindYawDegrees = windYawDegrees;
+        Surface = surface;
     }
 
     public string Id { get; }
@@ -39,6 +49,8 @@ public sealed class RaceRouteSegment
     public double WindSpeedMps { get; }
 
     public double WindYawDegrees { get; }
+
+    public RouteSurface Surface { get; }
 
     private static void RequirePositive(double value, string parameterName)
     {
@@ -68,6 +80,7 @@ public sealed class RaceRouteSegment
 public sealed class RaceDefinition
 {
     private readonly RaceRouteSegment[] segments;
+    private readonly double[] prefixLengthsM;
 
     public RaceDefinition(
         string id,
@@ -93,9 +106,17 @@ public sealed class RaceDefinition
             throw new ArgumentException("Race segment IDs must be unique.", nameof(segments));
         }
 
+        prefixLengthsM = new double[this.segments.Length];
+        double cumulative = 0.0;
+        for (int i = 0; i < this.segments.Length; i++)
+        {
+            cumulative += this.segments[i].LengthM;
+            prefixLengthsM[i] = cumulative;
+        }
+
         Id = id;
         AirDensityKgPerM3 = airDensityKgPerM3;
-        TotalLengthM = this.segments.Sum(segment => segment.LengthM);
+        TotalLengthM = cumulative;
     }
 
     public string Id { get; }
@@ -109,16 +130,17 @@ public sealed class RaceDefinition
     public RaceRouteSegment SegmentAt(double distanceM)
     {
         double boundedDistanceM = Math.Max(0.0, distanceM);
-        double cumulativeDistanceM = 0.0;
-        foreach (RaceRouteSegment segment in segments)
+        int index = Array.BinarySearch(prefixLengthsM, boundedDistanceM);
+        if (index < 0)
         {
-            cumulativeDistanceM += segment.LengthM;
-            if (boundedDistanceM < cumulativeDistanceM)
-            {
-                return segment;
-            }
+            index = ~index;
         }
 
-        return segments[^1];
+        if (index >= segments.Length)
+        {
+            return segments[^1];
+        }
+
+        return segments[index];
     }
 }

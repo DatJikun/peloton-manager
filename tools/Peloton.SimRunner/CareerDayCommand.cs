@@ -492,6 +492,14 @@ public static class CareerDayCommand
             output.WriteLine($"note={note}");
         }
 
+        foreach (ClubRosterEntry rider in application.ClubRoster!.Riders)
+        {
+            output.WriteLine(
+                string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"roster={rider.Name} climb={rider.Climb} hills={rider.Hills} flat={rider.Flat} tt={rider.TimeTrial} sprint={rider.Sprint} cobbles={rider.Cobbles} ovr={rider.Ovr} pot={rider.PotentialOvr}"));
+        }
+
         foreach (CalendarEntryProjection entry in application.Calendar)
         {
             if (entry.OfficialResult is null)

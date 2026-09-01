@@ -26,8 +26,8 @@ This is an explicit prototype boundary, not an accepted simplification of the fu
 - `RiderCareer.Id` is the official race `RiderId`; `LastRace` finish order and `RiderCareerResult` history use those world IDs.
 - `CreateWorld` materializes riders from `content/peloton.skeleton/skeleton-roster.json` (stable `OriginDefinitionId`s from the prototype pack).
 - Prep squad is the player employer's world roster (`RiderCareer.OrganizationId`; null = unattached).
-- SQLite `SchemaVersion` is **7** (results filter + negotiation landed in phase 7). Schema 1–6 saves may refuse to load.
-- World checksum label is `peloton-world-checksum-v7`.
+- SQLite `SchemaVersion` is **8** (derived ratings + course profiles landed). Schema 1–7 saves may refuse to load.
+- World checksum label is `peloton-world-checksum-v8`.
 - `CalendarEntry.RaceContentId` stores the calendar race id (`race.wt2026.*` for WT; route template resolved via `DefaultRaceTemplateId`).
 
 Phase 1 out of scope for Godot: Career Hub stays rejected. WT CreateWorld is landed in phase 5.
@@ -89,3 +89,21 @@ Dynamic sponsor market, inflation, transfer **fees**, Godot Hub, AI managers, D-
 - Career day races after 12 advance days now differ from immediate race-on-create (readiness drift); SimRunner day goldens use winner `20` / `beta-leader` for seed `91234` (with default prep strategy).
 
 Owner slice contract: `CAREER_WORLDTOUR_SLICE_v0.1.md`.
+
+## Rider ratings + courses (D-046 / D-047 landed)
+Contract: `RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`.
+
+Landed:
+
+- Derived 1–99 ratings (`RiderRatingQueries.FromPhysiology`); `PotentialOvr` on `RiderCareer`; `ClubRosterProjection` exposes ratings; SimRunner hub prints compact roster lines.
+- WT `roster.json` recalibrated to archetypes (Pogačar / Philipsen / MvDP inequalities in tests).
+- Dense `CourseProfile` catalog at CreateWorld (`race-identities.json` + `CourseCatalogGenerator`); calendar is **one entry per racing stage**; assembler compiles stored profile when `CourseProfileId` is set.
+- `RaceRouteSegment.Surface` + handling-aware cobble Crr; `RaceDefinition.SegmentAt` is O(log n).
+- Thin `RiderStageTime` GC rows persisted at schema 8.
+- Skeleton soak still uses the proof circuit (`GeneratePeriodicRaces`); standalone SimRunner `race`/`watch` gate unchanged.
+
+Remaining limits:
+
+- No yearly re-generation after season 2026 in play yet (generator exists; Advance Day does not roll new seasons).
+- No full GC jersey UI; stage times are stored only.
+- §49 still `NOT VERIFIED`.

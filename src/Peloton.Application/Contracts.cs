@@ -14,7 +14,13 @@ public sealed record OrganizationDefinition(
     string Groupset = "",
     long EstimatedBudgetEur = 0);
 
-public sealed record CalendarRaceDefinition(string Id, string Name, int DayNumber);
+public sealed record CalendarRaceDefinition(
+    string Id,
+    string Name,
+    int DayNumber,
+    string Country = "",
+    string Kind = "oneDay",
+    int EndDayNumber = -1);
 
 public sealed record TeamRaceMappingDefinition(string OrganizationId, string RaceTeamId);
 
@@ -41,7 +47,8 @@ public sealed record RiderDefinition(
     int ContractEndDay,
     double Loyalty01 = 0.5,
     string? Nationality = null,
-    int? BirthYear = null);
+    int? BirthYear = null,
+    int? PotentialOvr = null);
 
 public sealed record WorldRecipe(
     ContentIdentity ContentIdentity,
@@ -52,6 +59,7 @@ public sealed record WorldRecipe(
     IReadOnlyList<RiderDefinition> Riders,
     ManagerDefinition Manager,
     IReadOnlyList<CalendarRaceDefinition> CalendarRaces,
+    IReadOnlyList<RaceIdentityConstraints> RaceIdentities,
     bool GeneratePeriodicRaces,
     string DefaultRaceTemplateId);
 
