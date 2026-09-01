@@ -8,11 +8,10 @@ cycling-management game). Design docs remain the source of contracts. Milestone 
 (Architecture Skeleton) exists as a headless .NET 8 solution: `PelotonManager.sln`,
 `dotnet test`, and `tools/Peloton.SimRunner`. The race prototype (`PrototypeRaceEngine`)
 is the official result path; it is still below `RACE_ENGINE_DESIGN_v0.2.md` — see
-`KNOWN_DIFFERENCE_FROM_CODE.md`. Godot Watch Race (`src/Peloton.Client.Godot`) is a
-presentation window over the D-033 clock (prep, rate, interpolated icons, decision
-pause, Results from `LastRace`). It is not a Career Hub and not a completed game UI.
-Owner fun gate `RACE_ENGINE_DESIGN_v0.2.md` §49 remains `NOT VERIFIED`. Several docs
-are written in Polish.
+`KNOWN_DIFFERENCE_FROM_CODE.md`. Owner lock **D-043**: the playable race path is
+**Simulate then Results**, not Watch Race. Do not expand the Godot Watch Race window.
+Career Hub stays rejected (PR #4). Owner fun gate `RACE_ENGINE_DESIGN_v0.2.md` §49
+remains `NOT VERIFIED`. Several docs are written in Polish.
 
 Do not fabricate build/test/run results. After the skeleton, run the real commands in
 `HANDOFF.md`. Do not treat the race prototype as a passed fun gate, and do not restore

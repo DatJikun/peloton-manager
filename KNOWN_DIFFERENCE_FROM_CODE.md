@@ -67,7 +67,7 @@ Phase 1 out of scope for Godot: Career Hub stays rejected. WT CreateWorld is lan
 - `RacePreparationProjection.Title` uses today's calendar race name (WT TDU = `Santos Tour Down Under`).
 - SQLite SchemaVersion **6** / checksum `peloton-world-checksum-v6`. Schema 1–5 saves refuse to load.
 
-Phase 7+ out of scope: dynamic sponsor market, inflation, transfer market, Godot Hub, AI managers, D-032, tenth GameState.
+Phase 7 in progress: results filter by any team (D-043); thin contract negotiation (D-044). Do not expand Watch Race UI. Dynamic sponsor market, inflation, transfer **fees**, Godot Hub, AI managers, D-032, tenth GameState stay out.
 
 ## Day state (D-036 phase 2 landed)
 
