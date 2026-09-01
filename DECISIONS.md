@@ -212,3 +212,13 @@ Owner lock 2026-09-01: D-050 is in. The next playable slice is **not** CdA, spon
 2. **Skład** shows world wages/end days and a real offer (annual wage + inclusive end day) through `Begin/Set/Confirm/CancelContractNegotiationCommand`. Accept/reject stays the D-044 formula. Toast in Polish; do not print the hidden threshold.
 
 Staff / sponsors / scouting / market stay drawings. No fire/release, no transfer fee, no tenth GameState, no schema bump. Contract: `CAREER_FINANCE_CONTRACTS_ON_SCREEN_v0.1.md`.
+
+## D-052 — Absolute 2026 dates and HTML career-shell look
+Owner playtest 2026-09-01: the career shell must look like `peloton-manager-full-ui-poc-v3.html` and talk in calendar dates.
+
+1. Season display epoch is **1 January 2026** (day 0). Never show “dzień N” to the player.
+2. Desk lists **at most five upcoming events**, grouped (Tour is one row). Click through to a race page with stages.
+3. Kalendarz is the HTML month grid, not a stage dump. Inbox is world mail in Polish (or empty) — no Beskid fake mail, no laboratory banners.
+4. Sidebar crest is the **employer club**. Skład sorts; geometric avatars; Rynek is world riders filterable by club (D-044 poach). Settings keeps the diagonal team stripe.
+
+No schema bump. Watch film stays off. Do not rebuild Career Hub. Contract: `CAREER_SHELL_DATES_AND_LOOK_v0.1.md`.

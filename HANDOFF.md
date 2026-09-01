@@ -10,17 +10,17 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md` (D-049) landed. **D-050 landed.** **D-051 landed.** **Next:** CdA Road/TT wait (`RACE_ENGINE_DESIGN_v0.2.md` — do not close §49).
+`RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md` (D-049) landed. **D-050/D-051 landed.** **Next: D-052** — absolute 2026 dates + HTML look repair (`CAREER_SHELL_DATES_AND_LOOK_v0.1.md`). CdA waits. Do not close §49.
 
 ### Goal
-D-051 landed: desk / Skład / Finanse read `ClubFinanceProjection` (euro) and Skład writes D-044 contract offers. **Next:** CdA Road/TT. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
+D-051 landed: desk / Skład / Finanse read `ClubFinanceProjection` (euro) and Skład writes D-044 contract offers. **Next: D-052** — absolute 1 Jan 2026 dates and HTML career-shell look (`CAREER_SHELL_DATES_AND_LOOK_v0.1.md`). CdA waits. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
 
 ### Status
 Owner (player) directed this on 2026-09-01. **D-049, D-050, and D-051 landed.** Classified Flat is a bunch sprint (sit-in, then last 250 m at peak power). Official WT starts are event-shaped (TDU 140, monuments 175, Grand Tours 176, other WT 154). After a stage the shell/CLI can show GC / points / KOM / youth / team. SimRunner `compare` puts prototype results next to 2025 analogues (not a script). Skeleton soak still uses the short proof circuit. SQLite SchemaVersion **9**.
 
 Feel probe seed `91234`: Philipsen 1 vs Pogačar 135 on the flattest stored Flat; Pogačar 8 vs Philipsen 133 on the biggest mountain. TDU starts 140. §49 stays open.
 
-Godot career shell (`CareerShell.tscn`) is the main scene: POC v3 chrome. Hub date, Advance Day / Race next, inbox, save/load, skeleton people, desk finance (euro), squad wages, and contract offers stay Application Queries. Staff / sponsors / scouting / market / look calendar / look OVR come from `CareerLookCatalog` (POC fiction, not World). Those actions toast and do not mutate save. Watch Race is an optional overlay, **off by default** (D-043 / D-048). HTML look lab stays the drawing, not a second client. §49 remains `NOT VERIFIED`. `D-032` remains deferred. Prototype still stores **one** CdA per rider (Road vs TT is later).
+Godot career shell (`CareerShell.tscn`) is the main scene: POC v3 chrome. Hub date, Advance Day / Race next, inbox, save/load, skeleton people, desk finance (euro), squad wages, and contract offers stay Application Queries. **D-052** replaces day-number UI, the calendar dump, Beskid crest, laboratory banners, and look-catalog market with world events/dates/riders. Staff / sponsors / scouting stay look catalog until a later slice; leftover toasts say `Jeszcze nie w tej wersji.` Watch Race is an optional overlay, **off by default** (D-043 / D-048). HTML look lab stays the drawing, not a second client. §49 remains `NOT VERIFIED`. `D-032` remains deferred. Prototype still stores **one** CdA per rider (Road vs TT is later).
 
 ## Gdzie jest gra (dla właściciela)
 Nie ma jeszcze pełnej gry managerskiej.
@@ -135,7 +135,7 @@ Baza 2026: 18 ekip męskiego WorldTour plus zaproszone ProTeamy / Australia w `s
 - [ ] Infinite career / season rollover / rider aging — later
 
 ## Next task
-**CdA Road vs TT** and related race-engine gaps — do not close §49. Do not rebuild Career Hub. Watch film stays off by default. Do not start aging, year-2 routes, or sponsor market in the same tree.
+Implement **D-052** (`CAREER_SHELL_DATES_AND_LOOK_v0.1.md`): 1 Jan 2026 dates, max five grouped upcoming races, HTML month calendar, real inbox, employer crest, no laboratory banners. Do not close §49. Do not rebuild Career Hub. Watch film stays off. Do not start CdA in the same tree.
 
 ## Known blockers
 - None.
@@ -164,6 +164,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
+- `2026-09-01` — **D-052: 1 Jan 2026 dates + HTML look repair.** Calendar dates not “dzień N”; desk max five grouped events; month grid; world inbox in Polish; employer crest; no laboratory banners; Skład sorts + geometric avatars; Rynek is world riders filterable by club. Contract: `CAREER_SHELL_DATES_AND_LOOK_v0.1.md`.
 - `2026-09-01` — **Windows playtest zip refreshed** after D-050/D-051 (`playtest/PelotonManager-playtest-windows.zip`). Pack includes `peloton.wt-2026`. Staff/sponsors/scouting/market stay drawings.
 - `2026-09-01` — **D-051 landed (Composer):** Godot desk/finance show `ClubFinanceProjection` (euro); Skład contract offer via D-044 commands; staff/sponsors/scouting/market stay look catalog.
 - `2026-09-01` — **D-050 landed (Composer):** New Game WT club pick (`ListNewGameClubs`, `CreateWorldCommand` employer), pre-season designated leader per event (`SetSeasonRaceLeaderCommand`), `OrganizationRaceEntry.DesignatedLeaderId`, SchemaVersion 9 / checksum v9. Godot opens MainMenu club picker (not auto-skeleton). SimRunner `day --employer`. Default Alpecin CreateWorld unchanged for soak/tests.
@@ -268,6 +269,7 @@ HOW_RACE_DAY_WORKS.md
 AGENTS.md
 CAREER_CLUB_CALENDAR_LEADERS_v0.1.md
 CAREER_FINANCE_CONTRACTS_ON_SCREEN_v0.1.md
+CAREER_SHELL_DATES_AND_LOOK_v0.1.md
 ```
 
 ## Commands to run first
@@ -318,7 +320,7 @@ src/Peloton.Client.Godot/project.godot
 - Nie zamykaj OQ-TS-001 ani OQ-DM-001 na podstawie checksumy lub allocatora szkieletowego.
 
 ## Handoff summary
-Milestone 0 still supplies the headless .NET 8 spine. The race prototype is the official result path: `PrototypeRaceEngine` plus `content/peloton.race-prototype`, Application commands `StartRaceCommand` / `AdvanceRaceCommand` / `RespondToRaceDecisionCommand` / `BeginRaceWatchCommand` / `AdvanceRaceWatchCommand` / `AbandonRaceLiveCommand`, and SimRunner `race`. A pending DecisionRequest stays in `RaceLive`. SimRunner `watch` and career `day --watch-from-prep` keep the D-033 supervising clock. Godot (`src/Peloton.Client.Godot`) presents the career shell (`CareerShell.tscn`, POC v3 chrome, desk queries, default simulate → result table, plus `CareerLookCatalog` for empty domains). Watch film is optional and **off by default** (D-043 / D-048). Career Hub UI is deleted. Renderer does not drive physics. Look-catalog OVR is not World; desk/squad/finance cash and contract offers are. The owner look drawing remains `peloton-manager-full-ui-poc-v3.html` (`HTML_UI_LAB.md`). After Simulate/Watch, `RaceResultProjection` and `RaceDebriefProjection` present the committed result without a second `RunBatch`. Spy OFF/ON must match checksum and finish order. `StubRaceEngine` is gone from production assemblies. SQLite `SchemaVersion` is **9**. Owner §49 remains `NOT VERIFIED`. `D-032` is deferred. D-049 bunch sprint / UCI fields / jerseys are in. D-050 New Game club pick / pre-season leaders are in. D-051 desk finance and squad offers are in. Prototype CdA is still one number.
+Milestone 0 still supplies the headless .NET 8 spine. The race prototype is the official result path: `PrototypeRaceEngine` plus `content/peloton.race-prototype`, Application commands `StartRaceCommand` / `AdvanceRaceCommand` / `RespondToRaceDecisionCommand` / `BeginRaceWatchCommand` / `AdvanceRaceWatchCommand` / `AbandonRaceLiveCommand`, and SimRunner `race`. A pending DecisionRequest stays in `RaceLive`. SimRunner `watch` and career `day --watch-from-prep` keep the D-033 supervising clock. Godot (`src/Peloton.Client.Godot`) presents the career shell (`CareerShell.tscn`, POC v3 chrome, desk queries, default simulate → result table, plus `CareerLookCatalog` for empty domains). Watch film is optional and **off by default** (D-043 / D-048). Career Hub UI is deleted. Renderer does not drive physics. Look-catalog OVR is not World; desk/squad/finance cash and contract offers are. The owner look drawing remains `peloton-manager-full-ui-poc-v3.html` (`HTML_UI_LAB.md`). After Simulate/Watch, `RaceResultProjection` and `RaceDebriefProjection` present the committed result without a second `RunBatch`. Spy OFF/ON must match checksum and finish order. `StubRaceEngine` is gone from production assemblies. SQLite `SchemaVersion` is **9**. Owner §49 remains `NOT VERIFIED`. `D-032` is deferred. D-049 bunch sprint / UCI fields / jerseys are in. D-050 New Game club pick / pre-season leaders are in. D-051 desk finance and squad offers are in. D-052 is the next coding task. Prototype CdA is still one number.
 
 This tree joins that career loop onto `main` without dropping the HTML UI lab. The paragraph below preserves the pre-bootstrap design context and owner lessons; implementation status is given above and in `CODEBASE_MAP.md`.
 
