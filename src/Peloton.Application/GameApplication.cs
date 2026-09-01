@@ -206,13 +206,22 @@ public sealed class GameApplication
                         ?? throw new InvalidOperationException(
                             $"Rider '{career.Id.Value}' on roster has no active contract.");
                     Person person = personsById[career.PersonId];
+                    RiderRatingSet ratings = RiderRatingQueries.FromPhysiology(career, career.PotentialOvr);
                     return new ClubRosterEntry(
                         career.Id,
                         person.Name,
                         career.OriginDefinitionId,
                         contract.AnnualWage,
                         contract.EndDate.DayNumber,
-                        career.Loyalty01);
+                        career.Loyalty01,
+                        ratings.Climb,
+                        ratings.Hills,
+                        ratings.Flat,
+                        ratings.TimeTrial,
+                        ratings.Sprint,
+                        ratings.Cobbles,
+                        ratings.Ovr,
+                        ratings.PotentialOvr);
                 })
                 .OrderBy(entry => entry.OriginDefinitionId, StringComparer.Ordinal)
                 .ToArray();
@@ -1082,10 +1091,17 @@ public sealed class GameApplication
     {
         ArgumentNullException.ThrowIfNull(World);
         WorldEntityId[] starters = scenario.Riders.Select(rider => rider.RiderId).ToArray();
+        CalendarEntry? todayEntry = World.CalendarEntries.FirstOrDefault(
+            item => item.DayNumber == World.CurrentDate.DayNumber && item.Kind == CalendarEntryKind.Race);
+        int stageIndex = todayEntry?.StageIndex ?? 1;
+        Dictionary<WorldEntityId, double> finishTimes = result.RiderMetrics
+            .ToDictionary(metric => metric.RiderId, metric => metric.FinishTimeSeconds);
         World.RecordRace(
             new RaceSummary(result.RouteId, result.WinnerId, result.FinishOrder),
             raceScenarioId,
-            starters);
+            starters,
+            stageIndex,
+            finishTimes);
         lastOfficialChecksum = result.Checksum;
     }
 
@@ -1130,13 +1146,21 @@ public sealed class GameApplication
                 racePreparation.BriefingKind!.Value);
         }
 
+        CalendarEntry? todayEntry = World.CalendarEntries.FirstOrDefault(
+            item => item.DayNumber == World.CurrentDate.DayNumber && item.Kind == CalendarEntryKind.Race);
+        CourseProfile? courseProfile = todayEntry?.CourseProfileId is WorldEntityId profileId
+            ? World.TryGetCourseProfile(profileId)
+            : null;
+
         return WorldRaceScenarioAssembler.Assemble(
             World,
             recipe,
             template,
             raceScenarioId,
             strategy,
-            playerOrganizationId);
+            playerOrganizationId,
+            courseProfile,
+            World.MasterSeed);
     }
 
     private static string ResolveRouteTemplateId(string raceContentId, WorldRecipe recipe)
@@ -1280,7 +1304,24 @@ public sealed class GameApplication
                 definition.Positioning,
                 definition.Handling,
                 definition.TacticalAwareness,
-                loyalty01: definition.Loyalty01));
+                loyalty01: definition.Loyalty01,
+                potentialOvr: RiderRatingQueries.ResolveStoredPotentialOvr(
+                    definition.PotentialOvr,
+                    RiderRatingQueries.FromPhysiology(
+                        definition.CriticalPowerW,
+                        definition.WPrimeCapacityJ,
+                        definition.PeakPowerW,
+                        definition.LowIntensityDurability,
+                        definition.HighIntensityDurability,
+                        definition.BodyMassKg,
+                        definition.CdAM2,
+                        definition.BaseCrr,
+                        definition.Positioning,
+                        definition.Handling,
+                        definition.PotentialOvr ?? 70))));
+            RiderCareer createdCareer = riderCareers[^1];
+            RiderRatingSet ratings = RiderRatingQueries.FromPhysiology(createdCareer, createdCareer.PotentialOvr);
+            createdCareer.EnsurePotentialOvrAtLeast(ratings.Ovr);
             riderContracts.Add(new RiderContract(
                 contractId,
                 riderCareerId,
@@ -1306,7 +1347,15 @@ public sealed class GameApplication
         int calendarPeriodDays = ReadCalendarPeriodDays(recipe);
         int financialYearDays = recipe.GeneratePeriodicRaces ? calendarPeriodDays : 365;
         List<CalendarEntry> calendarEntries = new();
-        if (recipe.CalendarRaces.Count > 0)
+        List<CourseProfile> courseProfiles = new();
+        if (recipe.RaceIdentities.Count > 0)
+        {
+            (IReadOnlyList<CourseProfile> generatedProfiles, IReadOnlyList<CalendarEntry> generatedEntries) =
+                CourseWorldBuilder.BuildWorldTourCalendar(recipe, seed, allocator.Allocate);
+            courseProfiles.AddRange(generatedProfiles);
+            calendarEntries.AddRange(generatedEntries);
+        }
+        else if (recipe.CalendarRaces.Count > 0)
         {
             foreach (CalendarRaceDefinition race in recipe.CalendarRaces)
             {
@@ -1328,12 +1377,16 @@ public sealed class GameApplication
                 RaceContentId: RacePreparationDefaults.PrototypeScenarioId));
         }
 
+        HashSet<string> eventRaceIds = calendarEntries
+            .Select(entry => entry.RaceContentId)
+            .Where(id => id is not null)
+            .Cast<string>()
+            .ToHashSet(StringComparer.Ordinal);
         List<OrganizationRaceEntry> organizationRaceEntries = new();
         foreach (Organization organization in organizations)
         {
-            foreach (CalendarEntry entry in calendarEntries)
+            foreach (string raceContentId in eventRaceIds.OrderBy(id => id, StringComparer.Ordinal))
             {
-                string raceContentId = entry.RaceContentId ?? RacePreparationDefaults.PrototypeScenarioId;
                 organizationRaceEntries.Add(new OrganizationRaceEntry(organization.Id, raceContentId, Entered: true));
             }
         }
@@ -1359,6 +1412,7 @@ public sealed class GameApplication
             riderCareers: riderCareers,
             organizationRaceEntries: organizationRaceEntries,
             riderContracts: riderContracts,
+            courseProfiles: courseProfiles,
             generatePeriodicRaces: recipe.GeneratePeriodicRaces,
             financialYearDays: financialYearDays);
     }

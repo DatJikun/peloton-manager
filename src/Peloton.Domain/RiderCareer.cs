@@ -34,6 +34,7 @@ public sealed class RiderCareer
         double freshness01 = 1.0,
         double fatigue01 = 0.0,
         double loyalty01 = 0.5,
+        int potentialOvr = 70,
         IEnumerable<RiderCareerResult>? results = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(originDefinitionId);
@@ -41,6 +42,10 @@ public sealed class RiderCareer
         RequireUnitInterval(freshness01, nameof(freshness01));
         RequireUnitInterval(fatigue01, nameof(fatigue01));
         RequireUnitInterval(loyalty01, nameof(loyalty01));
+        if (potentialOvr < 1 || potentialOvr > 99)
+        {
+            throw new ArgumentOutOfRangeException(nameof(potentialOvr));
+        }
 
         Id = id;
         PersonId = personId;
@@ -63,6 +68,7 @@ public sealed class RiderCareer
         Freshness01 = freshness01;
         Fatigue01 = fatigue01;
         Loyalty01 = loyalty01;
+        PotentialOvr = potentialOvr;
         this.results = (results ?? Array.Empty<RiderCareerResult>()).ToList();
     }
 
@@ -113,6 +119,11 @@ public sealed class RiderCareer
     public double Fatigue01 { get; private set; }
 
     public double Loyalty01 { get; }
+
+    public int PotentialOvr { get; private set; }
+
+    public void EnsurePotentialOvrAtLeast(int minimum) =>
+        PotentialOvr = Math.Clamp(Math.Max(PotentialOvr, minimum), 1, 99);
 
     public IReadOnlyList<RiderCareerResult> Results => results;
 

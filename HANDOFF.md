@@ -10,13 +10,13 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`Rider profile + route engine` — specified (`RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`, D-046 / D-047). Career WorldTour slice phases 1–7 remain landed.
+`Rider profile + route engine` — landed (`RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`, D-046 / D-047, SchemaVersion 8). Career WorldTour slice phases 1–7 remain landed.
 
 ### Goal
 Readable rider strengths/weaknesses (derived 1–99 ratings from real physiology) and a detailed course system (stored default routes + yearly generator). Not five-fragment mocks. Do not close §49. Do not build Career Hub. Do not expand Watch Race.
 
 ### Status
-Owner (player) directed this on 2026-09-01 (D-046, D-047). Coding not landed until Composer finishes the contract. Career phases 1–7 remain in code at SchemaVersion 7 until this slice bumps to 8.
+Owner (player) directed this on 2026-09-01. **D-046 / D-047 landed.** Ratings 1–99 are a view of physiology. WorldTour CreateWorld stores dense ~25 m courses and one calendar entry per racing stage. Official WT Simulate uses that day’s course. Skeleton soak still uses the short proof circuit. SQLite SchemaVersion 8.
 
 Godot career shell (`CareerShell.tscn`) is the main scene: POC v3 chrome. Hub date, Advance Day / Race next, inbox, save/load, and skeleton people stay Application Queries. Staff / sponsors / finance / scouting / market / look calendar / look OVR come from `CareerLookCatalog` (POC fiction, not World). Those actions toast and do not mutate save. Watch Race remains a blocking overlay, not the play path (D-043). HTML look lab stays the drawing, not a second client. §49 remains `NOT VERIFIED`. `D-032` remains deferred.
 
@@ -26,20 +26,21 @@ Nie ma jeszcze pełnej gry managerskiej.
 Działa:
 - w Godocie **powłoka kariery** (`CareerShell.tscn`, niebieska szyna z POC v3): Advance Day / Race next, kalendarz, skrzynka, **symulacja i tabela wyniku** (D-043), filtr po ekipie;
 - wyścig: **symulacja i wynik** (D-043); wynik można filtrować po każdej ekipie;
-- (w kodzie na razie) kolarz ma liczby laboratoryjne CP / W′ / Pmax / masa / CdA — to one kręcą fizyką, ale paczka WT 2026 jest zbyt skopiowana, więc słabo widać kim jest sprinter a kim góral;
+- statystyki 1–99 (góry, pagórki, płaskie, TT, sprint, kocie łby, OVR, POT) wyliczane z fizjologii — Pogačar jest góralem, Philipsen sprinterem;
+- trasy WT: gęsty profil (~25 m), zapisane w świecie; TDU etap 1 to ~140 km, nie tor 5,4 km;
+- kalendarz WT: **jeden dzień na etap** (Tour = 21 etapów), nie jeden wpis na całe Grand Tour;
 - w CLI pętla dnia i ten sam człowiek na starcie co w klubie;
 - wynik zapisuje się na karierze kolarza (`RiderCareerResult`);
 - Advance Day zmienia formę / świeżość / zmęczenie; wyścig używa readiness na CP/Pmax (faza 2);
 - przedsezonowy wybór startów i strategia przed Confirm (faza 3);
 - kontrakty, wypłaty, wygaśnięcie, **cienkie negocjacje** oferty pensji/daty (D-044);
-- paczka WorldTour 2026: 18 ekip, 72 kolarzy, kalendarz 36 wyścigów, cap 12 na starcie;
+- paczka WorldTour 2026: 18 ekip, 72 kolarzy, 36 imprez (etapy osobno w kalendarzu), cap 12 na starcie;
 - cienka ekonomia: kasa, sponsor vs płace, notatka o debecie;
 - Godot: powłoka kariery (wygląd z laboratorium HTML); puste działy to rysunek, nie świat;
 - paczka Windows do ręcznego playtestu: `playtest/PelotonManager-playtest-windows.zip` (`playtest/CZYTAJ_MNIE.txt`).
 
 Właśnie budujemy:
-- **czytelne statystyki 1–99** (góry, pagórki, płaskie, TT, sprint, kocie łby, OVR, POT) wyliczane z fizjologii — nie zamiast niej;
-- **prawdziwe trasy**: gęsty profil (~25 m), zapisane w świecie na starcie, generator na kolejne lata w ramach tożsamości wyścigu (np. Tour ma ± tyle czasówek / gór / płaskich).
+- czekamy na kolejny kierunek właściciela.
 
 Jeszcze nie:
 - Watch Race **przesunięte** (D-043) — nie rozbudowujemy i nie mergujemy starych PR-ów Watch;
@@ -118,12 +119,11 @@ Baza 2026: 18 ekip męskiego WorldTour w `scenario.peloton.wt-2026`. Fizjologia,
 - [x] Career WorldTour slice phase 5 — WT 2026 pack (`scenario.peloton.wt-2026`, SchemaVersion 5, 12-rider cap)
 - [x] Career WorldTour slice phase 6 — thin economy (`CashEur`, `ClubFinanceProjection`, SchemaVersion 6)
 - [x] Career WorldTour slice phase 7 — results filter by any org (D-043) + thin contract negotiation (D-044, SchemaVersion 7)
-- [ ] D-046 / D-047 — derived rider ratings + detailed course engine (`RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`)
+- [x] D-046 / D-047 — derived rider ratings + detailed course engine (`RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`, SchemaVersion 8)
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task
-`Implement RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md (D-046 ratings + D-047 course engine) onto current main. No Watch Race UI, no Career Hub, no tenth GameState.`
-## Known blockers
+Waiting on owner: §49 manual playtest and visual avatar review. No Career Hub, no Watch Race expansion, no tenth GameState.## Known blockers
 - None.
 
 ## Known failing tests

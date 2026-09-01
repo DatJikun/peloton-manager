@@ -41,6 +41,8 @@ public sealed class WorldState
     private readonly List<OrganizationRaceEntry> organizationRaceEntries;
     private readonly List<RiderContract> riderContracts;
     private readonly List<RiderCareer> ridersExpiredThisAdvance = new();
+    private readonly List<CourseProfile> courseProfiles;
+    private readonly List<RiderStageTime> riderStageTimes;
 
     public WorldState(
         string worldId,
@@ -65,6 +67,8 @@ public sealed class WorldState
         IEnumerable<RiderCareer>? riderCareers = null,
         IEnumerable<OrganizationRaceEntry>? organizationRaceEntries = null,
         IEnumerable<RiderContract>? riderContracts = null,
+        IEnumerable<CourseProfile>? courseProfiles = null,
+        IEnumerable<RiderStageTime>? riderStageTimes = null,
         bool generatePeriodicRaces = true,
         int? financialYearDays = null)
     {
@@ -105,6 +109,14 @@ public sealed class WorldState
             .ToList();
         this.riderContracts = (riderContracts ?? Array.Empty<RiderContract>())
             .OrderBy(contract => contract.Id.Value)
+            .ToList();
+        this.courseProfiles = (courseProfiles ?? Array.Empty<CourseProfile>())
+            .OrderBy(profile => profile.CourseProfileId.Value)
+            .ToList();
+        this.riderStageTimes = (riderStageTimes ?? Array.Empty<RiderStageTime>())
+            .OrderBy(time => time.RaceContentId, StringComparer.Ordinal)
+            .ThenBy(time => time.StageIndex)
+            .ThenBy(time => time.RiderId.Value)
             .ToList();
         GeneratePeriodicRaces = generatePeriodicRaces;
         FinancialYearDays = financialYearDays ?? (generatePeriodicRaces ? calendarPeriodDays : 365);
@@ -154,9 +166,16 @@ public sealed class WorldState
 
     public IReadOnlyList<RiderContract> RiderContracts => riderContracts;
 
+    public IReadOnlyList<CourseProfile> CourseProfiles => courseProfiles;
+
+    public IReadOnlyList<RiderStageTime> RiderStageTimes => riderStageTimes;
+
     public bool GeneratePeriodicRaces { get; }
 
     public int FinancialYearDays { get; }
+
+    public CourseProfile? TryGetCourseProfile(WorldEntityId courseProfileId) =>
+        courseProfiles.FirstOrDefault(profile => profile.CourseProfileId == courseProfileId);
 
     public RiderCareer? TryGetRiderCareer(WorldEntityId riderCareerId) =>
         riderCareers.FirstOrDefault(career => career.Id == riderCareerId);
@@ -357,7 +376,12 @@ public sealed class WorldState
         }
     }
 
-    public void RecordRace(RaceSummary result, string raceContentId, IReadOnlyList<WorldEntityId> starters)
+    public void RecordRace(
+        RaceSummary result,
+        string raceContentId,
+        IReadOnlyList<WorldEntityId> starters,
+        int stageIndex = 1,
+        IReadOnlyDictionary<WorldEntityId, double>? finishTimesSeconds = null)
     {
         ArgumentNullException.ThrowIfNull(result);
         ArgumentException.ThrowIfNullOrWhiteSpace(raceContentId);
@@ -389,6 +413,13 @@ public sealed class WorldState
                 CurrentDate.DayNumber,
                 didNotFinish ? 0 : place,
                 didNotFinish));
+
+            if (!didNotFinish && finishTimesSeconds is not null &&
+                finishTimesSeconds.TryGetValue(riderId, out double finishSeconds))
+            {
+                riderStageTimes.Add(new RiderStageTime(raceContentId, stageIndex, riderId, finishSeconds));
+                riderStageTimes.Sort(CompareRiderStageTimes);
+            }
         }
 
         string officialResult = string.Create(
@@ -406,7 +437,9 @@ public sealed class WorldState
                 existing.Title,
                 officialResult,
                 ResultAcknowledged: false,
-                raceContentId);
+                raceContentId,
+                existing.StageIndex,
+                existing.CourseProfileId);
         }
 
         if (GeneratePeriodicRaces)
@@ -415,6 +448,17 @@ public sealed class WorldState
         }
     }
 
+    private static int CompareRiderStageTimes(RiderStageTime left, RiderStageTime right)
+    {
+        int raceComparison = string.Compare(left.RaceContentId, right.RaceContentId, StringComparison.Ordinal);
+        if (raceComparison != 0)
+        {
+            return raceComparison;
+        }
+
+        int stageComparison = left.StageIndex.CompareTo(right.StageIndex);
+        return stageComparison != 0 ? stageComparison : left.RiderId.Value.CompareTo(right.RiderId.Value);
+    }
     public bool AcknowledgeRaceResult(WorldEntityId entryId)
     {
         int entryIndex = calendarEntries.FindIndex(entry => entry.Id == entryId);

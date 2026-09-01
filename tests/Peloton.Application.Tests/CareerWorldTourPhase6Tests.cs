@@ -193,7 +193,7 @@ public sealed class CareerWorldTourPhase6Tests
 
         Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
         RacePreparationProjection prep = Assert.IsType<RacePreparationProjection>(application.RacePreparation);
-        Assert.Equal("Santos Tour Down Under", prep.Title);
+        Assert.StartsWith("Santos Tour Down Under", prep.Title, StringComparison.Ordinal);
         Assert.NotEqual(RacePreparationDefaults.Title, prep.Title);
     }
 

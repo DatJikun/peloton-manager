@@ -276,7 +276,7 @@ When `EndDate` is in the past, `RiderCareer.OrganizationId` becomes null (thin f
 
 Full training, health, and development fields remain later system documents.
 
-### Course profiles (D-046)
+### Course profiles (D-047)
 
 ```text
 CourseProfile
