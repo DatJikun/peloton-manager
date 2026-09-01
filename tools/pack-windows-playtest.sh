@@ -50,35 +50,8 @@ cp -a "${OUT}/." "${ZIP_DIR}/"
 mkdir -p "${ZIP_DIR}/content"
 cp -a "${ROOT}/content/peloton.skeleton" "${ZIP_DIR}/content/"
 cp -a "${ROOT}/content/peloton.race-prototype" "${ZIP_DIR}/content/"
-
-cat > "${ZIP_DIR}/CZYTAJ_MNIE.txt" <<'EOF'
-Peloton Manager — playtest na Windows
-
-To jeszcze nie jest skończona gra. To niebieska powłoka kariery
-(Biurko, Skład, Sztab, kalendarz) plus prawdziwa pętla: kolejne dni,
-przygotowanie czwórki, wyścig i tabela wyników.
-
-Sponsorzy, finanse, skauting i OVR na tych stronach to jeszcze rysunek.
-Nie zapisują się do kariery.
-
-Jak uruchomić
-1. Rozpakuj CAŁY folder, nie sam plik .exe.
-2. Wejdź do folderu PelotonManager-playtest.
-3. Kliknij dwukrotnie PelotonManager.exe.
-4. Jeśli Windows pokaże SmartScreen: „Więcej informacji”, potem „Uruchom mimo to”.
-
-Nie instalujesz Godota ani .NET. Wszystko jest w tym folderze.
-
-Co robić na biurku
-- ADVANCE DAY — świat idzie o jeden dzień.
-- W dzień wyścigu przycisk zmienia się na Race next.
-- W przygotowaniu ustaw jednego Leader i jednego Card, reszta wozi.
-- JEDŹ WYŚCIG — dostajesz wynik i tabelę.
-- WYNIK: Wszyscy, albo jeden zespół (Beskid–Vetter / Fala–Karpaty / Ost-Wind).
-- Film jest wyłączony. W Ustawieniach FILM: WŁ włącza oglądanie etapu; wynik zostaje ten sam.
-
-Zapis autosave leży w podfolderze saves obok gry.
-EOF
+cp -a "${ROOT}/content/peloton.wt-2026" "${ZIP_DIR}/content/"
+cp -a "${ROOT}/playtest/CZYTAJ_MNIE.txt" "${ZIP_DIR}/CZYTAJ_MNIE.txt"
 
 # zip from dist so the archive has a single top-level folder
 (

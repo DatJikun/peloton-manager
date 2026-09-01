@@ -24,6 +24,9 @@ Nowa gra
 
 Co robić na biurku
 - ADVANCE DAY — świat idzie o jeden dzień.
+- FINANSE — kasa klubu w euro, sponsor i płace (nie złotówki z rysunku).
+- SKŁAD — Negocjuj kontrakt, wpisz pensję/rok i dzień końca, Złóż ofertę.
+  Za niska pensja: Oferta odrzucona (nic się nie zmienia).
 - W dzień wyścigu przycisk zmienia się na Race next.
 - W przygotowaniu ustaw jednego Leader i jednego Card, reszta wozi.
 - JEDŹ WYŚCIG — dostajesz wynik i tabelę.
