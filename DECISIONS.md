@@ -230,3 +230,17 @@ Owner agreed 2026-09-01 to the repository review. Process lock, not a gameplay l
 2. The Windows playtest zip is **not committed** to git. `.github/workflows/playtest-windows.yml` exports it with `tools/pack-windows-playtest.sh` and publishes a GitHub Release when a `playtest-*` tag is pushed. Historical zips (5 × ~66 MB) stay in history until the owner asks for a rewrite.
 3. Stale PRs are closed, not stacked (D-045). Deferred experiment branches (avatar look proposals) stay on `origin` under their old names; they are not merged until the owner decides on avatars.
 4. Feel order after hygiene, per the owner: bruk in the race engine, then the one-team sprint top 5, then CdA Road/TT. §49 stays `NOT VERIFIED`.
+
+## D-054 — Position is earned and pace comes from riders (bruk, sprint, mountain selection)
+Owner agreed 2026-09-01 after the repo review showed Roubaix won by GC riders, a one-team sprint top 5, and Pogačar outside the Hautacam top 5. Root causes were an alphabetical start grid (`Positioning` unused) and a constant group pace (no selection). Lock:
+
+1. In-race position is driven by `Positioning` + intent (deterministic drift inside the group); the start grid is by `Positioning`, never by team id order.
+2. On cobbles and climbs (and the last 30 km of non-flat classics/stages) the group pace is set by the rider who can physically ride fastest at the front at sustainable power; everyone else pays their own cost and drops emergently (§17–§18). Flat stages keep the D-049 sit-in and bunch sprint.
+3. Bruk in the engine = cobble Crr (already) **plus** handling-dependent shelter loss and a surge cost. No `Cobbles = +N` in any winner formula; ratings stay derived views (D-046).
+4. Goldens may move once (`PhysicsContractVersion` 2). §49 stays `NOT VERIFIED`. Contract: `RACE_FEEL_POSITION_AND_SELECTION_v0.1.md`.
+
+## D-055 — Two aero numbers: CdA Road and CdA TT
+Owner-ordered next race-engine task (2026-09-01). Each rider stores `CdARoadM2` and `CdATtM2` (SQLite SchemaVersion 10). ITT/TTT stages use the TT value with no bunch shelter in ITT (60 s starts, reverse GC); every other stage uses the road value. The TT rating is derived from TT aero. No mid-stage switching, no descent tuck, no TT pacing optimizer yet. Road results must not change versus D-054. Contract: `RACE_CDA_ROAD_TT_v0.1.md`.
+
+## D-056 — Infinite career: season rollover, aging, neo-pros, AI contract cycle
+Owner 2026-09-01: the game must not end on 31 December 2026. Lock: rollover inside Advance Day once per year (aging tick on physiology only, retirements, neo-pros so the world never shrinks, AI clubs renew/sign by public facts, 2027 courses from the same identity generator, calendar per stage, player's pre-season plan reopens, Polish season summary in the inbox). Ratings remain views; POT is only a brake on growth. No manager sacking, no sponsor market, no transfer fees yet. SchemaVersion 11. Lands after D-054 and D-055 in its own tree. Contract: `CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md`.
