@@ -69,18 +69,17 @@ These DRAFT contracts exist and still await owner REVIEW. They are not a reason 
 2. `CONTENT_FORMAT_v0.1.md`, `RULESETS_v0.1.md`, `SAVE_FORMAT_v0.1.md`, `TESTING_v0.1.md`
 3. `RACE_ENGINE_DESIGN_v0.2.md` — REVIEW; official results already use `PrototypeRaceEngine` below this contract
 
-Already in code (thin versus those contracts): Milestone 0 spine, nine GameStates, SQLite SchemaVersion 9, skeleton Advance Day with form tick and club cash, prototype race bound to world `RiderCareer` rows, pre-season entry + per-event leaders (D-050), rider contracts and thin negotiation, results filter by any organization, derived 1–99 ratings (D-046), dense WT courses + calendar-per-stage (D-047), `scenario.peloton.wt-2026` CreateWorld, CLI desk/inbox/prep/Simulate, Godot career shell (`CareerShell.tscn`) for New Game club pick / season plan / Advance Day / Race next / simulate / results. Official race play path is Simulate then Results (D-043); Watch film is optional and off by default. Career Hub UI is deleted (D-048). See `HANDOFF.md`.
+Already in code (thin versus those contracts): Milestone 0 spine, nine GameStates, SQLite SchemaVersion 9, skeleton Advance Day with form tick and club cash, prototype race bound to world `RiderCareer` rows, pre-season entry + per-event leaders (D-050), rider contracts and thin negotiation, results filter by any organization, derived 1–99 ratings (D-046), dense WT courses + calendar-per-stage (D-047), `scenario.peloton.wt-2026` CreateWorld, CLI desk/inbox/prep/Simulate, Godot career shell (`CareerShell.tscn`) for New Game club pick / season plan / Advance Day / Race next / simulate / results, desk/squad/finance world cash and D-044 offers (D-051). Official race play path is Simulate then Results (D-043); Watch film is optional and off by default. Career Hub UI is deleted (D-048). See `HANDOFF.md`.
 
 Not in code yet, though named in `DATA_MODEL_v0.1.md`: `OrganizationKnowledgeStore`, `PersonalKnowledge`, `RecruitmentCase`. AI managers, dynamic sponsor market, training, and a full legal rules engine are not implemented.
 
 Remaining system design (do not treat as the next coding task unless `HANDOFF.md` says so):
 
-- **Next coding task:** D-051 kasa i kontrakty na ekranach Godota — `CAREER_FINANCE_CONTRACTS_ON_SCREEN_v0.1.md`
+- **Next coding task:** CdA Road vs TT — see `HANDOFF.md` (do not close §49)
 - Training / development that grows physiology toward POT
 - Yearly course re-generation after 2026 (generator exists; season rollover does not)
 - Rider aging / infinite career season rollover
 - Recruitment / AI managers / dynamic sponsor market
-- CdARoad vs CdATT
 
 Do not close the owner §49 fun gate with automations. Do not rebuild Career Hub. Watch film stays optional and off by default.
 

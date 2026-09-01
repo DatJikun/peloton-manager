@@ -585,7 +585,6 @@ public sealed partial class CareerShellScreen
 
     private void BuildSquad()
     {
-        content!.AddChild(LookBanner());
         HBoxContainer grid = Row();
         VBoxContainer table = Panel("KADRA", BuildSquadTable());
         table.SizeFlagsHorizontal = SizeFlags.ExpandFill;
@@ -1186,7 +1185,6 @@ public sealed partial class CareerShellScreen
 
     private void BuildFinance()
     {
-        content!.AddChild(LookBanner());
         ClubFinanceProjection? finance = host!.ClubFinance;
         if (finance is null)
         {
