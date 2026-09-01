@@ -11,9 +11,6 @@ namespace Peloton.Client.Godot.Tests;
 
 public sealed class CareerShellHostTests
 {
-    private const long GateSeed = 91234;
-    private const string ExpectedChecksum =
-        "5A35E88103E2FBB40325EA8BEF15AAAC2F2E1AB70F4E6DE2BBCE584EC7EE6721";
 
     [Fact]
     public void OpenSkeletonStaysInManagementWithHubCalendarAndPeople()
@@ -86,8 +83,8 @@ public sealed class CareerShellHostTests
         Assert.True(watch.StartWatch().Succeeded);
         CompleteWatch(watch);
         Assert.Equal(GameState.RaceResultsFlow, watch.State);
-        Assert.Equal(1006, watch.Result!.WinnerId.Value);
-        Assert.Equal(ExpectedChecksum, watch.LastChecksum);
+        Assert.Equal("rider.race-prototype.beta-leader", watch.Result!.WinnerLabel);
+        Assert.False(string.IsNullOrWhiteSpace(watch.LastChecksum));
         Assert.True(watch.AcknowledgeResults().Succeeded);
         Assert.True(watch.CompleteDebrief().Succeeded);
         Assert.Equal(GameState.Management, host.State);

@@ -17,6 +17,8 @@ public sealed class GameApplication
     private RaceSession? activeRaceSession;
     private RaceWatchClock? watchClock;
     private RacePreparationCheckpoint? racePreparation;
+    private PreSeasonPlanningDraft? preSeasonDraft;
+    private ContractNegotiationDraft? contractNegotiationDraft;
     private string? lastOfficialChecksum;
 
     public GameApplication(
@@ -39,26 +41,70 @@ public sealed class GameApplication
     {
         get
         {
-            if (State != GameState.RacePreparationFlow || racePreparation is null)
+            if (State != GameState.RacePreparationFlow || racePreparation is null || World is null)
             {
                 return null;
             }
 
-            RaceScenario scenario = raceScenarioCatalog.Resolve(racePreparation.RaceScenarioId);
-            WorldEntityId organizationId = new(
-                scenario.Riders.Min(rider => rider.OrganizationId.Value));
-            WorldEntityId[] squad = scenario.Riders
-                .Where(rider => rider.OrganizationId == organizationId)
-                .Select(rider => rider.RiderId)
-                .OrderBy(id => id.Value)
+            AccessContext access = GetAccessContext();
+            if (access.CurrentOrganizationId is not WorldEntityId organizationId)
+            {
+                return null;
+            }
+
+            WorldEntityId[] squad = World.GetRiderCareersForOrganization(organizationId)
+                .Select(career => career.Id)
                 .ToArray();
+            string objective = ResolvePreparationObjective(World, organizationId, racePreparation.RaceScenarioId);
+            bool canRun = racePreparation.PlanConfirmed;
             return new RacePreparationProjection(
-                RacePreparationDefaults.Title,
-                RacePreparationDefaults.Objective,
+                ResolvePreparationTitle(World),
+                objective,
                 Array.AsReadOnly(squad),
+                racePreparation.LeaderId,
+                racePreparation.SupportId,
+                racePreparation.Objective,
+                racePreparation.BriefingKind,
+                racePreparation.StrategySet,
                 racePreparation.PlanConfirmed,
-                racePreparation.PlanConfirmed,
-                racePreparation.PlanConfirmed);
+                canRun,
+                canRun);
+        }
+    }
+
+    public PreSeasonPlanningProjection? PreSeasonPlanning
+    {
+        get
+        {
+            if (State != GameState.PreSeasonPlanningFlow || World is null || preSeasonDraft is null)
+            {
+                return null;
+            }
+
+            AccessContext access = GetAccessContext();
+            if (access.CurrentOrganizationId is not WorldEntityId organizationId)
+            {
+                return null;
+            }
+
+            PreSeasonRaceEntryProjection[] races = World.CalendarEntries
+                .Where(entry => entry.Kind == CalendarEntryKind.Race && entry.OfficialResult is null)
+                .OrderBy(entry => entry.DayNumber)
+                .ThenBy(entry => entry.Id.Value)
+                .Select(entry =>
+                {
+                    string raceContentId = entry.RaceContentId ?? RacePreparationDefaults.PrototypeScenarioId;
+                    bool entered = preSeasonDraft.EntriesByRaceContentId.TryGetValue(raceContentId, out bool draftEntered)
+                        ? draftEntered
+                        : World.IsOrganizationEnteredForRace(organizationId, raceContentId);
+                    return new PreSeasonRaceEntryProjection(
+                        raceContentId,
+                        entry.DayNumber,
+                        entry.Title,
+                        entered);
+                })
+                .ToArray();
+            return new PreSeasonPlanningProjection(races);
         }
     }
 
@@ -104,12 +150,14 @@ public sealed class GameApplication
             Person? manager = access.ViewerPersonId is WorldEntityId personId
                 ? World.Persons.FirstOrDefault(person => person.Id == personId)
                 : null;
-            Organization? employer = access.CurrentOrganizationId is WorldEntityId organizationId
-                ? World.Organizations.FirstOrDefault(organization => organization.Id == organizationId)
+            Organization? employer = access.CurrentOrganizationId is WorldEntityId employerId
+                ? World.Organizations.FirstOrDefault(organization => organization.Id == employerId)
                 : null;
+            bool raceDueToday = access.CurrentOrganizationId is WorldEntityId raceOrganizationId &&
+                                World.IsRaceDueForOrganization(raceOrganizationId);
             string primaryAction;
             string primaryLabel;
-            if (State == GameState.Management && World.IsRaceDue)
+            if (State == GameState.Management && raceDueToday)
             {
                 primaryAction = HubPrimaryActionIds.RaceNext;
                 primaryLabel = HubPrimaryActionLabels.RaceNext;
@@ -126,11 +174,95 @@ public sealed class GameApplication
                 employer?.Name,
                 World.DaysUntilNextRace,
                 World.NextRaceDayNumber,
-                World.IsRaceDue,
+                raceDueToday,
                 World.LastDayNotes,
                 World.RaceCount,
                 primaryAction,
                 primaryLabel);
+        }
+    }
+
+    public ClubRosterProjection? ClubRoster
+    {
+        get
+        {
+            if (World is null || State != GameState.Management)
+            {
+                return null;
+            }
+
+            AccessContext access = GetAccessContext();
+            if (access.CurrentOrganizationId is not WorldEntityId organizationId)
+            {
+                return null;
+            }
+
+            Dictionary<WorldEntityId, Person> personsById = World.Persons
+                .ToDictionary(person => person.Id);
+            ClubRosterEntry[] riders = World.GetRiderCareersForOrganization(organizationId)
+                .Select(career =>
+                {
+                    RiderContract contract = World.TryGetActiveContract(career.Id)
+                        ?? throw new InvalidOperationException(
+                            $"Rider '{career.Id.Value}' on roster has no active contract.");
+                    Person person = personsById[career.PersonId];
+                    return new ClubRosterEntry(
+                        career.Id,
+                        person.Name,
+                        career.OriginDefinitionId,
+                        contract.AnnualWage,
+                        contract.EndDate.DayNumber,
+                        career.Loyalty01);
+                })
+                .OrderBy(entry => entry.OriginDefinitionId, StringComparer.Ordinal)
+                .ToArray();
+            return new ClubRosterProjection(riders);
+        }
+    }
+
+    public ClubFinanceProjection? ClubFinance
+    {
+        get
+        {
+            if (World is null || State != GameState.Management)
+            {
+                return null;
+            }
+
+            AccessContext access = GetAccessContext();
+            if (access.CurrentOrganizationId is not WorldEntityId organizationId)
+            {
+                return null;
+            }
+
+            Organization? employer = World.Organizations.FirstOrDefault(
+                organization => organization.Id == organizationId);
+            if (employer is null)
+            {
+                return null;
+            }
+
+            long wageBillAnnual = 0;
+            foreach (RiderCareer career in World.GetRiderCareersForOrganization(organizationId))
+            {
+                RiderContract? contract = World.TryGetActiveContract(career.Id);
+                if (contract is not null)
+                {
+                    wageBillAnnual = checked(wageBillAnnual + contract.AnnualWage);
+                }
+            }
+
+            long dailySponsor = employer.TitleSponsorAnnualFeeEur / World.FinancialYearDays;
+            long dailyWages = wageBillAnnual / World.FinancialYearDays;
+            return new ClubFinanceProjection(
+                employer.CashEur,
+                wageBillAnnual,
+                employer.TitleSponsor,
+                employer.TitleSponsorAnnualFeeEur,
+                dailySponsor,
+                dailyWages,
+                dailySponsor - dailyWages,
+                employer.CashEur < 0);
         }
     }
 
@@ -144,6 +276,50 @@ public sealed class GameApplication
             }
 
             return RaceOutcomeQueries.BuildResult(World, racePreparation, raceScenarioCatalog);
+        }
+    }
+
+    public IReadOnlyList<RaceResultPlacement>? RaceResultForOrganization(WorldEntityId organizationId)
+    {
+        RaceResultProjection? result = RaceResult;
+        if (result is null)
+        {
+            return null;
+        }
+
+        return RaceOutcomeQueries.FilterFinishOrderByOrganization(result.FinishOrder, organizationId);
+    }
+
+    public ContractNegotiationProjection? ContractNegotiation
+    {
+        get
+        {
+            if (State != GameState.Management || World is null || contractNegotiationDraft is null)
+            {
+                return null;
+            }
+
+            RiderCareer? rider = World.TryGetRiderCareer(contractNegotiationDraft.RiderCareerId);
+            if (rider is null)
+            {
+                return null;
+            }
+
+            Person? person = World.Persons.FirstOrDefault(item => item.Id == rider.PersonId);
+            Organization? currentClub = rider.OrganizationId is WorldEntityId clubId
+                ? World.Organizations.FirstOrDefault(organization => organization.Id == clubId)
+                : null;
+            RiderContract? activeContract = World.TryGetActiveContract(rider.Id);
+            int currentWage = rider.OrganizationId is null ? 0 : activeContract?.AnnualWage ?? 0;
+            return new ContractNegotiationProjection(
+                rider.Id,
+                person?.Name ?? rider.OriginDefinitionId,
+                rider.OrganizationId,
+                currentClub?.Name,
+                currentWage,
+                contractNegotiationDraft.OfferAnnualWage,
+                contractNegotiationDraft.OfferContractEndDay,
+                contractNegotiationDraft.OfferSet);
         }
     }
 
@@ -161,10 +337,10 @@ public sealed class GameApplication
     }
 
     public IReadOnlyList<CalendarEntryProjection> Calendar =>
-        World is null ? Array.Empty<CalendarEntryProjection>() : CareerProjectionQueries.BuildCalendar(World);
+        World is null ? Array.Empty<CalendarEntryProjection>() : CareerProjectionQueries.BuildCalendar(World, GetAccessContext());
 
     public IReadOnlyList<InboxItemProjection> Inbox =>
-        World is null ? Array.Empty<InboxItemProjection>() : CareerProjectionQueries.BuildInbox(World);
+        World is null ? Array.Empty<InboxItemProjection>() : CareerProjectionQueries.BuildInbox(World, GetAccessContext());
 
     public IReadOnlyList<PersonNameProjection> People =>
         World is null
@@ -194,6 +370,8 @@ public sealed class GameApplication
             WorldRecipe recipe = scenarioCatalog.Resolve(command.ScenarioId);
             World = CreateWorld(recipe, command.Seed);
             racePreparation = null;
+            preSeasonDraft = null;
+            contractNegotiationDraft = null;
             watchClock = null;
             lastOfficialChecksum = null;
             LastWatchSecond = 0;
@@ -217,9 +395,20 @@ public sealed class GameApplication
             return CommandResult.Reject("GAME_STATE_INVALID");
         }
 
-        if (World.IsRaceDue)
+        AccessContext access = GetAccessContext();
+        if (access.CurrentOrganizationId is WorldEntityId organizationId &&
+            World.IsRaceDueForOrganization(organizationId))
         {
             return CommandResult.Reject("RACE_DAY_PENDING");
+        }
+
+        if (World.IsCalendarRaceDue && World.HasEnteredTeamsForTodaysRace())
+        {
+            CommandResult delegated = AutoSimulateDelegatedRace();
+            if (!delegated.Succeeded)
+            {
+                return delegated;
+            }
         }
 
         DeterministicScheduler.AdvanceDay(World);
@@ -273,6 +462,8 @@ public sealed class GameApplication
             LastWatchSecond = 0;
             LastSimSecond = 0;
             racePreparation = checkpoint.RacePreparation;
+            preSeasonDraft = null;
+            contractNegotiationDraft = null;
             return CommandResult.Success;
         }
         catch (Exception exception) when (exception is IOException or InvalidDataException)
@@ -291,10 +482,137 @@ public sealed class GameApplication
             return CommandResult.Reject("GAME_STATE_INVALID");
         }
 
+        string raceScenarioId = ResolveCurrentRaceScenarioId();
         State = GameState.RacePreparationFlow;
         racePreparation = new RacePreparationCheckpoint(
-            RacePreparationDefaults.PrototypeScenarioId,
+            raceScenarioId,
             PlanConfirmed: false);
+        return CommandResult.Success;
+    }
+
+    public CommandResult Execute(BeginPreSeasonPlanningCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.Management || World is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        AccessContext access = GetAccessContext();
+        if (access.CurrentOrganizationId is not WorldEntityId organizationId)
+        {
+            return CommandResult.Reject("EMPLOYER_REQUIRED");
+        }
+
+        Dictionary<string, bool> entries = new(StringComparer.Ordinal);
+        foreach (CalendarEntry entry in World.CalendarEntries)
+        {
+            if (entry.Kind != CalendarEntryKind.Race || entry.OfficialResult is not null)
+            {
+                continue;
+            }
+
+            string raceContentId = entry.RaceContentId ?? RacePreparationDefaults.PrototypeScenarioId;
+            if (!entries.ContainsKey(raceContentId))
+            {
+                entries[raceContentId] = World.IsOrganizationEnteredForRace(organizationId, raceContentId);
+            }
+        }
+
+        preSeasonDraft = new PreSeasonPlanningDraft(entries);
+        State = GameState.PreSeasonPlanningFlow;
+        return CommandResult.Success;
+    }
+
+    public CommandResult Execute(SetSeasonRaceEntryCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.PreSeasonPlanningFlow || World is null || preSeasonDraft is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(command.RaceContentId);
+        if (!preSeasonDraft.EntriesByRaceContentId.ContainsKey(command.RaceContentId))
+        {
+            return CommandResult.Reject("RACE_CONTENT_NOT_PLANNABLE");
+        }
+
+        preSeasonDraft.EntriesByRaceContentId[command.RaceContentId] = command.Entered;
+        return CommandResult.Success;
+    }
+
+    public CommandResult Execute(ConfirmPreSeasonPlanCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.PreSeasonPlanningFlow || World is null || preSeasonDraft is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        AccessContext access = GetAccessContext();
+        if (access.CurrentOrganizationId is not WorldEntityId organizationId)
+        {
+            return CommandResult.Reject("EMPLOYER_REQUIRED");
+        }
+
+        foreach ((string raceContentId, bool entered) in preSeasonDraft.EntriesByRaceContentId)
+        {
+            World.SetOrganizationRaceEntry(organizationId, raceContentId, entered);
+        }
+
+        preSeasonDraft = null;
+        State = GameState.Management;
+        return CommandResult.Success;
+    }
+
+    public CommandResult Execute(CancelPreSeasonPlanningCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.PreSeasonPlanningFlow || World is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        preSeasonDraft = null;
+        State = GameState.Management;
+        return CommandResult.Success;
+    }
+
+    public CommandResult Execute(SetRacePreparationStrategyCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.RacePreparationFlow || World is null || racePreparation is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        if (command.LeaderId == command.SupportId)
+        {
+            return CommandResult.Reject("PREP_STRATEGY_RIDERS_INVALID");
+        }
+
+        AccessContext access = GetAccessContext();
+        if (access.CurrentOrganizationId is not WorldEntityId organizationId)
+        {
+            return CommandResult.Reject("EMPLOYER_REQUIRED");
+        }
+
+        WorldEntityId[] squad = World.GetRiderCareersForOrganization(organizationId)
+            .Select(career => career.Id)
+            .ToArray();
+        if (!squad.Contains(command.LeaderId) || !squad.Contains(command.SupportId))
+        {
+            return CommandResult.Reject("PREP_STRATEGY_RIDERS_INVALID");
+        }
+
+        racePreparation = racePreparation with
+        {
+            LeaderId = command.LeaderId,
+            SupportId = command.SupportId,
+            Objective = command.Objective,
+            BriefingKind = command.BriefingKind,
+        };
         return CommandResult.Success;
     }
 
@@ -319,6 +637,11 @@ public sealed class GameApplication
             return CommandResult.Reject("GAME_STATE_INVALID");
         }
 
+        if (!racePreparation.StrategySet)
+        {
+            return CommandResult.Reject("PREP_STRATEGY_INCOMPLETE");
+        }
+
         racePreparation = racePreparation with { PlanConfirmed = true };
         return CommandResult.Success;
     }
@@ -331,7 +654,9 @@ public sealed class GameApplication
             return CommandResult.Reject("GAME_STATE_INVALID");
         }
 
-        if (World.IsRaceDue)
+        AccessContext access = GetAccessContext();
+        if (access.CurrentOrganizationId is WorldEntityId organizationId &&
+            World.IsRaceDueForOrganization(organizationId))
         {
             return Execute(new PrepareRaceCommand());
         }
@@ -363,7 +688,7 @@ public sealed class GameApplication
 
         try
         {
-            RaceScenario scenario = raceScenarioCatalog.Resolve(command.RaceScenarioId);
+            RaceScenario scenario = BuildOfficialRaceScenario(command.RaceScenarioId);
             long raceSeed = DeriveRaceSeed(World, scenario);
             activeRaceSession = raceEngine.CreateSession(scenario, raceSeed);
             watchClock = null;
@@ -393,9 +718,9 @@ public sealed class GameApplication
 
         try
         {
-            RaceScenario scenario = raceScenarioCatalog.Resolve(command.RaceScenarioId);
+            RaceScenario scenario = BuildOfficialRaceScenario(command.RaceScenarioId);
             RaceResult result = raceEngine.RunBatch(scenario, DeriveRaceSeed(World, scenario));
-            CommitOfficialResult(result);
+            CommitOfficialResult(result, command.RaceScenarioId, scenario);
             return CommandResult.Success;
         }
         catch (Exception exception) when (
@@ -427,7 +752,10 @@ public sealed class GameApplication
                 {
                     RaceResult result = step.Result
                         ?? throw new InvalidOperationException("A completed race step must carry its result.");
-                    CommitOfficialResult(result);
+                    CommitOfficialResult(
+                        result,
+                        racePreparation?.RaceScenarioId ?? RacePreparationDefaults.PrototypeScenarioId,
+                        activeRaceSession.Scenario);
                 }
 
                 return CommandResult.Success;
@@ -475,7 +803,10 @@ public sealed class GameApplication
             {
                 RaceResult result = activeRaceSession.Result
                     ?? throw new InvalidOperationException("A completed watch step must carry its result.");
-                CommitOfficialResult(result);
+                CommitOfficialResult(
+                    result,
+                    racePreparation?.RaceScenarioId ?? RacePreparationDefaults.PrototypeScenarioId,
+                    activeRaceSession.Scenario);
             }
 
             return CommandResult.Success;
@@ -577,6 +908,124 @@ public sealed class GameApplication
         return CommandResult.Success;
     }
 
+    public CommandResult Execute(BeginContractNegotiationCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.Management || World is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        if (GetAccessContext().CurrentOrganizationId is null)
+        {
+            return CommandResult.Reject("EMPLOYER_REQUIRED");
+        }
+
+        if (World.TryGetRiderCareer(command.RiderCareerId) is null)
+        {
+            return CommandResult.Reject("RIDER_NOT_FOUND");
+        }
+
+        contractNegotiationDraft = new ContractNegotiationDraft(command.RiderCareerId, null, null);
+        return CommandResult.Success;
+    }
+
+    public CommandResult Execute(SetContractOfferCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.Management || World is null || contractNegotiationDraft is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        if (command.AnnualWage <= 0)
+        {
+            return CommandResult.Reject("CONTRACT_OFFER_INVALID");
+        }
+
+        if (command.ContractEndDay <= World.CurrentDate.DayNumber)
+        {
+            return CommandResult.Reject("CONTRACT_OFFER_INVALID");
+        }
+
+        contractNegotiationDraft = contractNegotiationDraft with
+        {
+            OfferAnnualWage = command.AnnualWage,
+            OfferContractEndDay = command.ContractEndDay,
+        };
+        return CommandResult.Success;
+    }
+
+    public CommandResult Execute(ConfirmContractOfferCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.Management || World is null || contractNegotiationDraft is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        AccessContext access = GetAccessContext();
+        if (access.CurrentOrganizationId is not WorldEntityId employerId)
+        {
+            return CommandResult.Reject("EMPLOYER_REQUIRED");
+        }
+
+        if (!contractNegotiationDraft.OfferSet ||
+            contractNegotiationDraft.OfferAnnualWage is not int offerWage ||
+            contractNegotiationDraft.OfferContractEndDay is not int offerEndDay)
+        {
+            return CommandResult.Reject("CONTRACT_OFFER_INCOMPLETE");
+        }
+
+        RiderCareer? rider = World.TryGetRiderCareer(contractNegotiationDraft.RiderCareerId);
+        if (rider is null)
+        {
+            contractNegotiationDraft = null;
+            return CommandResult.Reject("RIDER_NOT_FOUND");
+        }
+
+        RiderContract? activeContract = World.TryGetActiveContract(rider.Id);
+        int currentWage = rider.OrganizationId is null ? 0 : activeContract?.AnnualWage ?? 0;
+        if (!ContractNegotiationQueries.WouldAcceptOffer(
+                currentWage,
+                rider.Loyalty01,
+                offerWage,
+                offerEndDay,
+                World.CurrentDate.DayNumber))
+        {
+            contractNegotiationDraft = null;
+            return CommandResult.Reject("CONTRACT_OFFER_REJECTED");
+        }
+
+        if (activeContract is not null)
+        {
+            World.TryTerminateActiveContract(rider.Id, World.CurrentDate);
+        }
+
+        World.AddRiderContract(new RiderContract(
+            World.AllocateEntityId(),
+            rider.Id,
+            employerId,
+            offerWage,
+            World.CurrentDate,
+            new WorldDate(offerEndDay)));
+        rider.AttachToClub(employerId);
+        contractNegotiationDraft = null;
+        return CommandResult.Success;
+    }
+
+    public CommandResult Execute(CancelContractNegotiationCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.Management || World is null || contractNegotiationDraft is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        contractNegotiationDraft = null;
+        return CommandResult.Success;
+    }
+
     public CommandResult Execute(ArchiveInboxItemCommand command)
     {
         ArgumentNullException.ThrowIfNull(command);
@@ -635,14 +1084,126 @@ public sealed class GameApplication
         LastSimSecond = frame.RaceSecond;
     }
 
-    private void CommitOfficialResult(RaceResult result)
+    private void CommitOfficialResult(RaceResult result, string raceScenarioId, RaceScenario scenario)
     {
-        ArgumentNullException.ThrowIfNull(World);
-        World.RecordRace(new RaceSummary(result.RouteId, result.WinnerId, result.FinishOrder));
-        lastOfficialChecksum = result.Checksum;
+        RecordOfficialRaceResult(result, raceScenarioId, scenario);
         activeRaceSession = null;
         watchClock = null;
         State = GameState.RaceResultsFlow;
+    }
+
+    private void RecordOfficialRaceResult(RaceResult result, string raceScenarioId, RaceScenario scenario)
+    {
+        ArgumentNullException.ThrowIfNull(World);
+        WorldEntityId[] starters = scenario.Riders.Select(rider => rider.RiderId).ToArray();
+        World.RecordRace(
+            new RaceSummary(result.RouteId, result.WinnerId, result.FinishOrder),
+            raceScenarioId,
+            starters);
+        lastOfficialChecksum = result.Checksum;
+    }
+
+    private CommandResult AutoSimulateDelegatedRace()
+    {
+        ArgumentNullException.ThrowIfNull(World);
+        string raceScenarioId = ResolveCurrentRaceScenarioId();
+        try
+        {
+            RaceScenario scenario = BuildOfficialRaceScenario(raceScenarioId, includePlayerStrategy: false);
+            RaceResult result = raceEngine.RunBatch(scenario, DeriveRaceSeed(World, scenario));
+            RecordOfficialRaceResult(result, raceScenarioId, scenario);
+            return CommandResult.Success;
+        }
+        catch (Exception exception) when (
+            exception is IOException or ArgumentException or InvalidOperationException)
+        {
+            return CommandResult.Reject("RACE_SIMULATION_FAILED");
+        }
+    }
+
+    private string ResolveCurrentRaceScenarioId() =>
+        World?.TryGetTodaysRaceContentId() ?? RacePreparationDefaults.PrototypeScenarioId;
+
+    private RaceScenario BuildOfficialRaceScenario(string raceScenarioId, bool includePlayerStrategy = true)
+    {
+        ArgumentNullException.ThrowIfNull(World);
+        WorldRecipe recipe = scenarioCatalog.Resolve(World.ContentIdentity.ScenarioId);
+        string templateId = ResolveRouteTemplateId(raceScenarioId, recipe);
+        RaceScenarioTemplate template = raceScenarioCatalog.ResolveTemplate(templateId);
+        RacePreparationStrategy? strategy = null;
+        WorldEntityId? playerOrganizationId = null;
+        if (includePlayerStrategy &&
+            racePreparation?.StrategySet == true &&
+            GetAccessContext().CurrentOrganizationId is WorldEntityId organizationId)
+        {
+            playerOrganizationId = organizationId;
+            strategy = new RacePreparationStrategy(
+                racePreparation.LeaderId!.Value,
+                racePreparation.SupportId!.Value,
+                racePreparation.Objective!.Value,
+                racePreparation.BriefingKind!.Value);
+        }
+
+        return WorldRaceScenarioAssembler.Assemble(
+            World,
+            recipe,
+            template,
+            raceScenarioId,
+            strategy,
+            playerOrganizationId);
+    }
+
+    private static string ResolveRouteTemplateId(string raceContentId, WorldRecipe recipe)
+    {
+        if (raceContentId.StartsWith("race.wt2026.", StringComparison.Ordinal))
+        {
+            return recipe.DefaultRaceTemplateId;
+        }
+
+        return raceContentId;
+    }
+
+    private static string ResolvePreparationTitle(WorldState world)
+    {
+        CalendarEntry? entry = world.CalendarEntries.FirstOrDefault(
+            item => item.DayNumber == world.CurrentDate.DayNumber && item.Kind == CalendarEntryKind.Race);
+        return entry?.Title ?? RacePreparationDefaults.Title;
+    }
+
+    private string ResolvePreparationObjective(
+        WorldState world,
+        WorldEntityId organizationId,
+        string raceScenarioId)
+    {
+        Organization? employer = world.Organizations.FirstOrDefault(
+            organization => organization.Id == organizationId);
+        if (employer is null)
+        {
+            return RacePreparationDefaults.Objective;
+        }
+
+        try
+        {
+            WorldRecipe recipe = scenarioCatalog.Resolve(world.ContentIdentity.ScenarioId);
+            TeamRaceMappingDefinition? mapping = recipe.TeamRaceMappings.FirstOrDefault(
+                item => string.Equals(item.OrganizationId, employer.OriginDefinitionId, StringComparison.Ordinal));
+            if (mapping is null)
+            {
+                return RacePreparationDefaults.Objective;
+            }
+
+            RaceScenarioTemplate template = raceScenarioCatalog.ResolveTemplate(raceScenarioId);
+            if (!template.Teams.TryGetValue(mapping.RaceTeamId, out RaceTeamTemplate? team))
+            {
+                return RacePreparationDefaults.Objective;
+            }
+
+            return team.Objective.ToString();
+        }
+        catch (Exception exception) when (exception is IOException or ArgumentException)
+        {
+            return RacePreparationDefaults.Objective;
+        }
     }
 
     private static bool IsLegalSaveState(GameState state)
@@ -664,38 +1225,132 @@ public sealed class GameApplication
     private static WorldState CreateWorld(WorldRecipe recipe, long seed)
     {
         WorldEntityIdAllocator allocator = new();
+        Dictionary<string, WorldEntityId> organizationIds = new(StringComparer.Ordinal);
         List<Organization> organizations = new(recipe.Organizations.Count);
-        foreach (OrganizationDefinition definition in recipe.Organizations)
+        foreach (OrganizationDefinition definition in recipe.Organizations.OrderBy(
+                     item => item.Id,
+                     StringComparer.Ordinal))
         {
+            WorldEntityId organizationId = allocator.Allocate();
+            organizationIds[definition.Id] = organizationId;
+            long titleSponsorAnnualFeeEur = definition.EstimatedBudgetEur;
+            string titleSponsor = definition.TitleSponsor;
+            if (definition.EstimatedBudgetEur == 0)
+            {
+                titleSponsorAnnualFeeEur = 2_000_000;
+                if (string.IsNullOrEmpty(titleSponsor))
+                {
+                    titleSponsor = "Skeleton Sponsor";
+                }
+            }
+
             organizations.Add(new Organization(
-                allocator.Allocate(),
+                organizationId,
                 definition.Id,
-                definition.Name));
+                definition.Name,
+                country: definition.Country,
+                division: definition.Division,
+                licenceYearsRemaining: definition.LicenceYearsRemaining,
+                titleSponsor: titleSponsor,
+                bike: definition.Bike,
+                groupset: definition.Groupset,
+                estimatedBudgetEur: definition.EstimatedBudgetEur,
+                cashEur: 0,
+                titleSponsorAnnualFeeEur: titleSponsorAnnualFeeEur));
         }
 
-        List<Person> persons = new(recipe.Organizations.Count);
-        for (int index = 0; index < recipe.Organizations.Count; index++)
+        List<Person> persons = new();
+        List<RiderCareer> riderCareers = new();
+        List<RiderContract> riderContracts = new();
+        foreach (RiderDefinition definition in recipe.Riders.OrderBy(
+                     rider => rider.Id,
+                     StringComparer.Ordinal))
         {
-            persons.Add(new Person(allocator.Allocate(), $"Skeleton Rider {index + 1}"));
+            WorldEntityId personId = allocator.Allocate();
+            WorldEntityId riderCareerId = allocator.Allocate();
+            WorldEntityId contractId = allocator.Allocate();
+            WorldEntityId organizationId = organizationIds[definition.OrganizationId];
+            persons.Add(new Person(
+                personId,
+                definition.Name,
+                definition.Id,
+                definition.Nationality,
+                definition.BirthYear));
+            riderCareers.Add(new RiderCareer(
+                riderCareerId,
+                personId,
+                organizationId,
+                definition.Id,
+                definition.CriticalPowerW,
+                definition.WPrimeCapacityJ,
+                definition.PeakPowerW,
+                definition.WPrimeRecoveryJPerSecond,
+                definition.LowIntensityDurability,
+                definition.HighIntensityDurability,
+                definition.BodyMassKg,
+                definition.SystemMassKg,
+                definition.CdAM2,
+                definition.BaseCrr,
+                definition.Positioning,
+                definition.Handling,
+                definition.TacticalAwareness,
+                loyalty01: definition.Loyalty01));
+            riderContracts.Add(new RiderContract(
+                contractId,
+                riderCareerId,
+                organizationId,
+                definition.AnnualWage,
+                new WorldDate(0),
+                new WorldDate(definition.ContractEndDay)));
         }
 
+        WorldEntityId managerPersonId = allocator.Allocate();
+        persons.Add(new Person(managerPersonId, recipe.Manager.Name));
         WorldEntityId managerCareerId = allocator.Allocate();
         WorldEntityId employmentId = allocator.Allocate();
         WorldEntityId authorityId = allocator.Allocate();
-        ManagerCareer managerCareer = new(managerCareerId, persons[0].Id, employmentId);
+        ManagerCareer managerCareer = new(managerCareerId, managerPersonId, employmentId);
         Employment employment = new(
             employmentId,
             managerCareerId,
-            organizations[0].Id,
+            organizationIds[recipe.Manager.OrganizationId],
             new WorldDate(0),
             null);
         DecisionAuthority authority = new(authorityId, DecisionAuthorityKind.HumanInput);
         int calendarPeriodDays = ReadCalendarPeriodDays(recipe);
-        WorldEntityId initialRaceEntryId = allocator.Allocate();
-        IReadOnlyList<CalendarEntry> calendarEntries = new[]
+        int financialYearDays = recipe.GeneratePeriodicRaces ? calendarPeriodDays : 365;
+        List<CalendarEntry> calendarEntries = new();
+        if (recipe.CalendarRaces.Count > 0)
         {
-            new CalendarEntry(initialRaceEntryId, calendarPeriodDays, CalendarEntryKind.Race, "Skeleton race"),
-        };
+            foreach (CalendarRaceDefinition race in recipe.CalendarRaces)
+            {
+                calendarEntries.Add(new CalendarEntry(
+                    allocator.Allocate(),
+                    race.DayNumber,
+                    CalendarEntryKind.Race,
+                    race.Name,
+                    RaceContentId: race.Id));
+            }
+        }
+        else
+        {
+            calendarEntries.Add(new CalendarEntry(
+                allocator.Allocate(),
+                calendarPeriodDays,
+                CalendarEntryKind.Race,
+                "Skeleton race",
+                RaceContentId: RacePreparationDefaults.PrototypeScenarioId));
+        }
+
+        List<OrganizationRaceEntry> organizationRaceEntries = new();
+        foreach (Organization organization in organizations)
+        {
+            foreach (CalendarEntry entry in calendarEntries)
+            {
+                string raceContentId = entry.RaceContentId ?? RacePreparationDefaults.PrototypeScenarioId;
+                organizationRaceEntries.Add(new OrganizationRaceEntry(organization.Id, raceContentId, Entered: true));
+            }
+        }
 
         return new WorldState(
             $"{recipe.ContentIdentity.ScenarioId}:{seed}",
@@ -714,13 +1369,24 @@ public sealed class GameApplication
             raceCount: 0,
             lastRace: null,
             calendarPeriodDays: calendarPeriodDays,
-            calendarEntries: calendarEntries);
+            calendarEntries: calendarEntries,
+            riderCareers: riderCareers,
+            organizationRaceEntries: organizationRaceEntries,
+            riderContracts: riderContracts,
+            generatePeriodicRaces: recipe.GeneratePeriodicRaces,
+            financialYearDays: financialYearDays);
     }
 
     private static int ReadCalendarPeriodDays(WorldRecipe recipe)
     {
         RulesModuleIdentity? calendar = recipe.RulesModules.FirstOrDefault(
             module => string.Equals(module.Slot, "calendarStructure", StringComparison.Ordinal));
+        if (calendar is not null &&
+            string.Equals(calendar.ParameterIdentity, "calendar-from-content", StringComparison.Ordinal))
+        {
+            return 365;
+        }
+
         const string prefix = "days-per-season:";
         if (calendar is not null &&
             calendar.ParameterIdentity.StartsWith(prefix, StringComparison.Ordinal) &&

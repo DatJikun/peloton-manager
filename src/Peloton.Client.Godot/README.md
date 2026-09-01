@@ -1,9 +1,54 @@
-# Godot client
+# Peloton.Client.Godot
 
-Presentation only. Open `project.godot` in Godot 4.4 .NET.
+Godot .NET presentation host. The main scene is a **career shell** (desk, squad, staff,
+calendar, sponsors, finance, scouting, market, history, manager, help). Empty domains
+draw **look-catalog** numbers from `CareerLookCatalog` (the HTML POC) so the screens
+are not blank. That catalog is **not** World. Real Application lives on the desk:
+calendar day, inbox, next command, save.
 
-- Main scene: `CareerShell.tscn` — management chrome copied from `peloton-manager-full-ui-poc-v3.html`. Hub / calendar / inbox / people queries are real. Staff, finance, scouting, market, and look OVR come from `CareerLookCatalog` and do not write to World.
-- `WatchRace.tscn` — blocking RaceLive window. Career shell hides while a stage is watched.
-- Hosts (`CareerShellHost`, `WatchRaceHost`) are Godot-free and covered by `tests/Peloton.Client.Godot.Tests`.
+This is **not** Career Hub. Career Hub (PR #4) stays rejected. The shell is look /
+presentation, not a playable world for those empty domains.
 
-The client issues Application Commands and reads knowledge-bounded Queries. It does not own World State or open SQLite.
+Watch Race is a **demo overlay**, not the play path (D-043). The owner has not
+accepted it as the main screen.
+
+## What this is
+
+- Godot 4.x + .NET 8 C# (Godot Mono / .NET).
+- Windows-first target for a later playable client.
+- Today: career shell + Watch overlay + compile stub. No playable career loop.
+- Headless tests stay in `tests/Peloton.Client.Godot.Tests` (`dotnet test` from repo root).
+  Those tests do not need a Godot editor.
+
+## What this is not
+
+- Not the simulation. World, Commands, and Simulation stay in Application.
+- Not a second client. HTML files are design references (`HTML_UI_LAB.md`), not a
+  playable surface.
+- Not Career Hub. Do not treat this shell as that rejected product.
+- Not a reason to close §49.
+
+## Opening in Godot (Windows)
+
+Godot is **not** installed in the Cloud Agent Linux environment. On a Windows machine
+with Godot 4.x .NET:
+
+1. Install [Godot 4.x .NET](https://godotengine.org/download) (not the non-.NET build).
+2. Open this folder as a Godot project (`project.godot`).
+3. Confirm the .NET solution builds from Godot's C# / Build panel.
+4. Press Play. The career shell should open (not Watch Race).
+
+If the C# build fails, run `dotnet build` from the repo root first so the Godot
+project can see `Peloton.Application` and `Peloton.Contracts`.
+
+## Layout
+
+```
+project.godot                 Godot project (main scene = CareerShell)
+CareerShell.tscn / .cs        Career shell: desk + look catalog for empty domains
+CareerShellViews.cs           Per-screen layout (desk, squad, staff, …)
+CareerLookCatalog.cs          Static POC numbers (Godot-free; used by tests)
+LookChrome.cs / LookCharts.cs Shared widgets (fonts, chips, avatars, charts)
+WatchRace.tscn / .cs          Watch overlay (D-043: not the play path)
+Main.tscn / Main.cs           Compile stub (kept; not the main scene)
+```

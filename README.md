@@ -1,11 +1,12 @@
 # Peloton Manager
 
-Headless .NET 8 architecture skeleton plus a race prototype. It creates a tiny JSON-defined world, advances the whole world, runs a deterministic prototype race, and saves/loads a career from an embedded SQLite file.
+Headless .NET 8 architecture skeleton plus a race prototype, with a Godot career shell and a Watch Race overlay. It creates a JSON-defined world, advances the whole world, runs a deterministic prototype race, and saves/loads a career from an embedded SQLite file.
 
 ## Requirements
 
 - a .NET SDK capable of targeting `net8.0`;
-- no Godot installation for build or test;
+- no Godot installation for headless build or test;
+- Godot 4.4 .NET only if opening the career shell;
 - Windows, Linux, or another .NET 8-supported headless environment.
 
 ## Build and test
@@ -38,12 +39,12 @@ The skeleton calendar is deliberately short: one season is 12 calls to `AdvanceD
 
 ## Godot client
 
-`src/Peloton.Client.Godot` is presentation only (Commands + Queries). Open `src/Peloton.Client.Godot/project.godot` in Godot 4.4 .NET. Main scene: career shell (`CareerShell.tscn`) with Watch Race as a blocking overlay. Headless tests do not need Godot installed.
+`src/Peloton.Client.Godot` is presentation only (Commands + Queries). Open `src/Peloton.Client.Godot/project.godot` in Godot 4.4 .NET. Main scene: career shell (`CareerShell.tscn`) with Watch Race as a blocking overlay. It is not Career Hub. Headless tests do not need Godot installed.
 
 ## UI lab
 
-Static HTML prototypes live at the repository root. The current career-shell look is `peloton-manager-full-ui-poc-v3.html` (index: `HTML_UI_LAB.md`). Ancestors: `08e-constructivist-desk.html`, `10-dashboard-constructivist.html`, `12-dashboard-team-mid.html`, `14-race.html`. Rejected variants are under `archive/`. The avatar experiment is `experiments/avatar_prototype/`. These are not Godot and not the headless career loop.
+Static HTML prototypes live at the repository root. The current career-shell look is `peloton-manager-full-ui-poc-v3.html` (index: `HTML_UI_LAB.md`). Ancestors: `08e-constructivist-desk.html`, `10-dashboard-constructivist.html`, `12-dashboard-team-mid.html`, `14-race.html`. Rejected variants are under `archive/`. The avatar experiment is `experiments/avatar_prototype/`. These are look references, not Godot and not the headless career loop.
 
 ## Known difference from the race contract
 
-Official results come from `PrototypeRaceEngine`, not a seed-ranked stub. The prototype is still below `RACE_ENGINE_DESIGN_v0.2.md`: one-second `double` steps, synthetic content, simplified shelter/knowledge, no Godot, and the owner §49 fun gate is not verified. See `KNOWN_DIFFERENCE_FROM_CODE.md`.
+Official results come from `PrototypeRaceEngine`, not a seed-ranked stub. The prototype is still below `RACE_ENGINE_DESIGN_v0.2.md`: one-second `double` steps, simplified shelter/knowledge. Career races bind to world `RiderCareer` rows; standalone SimRunner `race` still uses the disconnected fixture. Godot Watch exists as an overlay, not the play path (D-043). The owner §49 fun gate is not verified. See `KNOWN_DIFFERENCE_FROM_CODE.md`.

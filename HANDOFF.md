@@ -10,13 +10,46 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`Watch Race on Godot (D-033)`
+`Career WorldTour slice` — landed (`CAREER_WORLDTOUR_SLICE_v0.1.md` phases 1–7)
 
 ### Goal
-First playable Watch Race window: prep → Confirm → `StartRaceCommand` → D-033 supervising clock, interpolated map icons, decision pause, Results from `LastRace`. Do not close §49.
+The people in the club are the people who race. Results become career history. Then form-on-day, pre-season race picks, pre-race strategy, contracts, and a 2026 WorldTour content pack. Do not close §49 with automations. Do not build Career Hub.
 
 ### Status
-Open `src/Peloton.Client.Godot/project.godot` in Godot 4.4 .NET. Main scene is the career shell (`CareerShell.tscn`): sidebar + desk from `peloton-manager-full-ui-poc-v3.html`. Hub date, Advance Day / Race next, inbox archive, save/load, and skeleton people stay Application Queries. Staff / sponsors / finance / scouting / market / look calendar / look OVR come from `CareerLookCatalog` (POC fiction, not World). Actions on those screens toast and do not mutate save. RaceLive still opens the blocking Watch Race window. HTML look lab stays the drawing, not a second client. Headless CLI is unchanged. §49 remains `NOT VERIFIED`. `D-032` remains deferred. SchemaVersion remains 1.
+Owner (player) directed the slice on 2026-08-31 (D-036–D-042) and 2026-09-01 (D-043–D-044). **Phases 1–7 landed.** Phase 7 (2026-09-01): results filter by any organization; thin contract negotiation in Management; SQLite SchemaVersion 7.
+
+Godot career shell (`CareerShell.tscn`) is the main scene: POC v3 chrome. Hub date, Advance Day / Race next, inbox, save/load, and skeleton people stay Application Queries. Staff / sponsors / finance / scouting / market / look calendar / look OVR come from `CareerLookCatalog` (POC fiction, not World). Those actions toast and do not mutate save. Watch Race remains a blocking overlay, not the play path (D-043). HTML look lab stays the drawing, not a second client. §49 remains `NOT VERIFIED`. `D-032` remains deferred.
+
+## Gdzie jest gra (dla właściciela)
+Nie ma jeszcze pełnej gry managerskiej.
+
+Działa:
+- wyścig: **symulacja i wynik** (D-043); wynik można filtrować po każdej ekipie;
+- w CLI pętla dnia i ten sam człowiek na starcie co w klubie;
+- wynik zapisuje się na karierze kolarza (`RiderCareerResult`);
+- Advance Day zmienia formę / świeżość / zmęczenie; wyścig używa readiness na CP/Pmax (faza 2);
+- przedsezonowy wybór startów i strategia przed Confirm (faza 3);
+- kontrakty, wypłaty, wygaśnięcie, **cienkie negocjacje** oferty pensji/daty (D-044);
+- paczka WorldTour 2026: 18 ekip, 72 kolarzy, kalendarz 36 wyścigów, cap 12 na starcie;
+- cienka ekonomia: kasa, sponsor vs płace, notatka o debecie;
+- Godot: powłoka kariery (wygląd z laboratorium HTML); puste działy to rysunek, nie świat.
+
+Właśnie budujemy:
+- czekamy na kolejny kierunek właściciela.
+
+Jeszcze nie:
+- nie rozbudowujemy Watch Race (odrzucony jako sposób gry);
+- nie ma Career Hub (odrzucony);
+- nie ma scoutingu, dynamicznego rynku sponsorów ani AI managerów w świecie (ekrany Godota pokazują tylko katalog wyglądu);
+- §49 nie jest zaliczone — to ręczny playtest właściciela.
+
+Tryby All / Guessed / None (widać / częściowo / ukryte OVR i POT) zostają. Nie dokładamy czwartej mgły.
+
+„Eventy dnia” = po Advance Day świat coś robi (forma, regeneracja, terminy, kasa), nie tylko +1 na dacie.
+
+Pieniądze: kasa klubu, płace kolarzy, sponsor tytułowy płaci dzienną opłatę — bez ukrytego podatku.
+
+Baza 2026: 18 ekip męskiego WorldTour w `scenario.peloton.wt-2026`. Fizjologia, płace i budżety są oszacowane. 3 lata licencji WT i niższe ligi są w modelu; silnik wyścigu ma cap 12 na starcie.
 
 ## What works now
 - [x] High-level game design v0.7
@@ -65,7 +98,7 @@ Open `src/Peloton.Client.Godot/project.godot` in Godot 4.4 .NET. Main scene is t
 - [x] World Spy / shared Decision Trace Framework v0.1
 - [x] AI Development Rules v0.1
 - [x] GitHub Workflow v0.1
-- [x] Codebase Map template
+- [x] Codebase Map (ACTIVE navigation, not a blank template)
 - [x] UI Sitemap v0.1 (DRAFT)
 - [x] Game States v0.1 (DRAFT)
 - [x] Minimal Data Model v0.1 (DRAFT)
@@ -73,10 +106,19 @@ Open `src/Peloton.Client.Godot/project.godot` in Godot 4.4 .NET. Main scene is t
 - [x] Rulesets v0.1 (DRAFT)
 - [x] Save Format v0.1 (DRAFT)
 - [x] Testing v0.1 (DRAFT)
+- [x] Manager-games + cycling-as-management research (RESEARCH SOURCE, 2026-08-31) — nie zmienia locków
+- [x] Docs snapshot 2026-08-31: Godot Watch is real (not a stub); Composer 2.5 coding lock (D-035)
+- [x] Career WorldTour slice phase 1 — world–race bind (`RiderCareer`, SchemaVersion 2, career results)
+- [x] Career WorldTour slice phase 2 — form / freshness / fatigue on Advance Day and in official races
+- [x] Career WorldTour slice phase 3 — pre-season entry + pre-race strategy (`OrganizationRaceEntry`, SchemaVersion 3)
+- [x] Career WorldTour slice phase 4 — rider contracts (`RiderContract`, `ClubRosterProjection`, SchemaVersion 4)
+- [x] Career WorldTour slice phase 5 — WT 2026 pack (`scenario.peloton.wt-2026`, SchemaVersion 5, 12-rider cap)
+- [x] Career WorldTour slice phase 6 — thin economy (`CashEur`, `ClubFinanceProjection`, SchemaVersion 6)
+- [x] Career WorldTour slice phase 7 — results filter by any org (D-043) + thin contract negotiation (D-044, SchemaVersion 7)
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task
-`Owner playtest of Godot career shell + Watch Race. Do not close §49 with automations. Do not implement D-032. Look catalog is presentation only — do not write HTML OVR/cash/scouting into World or Commands.`
+`Phase 7 landed. Godot career shell is look-only presentation (not Career Hub). Next slice work TBD by owner (no Watch Race UI expansion, no Career Hub, no tenth GameState, do not write look-catalog OVR/cash into World).`
 
 ## Known blockers
 - None.
@@ -96,6 +138,18 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
+- `2026-09-01` — **Phase 7 landed (Composer):** `RaceResultForOrganization` (any team); `Begin/Set/Confirm/CancelContractNegotiationCommand`; SchemaVersion 7 / checksum v7. Watch Race UI not expanded.
+- `2026-09-01` — **Watch Race is not the play path (D-043).** Simulate then results; filter classification by any team. Do not expand Godot Watch. Career Hub stays rejected. Docs until now had rejected Career Hub (PR #4), not Watch Race — this is the new lock.
+- `2026-09-01` — **Thin contract negotiation (D-044):** offer wage + end date to own / unattached / other-club rider. Loyalty in the accept formula. No agent board game. No tenth GameState.
+- `2026-08-31` — **Phase 6 specified:** club cash, daily wage vs title-sponsor fee, no luxury tax, SchemaVersion 6. Prep title uses the calendar race name.
+- `2026-08-31` — **Phase 5 landed (Composer):** `scenario.peloton.wt-2026` CreateWorld, 18 orgs, 72 riders, 36-race calendar, 12-starter prototype cap, `calendar-from-content`, SchemaVersion 5 / checksum v5. Skeleton soak unchanged.
+- `2026-08-31` — **Phase 5 specified:** `scenario.peloton.wt-2026` CreateWorld, 18 orgs, thin 4-rider estimated squads, 36-race content calendar, prototype 12-starter cap, SchemaVersion 5. Skeleton soak stays.
+- `2026-08-31` — **Phase 4 landed (Composer):** `RiderContract` wage/expiry, nullable `RiderCareer.OrganizationId`, `ClubRosterProjection`, contract expiry on Advance Day, SQLite SchemaVersion 4 / checksum v4. Independently rechecked: 7/7 `CareerWorldTourPhase4` tests pass.
+- `2026-08-31` — **Phase 4 specified:** `RiderContract` (not manager `Employment`), wage + inclusive expiry, nullable club id, SchemaVersion 4. Loyalty stored/queried only. No transfer market this phase.
+- `2026-08-31` — **Phase 3 landed (Composer):** pre-season `PreSeasonPlanningFlow` (draft entry by `RaceContentId`), `OrganizationRaceEntry`, player race-due gating, delegated auto-sim on skipped race days, `SetRacePreparationStrategyCommand` + `PREP_STRATEGY_INCOMPLETE`, SQLite SchemaVersion 3 / checksum v3. Gate green: format/build/test (132 tests) + SimRunner gates.
+- `2026-08-31` — **Phase 1 landed (Composer):** world–race bind.
+- `2026-08-31` — Career WorldTour slice: bind world to race; 2026 WT pack; contracts; no minigames; All/Guessed/None stay the visibility model; AI managers wait (D-036–D-042).
+- `2026-08-31` — Composer 2.5 is the default coding subagent; Grok 4.6 High writes docs and reviews (D-035). Owner is a player giving feedback, not a programmer.
 - `2026-08-25` — Nie wysyłać właścicielowi maili o zmianach; status tylko w czacie agenta.
 - `2026-08-25` — Mergować, gdy high-level check jest OK; nie czekać na „merguj”. Nie mergować tylko przy poważnych problemach.
 - `2026-08-24` — Windows jest pierwszym targetem; preferowany stack to Godot .NET + C#.
@@ -145,6 +199,7 @@ Wcześniejszy Ping-Pong Manager był rozwijany przez miesiące z AI i techniczni
 VISION.md
 DECISIONS.md
 DOCS.md
+AGENTS.md
 Peloton_Manager_design_notes_v1.0.md
 ARCHITECTURE.md
 UI_SITEMAP_v0.1.md
@@ -160,6 +215,7 @@ DESIGN_PRINCIPLES_AND_ANTI_PATTERNS.md
 AI_MANAGER_SYSTEM_v0.2.md
 LONG_SAVE_AND_PERFORMANCE_v0.2.md
 RACE_ENGINE_DESIGN_v0.2.md
+KNOWN_DIFFERENCE_FROM_CODE.md
 RACE_SPY_DEBUGGING_v0.1.md
 WORLD_SPY_AND_DECISION_TRACING_v0.1.md
 AI_DEVELOPMENT_RULES_v0.1.md
@@ -167,6 +223,8 @@ GITHUB_WORKFLOW_v0.1.md
 CODEBASE_MAP.md
 RACE_ENGINE_RESEARCH_2026-08-25.md
 HTML_UI_LAB.md
+MANAGER_GAMES_AND_CYCLING_RESEARCH_2026-08-31.md
+CAREER_WORLDTOUR_SLICE_v0.1.md
 ```
 
 ## Commands to run first
@@ -206,16 +264,21 @@ Main scene is `CareerShell.tscn`. `WatchRace.tscn` remains a standalone RaceLive
 - Nie zapisuj OVR/POT/kasy/skautingu z katalogu wyglądu do World, SQLite ani Commandów. To nie true ability (D-003 / D-010 / D-014).
 - Nie twórz `new Random()` w systemach gameplayowych.
 - Nie zmieniaj schema save/content bez migration planu.
-- Nie traktuj starych dokumentów jako aktualnych bez sprawdzenia statusu.
-- Nie rozszerzaj scope'u taska bez wskazania PLAYER VALUE.
+- Nie traktuj starych dokumentów jako aktualnych bez sprawdzenia statusu (`HANDOFF.md`, `CODEBASE_MAP.md`, `KNOWN_DIFFERENCE_FROM_CODE.md`).
+- Nie twierdź, że Godot jest pustym stubem — career shell i Watch Race są oknami prezentacji.
+- Nie rozszerzaj Godot Watch Race jako ścieżki gry (D-043). Nie traktuj `CareerShell.tscn` jako Career Hub (PR #4).
+- Nie odpalaj kodujących subagentów z `inherit` (to Grok); kod to Composer 2.5 (D-035).
+- Nie rozszerzaj scope'u taska bez wskazania PLAYER VALUE i bez decyzji właściciela.
 - Nie zamykaj OQ-TS-001 ani OQ-DM-001 na podstawie checksumy lub allocatora szkieletowego.
 
 ## Handoff summary
-Milestone 0 still supplies the headless .NET 8 spine. The race prototype is the official result path: `PrototypeRaceEngine` plus `content/peloton.race-prototype`, Application commands `StartRaceCommand` / `AdvanceRaceCommand` / `RespondToRaceDecisionCommand` / `BeginRaceWatchCommand` / `AdvanceRaceWatchCommand` / `AbandonRaceLiveCommand`, and SimRunner `race`. A pending DecisionRequest stays in `RaceLive`. SimRunner `watch` and career `day --watch-from-prep` keep the D-033 supervising clock. Godot (`src/Peloton.Client.Godot`) presents the career shell (`CareerShell.tscn`, POC v3 chrome, Hub queries plus `CareerLookCatalog` for empty domains) and the blocking Watch Race window. Renderer does not drive physics. Look-catalog OVR/cash is not World. The owner look drawing remains `peloton-manager-full-ui-poc-v3.html` (`HTML_UI_LAB.md`). After Simulate/Watch, `RaceResultProjection` and `RaceDebriefProjection` present the committed result without a second `RunBatch`. Spy OFF/ON must match checksum and finish order. `StubRaceEngine` is gone from production assemblies. SQLite `SchemaVersion` remains 1. Owner §49 remains `NOT VERIFIED`. `D-032` is deferred.
+Milestone 0 still supplies the headless .NET 8 spine. The race prototype is the official result path: `PrototypeRaceEngine` plus `content/peloton.race-prototype`, Application commands `StartRaceCommand` / `AdvanceRaceCommand` / `RespondToRaceDecisionCommand` / `BeginRaceWatchCommand` / `AdvanceRaceWatchCommand` / `AbandonRaceLiveCommand`, and SimRunner `race`. A pending DecisionRequest stays in `RaceLive`. SimRunner `watch` and career `day --watch-from-prep` keep the D-033 supervising clock. Godot (`src/Peloton.Client.Godot`) presents the career shell (`CareerShell.tscn`, POC v3 chrome, Hub queries plus `CareerLookCatalog` for empty domains) and the blocking Watch Race overlay (not the play path, D-043). Renderer does not drive physics. Look-catalog OVR/cash is not World. The owner look drawing remains `peloton-manager-full-ui-poc-v3.html` (`HTML_UI_LAB.md`). After Simulate/Watch, `RaceResultProjection` and `RaceDebriefProjection` present the committed result without a second `RunBatch`. Spy OFF/ON must match checksum and finish order. `StubRaceEngine` is gone from production assemblies. SQLite `SchemaVersion` is **7**. Owner §49 remains `NOT VERIFIED`. `D-032` is deferred.
 
 This tree joins that career loop onto `main` without dropping the HTML UI lab. The paragraph below preserves the pre-bootstrap design context and owner lessons; implementation status is given above and in `CODEBASE_MAP.md`.
 
 Peloton Manager jest na etapie pre-production. Celem jest modularny, deterministyczny manager kolarstwa z matematyczną symulacją i emergent history. Epoki składają się z niezależnych modułów content/rules. Race gameplay jest krytycznym ryzykiem: wcześniejszy projekt managerski właściciela okazał się nudny przez brak ciekawych decyzji w trakcie meczu, więc realizm nie może usprawiedliwiać pasywnej rozgrywki. RNG musi być izolowany per domena, aby kosmetyczne zmiany nie wpływały na gameplay. Truth należy do Simulation, natomiast Knowledge do konkretnych organizacji. Human i AI używają tych samych Application Commands oraz rynku; AI nie posiada magicznego dostępu do ukrytych atrybutów. Wyniki są evidence, a nie bezpośrednim odczytem ability. Dossier jest sprawą rekrutacyjną z kontaktem z agentem, a nie paskiem postępu. UI Godota nie może posiadać logiki świata. Advance Day jest jedyną podstawową jednostką postępu UX, ale scheduler pozostaje event-driven i symuluje cały świat niezależnie od gracza. AI managerowie korzystają z tych samych Commands co człowiek; ich różnorodność wynika z traits, skills, knowledge, staffu, identity organizacji i kontekstu rulesetu. Efektywność cech managerów jest mierzona przez batchowe i 100-letnie symulacje w wielu epokach. Stable IDs nigdy nie są ponownie używane, a stare encje są kompaktowane zamiast kasowane z historii. UI Sitemap, Game States, minimalny Data Model, Content Format, Rulesets, Save Format i Testing są w DRAFT i czekają na owner review. Content resolution zapisuje dokładną tożsamość packów, dependencies i overrides. Rules modules składają świat bez globalnego przełącznika epoki, a ich przejścia są effective-dated. Save jest kontraktem pliku SQLite z wersją schematu, obowiązkową migracją, recovery i dokładną content/rules identity; nie zawiera mid-race snapshotu ani scheduler runtime jako World State. Testing definiuje warstwy, golden families, kanoniczny przepis Dynamic+Advanced+Guessed i gate Milestone 0; nie zamyka fun gate'u automatami. Race prototype v0 jest oficjalną ścieżką wyników, ale nadal poniżej pełnego kontraktu `RACE_ENGINE_DESIGN_v0.2.md`; §49 pozostaje do ręcznego playtestu właściciela.
+
+- `2026-08-31` — Research źródłowy `MANAGER_GAMES_AND_CYCLING_RESEARCH_2026-08-31.md`: kolarstwo poza rowerem (sponsor-vehiculum, licencje UCI, kalendarz szczytów, rynek bez okna FIFA) oraz gatunek menedżerów (FM/CM/OOTP/PCM/F1/MM). Nie zmienia locków; potwierdza VISION/DECISIONS i uzupełnia lukę obok researchu wyścigu.
 
 - `2026-08-25` — Race Spy jest obowiązkowym, RNG-neutral narzędziem debugowym od pierwszego headless race spike; porównuje truth z actor knowledge i generuje reprodukowalne raporty decyzji.
 
@@ -234,6 +297,8 @@ Peloton Manager jest na etapie pre-production. Celem jest modularny, determinist
 - `2026-08-26` — Skill `peloton-avatars` przetestowany na obcym agencie (dodanie fryzury wyłącznie z instrukcji). Test wykrył realny defekt: literówka w kluczu przepisu (`excludes_tags` zamiast `excludes`) przechodziła całą bramkę i publikowała asset bez reguły blokującej. Naprawione: `check_recipe` odrzuca nieznane klucze, nieznane style i nieznane tagi z podpowiedzią; doszedł `scripts/asset_usage.py` (udział assetu w puli + licznik naruszeń blokady); `asset_pack_version` dostaje odcisk liczony ze stylu, tabeli assetów i bajtów wszystkich PNG (wcześniej `flat` i `flat_outline` miały tę samą wersję, czyli kolizję cache), a `asset_table_hash` pilnuje, żeby plansza porównania stylów nie mieszała świeżych i nieświeżych pakietów. Self-test: 45 asercji.
 - `2026-08-27` — Właściciel kazał złączyć pętlę kariery z `main`. Jedno drzewo: PrototypeRaceEngine + Hub/inbox/prep/Watch razem z HTML labem (`08e` / `10` / `12` / `14-race.html`). Godot Watch i §49 nadal otwarte.
 - `2026-08-28` — Pierwszy Watch Race w Godot (D-033): okno oglądania etapu, nie Career Hub. §49 nadal `NOT VERIFIED`.
+- `2026-08-31` — Dokumenty zsynchronizowane ze stanem kodu: Godot Watch nie jest stubem; `CODEBASE_MAP.md` ACTIVE; Composer 2.5 lock (D-035). Czekamy na feedback właściciela, bez nowego systemu z urzędu.
+- `2026-08-31` — Owner slice: most świat–wyścig, historia kariery, WT 2026, kontrakty, bez minigier (D-036–D-042). `CAREER_WORLDTOUR_SLICE_v0.1.md`.
 - `2026-08-31` — Właściciel wskazał `peloton-manager-full-ui-poc-v3.html` jako dobry wstęp wyglądu **większości** ekranów kariery (konstruktywizm 08e, niebieska szyna, Biurko + sidebar). To look lab, nie druga gra. RaceLive zostaje osobnym oknem. Nie wdrażać OVR/POT z PoC jako true ability.
 - `2026-08-31` — Właściciel kazał przenieść ten wygląd do Godota. `CareerShell.tscn` kopiuje chrome; Biurko/kalendarz/skrzynka/ludzie biorą Query ze szkieletu. Puste działy zostają puste. Watch Race nadal blokuje powłokę.
 - `2026-08-31` — Właściciel kazał dodać brakujące działy. Godot pokazuje katalog wyglądu (Beskid–Vetter, OVR, kasa, skauci) jako rysunek; belka dnia i Advance Day / Race next zostają ze świata. Negocjacje i oferty nie zapisują się.

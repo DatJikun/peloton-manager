@@ -36,11 +36,45 @@ public sealed class JsonRacePrototypeCatalog : IRaceScenarioCatalog
     public RaceScenario Resolve(string scenarioId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(scenarioId);
+        return Build(ValidateScenario(scenarioId));
+    }
+
+    public RaceScenarioTemplate ResolveTemplate(string scenarioId)
+    {
+        ValidatedScenario validated = ValidateScenario(scenarioId);
+        return BuildTemplate(validated);
+    }
+
+    private ValidatedScenario ValidateScenario(string scenarioId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(scenarioId);
         if (!Directory.Exists(contentRoot))
         {
             throw Issue("CONTENT_ROOT_MISSING", contentRoot, "$", "Content root does not exist.");
         }
 
+        List<LocatedScenario> definitions = LoadLocatedScenarios();
+        ValidatedScenario[] validatedDefinitions = definitions
+            .OrderBy(item => item.Definition.Id, StringComparer.Ordinal)
+            .ThenBy(item => item.ResourcePath, StringComparer.Ordinal)
+            .Select(Validate)
+            .ToArray();
+        ValidatedScenario? selected = validatedDefinitions.FirstOrDefault(
+            item => string.Equals(item.Source.Id, scenarioId, StringComparison.Ordinal));
+        if (selected is null)
+        {
+            throw Issue(
+                "SCENARIO_NOT_FOUND",
+                contentRoot,
+                "$.definitions",
+                $"Race prototype scenario '{scenarioId}' was not found.");
+        }
+
+        return selected;
+    }
+
+    private List<LocatedScenario> LoadLocatedScenarios()
+    {
         List<LocatedScenario> definitions = new();
         foreach (string packPath in Directory
                      .EnumerateFiles(contentRoot, "pack.json", SearchOption.AllDirectories)
@@ -113,23 +147,63 @@ public sealed class JsonRacePrototypeCatalog : IRaceScenarioCatalog
                 "Race scenario definition IDs must be unique under ordinal case-insensitive comparison.");
         }
 
-        ValidatedScenario[] validatedDefinitions = definitions
-            .OrderBy(item => item.Definition.Id, StringComparer.Ordinal)
-            .ThenBy(item => item.ResourcePath, StringComparer.Ordinal)
-            .Select(Validate)
-            .ToArray();
-        ValidatedScenario? selected = validatedDefinitions.FirstOrDefault(
-            item => string.Equals(item.Source.Id, scenarioId, StringComparison.Ordinal));
-        if (selected is null)
-        {
-            throw Issue(
-                "SCENARIO_NOT_FOUND",
-                contentRoot,
-                "$.definitions",
-                $"Race prototype scenario '{scenarioId}' was not found.");
-        }
+        return definitions;
+    }
 
-        return Build(selected);
+    private static RaceScenarioTemplate BuildTemplate(ValidatedScenario validated)
+    {
+        RaceScenarioDocument source = validated.Source;
+        RaceDefinition route = new(
+            source.Route!.Id!,
+            source.AirDensityKgPerM3,
+            source.Route.Segments!.Select(segment => new RaceRouteSegment(
+                segment.Id!,
+                segment.LengthM,
+                segment.Gradient,
+                segment.RoadWidthM,
+                segment.WindSpeedMps,
+                segment.WindYawDegrees)).ToArray());
+        Dictionary<string, RaceTeamTemplate> teams = validated.Teams.Values
+            .OrderBy(team => team.Id, StringComparer.Ordinal)
+            .ToDictionary(
+                team => team.Id,
+                team => new RaceTeamTemplate(team.Id, team.Objective, team.Briefing),
+                StringComparer.Ordinal);
+        RaceCommandTemplate[] commands = source.Commands!
+            .OrderBy(command => command.SimulationSecond)
+            .ThenBy(command => command.TeamId, StringComparer.Ordinal)
+            .ThenBy(command => command.RiderId, StringComparer.Ordinal)
+            .Select(command => new RaceCommandTemplate(
+                command.SimulationSecond,
+                command.TeamId!,
+                command.RiderId!,
+                Enum.Parse<RaceCommandKind>(command.Intent!, ignoreCase: false)))
+            .ToArray();
+        RaceTacticalPlanTemplate[] tacticalPlans = source.TacticalPlans!
+            .OrderBy(plan => plan.TriggerSecond)
+            .ThenBy(plan => plan.TeamId, StringComparer.Ordinal)
+            .Select(plan => new RaceTacticalPlanTemplate(
+                plan.TriggerSecond,
+                plan.TeamId!,
+                plan.SupportRiderId!,
+                plan.OfficialGapSeconds,
+                plan.VisibleSplit,
+                Enum.Parse<RacePositionBand>(plan.LeaderPositionBand!, ignoreCase: false),
+                Enum.Parse<RaceResourceEstimate>(plan.ResourceEstimate!, ignoreCase: false),
+                Enum.Parse<RaceThreatEstimate>(plan.ThreatEstimate!, ignoreCase: false),
+                Enum.Parse<RaceInformationConfidence>(plan.Confidence!, ignoreCase: false)))
+            .ToArray();
+        return new RaceScenarioTemplate(
+            source.Id!,
+            source.TuningIdentity!,
+            source.AirDensityKgPerM3,
+            source.InitialSpeedMps,
+            source.MaximumDurationSeconds,
+            route,
+            teams,
+            source.StartingOrder!,
+            commands,
+            tacticalPlans);
     }
 
     private static string ResolveResourcePath(
@@ -631,7 +705,8 @@ public sealed class JsonRacePrototypeCatalog : IRaceScenarioCatalog
         string? PackVersion,
         int ContentSchemaVersion,
         IReadOnlyList<ResourceDocument>? Resources,
-        IReadOnlyList<object>? Dependencies);
+        IReadOnlyList<object>? Dependencies,
+        string? Notes = null);
 
     private sealed record ResourceDocument(string? Kind, string? Path);
 
