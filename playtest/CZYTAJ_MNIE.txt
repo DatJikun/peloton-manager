@@ -3,11 +3,14 @@ Peloton Manager — playtest na Windows
 To jeszcze nie jest skończona gra. Niebieska powłoka kariery
 (Biurko, Skład, Sztab, kalendarz) plus prawdziwa pętla na świecie WorldTour.
 
-Sponsorzy, skauting i OVR na tych stronach to jeszcze rysunek.
-Nie zapisują się do kariery. Skład na biurku i w Kadra to prawdziwi
-kolarze z wybranego klubu (nie Beskid z HTML). Finanse na biurku
-i w widoku Finanse pokazują kasę klubu w euro ze świata. Oferty
-kontraktów na karcie zawodnika (Skład) zapisują się przez świat.
+Rok zawsze zaczyna się 1 stycznia 2026. Daty są kalendarzowe
+(np. 24 marca 2026), nigdy „dzień 247”.
+
+Sponsorzy i skauting to jeszcze rysunek (napis: Jeszcze nie w tej wersji).
+Nie zapisują się do kariery. Herb po lewej to wybrany klub (INEOS, UAE…),
+nie Beskid z HTML. Skład i rynek to prawdziwi kolarze ze świata.
+Finanse na biurku i w widoku Finanse pokazują kasę klubu w euro.
+Oferty kontraktów na Składzie i na Rynku zapisują się przez świat.
 
 Jak uruchomić
 1. Rozpakuj CAŁY folder, nie sam plik .exe.
@@ -24,9 +27,13 @@ Nowa gra
 
 Co robić na biurku
 - ADVANCE DAY — świat idzie o jeden dzień.
-- FINANSE — kasa klubu w euro, sponsor i płace (nie złotówki z rysunku).
-- SKŁAD — Negocjuj kontrakt, wpisz pensję/rok i dzień końca, Złóż ofertę.
-  Za niska pensja: Oferta odrzucona (nic się nie zmienia).
+- NADCHODZĄCE WYŚCIGI — maksymalnie pięć całych imprez (Tour = jeden wiersz).
+  Klik i „otwórz wyścig ›” pokazuje etapy.
+- KALENDARZ — siatka miesiąca Pon–Nie, nie lista etapów.
+- INBOX — sprawy ze świata albo „Brak spraw.”
+- FINANSE — kasa klubu w euro, sponsor i płace.
+- SKŁAD — kliknij nagłówek kolumny, żeby sortować. Negocjuj kontrakt.
+- RYNEK — filtr po klubie, Negocjuj kontrakt (poach).
 - W dzień wyścigu przycisk zmienia się na Race next.
 - W przygotowaniu ustaw jednego Leader i jednego Card, reszta wozi.
 - JEDŹ WYŚCIG — dostajesz wynik i tabelę.

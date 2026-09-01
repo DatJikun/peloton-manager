@@ -76,7 +76,7 @@ Not in code yet, though named in `DATA_MODEL_v0.1.md`: `OrganizationKnowledgeSto
 
 Remaining system design (do not treat as the next coding task unless `HANDOFF.md` says so):
 
-- **Next coding task:** D-052 career shell dates and HTML look — `CAREER_SHELL_DATES_AND_LOOK_v0.1.md`
+- **Next coding task:** CdA Road vs TT — do not close §49
 - Training / development that grows physiology toward POT
 - Yearly course re-generation after 2026 (generator exists; season rollover does not)
 - Rider aging / infinite career season rollover

@@ -10,13 +10,13 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md` (D-049) landed. **D-050/D-051 landed.** **Next: D-052** — absolute 2026 dates + HTML look repair (`CAREER_SHELL_DATES_AND_LOOK_v0.1.md`). CdA waits. Do not close §49.
+`RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md` (D-049) landed. **D-050/D-051/D-052 landed.** **Next:** CdA Road/TT wait (`RACE_ENGINE_DESIGN_v0.2.md` — do not close §49).
 
 ### Goal
-D-051 landed: desk / Skład / Finanse read `ClubFinanceProjection` (euro) and Skład writes D-044 contract offers. **Next: D-052** — absolute 1 Jan 2026 dates and HTML career-shell look (`CAREER_SHELL_DATES_AND_LOOK_v0.1.md`). CdA waits. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
+D-051 landed: desk / Skład / Finanse read `ClubFinanceProjection` (euro) and Skład writes D-044 contract offers. **D-052 landed:** 1 Jan 2026 dates, grouped upcoming races, month calendar, world inbox, employer crest, world market. **Next:** CdA Road/TT. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
 
 ### Status
-Owner (player) directed this on 2026-09-01. **D-049, D-050, and D-051 landed.** Classified Flat is a bunch sprint (sit-in, then last 250 m at peak power). Official WT starts are event-shaped (TDU 140, monuments 175, Grand Tours 176, other WT 154). After a stage the shell/CLI can show GC / points / KOM / youth / team. SimRunner `compare` puts prototype results next to 2025 analogues (not a script). Skeleton soak still uses the short proof circuit. SQLite SchemaVersion **9**.
+Owner (player) directed this on 2026-09-01. **D-049, D-050, D-051, and D-052 landed.** Classified Flat is a bunch sprint (sit-in, then last 250 m at peak power). Official WT starts are event-shaped (TDU 140, monuments 175, Grand Tours 176, other WT 154). After a stage the shell/CLI can show GC / points / KOM / youth / team. SimRunner `compare` puts prototype results next to 2025 analogues (not a script). Skeleton soak still uses the short proof circuit. SQLite SchemaVersion **9**.
 
 Feel probe seed `91234`: Philipsen 1 vs Pogačar 135 on the flattest stored Flat; Pogačar 8 vs Philipsen 133 on the biggest mountain. TDU starts 140. §49 stays open.
 
@@ -130,12 +130,13 @@ Baza 2026: 18 ekip męskiego WorldTour plus zaproszone ProTeamy / Australia w `s
 - [x] D-049 — bunch sprint + UCI-shaped fields + classification jerseys (`RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md`)
 - [x] D-050 — New Game club pick + pre-season entries + per-event leaders (WT world in the career shell; SchemaVersion 9)
 - [x] D-051 — desk / Skład / Finanse show world cash (euro) and D-044 contract offers on screen
+- [x] D-052 — absolute 2026 dates + HTML career-shell look (`CAREER_SHELL_DATES_AND_LOOK_v0.1.md`)
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 - [ ] CdARoad vs CdATT (prototype still has one `CdAM2` per rider)
 - [ ] Infinite career / season rollover / rider aging — later
 
 ## Next task
-Implement **D-052** (`CAREER_SHELL_DATES_AND_LOOK_v0.1.md`): 1 Jan 2026 dates, max five grouped upcoming races, HTML month calendar, real inbox, employer crest, no laboratory banners. Do not close §49. Do not rebuild Career Hub. Watch film stays off. Do not start CdA in the same tree.
+**CdA Road vs TT** and related race-engine gaps — do not close §49. Do not rebuild Career Hub. Watch film stays off by default. Do not start aging, year-2 routes, or sponsor market in the same tree.
 
 ## Known blockers
 - None.
@@ -166,7 +167,7 @@ dostał powiadomienie.
 ## Recent owner decisions
 - `2026-09-01` — **D-052 landed (Composer):** `CareerCalendarDates` (1 Jan 2026 epoch); grouped `SeasonEventProjection` / `UpcomingEvents` / `MarketRiders`; Polish inbox; Godot desk/calendar/rynek/squad crest/dates per `CAREER_SHELL_DATES_AND_LOOK_v0.1.md`.
 - `2026-09-01` — **D-052: 1 Jan 2026 dates + HTML look repair.** Calendar dates not “dzień N”; desk max five grouped events; month grid; world inbox in Polish; employer crest; no laboratory banners; Skład sorts + geometric avatars; Rynek is world riders filterable by club. Contract: `CAREER_SHELL_DATES_AND_LOOK_v0.1.md`.
-- `2026-09-01` — **Windows playtest zip refreshed** after D-050/D-051 (`playtest/PelotonManager-playtest-windows.zip`). Pack includes `peloton.wt-2026`. Staff/sponsors/scouting/market stay drawings.
+- `2026-09-01` — **Windows playtest zip refreshed** after D-050/D-051 (`playtest/PelotonManager-playtest-windows.zip`). Pack includes `peloton.wt-2026`. Staff/sponsors/scouting stay drawings; market is world riders after D-052.
 - `2026-09-01` — **D-051 landed (Composer):** Godot desk/finance show `ClubFinanceProjection` (euro); Skład contract offer via D-044 commands; staff/sponsors/scouting/market stay look catalog.
 - `2026-09-01` — **D-050 landed (Composer):** New Game WT club pick (`ListNewGameClubs`, `CreateWorldCommand` employer), pre-season designated leader per event (`SetSeasonRaceLeaderCommand`), `OrganizationRaceEntry.DesignatedLeaderId`, SchemaVersion 9 / checksum v9. Godot opens MainMenu club picker (not auto-skeleton). SimRunner `day --employer`. Default Alpecin CreateWorld unchanged for soak/tests.
 - `2026-09-01` — **D-050: club pick, calendar entries, per-event leaders first.** Not one rigid team. Infinite career and aging later. Content stays data-only JSON packs (riders/routes/teams); physics code is the engine, not a Lua mod. CdA and look-catalog finance wait.
