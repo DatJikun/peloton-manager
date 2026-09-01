@@ -157,3 +157,9 @@ Do not implement AI managers in this slice. Human/AI symmetry (D-002) still appl
 
 ## D-042 — Attribute visibility is All / Guessed / None
 The knowledge spine serves the existing New Game visibility axis. It is not a fourth fog-of-war mode. All may show OVR/POT. Guessed shows ranges and confidence. None does not show rival attributes; results are evidence. Do not build a scouting/dossier game until the owner asks.
+
+## D-043 — Race play path is Simulate + Results, not Watch Race
+Owner lock 2026-09-01: Watch Race is **not** the playable race product. After prep, the player **simulates** and reads **results**. Results can be **filtered by any organization** (public classification, not God-eye live physiology). Do not expand the Godot Watch Race window. Do not treat D-033 as a reason to build more watching UI. The supervising clock may remain in the engine; it is not the career loop. Career Hub stays rejected (PR #4). What was rejected in docs until this lock was Career Hub, not Watch Race — this decision corrects the play path.
+
+## D-044 — Thin contract negotiation, not an agent board game
+The player can offer a contract (annual wage + inclusive end day) to a rider: own roster (renew), unattached (sign), or another club (thin poach). Accept/reject is a closed formula from current wage and `Loyalty01`. No agent minigame, no counter-offer auction, no transfer fee this pass. Stays inside `Management` (D-031: no tenth GameState).

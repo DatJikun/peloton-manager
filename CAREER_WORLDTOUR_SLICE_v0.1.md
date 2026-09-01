@@ -645,3 +645,40 @@ Dynamic sponsor market, co-sponsor slots, luxury tax, inflation, marketability, 
 ## 4. Docs to keep current
 
 `HANDOFF.md`, `CODEBASE_MAP.md`, `KNOWN_DIFFERENCE_FROM_CODE.md`, `DATA_MODEL_v0.1.md` (RiderCareer), `DOCS.md`, this file.
+
+---
+
+## 5. Owner follow-up 2026-09-01 — Simulate + filter + negotiate
+
+### Watch Race
+
+Docs had **Career Hub** as rejected (PR #4). Watch Race was built as the first Godot window after D-033. The owner now rejects Watch Race as the way you play a race. **D-043:** Simulate, then results. Filter the classification by **any** team. Do not grow Godot Watch.
+
+### Results filter
+
+`RaceResultPlacement` includes `OrganizationId` and organization name. Queries may return the full order or only one org’s riders (with their race places). Legal for every organization. Results are public evidence (D-042). This is not live race God-eye.
+
+### Thin negotiation (D-044)
+
+Inside `Management` only (no tenth GameState):
+
+- `BeginContractNegotiationCommand(riderCareerId)`
+- `SetContractOfferCommand(annualWage, contractEndDay)`
+- `ConfirmContractOfferCommand` — accept or `CONTRACT_OFFER_REJECTED`
+- `CancelContractNegotiationCommand`
+
+Target: own rider (renew), unattached (sign), or another club’s rider (poach). No transfer fee. No agent board. Confirm replaces the active club link: old contract remains history with `EndDate = current day` if it was still active; new `RiderContract` starts today; `OrganizationId` becomes the employer.
+
+Accept formula (no RNG):
+
+```text
+currentWage = active contract AnnualWage, or 0 if unattached
+threshold   = currentWage == 0
+              ? 100000
+              : floor(currentWage * (1.10 - 0.20 * Loyalty01))
+accept if offerWage >= threshold AND offerEndDay > CurrentDate.DayNumber
+```
+
+High loyalty → cheaper to keep. Unattached floor 100_000. SchemaVersion **7**. Checksum v7.
+
+Tests: renew own rider; reject too-low offer; poach updates club; cancel discards; results filter returns only that org’s finishers; no tenth state; skeleton soak still runs.
