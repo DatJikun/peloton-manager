@@ -1647,8 +1647,16 @@ public sealed partial class CareerShellScreen
             return;
         }
 
-        selectedEventId = host.UpcomingEvents.FirstOrDefault()?.RaceContentId
-            ?? host.SeasonEvents.FirstOrDefault()?.RaceContentId;
+        if (host.UpcomingEvents.Count > 0)
+        {
+            selectedEventId = host.UpcomingEvents[0].RaceContentId;
+            return;
+        }
+
+        if (host.SeasonEvents.Count > 0)
+        {
+            selectedEventId = host.SeasonEvents[0].RaceContentId;
+        }
     }
 
     private SeasonEventProjection? FindSelectedEvent()
