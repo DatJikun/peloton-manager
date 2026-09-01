@@ -73,9 +73,12 @@ Not in code yet, though named in `DATA_MODEL_v0.1.md`: `OrganizationKnowledgeSto
 
 Remaining system design (do not treat as the next coding task unless `HANDOFF.md` says so):
 
+- **Next coding task is D-050** (club pick, calendar entries, per-event leaders) — see `HANDOFF.md`
 - Training / development that grows physiology toward POT
 - Yearly course re-generation after 2026 (generator exists; season rollover does not)
+- Rider aging / infinite career season rollover
 - Recruitment / AI managers / dynamic sponsor market
+- CdARoad vs CdATT (after D-050)
 
 Do not close the owner §49 fun gate with automations. Do not rebuild Career Hub. Watch film stays optional and off by default.
 
