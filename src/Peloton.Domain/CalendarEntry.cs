@@ -12,4 +12,6 @@ public sealed record CalendarEntry(
     string Title,
     string? OfficialResult = null,
     bool ResultAcknowledged = false,
-    string? RaceContentId = null);
+    string? RaceContentId = null,
+    int StageIndex = 1,
+    WorldEntityId? CourseProfileId = null);

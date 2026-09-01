@@ -13,7 +13,7 @@ namespace Peloton.Persistence;
 
 public sealed class SqliteWorldSaveStore : IWorldSaveStore
 {
-    public const int SchemaVersion = 7;
+    public const int SchemaVersion = 8;
 
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
 
@@ -323,6 +323,7 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         double Freshness01,
         double Fatigue01,
         double Loyalty01,
+        int PotentialOvr,
         IReadOnlyList<RiderCareerResultDto>? Results = null)
     {
         public RiderCareer ToDomain() => new(
@@ -347,6 +348,7 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
             Freshness01,
             Fatigue01,
             Loyalty01,
+            PotentialOvr,
             (Results ?? Array.Empty<RiderCareerResultDto>()).Select(result => result.ToDomain()));
 
         public static RiderCareerDto FromDomain(RiderCareer career) => new(
@@ -371,6 +373,7 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
             career.Freshness01,
             career.Fatigue01,
             career.Loyalty01,
+            career.PotentialOvr,
             career.Results
                 .Select(result => new RiderCareerResultDto(
                     result.RaceContentId,
@@ -413,6 +416,103 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
             new(entry.OrganizationId, entry.RaceContentId, entry.Entered);
     }
 
+    private sealed record CourseSampleDto(
+        double DistanceM,
+        double ElevationM,
+        double WidthM,
+        double HeadingDegrees,
+        CourseSurface Surface,
+        double Curvature01,
+        double Exposure01);
+
+    private sealed record CourseProfileDto(
+        WorldEntityId CourseProfileId,
+        string OriginDefinitionId,
+        string RaceContentId,
+        int SeasonYear,
+        int StageIndex,
+        string Name,
+        CourseKind Kind,
+        string Country,
+        double SampleSpacingM,
+        IReadOnlyList<CourseSampleDto> Samples,
+        double LengthM,
+        double ElevationGainM,
+        double ElevationLossM,
+        double CobbleM,
+        double GravelM,
+        double MaxGradient,
+        double MinGradient,
+        ClassifiedStageType ClassifiedStageType)
+    {
+        public CourseProfile ToDomain() => new(
+            CourseProfileId,
+            OriginDefinitionId,
+            RaceContentId,
+            SeasonYear,
+            StageIndex,
+            Name,
+            Kind,
+            Country,
+            SampleSpacingM,
+            Samples.Select(sample => new CourseSampleVertex(
+                sample.DistanceM,
+                sample.ElevationM,
+                sample.WidthM,
+                sample.HeadingDegrees,
+                sample.Surface,
+                sample.Curvature01,
+                sample.Exposure01)).ToArray(),
+            LengthM,
+            ElevationGainM,
+            ElevationLossM,
+            CobbleM,
+            GravelM,
+            MaxGradient,
+            MinGradient,
+            ClassifiedStageType);
+
+        public static CourseProfileDto FromDomain(CourseProfile profile) => new(
+            profile.CourseProfileId,
+            profile.OriginDefinitionId,
+            profile.RaceContentId,
+            profile.SeasonYear,
+            profile.StageIndex,
+            profile.Name,
+            profile.Kind,
+            profile.Country,
+            profile.SampleSpacingM,
+            profile.Samples.Select(sample => new CourseSampleDto(
+                sample.DistanceM,
+                sample.ElevationM,
+                sample.WidthM,
+                sample.HeadingDegrees,
+                sample.Surface,
+                sample.Curvature01,
+                sample.Exposure01)).ToArray(),
+            profile.LengthM,
+            profile.ElevationGainM,
+            profile.ElevationLossM,
+            profile.CobbleM,
+            profile.GravelM,
+            profile.MaxGradient,
+            profile.MinGradient,
+            profile.ClassifiedStageType);
+    }
+
+    private sealed record RiderStageTimeDto(
+        string RaceContentId,
+        int StageIndex,
+        WorldEntityId RiderId,
+        double FinishTimeSeconds)
+    {
+        public RiderStageTime ToDomain() =>
+            new(RaceContentId, StageIndex, RiderId, FinishTimeSeconds);
+
+        public static RiderStageTimeDto FromDomain(RiderStageTime time) =>
+            new(time.RaceContentId, time.StageIndex, time.RiderId, time.FinishTimeSeconds);
+    }
+
     private sealed record CalendarEntryDto(
         WorldEntityId Id,
         int DayNumber,
@@ -420,7 +520,9 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         string Title,
         string? OfficialResult = null,
         bool ResultAcknowledged = false,
-        string? RaceContentId = null)
+        string? RaceContentId = null,
+        int StageIndex = 1,
+        WorldEntityId? CourseProfileId = null)
     {
         public CalendarEntry ToDomain() => new(
             Id,
@@ -429,7 +531,9 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
             Title,
             OfficialResult,
             ResultAcknowledged,
-            RaceContentId);
+            RaceContentId,
+            StageIndex,
+            CourseProfileId);
     }
 
     private sealed record WorldSnapshotDto(
@@ -455,6 +559,8 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         IReadOnlyList<RiderCareerDto>? RiderCareers = null,
         IReadOnlyList<OrganizationRaceEntryDto>? OrganizationRaceEntries = null,
         IReadOnlyList<RiderContractDto>? RiderContracts = null,
+        IReadOnlyList<CourseProfileDto>? CourseProfiles = null,
+        IReadOnlyList<RiderStageTimeDto>? RiderStageTimes = null,
         bool GeneratePeriodicRaces = true,
         int FinancialYearDays = 365)
     {
@@ -507,13 +613,17 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                         entry.Title,
                         entry.OfficialResult,
                         entry.ResultAcknowledged,
-                        entry.RaceContentId))
+                        entry.RaceContentId,
+                        entry.StageIndex,
+                        entry.CourseProfileId))
                     .ToArray(),
                 world.RiderCareers.Select(RiderCareerDto.FromDomain).ToArray(),
                 world.OrganizationRaceEntries
                     .Select(OrganizationRaceEntryDto.FromDomain)
                     .ToArray(),
                 world.RiderContracts.Select(RiderContractDto.FromDomain).ToArray(),
+                world.CourseProfiles.Select(CourseProfileDto.FromDomain).ToArray(),
+                world.RiderStageTimes.Select(RiderStageTimeDto.FromDomain).ToArray(),
                 world.GeneratePeriodicRaces,
                 world.FinancialYearDays);
         }
@@ -547,6 +657,10 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                     .Select(entry => entry.ToDomain()),
                 (RiderContracts ?? Array.Empty<RiderContractDto>())
                     .Select(contract => contract.ToDomain()),
+                (CourseProfiles ?? Array.Empty<CourseProfileDto>())
+                    .Select(profile => profile.ToDomain()),
+                (RiderStageTimes ?? Array.Empty<RiderStageTimeDto>())
+                    .Select(time => time.ToDomain()),
                 GeneratePeriodicRaces,
                 FinancialYearDays > 0 ? FinancialYearDays : (GeneratePeriodicRaces ? (CalendarPeriodDays > 0 ? CalendarPeriodDays : 12) : 365));
         }

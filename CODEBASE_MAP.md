@@ -8,13 +8,14 @@ This file is a navigation map, not implementation documentation. Design contract
 
 | Project | Current responsibility |
 |---|---|
-| `src/Peloton.Domain` | World root, stable IDs, people, `RiderCareer`, `RiderContract`, ManagerCareer, Employment, Organization, DecisionAuthority, AccessContext, `CalendarEntry`, content/rules identity, DecisionTrace / Spy sinks. |
+| `src/Peloton.Domain` | World root, stable IDs, people, `RiderCareer` (+ `PotentialOvr`), `RiderContract`, `CourseProfile`, `RiderStageTime`, ManagerCareer, Employment, Organization, DecisionAuthority, AccessContext, `CalendarEntry` (+ stage/course ids), content/rules identity, DecisionTrace / Spy sinks. |
 | `src/Peloton.Rules` | Stable rules-module identity and deterministic aggregate identity. No full legal engine yet. |
-| `src/Peloton.Simulation` | Versioned seed derivation, isolated deterministic RNG, whole-world day scheduler, checksum, `PrototypeRaceEngine`. |
+| `src/Peloton.Simulation` | Versioned seed derivation, isolated deterministic RNG, whole-world day scheduler, checksum, `PrototypeRaceEngine`, `Course/` generator + compiler. |
 | `src/Peloton.Simulation/Race` | Physics, capability, groups/shelter, `RaceSession.Step`, chase decisions, Race Spy export, headless Watch clock and public motion projection. |
-| `src/Peloton.Application` | Canonical nine-state machine, Commands, prep/result/debrief projections, prep checkpoint, save/content/race ports, world creation, RaceLive isolation, skeleton-season orchestration. |
-| `src/Peloton.Persistence` | SQLite schema version 7, verified candidate save, envelope identity, snapshot round trip (including `RiderCareer`, `RiderContract`, results, `OrganizationRaceEntry`, org metadata, cash/fee), integrity checks. |
-| `src/Peloton.Content` | JSON pack loaders: skeleton and WT `scenarios` + `roster` + `organizations` + `calendar`, and `racePrototypeScenarios` (route/tuning templates). |
+| `src/Peloton.Simulation/Course` | Dense profile bricks, classifier, `CourseCatalogGenerator`, `CourseCompiler`, weather from seed. |
+| `src/Peloton.Application` | Canonical nine-state machine, Commands, prep/result/debrief projections, `RiderRatingQueries`, `CourseWorldBuilder`, prep checkpoint, save/content/race ports, world creation, RaceLive isolation, skeleton-season orchestration. |
+| `src/Peloton.Persistence` | SQLite schema version 8, verified candidate save, envelope identity, snapshot round trip (including course samples, stage times, `PotentialOvr`), integrity checks. |
+| `src/Peloton.Content` | JSON pack loaders: skeleton and WT `scenarios` + `roster` + `organizations` + `calendar` + `race-identities`, and `racePrototypeScenarios` (route/tuning templates). |
 | `src/Peloton.Infrastructure` | Composition root connecting Application ports to Content, Persistence, and Simulation. |
 | `src/Peloton.Client.Godot` | Godot 4.4 .NET Watch Race window. Presentation only: Commands + Queries, interpolated `RaceWatch` icons, decision overlay, Results from `LastRace`. Uses Infrastructure as composition root; does not hold World State or open SQLite. |
 | `tools/Peloton.SimRunner` | Headless CLI: `run` for skeleton seasons, `race` for the prototype gate, `watch` for rate-controlled supervising-clock output, `day` for Hub, prep, calendar/inbox, result/debrief, and race-due flows. |
@@ -52,8 +53,8 @@ Static content lives in `content/peloton.skeleton`, `content/peloton.wt-2026`, a
 | Pre-season planning | `Peloton.Application/PreSeasonPlanning.cs`, `GameApplication.cs` | `PreSeasonPlanningFlow` draft entry by `RaceContentId`; confirm commits `OrganizationRaceEntry` | `CareerWorldTourPhase3Tests` |
 | Race result / debrief | `Peloton.Application/RaceResultDebrief.cs`, `GameApplication.cs` | committed `LastRace` uses world `RiderCareer.Id`; org on `RaceResultPlacement`; `RaceResultForOrganization` filter (D-043); career history append on `RecordRace` | Application + Persistence tests |
 | Contract negotiation | `Peloton.Application/ContractNegotiation.cs`, `GameApplication.cs` | D-044 thin offer/accept in `Management`; no transfer fee | `CareerWorldTourPhase7Tests` |
-| Rider ratings (D-045) | specified, not landed | `RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md` — derived 1–99 view of physiology | pending |
-| Course engine (D-046) | specified, not landed | `RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md` — 25 m polylines, yearly generator, calendar per stage | pending |
+| Rider ratings (D-045) | `Peloton.Application/RiderRatings.cs`, `RiderRatingProjection.cs`, `ClubRosterProjection` | derived 1–99 from physiology; `PotentialOvr` stored | `RiderRatingTests` |
+| Course engine (D-046) | `Peloton.Simulation/Course/*`, `Peloton.Domain/CourseProfile.cs`, `content/peloton.wt-2026/race-identities.json`, `CourseWorldBuilder.cs` | 25 m samples, identity generator, calendar per stage, assembler compile | `CourseEngineTests`, `CourseEngineIntegrationTests` |
 | Career calendar | `Peloton.Domain/CalendarEntry.cs`, `Peloton.Application/CareerCalendarInbox.cs` | stored entries + derived status | Application tests |
 | Career inbox query | `Peloton.Application/CareerCalendarInbox.cs`, `ArchiveInboxItemCommand` | rebuilt race-due + race-result items; dismiss lock on race-due | Application tests |
 | AI managers | Not implemented | `AI_MANAGER_SYSTEM_v0.2.md` | Not implemented |

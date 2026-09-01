@@ -19,6 +19,10 @@
     {
       "kind": "calendar",
       "path": "calendar.json"
+    },
+    {
+      "kind": "race-identities",
+      "path": "race-identities.json"
     }
   ],
   "dependencies": []

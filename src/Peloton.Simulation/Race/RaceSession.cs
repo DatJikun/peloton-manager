@@ -150,7 +150,7 @@ public sealed class RaceSession
                 relativeAirSpeedMps,
                 rider.Profile.CdAM2,
                 rider.ShelterMultiplier,
-                rider.Profile.BaseCrr,
+                EffectiveCrr(rider.Profile.BaseCrr, rider.Profile.Handling, segment.Surface),
                 rider.Profile.TotalMassKg));
             CapabilityResult capability = CapabilitySolver.Evaluate(
                 rider.Profile,
@@ -625,4 +625,18 @@ public sealed class RaceSession
         ChaseDecision Decision,
         RaceDecisionGateResult Gate,
         RaceDecisionRequest Request);
+
+    private static double EffectiveCrr(double baseCrr, double handling, RouteSurface surface)
+    {
+        double surfaceDelta = surface switch
+        {
+            RouteSurface.Asphalt => 0.0,
+            RouteSurface.WhiteRoad => 0.0025,
+            RouteSurface.Gravel => 0.0050,
+            RouteSurface.Cobble => 0.0085,
+            _ => 0.0,
+        };
+
+        return baseCrr + surfaceDelta * (1.35 - 0.50 * handling);
+    }
 }

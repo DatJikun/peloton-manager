@@ -11,7 +11,7 @@ Men's UCI WorldTour 2026 pack wired to `scenario.peloton.wt-2026`.
 | Calendar dates | UCI 2026 WorldTour calendar (36 events) |
 | Physiology (CP/W'/Pmax) | Estimated gameplay bands by role + org budget band |
 | Wages and budgets | Estimated gameplay numbers (`budgetBand` multipliers) |
-| Route geometry | **Synthetic prototype circuit** (`race-scenario.peloton.prototype-v0`), not real cobbles or climbs |
+| Route geometry | **Generated dense profiles** (~25 m samples) from `race-identities.json` at CreateWorld; stored on world. Skeleton soak still uses the proof circuit. |
 
 Commercial licensing of real names and jerseys remains a later legal problem. The engine must still run on fictional packs (`scenario.peloton.skeleton`).
 

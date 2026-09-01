@@ -38,7 +38,11 @@ public sealed class CareerWorldTourPhase5Tests
         Assert.Equal(18, world.Organizations.Count);
         Assert.Equal(72, world.RiderCareers.Count);
         Assert.Equal(72, world.RiderContracts.Count);
-        Assert.Equal(36, world.CalendarEntries.Count(entry => entry.Kind == CalendarEntryKind.Race));
+        Assert.True(world.CalendarEntries.Count(entry => entry.Kind == CalendarEntryKind.Race) > 36);
+        Assert.Equal(36, world.OrganizationRaceEntries
+            .Select(entry => entry.RaceContentId)
+            .Distinct(StringComparer.Ordinal)
+            .Count());
         Assert.False(world.GeneratePeriodicRaces);
 
         Organization picnic = world.Organizations.Single(
@@ -52,8 +56,10 @@ public sealed class CareerWorldTourPhase5Tests
             Assert.True(organization.EstimatedBudgetEur >= 28_000_000);
         }
 
-        CalendarEntry tdu = world.CalendarEntries.Single(
-            entry => string.Equals(entry.RaceContentId, TduRaceContentId, StringComparison.Ordinal));
+        CalendarEntry tdu = world.CalendarEntries
+            .Where(entry => string.Equals(entry.RaceContentId, TduRaceContentId, StringComparison.Ordinal))
+            .OrderBy(entry => entry.StageIndex)
+            .First();
         Assert.Equal(19, tdu.DayNumber);
 
         AccessContext access = application.GetAccessContext();

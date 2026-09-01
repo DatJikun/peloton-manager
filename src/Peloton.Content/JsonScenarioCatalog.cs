@@ -79,8 +79,9 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
                 string? rosterPath = ResolveRosterPath(packRoot, pack);
                 string? organizationsPath = ResolveResourcePath(packRoot, pack, "organizations");
                 string? calendarPath = ResolveResourcePath(packRoot, pack, "calendar");
+                string? raceIdentitiesPath = ResolveResourcePath(packRoot, pack, "race-identities");
                 string aggregateHash = ComputeArtifactHash(
-                    new[] { packPath, resourcePath, rosterPath, organizationsPath, calendarPath }
+                    new[] { packPath, resourcePath, rosterPath, organizationsPath, calendarPath, raceIdentitiesPath }
                         .Where(path => path is not null)
                         .Cast<string>()
                         .ToArray());
@@ -124,11 +125,13 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
                         rider.ContractEndDay,
                         rider.Loyalty01 ?? 0.5,
                         rider.Nationality,
-                        rider.BirthYear))
+                        rider.BirthYear,
+                        rider.PotentialOvr))
                     .OrderBy(rider => rider.Id, StringComparer.Ordinal)
                     .ToArray();
                 ManagerDefinition manager = new(roster.Manager.Name, roster.Manager.OrganizationId);
                 CalendarRaceDefinition[] calendarRaces = BuildCalendarRaces(scenario, calendarFile);
+                RaceIdentityConstraints[] raceIdentities = LoadRaceIdentities(packRoot, pack);
                 bool generatePeriodicRaces = !UsesCalendarFromContent(modules);
                 return new WorldRecipe(
                     contentIdentity,
@@ -139,6 +142,7 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
                     riders,
                     manager,
                     calendarRaces,
+                    raceIdentities,
                     generatePeriodicRaces,
                     DefaultRaceTemplateId);
             }
@@ -198,8 +202,18 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
             .Select(race =>
             {
                 DateOnly raceStart = DateOnly.Parse(race.Start, CultureInfo.InvariantCulture);
+                DateOnly raceEnd = string.IsNullOrWhiteSpace(race.End)
+                    ? raceStart
+                    : DateOnly.Parse(race.End, CultureInfo.InvariantCulture);
                 int dayNumber = raceStart.DayNumber - scenarioStart.DayNumber;
-                return new CalendarRaceDefinition(race.Id, race.Name, dayNumber);
+                int endDayNumber = raceEnd.DayNumber - scenarioStart.DayNumber;
+                return new CalendarRaceDefinition(
+                    race.Id,
+                    race.Name,
+                    dayNumber,
+                    race.Country ?? string.Empty,
+                    race.Kind ?? "oneDay",
+                    endDayNumber);
             })
             .OrderBy(race => race.DayNumber)
             .ThenBy(race => race.Id, StringComparer.Ordinal)
@@ -218,6 +232,41 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
     {
         string? path = ResolveResourcePath(packRoot, pack, "organizations");
         return path is null ? null : ReadJson<OrganizationsFileDocument>(path);
+    }
+
+    private static RaceIdentityConstraints[] LoadRaceIdentities(string packRoot, PackDocument pack)
+    {
+        string? path = ResolveResourcePath(packRoot, pack, "race-identities");
+        if (path is null)
+        {
+            return Array.Empty<RaceIdentityConstraints>();
+        }
+
+        RaceIdentitiesFileDocument document = ReadJson<RaceIdentitiesFileDocument>(path);
+        return document.Races
+            .Select(race => new RaceIdentityConstraints(
+                race.RaceContentId,
+                race.Kind,
+                race.RacingStageCount,
+                race.IttMin,
+                race.IttMax,
+                race.TttMin,
+                race.TttMax,
+                race.MountainMin,
+                race.MountainMax,
+                race.HillyMin,
+                race.HillyMax,
+                race.FlatMin,
+                race.FlatMax,
+                race.SummitFinishMin,
+                race.SummitFinishMax,
+                race.TotalKmMin,
+                race.TotalKmMax,
+                race.CobbleKmMin,
+                race.CobbleKmMax,
+                race.TerrainPalette))
+            .OrderBy(identity => identity.RaceContentId, StringComparer.Ordinal)
+            .ToArray();
     }
 
     private static CalendarFileDocument? TryLoadCalendar(string packRoot, PackDocument pack)
@@ -396,7 +445,32 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
         int ContractEndDay,
         double? Loyalty01 = null,
         string? Nationality = null,
-        int? BirthYear = null);
+        int? BirthYear = null,
+        int? PotentialOvr = null);
+
+    private sealed record RaceIdentitiesFileDocument(IReadOnlyList<RaceIdentityRecordDocument> Races);
+
+    private sealed record RaceIdentityRecordDocument(
+        string RaceContentId,
+        string Kind,
+        int RacingStageCount,
+        int IttMin,
+        int IttMax,
+        int TttMin,
+        int TttMax,
+        int MountainMin,
+        int MountainMax,
+        int HillyMin,
+        int HillyMax,
+        int FlatMin,
+        int FlatMax,
+        int SummitFinishMin,
+        int SummitFinishMax,
+        int TotalKmMin,
+        int TotalKmMax,
+        int CobbleKmMin,
+        int CobbleKmMax,
+        IReadOnlyList<string> TerrainPalette);
 
     private sealed record OrganizationsFileDocument(IReadOnlyList<OrganizationRecordDocument> Organizations);
 
@@ -416,5 +490,8 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
     private sealed record CalendarRaceRecordDocument(
         string Id,
         string Name,
-        string Start);
+        string Start,
+        string? End = null,
+        string? Country = null,
+        string? Kind = null);
 }
