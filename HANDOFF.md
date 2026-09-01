@@ -10,31 +10,32 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`Rider profile + route engine` — specified (`RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`, D-045 / D-046). Career WorldTour slice phases 1–7 remain landed.
+`Rider profile + route engine` — landed (`RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`, D-045 / D-046, SchemaVersion 8). Career WorldTour slice phases 1–7 remain landed.
 
 ### Goal
 Readable rider strengths/weaknesses (derived 1–99 ratings from real physiology) and a detailed course system (stored default routes + yearly generator). Not five-fragment mocks. Do not close §49. Do not build Career Hub. Do not expand Watch Race.
 
 ### Status
-Owner (player) directed this on 2026-09-01 (D-045, D-046). Coding not landed until Composer finishes the contract. Career phases 1–7 remain in code at SchemaVersion 7 until this slice bumps to 8.
+Owner (player) directed this on 2026-09-01. **D-045 / D-046 landed.** Ratings 1–99 are a view of physiology. WorldTour CreateWorld stores dense ~25 m courses and one calendar entry per racing stage. Official WT Simulate uses that day’s course. Skeleton soak still uses the short proof circuit. SQLite SchemaVersion 8.
 
 ## Gdzie jest gra (dla właściciela)
 Nie ma jeszcze pełnej gry managerskiej.
 
 Działa:
 - wyścig: **symulacja i wynik** (D-043); wynik można filtrować po każdej ekipie;
-- (w kodzie na razie) kolarz ma liczby laboratoryjne CP / W′ / Pmax / masa / CdA — to one kręcą fizyką, ale paczka WT 2026 jest zbyt skopiowana, więc słabo widać kim jest sprinter a kim góral;
+- statystyki 1–99 (góry, pagórki, płaskie, TT, sprint, kocie łby, OVR, POT) wyliczane z fizjologii — Pogačar jest góralem, Philipsen sprinterem;
+- trasy WT: gęsty profil (~25 m), zapisane w świecie; TDU etap 1 to ~140 km, nie tor 5,4 km;
+- kalendarz WT: **jeden dzień na etap** (Tour = 21 etapów), nie jeden wpis na całe Grand Tour;
 - w CLI pętla dnia i ten sam człowiek na starcie co w klubie;
 - wynik zapisuje się na karierze kolarza (`RiderCareerResult`);
 - Advance Day zmienia formę / świeżość / zmęczenie; wyścig używa readiness na CP/Pmax (faza 2);
 - przedsezonowy wybór startów i strategia przed Confirm (faza 3);
 - kontrakty, wypłaty, wygaśnięcie, **cienkie negocjacje** oferty pensji/daty (D-044);
-- paczka WorldTour 2026: 18 ekip, 72 kolarzy, kalendarz 36 wyścigów, cap 12 na starcie;
+- paczka WorldTour 2026: 18 ekip, 72 kolarzy, 36 imprez (etapy osobno w kalendarzu), cap 12 na starcie;
 - cienka ekonomia: kasa, sponsor vs płace, notatka o debecie.
 
 Właśnie budujemy:
-- **czytelne statystyki 1–99** (góry, pagórki, płaskie, TT, sprint, kocie łby, OVR, POT) wyliczane z fizjologii — nie zamiast niej;
-- **prawdziwe trasy**: gęsty profil (~25 m), zapisane w świecie na starcie, generator na kolejne lata w ramach tożsamości wyścigu (np. Tour ma ± tyle czasówek / gór / płaskich).
+- czekamy na kolejny kierunek właściciela.
 
 Jeszcze nie:
 - nie rozbudowujemy Watch Race (odrzucony jako sposób gry);
@@ -135,6 +136,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
+- `2026-09-01` — **D-045 / D-046 landed (Composer):** derived 1–99 ratings + WT archetype calibration; dense course catalog at CreateWorld; SchemaVersion 8 / checksum v8. TDU stage 1 ~140 km. Watch Race UI not expanded.
 - `2026-09-01` — **Normal rider stats + real routes (D-045, D-046).** Ratings 1–99 are a view of physiology, not a second magic engine. Courses are dense polylines with a yearly generator under race-identity constraints. Not a five-chunk mock. Contract: `RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`.
 - `2026-09-01` — **Phase 7 landed (Composer):** `RaceResultForOrganization` (any team); `Begin/Set/Confirm/CancelContractNegotiationCommand`; SchemaVersion 7 / checksum v7. Watch Race UI not expanded.
 - `2026-09-01` — **Watch Race is not the play path (D-043).** Simulate then results; filter classification by any team. Do not expand Godot Watch. Career Hub stays rejected. Docs until now had rejected Career Hub (PR #4), not Watch Race — this is the new lock.
