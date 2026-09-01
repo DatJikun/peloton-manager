@@ -54,6 +54,7 @@ public sealed partial class CareerShellScreen : Control
     private string marketClubFilter = string.Empty;
     private int calendarYear = 2026;
     private int calendarMonth = 1;
+    private int lastCalendarDay = -1;
     private int reportSelected = 1;
     private int selectedSponsorId = 1;
     private readonly List<LookScoutMission> scoutMissions = new(CareerLookCatalog.Missions);
@@ -591,8 +592,9 @@ public sealed partial class CareerShellScreen : Control
 
         HideWatch();
         EnsureSelectedEvent();
-        if (day is not null)
+        if (day is not null && day.DayNumber != lastCalendarDay)
         {
+            lastCalendarDay = day.DayNumber;
             (calendarYear, calendarMonth) = CareerCalendarDates.MonthFromDayNumber(day.DayNumber);
         }
 
