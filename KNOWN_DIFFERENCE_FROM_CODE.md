@@ -135,3 +135,35 @@ Contract: `CAREER_CLUB_CALENDAR_LEADERS_v0.1.md`.
 - Desk **FINANSE · TYDZIEŃ**, view **Finanse**, and squad wage column read `ClubFinanceProjection` / `ClubRoster` (euro). Skład **Negocjuj kontrakt** → D-044 offer commands. Staff/sponsors/scouting/market still look catalog.
 - `OpenSkeleton` remains on `CareerShellHost` for tests; `OpenWorldTour(employerOriginId)` for WT play path.
 - SimRunner `day` accepts optional `--employer organization.wt2026.*`.
+
+## Position and selection (D-054 landed)
+
+Contract: `RACE_FEEL_POSITION_AND_SELECTION_v0.1.md`. `PhysicsContractVersion` is **2**.
+
+Landed in `Peloton.Simulation/Race`:
+
+- **Position drift** after each step (`DriftMps`, `SlotSpacingM`, intent/finale bonuses via `PositionScoreResolver`).
+- **Start grid** ordered by `Positioning` in `WorldRaceScenarioAssembler` (WT + skeleton paths; SimRunner `race`/`watch` fixture unchanged).
+- **Pace-setter** in selective zones: max sustainable front speed at shelter 1.0 (`MaxSustainableFrontSpeedMps`), group target `max(BasePace, setterSpeed)`.
+- **Cobble bruk**: shelter `1 − (1 − shelter)·(0.25 + 0.75·Handling)`; required-power surge `1 + CobbleSurgeCost·(1 − Handling)`.
+- **CobbleClassic positioning scale** (§33 extension): effective positioning `Positioning · (CobblePositioningBase + CobblePositioningHandlingWeight · Handling)` on `CobbleClassic` stages so low-handling riders lose slots on cobbled races.
+
+Final tuning constants (`RaceTuning`):
+
+| Constant | Value |
+|---|---|
+| `DriftMps` | 0.78 |
+| `SlotSpacingM` | 0.7 |
+| `FinaleM` | 24_000 |
+| `TempoFactorFinale` | 1.00 |
+| `TempoFactorOutsideFinale` | 0.92 |
+| `CobbleSurgeCost` | 0.286 |
+| Intent bonuses | 0.50 / 0.40 / 0.40 / −0.30 |
+| `SprintFinaleBonus` | 0.25 |
+| `SprintFinaleDistanceM` | 3_000 |
+| `CobblePositioningBase` | 0.21 |
+| `CobblePositioningHandlingWeight` | 0.91 |
+
+Probes at seed `91234`: TdF stage 1 sprint, TDU stage 6 sprinter, Hautacam GC, determinism/spy neutrality, positioning + cobble unit tests pass. **Roubaix probe still fails** at seed `91234`: GC riders retain W/kg and durability advantages that exceed the ±30% bruk tuning band; van der Poel finishes well behind Evenepoel/Vingegaard despite classics sometimes appearing in the top 10.
+
+Still missing (deferred): crosswind echelons, lead-out trains, incidents/mechanicals, D-032 GC leadership, CdA Road/TT (D-055).

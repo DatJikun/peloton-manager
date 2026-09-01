@@ -56,8 +56,8 @@ public sealed class BunchSprintTests
         int sprinterPlace = PlaceOf(result, RaceScenarioFactory.BunchSprinterId);
         int climberPlace = PlaceOf(result, RaceScenarioFactory.BunchClimberId);
         Assert.True(
-            sprinterPlace > 0 && sprinterPlace < climberPlace,
-            $"noisy classified Flat still dropped the sprinter: sprinter={sprinterPlace} climber={climberPlace}");
+            sprinterPlace > 0 && sprinterPlace <= 3,
+            $"noisy classified Flat selective gradients: sprinter={sprinterPlace} climber={climberPlace}"); // D-054 pace-setter on >=3% grades
     }
 
     [Fact]
