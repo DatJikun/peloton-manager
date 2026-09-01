@@ -25,7 +25,7 @@ public sealed class ClassificationQueriesTests
         Assert.Equal("GC Rider", projection.KomLeader!.Label);
         Assert.Equal("Alpha", projection.TeamLeader!.Label);
         Assert.DoesNotContain(projection.GcTop10, standing => standing.Label == "Dnf Rider");
-        Assert.Contains(ClassificationQueries.FormatJerseyLine(projection), "gc=GC Rider");
+        Assert.Contains("gc=GC Rider", ClassificationQueries.FormatJerseyLine(projection), StringComparison.Ordinal);
     }
 
     [Fact]

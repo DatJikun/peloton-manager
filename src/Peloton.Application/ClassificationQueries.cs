@@ -220,6 +220,7 @@ public static class ClassificationQueries
         Dictionary<WorldEntityId, Organization> organizations)
     {
         Dictionary<WorldEntityId, double> totals = new();
+        Dictionary<WorldEntityId, int> stagesCounted = new();
         foreach (int stage in stages)
         {
             Dictionary<WorldEntityId, List<double>> byOrg = new();
@@ -249,10 +250,12 @@ public static class ClassificationQueries
 
                 list.Sort();
                 totals[organizationId] = totals.GetValueOrDefault(organizationId) + list.Take(3).Sum();
+                stagesCounted[organizationId] = stagesCounted.GetValueOrDefault(organizationId) + 1;
             }
         }
 
         return totals
+            .Where(pair => stagesCounted.GetValueOrDefault(pair.Key) == stages.Count)
             .OrderBy(pair => pair.Value)
             .ThenBy(pair => pair.Key.Value)
             .Select((pair, index) =>
