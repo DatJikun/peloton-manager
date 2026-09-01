@@ -105,9 +105,10 @@ Landed:
 
 Remaining limits:
 
-- Official WT field is the 4-rider pack (72 when every team is entered), not a UCI 150–200 peloton. JSON catalog allows 512 riders; that is a content ceiling, not a physics hard cap.
-- Classified Flat still does not produce a bunch-sprint win for the sprinter (feel probe, seed 91234). Prototype lacks a real bunch-sprint finish; CP still wins “flat”.
+- Official WT start lists are **event-shaped (D-049)**: Grand Tours 176, monuments 175, TDU 140, other WT 154. Still a prototype, not a licensed 28-man roster.
+- Classified Flat uses a bunch-sprint kick (last 250 m at `PeakPowerW`) after sitting in the pack. Feel probe seed `91234`: Philipsen place 1, Pogačar 135 on the flattest stored Flat; mountain probe still has Pogačar ahead of Philipsen.
+- Prototype stores **one** `CdAM2` per rider. The accepted engine wants `CdARoad` and `CdATT` (`RACE_ENGINE_DESIGN_v0.2.md` §6–7). Drafting still does `CdA_effective = CdA * shelter`. There is no sit-up-on-climb vs aero-tuck-on-TT switch. Owner asked 2026-09-01; that split is the next aero honesty, not this D-049 tree. A third “mountain CdA” is not worth a rating — climbs are slow, gravity/W/kg dominate.
 - Prototype race session is sequential 1-second `RaceSession.Step` for every rider; wall-clock is CPU-fast, not real-time.
 - No yearly re-generation after season 2026 in play yet (generator exists; Advance Day does not roll new seasons).
-- No full GC jersey UI; stage times are stored only.
+- Jersey tables exist as after-stage queries (GC / points / KOM / youth / team). D-032 mid-race GC leadership stays deferred.
 - §49 still `NOT VERIFIED`.
