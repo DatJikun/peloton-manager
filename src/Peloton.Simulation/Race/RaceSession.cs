@@ -130,6 +130,12 @@ public sealed class RaceSession
             }
 
             RaceRouteSegment segment = scenario.Definition.SegmentAt(rider.DistanceM);
+            if (rider.Intent == RaceCommandKind.LaunchSprint)
+            {
+                solves.Add(rider.Profile.RiderId, SolveLaunchSprint(rider, segment));
+                continue;
+            }
+
             double baseSpeedMps = BasePaceMps(segment);
             double desiredSpeedMps = groupTargetSpeedMps.TryGetValue(rider.GroupId, out double groupTarget)
                 ? groupTarget
@@ -137,19 +143,6 @@ public sealed class RaceSession
             if (rider.Intent == RaceCommandKind.Conserve)
             {
                 desiredSpeedMps = Math.Max(2.0, baseSpeedMps - ConserveSpeedDecreaseMps);
-            }
-            else if (rider.Intent == RaceCommandKind.LaunchSprint)
-            {
-                desiredSpeedMps = BunchSprintResolver.SpeedForPowerW(
-                    rider.Profile.PeakPowerW,
-                    segment.Gradient,
-                    scenario.Definition.AirDensityKgPerM3,
-                    segment.WindSpeedMps,
-                    segment.WindYawDegrees,
-                    rider.Profile.CdAM2,
-                    rider.ShelterMultiplier,
-                    EffectiveCrr(rider.Profile.BaseCrr, rider.Profile.Handling, segment.Surface),
-                    rider.Profile.TotalMassKg);
             }
 
             double desiredAccelerationMps2 = Math.Clamp(
@@ -244,6 +237,40 @@ public sealed class RaceSession
         lastDecisionSecond = simulationSecond;
         EmitDecisionTrace(context, resolution.SelectedOption);
         pendingDecisionContext = null;
+    }
+
+    private StepSolve SolveLaunchSprint(RiderRuntime rider, RaceRouteSegment segment)
+    {
+        CapabilityResult capability = CapabilitySolver.Evaluate(
+            rider.Profile,
+            rider.Physiology,
+            rider.Profile.PeakPowerW,
+            StepSeconds);
+        double targetSpeedMps = BunchSprintResolver.SpeedForPowerW(
+            capability.RealizablePowerW,
+            segment.Gradient,
+            scenario.Definition.AirDensityKgPerM3,
+            segment.WindSpeedMps,
+            segment.WindYawDegrees,
+            rider.Profile.CdAM2,
+            shelterMultiplier: 1.0,
+            EffectiveCrr(rider.Profile.BaseCrr, rider.Profile.Handling, segment.Surface),
+            rider.Profile.TotalMassKg);
+        double accelerationMps2 = Math.Clamp(
+            targetSpeedMps - rider.SpeedMps,
+            -RaceTuning.MaximumDesiredAccelerationMps2,
+            RaceTuning.MaximumDesiredAccelerationMps2);
+        double realizedSpeedMps = Math.Max(2.0, rider.SpeedMps + (accelerationMps2 * StepSeconds));
+        if (accelerationMps2 > 0.0)
+        {
+            realizedSpeedMps = Math.Min(realizedSpeedMps, targetSpeedMps);
+        }
+
+        return new StepSolve(
+            realizedSpeedMps,
+            capability.RealizablePowerW,
+            capability.EffectiveCriticalPowerW,
+            capability.NextState);
     }
 
     private void ApplyCommands()
