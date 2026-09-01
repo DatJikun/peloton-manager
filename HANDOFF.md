@@ -150,7 +150,8 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
-- `2026-09-01` — **Normal rider stats + real routes (D-046, D-047).** Ratings 1–99 are a view of physiology, not a second magic engine. Courses are dense polylines with a yearly generator under race-identity constraints. Not a five-chunk mock. Contract: `RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`. (On `main`, D-045 is the merge-to-main lock.)
+- `2026-09-01` — **D-046 / D-047 landed:** derived 1–99 ratings + WT archetype calibration; dense course catalog at CreateWorld; SchemaVersion 8 / checksum v8. TDU stage 1 ~140 km. Watch Race UI not expanded. Replay onto current `main` (career shell kept).
+- `2026-09-01` — **Normal rider stats + real routes (D-046, D-047).** Ratings 1–99 are a view of physiology, not a second magic engine. Courses are dense polylines with a yearly generator under race-identity constraints. Not a five-chunk mock. Contract: `RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`. (D-045 on `main` is the merge-to-main lock.)
 - `2026-09-01` — **Merge ready work to `main` in the same session (D-045).** No waiting for „merguj”. No pile of open PRs (that made a conflict mess). Overrides Cloud “don’t merge unless asked”. Watch Race stays deferred; do not land leftover Watch UI PRs. Stale conflicting branches are replayed onto current `main`, not stacked.
 - `2026-09-01` — **Phase 7 landed (Composer):** `RaceResultForOrganization` (any team); `Begin/Set/Confirm/CancelContractNegotiationCommand`; SchemaVersion 7 / checksum v7. Watch Race UI not expanded.
 - `2026-09-01` — **Watch Race is not the play path (D-043).** Simulate then results; filter classification by any team. Do not expand Godot Watch. Career Hub stays rejected. Docs until now had rejected Career Hub (PR #4), not Watch Race — this is the new lock.
