@@ -18,6 +18,7 @@ public sealed class GameApplication
     private RaceWatchClock? watchClock;
     private RacePreparationCheckpoint? racePreparation;
     private PreSeasonPlanningDraft? preSeasonDraft;
+    private ContractNegotiationDraft? contractNegotiationDraft;
     private string? lastOfficialChecksum;
 
     public GameApplication(
@@ -196,14 +197,14 @@ public sealed class GameApplication
                 return null;
             }
 
-            Dictionary<WorldEntityId, RiderContract> contractsByRider = World.RiderContracts
-                .ToDictionary(contract => contract.RiderCareerId);
             Dictionary<WorldEntityId, Person> personsById = World.Persons
                 .ToDictionary(person => person.Id);
             ClubRosterEntry[] riders = World.GetRiderCareersForOrganization(organizationId)
                 .Select(career =>
                 {
-                    RiderContract contract = contractsByRider[career.Id];
+                    RiderContract contract = World.TryGetActiveContract(career.Id)
+                        ?? throw new InvalidOperationException(
+                            $"Rider '{career.Id.Value}' on roster has no active contract.");
                     Person person = personsById[career.PersonId];
                     return new ClubRosterEntry(
                         career.Id,
@@ -244,8 +245,7 @@ public sealed class GameApplication
             long wageBillAnnual = 0;
             foreach (RiderCareer career in World.GetRiderCareersForOrganization(organizationId))
             {
-                RiderContract? contract = World.RiderContracts.FirstOrDefault(
-                    item => item.RiderCareerId == career.Id);
+                RiderContract? contract = World.TryGetActiveContract(career.Id);
                 if (contract is not null)
                 {
                     wageBillAnnual = checked(wageBillAnnual + contract.AnnualWage);
@@ -276,6 +276,50 @@ public sealed class GameApplication
             }
 
             return RaceOutcomeQueries.BuildResult(World, racePreparation, raceScenarioCatalog);
+        }
+    }
+
+    public IReadOnlyList<RaceResultPlacement>? RaceResultForOrganization(WorldEntityId organizationId)
+    {
+        RaceResultProjection? result = RaceResult;
+        if (result is null)
+        {
+            return null;
+        }
+
+        return RaceOutcomeQueries.FilterFinishOrderByOrganization(result.FinishOrder, organizationId);
+    }
+
+    public ContractNegotiationProjection? ContractNegotiation
+    {
+        get
+        {
+            if (State != GameState.Management || World is null || contractNegotiationDraft is null)
+            {
+                return null;
+            }
+
+            RiderCareer? rider = World.TryGetRiderCareer(contractNegotiationDraft.RiderCareerId);
+            if (rider is null)
+            {
+                return null;
+            }
+
+            Person? person = World.Persons.FirstOrDefault(item => item.Id == rider.PersonId);
+            Organization? currentClub = rider.OrganizationId is WorldEntityId clubId
+                ? World.Organizations.FirstOrDefault(organization => organization.Id == clubId)
+                : null;
+            RiderContract? activeContract = World.TryGetActiveContract(rider.Id);
+            int currentWage = rider.OrganizationId is null ? 0 : activeContract?.AnnualWage ?? 0;
+            return new ContractNegotiationProjection(
+                rider.Id,
+                person?.Name ?? rider.OriginDefinitionId,
+                rider.OrganizationId,
+                currentClub?.Name,
+                currentWage,
+                contractNegotiationDraft.OfferAnnualWage,
+                contractNegotiationDraft.OfferContractEndDay,
+                contractNegotiationDraft.OfferSet);
         }
     }
 
@@ -313,6 +357,7 @@ public sealed class GameApplication
             World = CreateWorld(recipe, command.Seed);
             racePreparation = null;
             preSeasonDraft = null;
+            contractNegotiationDraft = null;
             watchClock = null;
             lastOfficialChecksum = null;
             LastWatchSecond = 0;
@@ -404,6 +449,7 @@ public sealed class GameApplication
             LastSimSecond = 0;
             racePreparation = checkpoint.RacePreparation;
             preSeasonDraft = null;
+            contractNegotiationDraft = null;
             return CommandResult.Success;
         }
         catch (Exception exception) when (exception is IOException or InvalidDataException)
@@ -845,6 +891,124 @@ public sealed class GameApplication
 
         racePreparation = null;
         State = GameState.Management;
+        return CommandResult.Success;
+    }
+
+    public CommandResult Execute(BeginContractNegotiationCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.Management || World is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        if (GetAccessContext().CurrentOrganizationId is null)
+        {
+            return CommandResult.Reject("EMPLOYER_REQUIRED");
+        }
+
+        if (World.TryGetRiderCareer(command.RiderCareerId) is null)
+        {
+            return CommandResult.Reject("RIDER_NOT_FOUND");
+        }
+
+        contractNegotiationDraft = new ContractNegotiationDraft(command.RiderCareerId, null, null);
+        return CommandResult.Success;
+    }
+
+    public CommandResult Execute(SetContractOfferCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.Management || World is null || contractNegotiationDraft is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        if (command.AnnualWage <= 0)
+        {
+            return CommandResult.Reject("CONTRACT_OFFER_INVALID");
+        }
+
+        if (command.ContractEndDay <= World.CurrentDate.DayNumber)
+        {
+            return CommandResult.Reject("CONTRACT_OFFER_INVALID");
+        }
+
+        contractNegotiationDraft = contractNegotiationDraft with
+        {
+            OfferAnnualWage = command.AnnualWage,
+            OfferContractEndDay = command.ContractEndDay,
+        };
+        return CommandResult.Success;
+    }
+
+    public CommandResult Execute(ConfirmContractOfferCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.Management || World is null || contractNegotiationDraft is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        AccessContext access = GetAccessContext();
+        if (access.CurrentOrganizationId is not WorldEntityId employerId)
+        {
+            return CommandResult.Reject("EMPLOYER_REQUIRED");
+        }
+
+        if (!contractNegotiationDraft.OfferSet ||
+            contractNegotiationDraft.OfferAnnualWage is not int offerWage ||
+            contractNegotiationDraft.OfferContractEndDay is not int offerEndDay)
+        {
+            return CommandResult.Reject("CONTRACT_OFFER_INCOMPLETE");
+        }
+
+        RiderCareer? rider = World.TryGetRiderCareer(contractNegotiationDraft.RiderCareerId);
+        if (rider is null)
+        {
+            contractNegotiationDraft = null;
+            return CommandResult.Reject("RIDER_NOT_FOUND");
+        }
+
+        RiderContract? activeContract = World.TryGetActiveContract(rider.Id);
+        int currentWage = rider.OrganizationId is null ? 0 : activeContract?.AnnualWage ?? 0;
+        if (!ContractNegotiationQueries.WouldAcceptOffer(
+                currentWage,
+                rider.Loyalty01,
+                offerWage,
+                offerEndDay,
+                World.CurrentDate.DayNumber))
+        {
+            contractNegotiationDraft = null;
+            return CommandResult.Reject("CONTRACT_OFFER_REJECTED");
+        }
+
+        if (activeContract is not null)
+        {
+            World.TryTerminateActiveContract(rider.Id, World.CurrentDate);
+        }
+
+        World.AddRiderContract(new RiderContract(
+            World.AllocateEntityId(),
+            rider.Id,
+            employerId,
+            offerWage,
+            World.CurrentDate,
+            new WorldDate(offerEndDay)));
+        rider.AttachToClub(employerId);
+        contractNegotiationDraft = null;
+        return CommandResult.Success;
+    }
+
+    public CommandResult Execute(CancelContractNegotiationCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.Management || World is null || contractNegotiationDraft is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        contractNegotiationDraft = null;
         return CommandResult.Success;
     }
 

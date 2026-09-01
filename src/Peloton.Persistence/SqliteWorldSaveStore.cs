@@ -13,7 +13,7 @@ namespace Peloton.Persistence;
 
 public sealed class SqliteWorldSaveStore : IWorldSaveStore
 {
-    public const int SchemaVersion = 6;
+    public const int SchemaVersion = 7;
 
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
 

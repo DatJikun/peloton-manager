@@ -76,6 +76,8 @@ public sealed class RiderCareer
 
     public void DetachFromClub() => OrganizationId = null;
 
+    public void AttachToClub(WorldEntityId organizationId) => OrganizationId = organizationId;
+
     public string OriginDefinitionId { get; }
 
     public double CriticalPowerW { get; }

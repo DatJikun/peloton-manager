@@ -9,8 +9,11 @@ using Peloton.Simulation.Race;
 namespace Peloton.Application;
 
 public sealed record RaceResultPlacement(
+    int Place,
     WorldEntityId RiderId,
-    string Label);
+    string Label,
+    WorldEntityId? OrganizationId,
+    string OrganizationName);
 
 public sealed record RaceResultProjection(
     string Title,
@@ -41,7 +44,7 @@ public static class RaceOutcomeQueries
 
         RaceScenario? scenario = TryResolve(racePreparation, raceScenarioCatalog);
         RaceResultPlacement[] finishOrder = world.LastRace.FinishOrder
-            .Select(id => new RaceResultPlacement(id, Label(world, scenario, id)))
+            .Select((id, index) => BuildPlacement(world, scenario, id, index + 1))
             .ToArray();
         return new RaceResultProjection(
             CompletedCalendarTitle(world) ?? RacePreparationDefaults.Title,
@@ -49,6 +52,16 @@ public static class RaceOutcomeQueries
             world.LastRace.WinnerId,
             Label(world, scenario, world.LastRace.WinnerId),
             Array.AsReadOnly(finishOrder));
+    }
+
+    public static IReadOnlyList<RaceResultPlacement> FilterFinishOrderByOrganization(
+        IReadOnlyList<RaceResultPlacement> finishOrder,
+        WorldEntityId organizationId)
+    {
+        ArgumentNullException.ThrowIfNull(finishOrder);
+        return finishOrder
+            .Where(place => place.OrganizationId == organizationId)
+            .ToArray();
     }
 
     public static RaceDebriefProjection BuildDebrief(
@@ -109,6 +122,30 @@ public static class RaceOutcomeQueries
         {
             return null;
         }
+    }
+
+    private static RaceResultPlacement BuildPlacement(
+        WorldState world,
+        RaceScenario? scenario,
+        WorldEntityId riderId,
+        int place)
+    {
+        RiderCareer? career = world.TryGetRiderCareer(riderId);
+        WorldEntityId? organizationId = career?.OrganizationId;
+        string organizationName = string.Empty;
+        if (organizationId is WorldEntityId resolvedOrganizationId)
+        {
+            Organization? organization = world.Organizations.FirstOrDefault(
+                item => item.Id == resolvedOrganizationId);
+            organizationName = organization?.Name ?? string.Empty;
+        }
+
+        return new RaceResultPlacement(
+            place,
+            riderId,
+            Label(world, scenario, riderId),
+            organizationId,
+            organizationName);
     }
 
     private static string Label(WorldState world, RaceScenario? scenario, WorldEntityId riderId)

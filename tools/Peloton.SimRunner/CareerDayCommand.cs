@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Peloton.Application;
+using Peloton.Domain;
 using Peloton.Infrastructure;
 using Peloton.Simulation.Race;
 
@@ -432,6 +433,23 @@ public static class CareerDayCommand
             string.Create(
                 CultureInfo.InvariantCulture,
                 $"result=title={result.Title} winner={result.WinnerId.Value} winnerLabel={result.WinnerLabel} routeId={result.RouteId} finishOrder={finishOrder}"));
+
+        AccessContext access = application.GetAccessContext();
+        if (access.CurrentOrganizationId is WorldEntityId organizationId)
+        {
+            IReadOnlyList<RaceResultPlacement>? teamResults = application.RaceResultForOrganization(organizationId);
+            if (teamResults is not null && teamResults.Count > 0)
+            {
+                string teamFinish = string.Join(
+                    ",",
+                    teamResults.Select(place =>
+                        string.Create(CultureInfo.InvariantCulture, $"{place.Place}:{place.Label}")));
+                output.WriteLine(
+                    string.Create(
+                        CultureInfo.InvariantCulture,
+                        $"resultTeam=org={organizationId.Value} finishOrder={teamFinish}"));
+            }
+        }
     }
 
     private static void WriteDebrief(TextWriter output, GameApplication application)

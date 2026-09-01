@@ -161,6 +161,38 @@ public sealed class WorldState
     public RiderCareer? TryGetRiderCareer(WorldEntityId riderCareerId) =>
         riderCareers.FirstOrDefault(career => career.Id == riderCareerId);
 
+    public RiderContract? TryGetActiveContract(WorldEntityId riderCareerId)
+    {
+        return riderContracts
+            .Where(contract =>
+                contract.RiderCareerId == riderCareerId &&
+                contract.StartDate.DayNumber <= CurrentDate.DayNumber &&
+                contract.EndDate.DayNumber >= CurrentDate.DayNumber)
+            .OrderByDescending(contract => contract.StartDate.DayNumber)
+            .ThenByDescending(contract => contract.Id.Value)
+            .FirstOrDefault();
+    }
+
+    public bool TryTerminateActiveContract(WorldEntityId riderCareerId, WorldDate endDate)
+    {
+        RiderContract? active = TryGetActiveContract(riderCareerId);
+        if (active is null)
+        {
+            return false;
+        }
+
+        int index = riderContracts.FindIndex(contract => contract.Id == active.Id);
+        riderContracts[index] = active with { EndDate = endDate };
+        return true;
+    }
+
+    public void AddRiderContract(RiderContract contract)
+    {
+        ArgumentNullException.ThrowIfNull(contract);
+        riderContracts.Add(contract);
+        riderContracts.Sort((left, right) => left.Id.Value.CompareTo(right.Id.Value));
+    }
+
     public IReadOnlyList<RiderCareer> GetRiderCareersForOrganization(WorldEntityId organizationId) =>
         riderCareers
             .Where(career => career.OrganizationId == organizationId)
@@ -295,8 +327,7 @@ public sealed class WorldState
                 continue;
             }
 
-            RiderContract? contract = riderContracts.FirstOrDefault(
-                item => item.RiderCareerId == career.Id);
+            RiderContract? contract = TryGetActiveContract(career.Id);
             if (contract is not null)
             {
                 wageBill = checked(wageBill + contract.AnnualWage);

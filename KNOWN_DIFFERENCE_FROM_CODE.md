@@ -67,7 +67,17 @@ Phase 1 out of scope for Godot: Career Hub stays rejected. WT CreateWorld is lan
 - `RacePreparationProjection.Title` uses today's calendar race name (WT TDU = `Santos Tour Down Under`).
 - SQLite SchemaVersion **6** / checksum `peloton-world-checksum-v6`. Schema 1–5 saves refuse to load.
 
-Phase 7 in progress: results filter by any team (D-043); thin contract negotiation (D-044). Do not expand Watch Race UI. Dynamic sponsor market, inflation, transfer **fees**, Godot Hub, AI managers, D-032, tenth GameState stay out.
+## Results filter + thin negotiation (D-043 / D-044 phase 7 landed)
+
+- `RaceResultPlacement` carries `Place`, `OrganizationId`, and organization display name (from rider club at result time).
+- `GameApplication.RaceResultForOrganization(organizationId)` returns that org's finishers with official place numbers; legal for any organization.
+- SimRunner `day --through-results` prints optional `resultTeam=` line for the player employer.
+- Contract negotiation stays in `Management`: `BeginContractNegotiationCommand`, `SetContractOfferCommand`, `ConfirmContractOfferCommand`, `CancelContractNegotiationCommand`; draft on `GameApplication`; `ContractNegotiationProjection` query.
+- Accept formula: `threshold = currentWage == 0 ? 100_000 : floor(currentWage * (1.10 - 0.20 * Loyalty01))`; reject code `CONTRACT_OFFER_REJECTED`; no transfer fee, no RNG.
+- On accept: prior active contract ends today (history kept); new `RiderContract` starts today; `RiderCareer.AttachToClub`; at most one active contract (`StartDate <= today <= EndDate`).
+- SQLite SchemaVersion **7** / checksum `peloton-world-checksum-v7`. Schema 1–6 saves refuse to load. Same-seed soak checksum hex changes (v7 label only for unchanged worlds).
+
+Dynamic sponsor market, inflation, transfer **fees**, Godot Hub, AI managers, D-032, tenth GameState stay out. Do not expand Watch Race UI.
 
 ## Day state (D-036 phase 2 landed)
 

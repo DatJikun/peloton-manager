@@ -107,10 +107,11 @@ Baza 2026: 18 ekip męskiego WorldTour w `scenario.peloton.wt-2026`. Fizjologia,
 - [x] Career WorldTour slice phase 4 — rider contracts (`RiderContract`, `ClubRosterProjection`, SchemaVersion 4)
 - [x] Career WorldTour slice phase 5 — WT 2026 pack (`scenario.peloton.wt-2026`, SchemaVersion 5, 12-rider cap)
 - [x] Career WorldTour slice phase 6 — thin economy (`CashEur`, `ClubFinanceProjection`, SchemaVersion 6)
+- [x] Career WorldTour slice phase 7 — results filter by any org (D-043) + thin contract negotiation (D-044, SchemaVersion 7)
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task
-`Simulate + results filter by any team; thin contract negotiation (D-043, D-044). No Watch Race UI. No Career Hub. No tenth GameState.`
+`Phase 7 landed. Next slice work TBD by owner (no Watch Race UI expansion, no Career Hub, no tenth GameState).`
 
 ## Known blockers
 - None.
