@@ -238,3 +238,6 @@ Owner agreed 2026-09-01 after the repo review showed Roubaix won by GC riders, a
 2. On cobbles and climbs (and the last 30 km of non-flat classics/stages) the group pace is set by the rider who can physically ride fastest at the front at sustainable power; everyone else pays their own cost and drops emergently (§17–§18). Flat stages keep the D-049 sit-in and bunch sprint.
 3. Bruk in the engine = cobble Crr (already) **plus** handling-dependent shelter loss and a surge cost. No `Cobbles = +N` in any winner formula; ratings stay derived views (D-046).
 4. Goldens may move once (`PhysicsContractVersion` 2). §49 stays `NOT VERIFIED`. Contract: `RACE_FEEL_POSITION_AND_SELECTION_v0.1.md`.
+
+## D-055 — Two aero numbers: CdA Road and CdA TT
+Owner-ordered next race-engine task (2026-09-01). Each rider stores `CdARoadM2` and `CdATtM2` (SQLite SchemaVersion 10). ITT/TTT stages use the TT value with no bunch shelter in ITT (60 s starts, reverse GC); every other stage uses the road value. The TT rating is derived from TT aero. No mid-stage switching, no descent tuck, no TT pacing optimizer yet. Road results must not change versus D-054. Contract: `RACE_CDA_ROAD_TT_v0.1.md`.
