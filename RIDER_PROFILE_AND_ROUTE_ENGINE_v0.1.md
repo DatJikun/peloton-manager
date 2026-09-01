@@ -37,7 +37,7 @@ We will **not** replace the physics with Football Manager magic ratings as the t
 We **did**:
 
 1. Recalibrate the pack so a climber, a sprinter, a classics rider, and a time-trialist are actually different people in the lab numbers.
-2. Show **normal 1–99 ratings** derived from those numbers: Climb, Hills, Flat, TT, Sprint, Cobbles, plus OVR and POT.
+2. Show **normal 1–99 ratings** derived from those numbers: Climb, Hills, Flat, TT, Sprint, Cobbles, plus OVR and POT. Polish player-facing label for Cobbles is **Bruk** (not „kocie łby”). English identifiers stay `Cobbles`.
 3. Keep form/freshness/fatigue as day condition, not career talent.
 
 You manage people. You should be able to see “strong on long climbs, weak in a bunch sprint” without opening a sports-science paper.

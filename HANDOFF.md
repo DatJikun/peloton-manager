@@ -28,7 +28,7 @@ Nie ma jeszcze pełnej gry managerskiej.
 Działa:
 - w Godocie **powłoka kariery** (`CareerShell.tscn`, niebieska szyna z POC v3): Advance Day / Race next, kalendarz, skrzynka, **symulacja i tabela wyniku** (D-043), filtr po ekipie;
 - wyścig: **symulacja i wynik** (D-043); wynik można filtrować po każdej ekipie;
-- statystyki 1–99 (góry, pagórki, płaskie, TT, sprint, kocie łby, OVR, POT) wyliczane z fizjologii — Pogačar jest góralem, Philipsen sprinterem;
+- statystyki 1–99 (góry, pagórki, płaskie, TT, sprint, **bruk**, OVR, POT) wyliczane z fizjologii — Pogačar jest góralem, Philipsen sprinterem; w polskim UI to **Bruk**, nie „kocie łby”;
 - trasy WT: gęsty profil (~25 m), zapisane w świecie; TDU etap 1 to ~140 km, nie tor 5,4 km;
 - kalendarz WT: **jeden dzień na etap** (Tour = 21 etapów), nie jeden wpis na całe Grand Tour;
 - w CLI pętla dnia i ten sam człowiek na starcie co w klubie;
@@ -161,6 +161,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
+- `2026-09-01` — **Player-facing Polish for cobbles is bruk (D-046).** The rating on the card is **Bruk**. Do not say „kocie łby” to the owner. English code stays `Cobbles`.
 - `2026-09-01` — **Bunch sprint + real fields + all jerseys + compare with real life (D-049).** Classified Flat is a bunch sprint. UCI 7 (8 on Grand Tours) with wildcards. Jerseys are after-stage tables, not D-032. History analogues are for judgment, not a script.
 - `2026-09-01` — **Calibrate 2026 pack from physiology/wage research; lift the 12-starter cap; keep routes diverse.** Research file is a source, not a lock. Keep captain-first cards. Evenepoel 2026 is Red Bull. Official WT Simulate starts the full entered 4-man cards (72). Do not claim a UCI 150–200 field. Do not fake a sprinter win on Flat.
 - `2026-09-01` — **Career Hub deleted; Watch film stays off by default (D-048).** Remove `CareerHub.tscn` / host / screen. Desk is the career shell. Watch Race remains optional (`FILM: WYŁ` default). Do not rebuild the PR #4 dashboard. Do not merge leftover Watch radio/DS PRs.
@@ -298,6 +299,7 @@ src/Peloton.Client.Godot/project.godot
 - Nie twierdź, że Godot jest pustym stubem — `CareerShell.tscn` jest oknem kariery; Watch Race zostaje opcjonalnym filmem, domyślnie wyłączonym.
 - Nie ustawiaj Watch Race jako domyślnej ścieżki gry (D-043). Nie odbudowuj Career Hub (D-048). Nie merguj starych PR-ów radia/DS Watch na `main`.
 - Nie zostawiaj gotowej pracy na otwartym PR (D-045). Zielony gate → merge do `main` w tej samej sesji. Nie zlewaj stosu starych branchy jeden na drugi.
+- Nie mów właścicielowi „kocie łby”; polska nazwa statystyki to **bruk** (D-046). W kodzie zostaje `Cobbles`.
 - Nie przywracaj cap 12 na oficjalnym starcie WT. Feel probe seed `91234` pokazuje sprintera przed góralem na sklasyfikowanym płaskim; nie zamykaj §49.
 - Nie zapisuj OVR/POT/kasy/skautingu z `CareerLookCatalog` do World, SQLite ani Commandów. To nie true ability.
 - Nie odpalaj kodujących subagentów z `inherit` (to Grok); kod to Composer 2.5 (D-035).
