@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peloton.Client.Godot", "Peloton.Client.Godot.csproj", "{C86C0F83-3DDF-4C8B-857A-A39848C4864E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		ExportDebug|Any CPU = ExportDebug|Any CPU
+		ExportRelease|Any CPU = ExportRelease|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C86C0F83-3DDF-4C8B-857A-A39848C4864E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C86C0F83-3DDF-4C8B-857A-A39848C4864E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C86C0F83-3DDF-4C8B-857A-A39848C4864E}.ExportDebug|Any CPU.ActiveCfg = ExportDebug|Any CPU
+		{C86C0F83-3DDF-4C8B-857A-A39848C4864E}.ExportDebug|Any CPU.Build.0 = ExportDebug|Any CPU
+		{C86C0F83-3DDF-4C8B-857A-A39848C4864E}.ExportRelease|Any CPU.ActiveCfg = ExportRelease|Any CPU
+		{C86C0F83-3DDF-4C8B-857A-A39848C4864E}.ExportRelease|Any CPU.Build.0 = ExportRelease|Any CPU
+		{C86C0F83-3DDF-4C8B-857A-A39848C4864E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C86C0F83-3DDF-4C8B-857A-A39848C4864E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

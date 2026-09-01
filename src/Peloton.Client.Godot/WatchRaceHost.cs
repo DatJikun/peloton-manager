@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Peloton.Application;
 using Peloton.Domain;
 using Peloton.Simulation.Race;
@@ -15,6 +16,7 @@ public sealed class WatchRaceHost
     private RaceWatchFrame? previousFrame;
     private double watchAccumulator;
     private bool presentationPaused;
+    private int? rateOverride;
 
     public WatchRaceHost(
         GameApplication application,
@@ -27,8 +29,10 @@ public sealed class WatchRaceHost
         this.raceScenarioId = string.IsNullOrWhiteSpace(raceScenarioId)
             ? RacePreparationDefaults.PrototypeScenarioId
             : raceScenarioId;
-        SelectedRate = 5;
+        SelectedFilmSeconds = WatchFilmDuration.DefaultSeconds;
     }
+
+    public int SelectedFilmSeconds { get; private set; }
 
     public int SelectedRate { get; private set; }
 
@@ -48,6 +52,24 @@ public sealed class WatchRaceHost
 
     public bool PresentationPaused => presentationPaused;
 
+    public string RiderLabel(WorldEntityId riderId)
+    {
+        if (application.World is not WorldState world)
+        {
+            return riderId.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        RiderCareer? career = world.TryGetRiderCareer(riderId);
+        WorldEntityId personId = career?.PersonId ?? riderId;
+        Person? person = world.Persons.FirstOrDefault(item => item.Id == personId);
+        if (person is not null && !string.IsNullOrWhiteSpace(person.Name))
+        {
+            return person.Name;
+        }
+
+        return career?.OriginDefinitionId ?? riderId.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    }
+
     public InterpolatedWatchView? Interpolated
     {
         get
@@ -57,12 +79,16 @@ public sealed class WatchRaceHost
                 return null;
             }
 
-            return WatchMotionInterpolator.Project(
+            InterpolatedWatchView projected = WatchMotionInterpolator.Project(
                 previousFrame,
                 application.RaceWatch,
                 application.PendingRaceDecision is null && !presentationPaused
                     ? watchAccumulator / WatchSecondDuration
                     : 1.0);
+            InterpolatedRiderView[] named = projected.Riders
+                .Select(rider => rider with { Name = RiderLabel(new WorldEntityId(rider.RiderId)) })
+                .ToArray();
+            return projected with { Riders = named };
         }
     }
 
@@ -93,6 +119,22 @@ public sealed class WatchRaceHost
         return application.Execute(new CancelRacePreparationCommand());
     }
 
+    public CommandResult SelectFilmDuration(int seconds)
+    {
+        if (application.State == GameState.RaceLive)
+        {
+            return CommandResult.Reject("WATCH_FILM_LOCKED");
+        }
+
+        if (!WatchFilmDuration.IsChoice(seconds))
+        {
+            return CommandResult.Reject("WATCH_FILM_INVALID");
+        }
+
+        SelectedFilmSeconds = seconds;
+        return CommandResult.Success;
+    }
+
     public CommandResult SelectRate(int rate)
     {
         if (application.State == GameState.RaceLive)
@@ -100,12 +142,12 @@ public sealed class WatchRaceHost
             return CommandResult.Reject("WATCH_RATE_LOCKED");
         }
 
-        if (rate is not (1 or 2 or 5 or 20))
+        if (rate < 1)
         {
             return CommandResult.Reject("WATCH_RATE_INVALID");
         }
 
-        SelectedRate = rate;
+        rateOverride = rate;
         return CommandResult.Success;
     }
 
@@ -118,6 +160,8 @@ public sealed class WatchRaceHost
             return started;
         }
 
+        double routeLengthM = application.RaceWatchCourse?.TotalLengthM ?? 0.0;
+        SelectedRate = rateOverride ?? WatchFilmDuration.RateFor(routeLengthM, SelectedFilmSeconds);
         CommandResult watching = application.Execute(new BeginRaceWatchCommand(SelectedRate));
         if (!watching.Succeeded)
         {

@@ -38,11 +38,11 @@ When proposing a change, explain the problem it solves and which current decisio
 
 ## Current priorities
 
-Pre-production, but the architecture skeleton and race prototype already exist in code. `HANDOFF.md` and `CODEBASE_MAP.md` are the live snapshot. `UI_SITEMAP_v0.1.md`, `GAME_STATES_v0.1.md`, and `DATA_MODEL_v0.1.md` remain DRAFT contracts; several identities from the data model are not in code yet (knowledge stores, recruitment, rider careers bound to race).
+Pre-production, but the architecture skeleton and race prototype already exist in code. `HANDOFF.md` and `CODEBASE_MAP.md` are the live snapshot. `UI_SITEMAP_v0.1.md`, `GAME_STATES_v0.1.md`, and `DATA_MODEL_v0.1.md` remain DRAFT contracts; several identities from the data model are not in code yet (knowledge stores, recruitment). Rider careers are bound to race via `RiderCareer`.
 
 Genre/management research lives in `MANAGER_GAMES_AND_CYCLING_RESEARCH_2026-08-31.md` (source, not a lock).
 
-Godot career shell is look/presentation, not a completed game and not Career Hub. Watch Race is **deferred** (D-043): simulate then results; do not expand watching UI. Owner fun gate `RACE_ENGINE_DESIGN_v0.2.md` §49 is `NOT VERIFIED` — do not close it with automations.
+Godot career shell (`CareerShell.tscn`) presents Advance Day / Race next / simulate / results (D-043). Watch Race is **deferred** as the play path: optional film only; do not expand watching UI. It is not Career Hub. Owner fun gate `RACE_ENGINE_DESIGN_v0.2.md` §49 is `NOT VERIFIED` — do not close it with automations.
 
 Do not begin a new gameplay system until `HANDOFF.md` Next task (or the owner) says so. Do not treat stale README sentences as current. If code and an accepted document conflict, follow `DOCS_GOVERNANCE.md`: decide whether it is a bug, stale docs, or a later decision.
 

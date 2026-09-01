@@ -39,7 +39,7 @@ The skeleton calendar is deliberately short: one season is 12 calls to `AdvanceD
 
 ## Godot client
 
-`src/Peloton.Client.Godot` is presentation only (Commands + Queries). Open `src/Peloton.Client.Godot/project.godot` in Godot 4.4 .NET. Main scene: career shell (`CareerShell.tscn`) with Watch Race as a blocking overlay. It is not Career Hub. Headless tests do not need Godot installed.
+`src/Peloton.Client.Godot` is presentation only (Commands + Queries). Open `src/Peloton.Client.Godot/project.godot` in Godot 4.4 .NET. Main scene: career shell (`CareerShell.tscn`) with Watch Race as an optional overlay. It is not Career Hub. Headless tests do not need Godot installed.
 
 ## UI lab
 

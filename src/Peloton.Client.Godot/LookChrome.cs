@@ -34,8 +34,31 @@ internal static class LookChrome
 
     private static FontFile? LoadFont(string path)
     {
+        FontFile? imported = ResourceLoader.Load<FontFile>(path);
+        if (imported is not null)
+        {
+            ConfigureFont(imported);
+            return imported;
+        }
+
         FontFile font = new();
-        return font.LoadDynamicFont(path) == Error.Ok ? font : null;
+        if (font.LoadDynamicFont(path) != Error.Ok)
+        {
+            return null;
+        }
+
+        ConfigureFont(font);
+        return font;
+    }
+
+    private static void ConfigureFont(FontFile font)
+    {
+        font.Antialiasing = TextServer.FontAntialiasing.Lcd;
+        font.Hinting = TextServer.Hinting.Light;
+        font.MultichannelSignedDistanceField = true;
+        font.MsdfPixelRange = 8;
+        font.MsdfSize = 48;
+        font.Oversampling = 0.0f;
     }
 
     public static Label Display(string text, int size, Color color)

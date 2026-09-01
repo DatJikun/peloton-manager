@@ -470,7 +470,7 @@ public static class CareerLookCatalog
             "rate" => row.Rate,
             "pot" => row.Pot,
             "form" => row.Form,
-            "value" => row.Value,
+            "salary" => row.Salary,
             "interest" => row.Interest,
             _ => row.Rate,
         };

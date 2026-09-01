@@ -246,12 +246,14 @@ Prize money
 
 Ten sam race engine działa dla live i instant simulation.
 
-Po fast sim gracz może zobaczyć Key Race Story:
+Po fast sim gracz może zobaczyć Key Race Story. W szkielecie (`D-036`, `D-037`) są to oficjalny zwycięzca, tabela miejsc z zespołem, miejsca czwórki i czy cel StageWin wyszedł — bez ukrytej fizjologii. Docelowo:
 
 - kto pracował,
 - gdzie powstał problem,
 - jakie decyzje podjął DS,
 - dlaczego lider stracił.
+
+Fast sim is the default race-day presentation; Watch film is optional.
 
 ## 23. Staff must own race decisions
 

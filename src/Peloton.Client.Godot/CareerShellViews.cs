@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Godot;
 using Peloton.Application;
+using Peloton.Domain;
 
 namespace Peloton.Client.Godot;
 
@@ -15,15 +16,20 @@ public sealed partial class CareerShellScreen
         content.AddChild(BuildWorldStrip());
 
         HBoxContainer top = Row();
-        VBoxContainer list = Panel("01  NADCHODZĄCE WYŚCIGI", BuildUpcomingList());
+        VBoxContainer list = Panel("NADCHODZĄCE WYŚCIGI", BuildUpcomingList());
         list.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         list.SizeFlagsStretchRatio = 5;
         VBoxContainer raceCol = new();
         raceCol.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         raceCol.SizeFlagsStretchRatio = 7;
         raceCol.AddThemeConstantOverride("separation", 14);
-        raceCol.AddChild(Panel("02  WYŚCIG", BuildUpcomingDetail()));
-        raceCol.AddChild(Panel("03  INBOX", BuildDeskInbox()));
+        raceCol.AddChild(Panel("WYŚCIG", BuildUpcomingDetail()));
+        if (host!.Preparation is not null)
+        {
+            raceCol.AddChild(Panel("PRZYGOTOWANIE", BuildPrepSeats()));
+        }
+
+        raceCol.AddChild(Panel("INBOX", BuildDeskInbox()));
         top.AddChild(list);
         top.AddChild(raceCol);
         content.AddChild(top);
@@ -79,32 +85,34 @@ public sealed partial class CareerShellScreen
         list.AddThemeConstantOverride("separation", 6);
         Button more = LookChrome.Solid("pełny kalendarz ›", () => Show(View.Calendar), LookChrome.Paper, LookChrome.Black, compact: true);
         list.AddChild(more);
-        foreach (LookUpcomingRace race in CareerLookCatalog.UpcomingRaces)
+        foreach (CalendarEntryProjection entry in host!.Calendar)
         {
-            LookUpcomingRace captured = race;
-            bool active = lookRaceId == captured.Id;
+            CalendarEntryProjection captured = entry;
+            bool active = lookRaceId == captured.Title ||
+                (lookRaceId == "mila-torino" && captured == host.Calendar[0]);
             Color fg = active ? LookChrome.Paper : LookChrome.Black;
             PanelContainer row = LookChrome.ClickRow(active, () =>
             {
-                lookRaceId = captured.Id;
+                lookRaceId = captured.Title;
                 RebuildContent();
             });
             HBoxContainer inner = new();
             inner.AddThemeConstantOverride("separation", 10);
-            Label date = LookChrome.Body(captured.Date, 12, fg, bold: true);
+            Label date = LookChrome.Body(
+                string.Create(CultureInfo.InvariantCulture, $"dzień {captured.DayNumber}"),
+                12,
+                fg,
+                bold: true);
             date.CustomMinimumSize = new Vector2(84, 0);
             VBoxContainer names = new();
             names.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-            names.AddChild(LookChrome.Body(captured.Name, 14, fg, bold: true));
+            names.AddChild(LookChrome.Body(captured.Title, 14, fg, bold: true));
             names.AddChild(LookChrome.Body(
-                string.Create(CultureInfo.InvariantCulture, $"{captured.Category} · {captured.DistanceKm} km · {captured.When}"),
+                string.Create(CultureInfo.InvariantCulture, $"{captured.Kind} · {captured.Status}"),
                 11,
                 active ? LookChrome.Hair : LookChrome.Gray));
-            LookSparkline spark = new();
-            spark.SetHeights(captured.Heights);
             inner.AddChild(date);
             inner.AddChild(names);
-            inner.AddChild(spark);
             row.AddChild(inner);
             list.AddChild(row);
         }
@@ -116,32 +124,74 @@ public sealed partial class CareerShellScreen
     {
         VBoxContainer box = new();
         box.AddThemeConstantOverride("separation", 8);
-        LookUpcomingRace? race = CareerLookCatalog.Upcoming(lookRaceId) ?? CareerLookCatalog.UpcomingRaces[0];
+        CalendarEntryProjection? entry = FindCalendarEntry(lookRaceId);
+        if (entry is null)
+        {
+            box.AddChild(LookChrome.Body("Kalendarz świata jest pusty.", 13, LookChrome.Gray));
+            return box;
+        }
+
         HBoxContainer head = new();
         head.AddThemeConstantOverride("separation", 10);
-        Label name = LookChrome.Display(race.Name.ToUpperInvariant(), 26, LookChrome.Black);
+        Label name = LookChrome.Display(entry.Title.ToUpperInvariant(), 26, LookChrome.Black);
         name.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         head.AddChild(name);
-        head.AddChild(LookChrome.Chip(race.Category, "inv"));
+        head.AddChild(LookChrome.Chip(entry.Kind, "inv"));
         box.AddChild(head);
         box.AddChild(LookChrome.Body(
-            string.Create(CultureInfo.InvariantCulture, $"{race.When} · {race.Date.ToLowerInvariant()} · {race.DistanceKm} km · {race.Route}"),
+            string.Create(CultureInfo.InvariantCulture, $"dzień {entry.DayNumber} · {entry.Status}"),
             13,
             LookChrome.Gray,
             bold: true));
-        LookRouteProfile profile = new();
-        profile.SetRace(race);
-        box.AddChild(profile);
-        box.AddChild(LookChrome.Kv("Pogoda", race.Weather));
-        box.AddChild(LookChrome.Kv("Skład", race.Squad));
-        HBoxContainer tags = new();
-        tags.AddThemeConstantOverride("separation", 6);
-        foreach (LookTag tag in race.Tags)
+        if (!string.IsNullOrWhiteSpace(entry.OfficialResult))
         {
-            tags.AddChild(LookChrome.Chip(tag.Text, tag.Kind));
+            box.AddChild(LookChrome.Kv("Wynik", entry.OfficialResult));
         }
 
-        box.AddChild(tags);
+        RacePreparationProjection? prep = host!.Preparation;
+        if (prep is not null)
+        {
+            box.AddChild(LookChrome.Kv("Cel", prep.Objective));
+            box.AddChild(LookChrome.Body(
+                "Skład klubu. Kliknij kolarza, żeby ustawić lidera. Support idzie z domyślnej strategii.",
+                12,
+                LookChrome.Gray));
+        }
+
+        return box;
+    }
+
+    private VBoxContainer BuildPrepSeats()
+    {
+        VBoxContainer box = new();
+        box.AddThemeConstantOverride("separation", 8);
+        RacePreparationProjection? prep = host!.Preparation;
+        if (prep is null)
+        {
+            return box;
+        }
+
+        box.AddChild(LookChrome.Body(
+            string.Create(CultureInfo.InvariantCulture, $"{prep.Title} · {prep.Objective}"),
+            13,
+            LookChrome.Black,
+            bold: true));
+        foreach (WorldEntityId riderId in prep.Squad)
+        {
+            WorldEntityId captured = riderId;
+            string role = captured == prep.LeaderId
+                ? "Leader"
+                : captured == prep.SupportId
+                    ? "Support"
+                    : "Skład";
+            box.AddChild(LookChrome.Solid(
+                $"{host.RiderDisplayName(captured)} · {role}",
+                () => Apply(host.SetLeader(captured)),
+                LookChrome.Paper,
+                LookChrome.Black,
+                compact: true));
+        }
+
         return box;
     }
 
@@ -217,7 +267,7 @@ public sealed partial class CareerShellScreen
                 int fresh = key is "name" or "role" ? 1 : -1;
                 deskSquadSort = CareerLookCatalog.Toggle(deskSquadSort, key, fresh);
                 RebuildContent();
-            }));
+            }, numeric: IsNumericColumn(key)));
         }
 
         box.AddChild(heads);
@@ -225,10 +275,11 @@ public sealed partial class CareerShellScreen
         {
             HBoxContainer row = new();
             row.AddThemeConstantOverride("separation", 8);
+            row.SizeFlagsHorizontal = SizeFlags.ExpandFill;
             row.AddChild(Cell(rider.Name, true));
             row.AddChild(Cell(rider.Role, false));
-            row.AddChild(Cell(CareerLookCatalog.Stars(rider.Rate) + "  " + rider.Rate + "/" + rider.Pot, true));
-            row.AddChild(Cell(CareerLookCatalog.Trend(rider.Trend), false));
+            row.AddChild(Cell(CareerLookCatalog.Stars(rider.Rate) + "  " + rider.Rate + "/" + rider.Pot, true, numeric: true));
+            row.AddChild(Cell(CareerLookCatalog.Trend(rider.Trend), false, numeric: true));
             row.AddChild(LookChrome.Chip(rider.Status, rider.Healthy ? "ok" : "warn"));
             box.AddChild(row);
         }
@@ -237,27 +288,88 @@ public sealed partial class CareerShellScreen
         return box;
     }
 
-    private static VBoxContainer BuildRecentResults()
+    private VBoxContainer BuildRecentResults()
     {
         VBoxContainer box = new();
         box.AddThemeConstantOverride("separation", 8);
-        foreach (LookResultRow row in CareerLookCatalog.RecentResults)
+        if (host!.Result is RaceResultProjection result)
         {
-            HBoxContainer line = new();
-            line.AddThemeConstantOverride("separation", 10);
-            Label pos = LookChrome.Display(row.Place, 22, row.Highlight ? LookChrome.Team : LookChrome.Black);
-            pos.CustomMinimumSize = new Vector2(48, 0);
-            VBoxContainer meta = new();
-            meta.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-            meta.AddChild(LookChrome.Body(row.Race, 14, LookChrome.Black, bold: true));
-            meta.AddChild(LookChrome.Body(row.Meta, 11, LookChrome.Gray));
-            line.AddChild(pos);
-            line.AddChild(meta);
-            line.AddChild(LookChrome.Body(row.Rider, 13, LookChrome.Black, bold: true));
-            box.AddChild(line);
+            box.AddChild(LookChrome.Body(
+                string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"{result.Title} · wygrał {host.RiderDisplayName(result.WinnerId)}"),
+                13,
+                LookChrome.Black,
+                bold: true));
+
+            HBoxContainer filters = new();
+            filters.AddThemeConstantOverride("separation", 6);
+            filters.AddChild(FilterChip("Wszyscy", null, host.ResultTeamFilter is null));
+            foreach (OrganizationNameProjection team in host.ResultTeams)
+            {
+                OrganizationNameProjection captured = team;
+                filters.AddChild(FilterChip(
+                    captured.Name,
+                    captured.Id,
+                    host.ResultTeamFilter == captured.Id));
+            }
+
+            box.AddChild(filters);
+            foreach (RaceResultPlacement row in host.VisibleResultTable)
+            {
+                HBoxContainer line = new();
+                line.AddThemeConstantOverride("separation", 10);
+                Label pos = LookChrome.Display(
+                    row.Place.ToString(CultureInfo.InvariantCulture),
+                    22,
+                    row.Place == 1 ? LookChrome.Team : LookChrome.Black);
+                pos.CustomMinimumSize = new Vector2(48, 0);
+                VBoxContainer meta = new();
+                meta.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+                meta.AddChild(LookChrome.Body(host.RiderDisplayName(row.RiderId), 14, LookChrome.Black, bold: true));
+                meta.AddChild(LookChrome.Body(row.OrganizationName, 11, LookChrome.Gray));
+                line.AddChild(pos);
+                line.AddChild(meta);
+                box.AddChild(line);
+            }
+
+            return box;
         }
 
+        if (host.Debrief is RaceDebriefProjection debrief)
+        {
+            box.AddChild(LookChrome.Body(debrief.Objective, 13, LookChrome.Black, bold: true));
+            foreach (string note in debrief.Notes)
+            {
+                Label line = LookChrome.Body(note, 12, LookChrome.Gray);
+                line.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+                box.AddChild(line);
+            }
+
+            return box;
+        }
+
+        box.AddChild(LookChrome.Body(
+            "Po wyścigu tu będzie tabela miejsc. Możesz filtrować po zespole.",
+            13,
+            LookChrome.Gray));
         return box;
+    }
+
+    private Button FilterChip(string caption, WorldEntityId? teamId, bool selected)
+    {
+        Button button = LookChrome.Solid(
+            caption,
+            () =>
+            {
+                host?.SetResultTeamFilter(teamId);
+                Refresh();
+            },
+            selected ? LookChrome.Team : LookChrome.Paper,
+            selected ? LookChrome.TeamOn : LookChrome.Black,
+            compact: true);
+        button.Disabled = selected;
+        return button;
     }
 
     private static VBoxContainer BuildRanking()
@@ -365,7 +477,7 @@ public sealed partial class CareerShellScreen
             {
                 squadSort = CareerLookCatalog.Toggle(squadSort, key);
                 RebuildContent();
-            }));
+            }, numeric: IsNumericColumn(key)));
         }
 
         heads.AddChild(LookChrome.Body("Status", 11, LookChrome.Gray, bold: true));
@@ -381,16 +493,18 @@ public sealed partial class CareerShellScreen
                 negotiating = false;
                 RebuildContent();
             });
+            row.SizeFlagsHorizontal = SizeFlags.ExpandFill;
             HBoxContainer inner = new();
+            inner.SizeFlagsHorizontal = SizeFlags.ExpandFill;
             inner.AddChild(Cell(captured.First, true, fg));
             inner.AddChild(Cell(captured.Last + "\n" + captured.Nat, true, fg));
             inner.AddChild(Cell(captured.Role, false, fg));
-            inner.AddChild(Cell(captured.Age.ToString(CultureInfo.InvariantCulture), false, fg));
-            inner.AddChild(Cell(captured.Rate.ToString(CultureInfo.InvariantCulture), true, fg));
-            inner.AddChild(Cell(captured.Pot.ToString(CultureInfo.InvariantCulture), false, fg));
-            inner.AddChild(Cell(captured.Form.ToString(CultureInfo.InvariantCulture), false, fg));
-            inner.AddChild(Cell(captured.Fatigue + "%", false, fg));
-            inner.AddChild(Cell(captured.ContractEnd[^4..], false, fg));
+            inner.AddChild(Cell(captured.Age.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
+            inner.AddChild(Cell(captured.Rate.ToString(CultureInfo.InvariantCulture), true, fg, numeric: true));
+            inner.AddChild(Cell(captured.Pot.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
+            inner.AddChild(Cell(captured.Form.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
+            inner.AddChild(Cell(captured.Fatigue + "%", false, fg, numeric: true));
+            inner.AddChild(Cell(captured.ContractEnd[^4..], false, fg, numeric: true));
             inner.AddChild(LookChrome.Chip(captured.Status == "Zdrowy" ? "zdrowy" : "uraz", captured.Status == "Zdrowy" ? "ok" : "warn"));
             row.AddChild(inner);
             box.AddChild(row);
@@ -407,7 +521,6 @@ public sealed partial class CareerShellScreen
         box.AddChild(ProfileHead(rider.FullName, $"{rider.Nat} · {rider.Age} lat · {rider.Role}"));
         box.AddChild(LookChrome.Kv("OVR / POT", rider.Rate + " / " + rider.Pot));
         box.AddChild(LookChrome.Kv("Forma / morale", rider.Form + " / " + rider.Morale));
-        box.AddChild(LookChrome.Kv("Wartość", CareerLookCatalog.Zloty(rider.Value)));
         foreach ((string Label, int Value) stat in new[]
                  {
                      ("Góry", rider.Mountain), ("Pagórki", rider.Hill), ("Sprint", rider.Sprint), ("TT", rider.Tt),
@@ -744,7 +857,7 @@ public sealed partial class CareerShellScreen
         detail.AddThemeConstantOverride("separation", 8);
         detail.AddChild(LookChrome.Display(current.Name.ToUpperInvariant(), 22, LookChrome.Black));
         detail.AddChild(LookChrome.Body(current.Tier, 13, LookChrome.Gray, bold: true));
-        detail.AddChild(LookChrome.Kv("Wartość", current.Value));
+        detail.AddChild(LookChrome.Kv("Kwota umowy", current.Value));
         detail.AddChild(LookChrome.Kv("Do", current.Until));
         detail.AddChild(LookChrome.Kv("Relacja", current.Mood + "/100"));
         detail.AddChild(LookChrome.Kv("Status", "aktywny"));
@@ -938,7 +1051,7 @@ public sealed partial class CareerShellScreen
         foreach ((string Label, string Key) col in new[]
                  {
                      ("Imię", "first"), ("Nazwisko", "last"), ("Wiek", "age"), ("Profil", "role"),
-                     ("OVR", "rate"), ("POT", "pot"), ("Forma", "form"), ("Wartość", "value"), ("Zainteres.", "interest"),
+                     ("OVR", "rate"), ("POT", "pot"), ("Forma", "form"), ("Pensja", "salary"), ("Zainteres.", "interest"),
                  })
         {
             string key = col.Key;
@@ -947,7 +1060,7 @@ public sealed partial class CareerShellScreen
                 int fresh = key is "first" or "last" or "role" ? 1 : -1;
                 marketSort = CareerLookCatalog.Toggle(marketSort, key, fresh);
                 RebuildContent();
-            }));
+            }, numeric: IsNumericColumn(key)));
         }
 
         table.AddChild(heads);
@@ -963,15 +1076,16 @@ public sealed partial class CareerShellScreen
                 RebuildContent();
             });
             HBoxContainer inner = new();
+            inner.SizeFlagsHorizontal = SizeFlags.ExpandFill;
             inner.AddChild(Cell(captured.First, false, fg));
             inner.AddChild(Cell(captured.Last + "\n" + captured.Nat, true, fg));
-            inner.AddChild(Cell(captured.Age.ToString(CultureInfo.InvariantCulture), false, fg));
+            inner.AddChild(Cell(captured.Age.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
             inner.AddChild(Cell(captured.Role, false, fg));
-            inner.AddChild(Cell(captured.Rate.ToString(CultureInfo.InvariantCulture), true, fg));
-            inner.AddChild(Cell(captured.Pot.ToString(CultureInfo.InvariantCulture), false, fg));
-            inner.AddChild(Cell(captured.Form.ToString(CultureInfo.InvariantCulture), false, fg));
-            inner.AddChild(Cell(CareerLookCatalog.Zloty(captured.Value), false, fg));
-            inner.AddChild(Cell(captured.Interest.ToString(CultureInfo.InvariantCulture), true, fg));
+            inner.AddChild(Cell(captured.Rate.ToString(CultureInfo.InvariantCulture), true, fg, numeric: true));
+            inner.AddChild(Cell(captured.Pot.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
+            inner.AddChild(Cell(captured.Form.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
+            inner.AddChild(Cell(CareerLookCatalog.Zloty(captured.Salary), false, fg, numeric: true));
+            inner.AddChild(Cell(captured.Interest.ToString(CultureInfo.InvariantCulture), true, fg, numeric: true));
             line.AddChild(inner);
             table.AddChild(line);
         }
@@ -992,8 +1106,7 @@ public sealed partial class CareerShellScreen
         box.AddChild(LookChrome.Kv("OVR / POT", row.Rate + " / " + row.Pot));
         box.AddChild(LookChrome.Kv("Klub", row.Team));
         box.AddChild(LookChrome.Kv("Kontrakt", row.Contract));
-        box.AddChild(LookChrome.Kv("Wartość", CareerLookCatalog.Zloty(row.Value)));
-        box.AddChild(LookChrome.Kv("Oczekiwana pensja", CareerLookCatalog.Zloty(row.Salary) + " / mies."));
+        box.AddChild(LookChrome.Kv("Pensja", CareerLookCatalog.Zloty(row.Salary) + " / mies."));
         string interestKind = row.Interest >= 75 ? "ok" : row.Interest < 55 ? "warn" : string.Empty;
         box.AddChild(LookChrome.Kv("Zainteresowanie", row.Interest + "/100"));
         box.AddChild(LookChrome.Chip(row.Interest + "/100", interestKind));
@@ -1153,9 +1266,27 @@ public sealed partial class CareerShellScreen
         real.AddThemeConstantOverride("separation", 8);
         real.AddChild(LookChrome.Body("Advance Day przesuwa cały świat o jeden dzień.", 14, LookChrome.Black));
         real.AddChild(LookChrome.Body("W dzień wyścigu ten sam przycisk nazywa się Race next i wchodzi w przygotowanie.", 14, LookChrome.Black));
-        real.AddChild(LookChrome.Body("Oglądanie etapu blokuje biurko. Nie ma zapisu w trakcie wyścigu.", 14, LookChrome.Black));
+        real.AddChild(LookChrome.Body("Oglądanie etapu jest opcją w Ustawieniach. Domyślnie dostajesz wynik i tabelę.", 14, LookChrome.Black));
         real.AddChild(LookChrome.Body("Skrzynka świata nie startuje wyścigu. OVR, kasa i skauci na tych ekranach są rysunkiem.", 14, LookChrome.Black));
         content.AddChild(Panel("ŚWIAT", real));
+    }
+
+    private CalendarEntryProjection? FindCalendarEntry(string title)
+    {
+        IReadOnlyList<CalendarEntryProjection> calendar = host!.Calendar;
+        CalendarEntryProjection? fallback = null;
+        for (int index = 0; index < calendar.Count; index++)
+        {
+            CalendarEntryProjection item = calendar[index];
+            if (item.Title == title)
+            {
+                return item;
+            }
+
+            fallback ??= item;
+        }
+
+        return fallback;
     }
 
     private static Label LookBanner()
@@ -1177,19 +1308,30 @@ public sealed partial class CareerShellScreen
         return head;
     }
 
-    private static Button SortHead(string label, string key, LookSort sort, Action onPressed)
+    private static Button SortHead(string label, string key, LookSort sort, Action onPressed, bool numeric = false)
     {
         string mark = sort.Key == key ? (sort.Dir > 0 ? " ▲" : " ▼") : string.Empty;
         Button button = LookChrome.Solid(label + mark, onPressed, LookChrome.White, LookChrome.Black, compact: true);
+        button.CustomMinimumSize = new Vector2(numeric ? 52 : 80, 36);
         button.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        button.SizeFlagsStretchRatio = numeric ? 0.7f : 1.4f;
+        button.Alignment = numeric ? HorizontalAlignment.Center : HorizontalAlignment.Left;
         return button;
     }
 
-    private static Label Cell(string text, bool bold, Color? color = null)
+    private static Label Cell(string text, bool bold, Color? color = null, bool numeric = false)
     {
-        Label label = LookChrome.Body(text, 12, color ?? LookChrome.Black, bold);
+        Label label = LookChrome.Body(text, 13, color ?? LookChrome.Black, bold);
         label.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        label.SizeFlagsStretchRatio = numeric ? 0.7f : 1.4f;
+        label.HorizontalAlignment = numeric ? HorizontalAlignment.Center : HorizontalAlignment.Left;
+        label.VerticalAlignment = VerticalAlignment.Center;
         return label;
+    }
+
+    private static bool IsNumericColumn(string key)
+    {
+        return key is "age" or "rate" or "pot" or "form" or "fatigue" or "interest" or "salary" or "trend";
     }
 
     private static HBoxContainer Row()

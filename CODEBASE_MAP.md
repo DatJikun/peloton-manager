@@ -16,7 +16,7 @@ This file is a navigation map, not implementation documentation. Design contract
 | `src/Peloton.Persistence` | SQLite schema version 7, verified candidate save, envelope identity, snapshot round trip (including `RiderCareer`, `RiderContract`, results, `OrganizationRaceEntry`, org metadata, cash/fee), integrity checks. |
 | `src/Peloton.Content` | JSON pack loaders: skeleton and WT `scenarios` + `roster` + `organizations` + `calendar`, and `racePrototypeScenarios` (route/tuning templates). |
 | `src/Peloton.Infrastructure` | Composition root connecting Application ports to Content, Persistence, and Simulation. |
-| `src/Peloton.Client.Godot` | Godot 4.4 .NET career shell + Watch Race. Presentation only: Commands + Queries. `CareerShell.tscn` copies POC v3 chrome, reads Hub/calendar/inbox/people, and fills empty domains from `CareerLookCatalog`. Watch Race interpolates `RaceWatch` icons. Uses Infrastructure as composition root; does not hold World State or open SQLite. |
+| `src/Peloton.Client.Godot` | Godot 4.4 .NET career shell + optional Watch Race. Presentation only: Commands + Queries. Main scene `CareerShell.tscn` copies POC v3 chrome (not Career Hub). Hub date / Advance Day / Race next / inbox / calendar / default simulate → result table are real. Empty domains (sponsors, scouting, look OVR) come from `CareerLookCatalog`. Watch film is a setting, off by default (D-043). |
 | `tools/Peloton.SimRunner` | Headless CLI: `run` for skeleton seasons, `race` for the prototype gate, `watch` for rate-controlled supervising-clock output, `day` for Hub, prep, calendar/inbox, result/debrief, and race-due flows. |
 
 Static content lives in `content/peloton.skeleton`, `content/peloton.wt-2026`, and `content/peloton.race-prototype`. `KNOWN_DIFFERENCE_FROM_CODE.md` records remaining prototype limits versus the accepted Race Engine contract.
@@ -30,7 +30,7 @@ Static content lives in `content/peloton.skeleton`, `content/peloton.wt-2026`, a
 | `tests/Peloton.Application.Tests` | GameState guards, prep actions, result/debrief projections, Watch/Simulate parity, content identity, Advance Day, RaceLive isolation, CLI contracts, 10-season determinism. |
 | `tests/Peloton.Persistence.Tests` | SQLite schema/content/rules metadata, checksum round trip, prep checkpoint recovery through Results/Debrief, failed-load atomicity, last-race JSON shape. |
 | `tests/Peloton.Architecture.Tests` | Forbidden PlayerTeam-like types, no production `StubRaceEngine`, Godot-free headless assemblies. |
-| `tests/Peloton.Client.Godot.Tests` | Career shell host (Advance Day / Race next / save-load), look catalog, Watch interpolator and host command path. Compiles Godot-free host + catalog sources; does not need the Godot editor. |
+| `tests/Peloton.Client.Godot.Tests` | Career shell host (Advance Day / Race next / save-load / default simulate → results table + team filter), look catalog, optional Watch film, interpolator, film duration, map profile sampling. Compiles Godot-free host + catalog sources; does not need the Godot editor. |
 
 ## System ownership
 
@@ -45,8 +45,8 @@ Static content lives in `content/peloton.skeleton`, `content/peloton.wt-2026`, a
 | Race content | `Peloton.Content/JsonRacePrototypeCatalog.cs`, `content/peloton.race-prototype` | `CONTENT_FORMAT_v0.1.md` | `RaceContentTests` |
 | SimRunner race gate | `tools/Peloton.SimRunner/RacePrototypeCommand.cs` | prototype design §11 | `SimRunnerContractTests` |
 | Headless Watch clock | `Peloton.Simulation/Race/RaceWatch.cs`, `tools/Peloton.SimRunner/RaceWatchCommand.cs` | `D-033` clock contract | `RaceWatchTests`, `SimRunnerContractTests` |
-| Godot Watch Race | `src/Peloton.Client.Godot` (`WatchRaceHost`, `WatchRaceScreen`, `WatchRace.tscn`) | `D-033` renderer; `UI_SITEMAP` RaceLive; §49 still owner-only; D-043 do not expand Watch as the play path | `WatchRaceHostTests`, `WatchMotionInterpolatorTests` |
-| Godot career shell | `src/Peloton.Client.Godot` (`CareerShellHost`, `CareerShellScreen`, `CareerLookCatalog`, `LookChrome`) | POC v3 chrome; Hub/calendar/inbox/people queries; look catalog for empty domains; not Career Hub | `CareerShellHostTests`, `CareerLookCatalogTests` |
+| Godot Watch Race | `src/Peloton.Client.Godot` (`WatchRaceHost`, `WatchRaceScreen`) | `D-033` renderer; optional film; `UI_SITEMAP` RaceLive; §49 still owner-only; D-043 do not expand Watch as the play path | `WatchRaceHostTests`, `WatchMotionInterpolatorTests`, `WatchFilmDurationTests`, `WatchRouteProfileTests` |
+| Godot career shell | `src/Peloton.Client.Godot` (`CareerShellHost`, `CareerShellScreen`, `CareerLookCatalog`, `LookChrome`) | POC v3 chrome; Hub/calendar/inbox; default simulate → result table (D-043); look catalog for empty domains; not Career Hub | `CareerShellHostTests`, `CareerLookCatalogTests` |
 | HTML look lab | `HTML_UI_LAB.md`, `peloton-manager-full-ui-poc-v3.html`, `08e-constructivist-desk.html`, `14-race.html` | owner-accepted chrome for management shell; not a client | open in a browser |
 | Career Hub query | `Peloton.Application/CareerDay.cs`, `ClubRosterProjection`, `ClubFinanceProjection` | `GAME_STATES_v0.1.md` Advance Day; Hub primary action (`advance-day` / `race-next`); employer roster wages via `ClubRosterProjection`; employer cash via `ClubFinanceProjection`; Management only; not a UI dashboard | Application tests, `day` SimRunner |
 | Race preparation | `Peloton.Application/RacePreparation.cs`, `PreSeasonPlanning.cs`, `WorldRaceScenarioAssembler.cs`, `GameApplication.cs` | world roster + route template + entry filter + player strategy (`D-036` phase 1–3); readiness scales CP/Pmax at assemble | Application + Persistence tests |
@@ -61,7 +61,7 @@ Static content lives in `content/peloton.skeleton`, `content/peloton.wt-2026`, a
 | Career scenarios | `content/peloton.skeleton`, `JsonScenarioCatalog.cs` | `CONTENT_FORMAT_v0.1.md` | Application tests |
 | Rules modules | `Peloton.Rules`, scenario JSON | `RULESETS_v0.1.md` | Application + Architecture tests |
 
-Transfer market, sponsors, scouting, knowledge records, Career Hub UI, and `D-032` multi-stage leadership transfer are not implemented. Godot career shell shows those domains from `CareerLookCatalog` (look only). Contracts and WT 2026 exist in Application. Watch Race remains a blocking overlay, not the play path (D-043).
+Transfer market, sponsors, scouting, knowledge records, Career Hub UI (PR #4), and `D-032` multi-stage leadership transfer are not implemented. Godot career shell shows those domains from `CareerLookCatalog` (look only) and presents D-043 simulate → results. Watch film stays optional. Look-catalog OVR/cash is not World State.
 
 ## Dependency direction
 
@@ -116,18 +116,15 @@ Content creation failure
 → content/peloton.skeleton
 → content/peloton.race-prototype
 
+Godot career shell
+→ src/Peloton.Client.Godot/CareerShellHost.cs
+→ CareerShellScreen.cs
+→ CareerLookCatalog.cs (look only)
+
 Godot Watch Race
 → src/Peloton.Client.Godot/WatchRaceHost.cs
 → WatchRaceScreen.cs
 → GameApplication RaceWatch / PendingRaceDecision / RaceResult
-
-Godot career shell
-→ src/Peloton.Client.Godot/CareerShellHost.cs
-→ CareerShellScreen.cs
-→ CareerShellViews.cs
-→ CareerLookCatalog.cs
-→ LookChrome.cs
-→ GameApplication CareerDay / Calendar / Inbox / People
 
 SimRunner race gate
 → tools/Peloton.SimRunner/RacePrototypeCommand.cs

@@ -20,7 +20,9 @@ Do not fabricate build/test/run results. After the skeleton, run the real comman
 Start reading from `README_FOR_EXTERNAL_AI.md` → `VISION.md` → `DECISIONS.md` →
 `HANDOFF.md` → `DOCS.md`. `DOCS.md` is the canonical index. Pre-code contracts exist as
 DRAFT `*_v0.1.md` files. Older names without the version suffix may still appear in prose;
-prefer the versioned files listed in `DOCS.md`.
+prefer the versioned files listed in `DOCS.md`. Core-loop build order is `D-035`: one
+thing at a time (Watch film+route → world roster → owner watch → calendar → Hub). Do
+not start the later steps in the same tree.
 
 ### Intended stack (owner-decided) and what is pre-installed
 - Owner-decided stack: **Godot .NET + C#**, Windows-first target, **SQLite** embedded

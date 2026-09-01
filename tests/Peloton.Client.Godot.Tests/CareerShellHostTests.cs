@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using Peloton.Application;
 using Peloton.Content;
 using Peloton.Domain;
@@ -11,6 +12,8 @@ namespace Peloton.Client.Godot.Tests;
 
 public sealed class CareerShellHostTests
 {
+    private const long GateSeed = 91234;
+    private const string BetaLeaderOriginId = "rider.race-prototype.beta-leader";
 
     [Fact]
     public void OpenSkeletonStaysInManagementWithHubCalendarAndPeople()
@@ -18,18 +21,19 @@ public sealed class CareerShellHostTests
         using TemporaryDirectory temp = new();
         CareerShellHost host = CreateHost(temp.Path);
 
-        Assert.True(host.OpenSkeleton().Succeeded);
+        Assert.True(host.OpenSkeleton(GateSeed).Succeeded);
         Assert.Equal(GameState.Management, host.State);
         CareerDayProjection day = Assert.IsType<CareerDayProjection>(host.Day);
         Assert.Equal(0, day.DayNumber);
         Assert.Equal(HubPrimaryActionIds.AdvanceDay, day.PrimaryAction);
         Assert.Equal("Advance Day", day.PrimaryLabel);
-        Assert.False(string.IsNullOrWhiteSpace(day.ManagerName));
-        Assert.False(string.IsNullOrWhiteSpace(day.EmployerName));
+        Assert.Equal("Skeleton Manager", day.ManagerName);
+        Assert.Equal("red", day.EmployerName);
         Assert.Contains(host.Calendar, entry => entry.Title == "Skeleton race");
-        Assert.NotEmpty(host.People);
+        Assert.Single(host.Calendar);
         Assert.DoesNotContain(host.People, person => person.Name.Contains("OVR", StringComparison.Ordinal));
         Assert.NotEmpty(host.Organizations);
+        Assert.False(host.Settings.WatchFilmEnabled);
     }
 
     [Fact]
@@ -56,40 +60,69 @@ public sealed class CareerShellHostTests
         Assert.True(host.FollowPrimary().Succeeded);
         Assert.Equal(GameState.RacePreparationFlow, host.State);
         Assert.Null(host.Day);
-        Assert.NotNull(host.Preparation);
+        RacePreparationProjection prep = Assert.IsType<RacePreparationProjection>(host.Preparation);
+        Assert.Equal("Skeleton race", prep.Title);
+        Assert.Equal(4, prep.Squad.Count);
+        Assert.Contains(prep.Squad, rider => host.RiderDisplayName(rider) == "Alpha Leader");
     }
 
     [Fact]
-    public void WatchFromRaceNextMatchesPrototypeGoldenAndReturnsToManagement()
+    public void RaceNextSimulatesToResultsTableByDefault()
     {
         using TemporaryDirectory temp = new();
         CareerShellHost host = CreateHost(temp.Path);
         Assert.True(host.OpenSkeleton().Succeeded);
-        while (host.Day is { RaceDueToday: false })
-        {
-            Assert.True(host.FollowPrimary().Succeeded);
-        }
+        AdvanceToRaceDue(host);
 
         Assert.True(host.FollowPrimary().Succeeded);
-        WatchRaceHost watch = host.CreateWatchHost();
-        Assert.Equal(GameState.RacePreparationFlow, watch.State);
-        Assert.True(watch.CancelPreparation().Succeeded);
-        Assert.Equal(GameState.Management, watch.State);
-        Assert.Equal(HubPrimaryActionIds.RaceNext, host.Day!.PrimaryAction);
+        Assert.False(host.Settings.WatchFilmEnabled);
+        Assert.True(host.RunRace().Succeeded);
+        Assert.Equal(GameState.RaceResultsFlow, host.State);
+        Assert.Null(host.Watch);
+        RaceResultProjection result = Assert.IsType<RaceResultProjection>(host.Result);
+        Assert.Equal("Skeleton race", result.Title);
+        Assert.Equal(BetaLeaderOriginId, result.WinnerLabel);
+        Assert.Equal("Beta Leader", host.RiderDisplayName(result.WinnerId));
+        Assert.Equal(3, host.ResultTeams.Count);
+        Assert.Contains(
+            result.FinishOrder,
+            row => host.RiderDisplayName(row.RiderId) == "Alpha Card" && row.OrganizationName == "red");
+        Assert.Equal(12, host.VisibleResultTable.Count);
 
-        Assert.True(host.FollowPrimary().Succeeded);
-        watch = host.CreateWatchHost();
-        Assert.True(watch.ConfirmPreparation().Succeeded);
-        Assert.True(watch.StartWatch().Succeeded);
-        CompleteWatch(watch);
-        Assert.Equal(GameState.RaceResultsFlow, watch.State);
-        Assert.Equal("rider.race-prototype.beta-leader", watch.Result!.WinnerLabel);
-        Assert.False(string.IsNullOrWhiteSpace(watch.LastChecksum));
-        Assert.True(watch.AcknowledgeResults().Succeeded);
-        Assert.True(watch.CompleteDebrief().Succeeded);
+        OrganizationNameProjection red = host.ResultTeams.Single(team => team.Name == "red");
+        host.SetResultTeamFilter(red.Id);
+        Assert.Equal(4, host.VisibleResultTable.Count);
+        Assert.All(host.VisibleResultTable, row => Assert.Equal("red", row.OrganizationName));
+        host.SetResultTeamFilter(null);
+        Assert.Equal(12, host.VisibleResultTable.Count);
+
+        Assert.True(host.ContinueOutcome().Succeeded);
+        Assert.Equal(GameState.RaceDebriefFlow, host.State);
+        Assert.True(host.ContinueOutcome().Succeeded);
         Assert.Equal(GameState.Management, host.State);
-        Assert.Equal(1, host.Day!.RaceCount);
         Assert.Contains(host.Calendar, entry => entry.OfficialResult is not null);
+    }
+
+    [Fact]
+    public void WatchFilmSettingIsOffByDefaultAndOptInOpensWatch()
+    {
+        using TemporaryDirectory temp = new();
+        CareerShellHost host = CreateHost(temp.Path);
+        Assert.True(host.OpenSkeleton().Succeeded);
+        Assert.False(host.Settings.WatchFilmEnabled);
+        host.SetWatchFilmEnabled(true);
+        Assert.True(host.Settings.WatchFilmEnabled);
+
+        CareerShellHost reloaded = CreateHost(temp.Path);
+        Assert.True(reloaded.Settings.WatchFilmEnabled);
+        Assert.True(reloaded.OpenSkeleton().Succeeded);
+
+        AdvanceToRaceDue(reloaded);
+        Assert.True(reloaded.FollowPrimary().Succeeded);
+        Assert.True(reloaded.RunRace().Succeeded);
+        Assert.Equal(GameState.RaceLive, reloaded.State);
+        Assert.NotNull(reloaded.Watch);
+        Assert.Contains(reloaded.Watch!.Interpolated!.Riders, rider => rider.Name == "Alpha Leader");
     }
 
     [Fact]
@@ -109,20 +142,14 @@ public sealed class CareerShellHostTests
         Assert.Equal(host.Day.EmployerName, loaded.Day.EmployerName);
     }
 
-    private static void CompleteWatch(WatchRaceHost watch)
+    private static void AdvanceToRaceDue(CareerShellHost host)
     {
-        for (int barrier = 0; barrier < 100_000 && watch.State == GameState.RaceLive; barrier++)
+        for (int day = 0; day < 32 && host.Day is { RaceDueToday: false }; day++)
         {
-            if (watch.PendingDecision is not null)
-            {
-                Assert.True(watch.RespondDelegatedDefault().Succeeded);
-                continue;
-            }
-
-            Assert.True(watch.Tick(1.0).Succeeded);
+            Assert.True(host.FollowPrimary().Succeeded);
         }
 
-        Assert.Equal(GameState.RaceResultsFlow, watch.State);
+        Assert.True(host.Day!.RaceDueToday);
     }
 
     private static CareerShellHost CreateHost(string directory)

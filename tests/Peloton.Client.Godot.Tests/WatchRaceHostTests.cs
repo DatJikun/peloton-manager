@@ -56,6 +56,7 @@ public sealed class WatchRaceHostTests
         Assert.True(host.OpenPrototype(GateSeed).Succeeded);
         Assert.True(host.SetDefaultStrategy().Succeeded);
         Assert.True(host.ConfirmPreparation().Succeeded);
+        Assert.True(host.SelectRate(1).Succeeded);
         Assert.True(host.StartWatch().Succeeded);
         int startWatch = host.OfficialFrame!.WatchSecond;
         int startSim = host.OfficialFrame.RaceSecond;

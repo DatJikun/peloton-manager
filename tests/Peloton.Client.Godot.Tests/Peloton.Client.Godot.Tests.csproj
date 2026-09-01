@@ -11,10 +11,13 @@
     <ProjectReference Include="../../src/Peloton.Infrastructure/Peloton.Infrastructure.csproj" />
     <ProjectReference Include="../../src/Peloton.Persistence/Peloton.Persistence.csproj" />
     <ProjectReference Include="../../src/Peloton.Simulation/Peloton.Simulation.csproj" />
+    <Compile Include="../../src/Peloton.Client.Godot/CareerHubHost.cs" Link="CareerHubHost.cs" />
     <Compile Include="../../src/Peloton.Client.Godot/WatchContentPath.cs" Link="WatchContentPath.cs" />
+    <Compile Include="../../src/Peloton.Client.Godot/WatchFilmDuration.cs" Link="WatchFilmDuration.cs" />
     <Compile Include="../../src/Peloton.Client.Godot/WatchMotionInterpolator.cs" Link="WatchMotionInterpolator.cs" />
     <Compile Include="../../src/Peloton.Client.Godot/WatchObservationText.cs" Link="WatchObservationText.cs" />
     <Compile Include="../../src/Peloton.Client.Godot/WatchRaceHost.cs" Link="WatchRaceHost.cs" />
+    <Compile Include="../../src/Peloton.Client.Godot/WatchRouteProfile.cs" Link="WatchRouteProfile.cs" />
     <Compile Include="../../src/Peloton.Client.Godot/CareerShellHost.cs" Link="CareerShellHost.cs" />
     <Compile Include="../../src/Peloton.Client.Godot/CareerLookCatalog.cs" Link="CareerLookCatalog.cs" />
   </ItemGroup>

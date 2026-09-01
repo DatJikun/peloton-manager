@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using Godot;
 using Peloton.Application;
 using Peloton.Domain;
@@ -87,11 +86,12 @@ public sealed partial class CareerShellScreen : Control
         app.AddChild(BuildSidebar());
         app.AddChild(BuildMain());
 
-        string user = OS.GetUserDataDir();
+        bool editor = OS.HasFeature("editor");
+        string exe = OS.GetExecutablePath();
         host = new CareerShellHost(
             ApplicationFactory.Create(WatchContentPath.FindContentRoot()),
-            Path.Combine(user, "career-skeleton.peloton"),
-            Path.Combine(Path.GetTempPath(), "peloton-career-prerace.peloton"));
+            WatchContentPath.PlaytestSavePath("career-skeleton.peloton", editor, exe),
+            WatchContentPath.PlaytestSavePath("peloton-career-prerace.peloton", editor, exe));
         CommandResult opened = host.OpenSkeleton();
         if (!opened.Succeeded)
         {
@@ -99,6 +99,21 @@ public sealed partial class CareerShellScreen : Control
         }
 
         Refresh();
+    }
+
+    public override void _Process(double delta)
+    {
+        _ = delta;
+        if (host is null)
+        {
+            return;
+        }
+
+        if (host.State == GameState.Management && watchScreen is not null)
+        {
+            HideWatch();
+            Refresh();
+        }
     }
 
     private ColorRect BuildSidebar()
@@ -271,40 +286,55 @@ public sealed partial class CareerShellScreen : Control
             return;
         }
 
-        CommandResult result = host.FollowPrimary();
-        if (!result.Succeeded)
+        if (host.State == GameState.Management)
         {
-            ShowToast(Reason(result.ReasonCode));
-            Refresh();
+            Apply(host.FollowPrimary());
             return;
         }
 
         if (host.State == GameState.RacePreparationFlow)
         {
-            OpenWatch();
+            Apply(host.RunRace());
             return;
+        }
+
+        Apply(host.ContinueOutcome());
+    }
+
+    private void Apply(CommandResult result)
+    {
+        if (!result.Succeeded)
+        {
+            ShowToast(Reason(result.ReasonCode));
+        }
+
+        if (host is { State: GameState.RaceLive, Watch: not null })
+        {
+            ShowWatch();
         }
 
         Refresh();
     }
 
-    private void OpenWatch()
+    private void ShowWatch()
     {
-        if (host is null || shellRoot is null)
+        if (host?.Watch is null || shellRoot is null)
         {
             return;
         }
 
         watchScreen?.QueueFree();
-        watchScreen = new WatchRaceScreen();
-        watchScreen.Attach(host.CreateWatchHost());
+        watchScreen = new WatchRaceScreen
+        {
+            ExternalHost = host.Watch,
+        };
         watchScreen.ReturnedToManagement += OnWatchClosed;
         watchScreen.SetAnchorsPreset(LayoutPreset.FullRect);
         AddChild(watchScreen);
         shellRoot.Visible = false;
     }
 
-    private void OnWatchClosed()
+    private void HideWatch()
     {
         if (watchScreen is not null)
         {
@@ -317,7 +347,11 @@ public sealed partial class CareerShellScreen : Control
         {
             shellRoot.Visible = true;
         }
+    }
 
+    private void OnWatchClosed()
+    {
+        HideWatch();
         current = View.Desk;
         Refresh();
     }
@@ -347,25 +381,38 @@ public sealed partial class CareerShellScreen : Control
         box.AddThemeConstantOverride("separation", 12);
         settingsWindow.AddChild(box);
 
-        box.AddChild(LookChrome.Display("04  USTAWIENIA", 18, LookChrome.Black));
+        box.AddChild(LookChrome.Display("USTAWIENIA", 18, LookChrome.Black));
         box.AddChild(LookChrome.Body("Zapis i wczytanie idą przez Application Commands. To nie jest demo z HTML.", 13, LookChrome.Gray));
         box.AddChild(LookChrome.Solid("Zapisz karierę", OnSave, LookChrome.Paper, LookChrome.Black, compact: true));
         box.AddChild(LookChrome.Solid("Wczytaj karierę", OnLoad, LookChrome.Paper, LookChrome.Black, compact: true));
 
-        HBoxContainer rates = new();
-        rates.AddThemeConstantOverride("separation", 8);
-        rates.AddChild(LookChrome.Body("Tempo oglądania", 12, LookChrome.Gray, bold: true));
-        foreach (int rate in new[] { 1, 2, 5, 20 })
-        {
-            int captured = rate;
-            rates.AddChild(LookChrome.Solid($"×{captured}", () =>
+        bool filmOn = host?.Settings.WatchFilmEnabled == true;
+        box.AddChild(LookChrome.Body(
+            filmOn
+                ? "Film Watch jest włączony. Race next otworzy oglądanie etapu. Wynik zostaje ten sam."
+                : "Film Watch jest wyłączony. Race next pokazuje wynik i tabelę.",
+            12,
+            LookChrome.Gray,
+            bold: true));
+        box.AddChild(LookChrome.Solid(
+            filmOn ? "FILM: WŁ" : "FILM: WYŁ",
+            () =>
             {
-                host?.SelectWatchRate(captured);
-                ShowToast($"Tempo oglądania ×{captured} od następnego etapu.");
-            }, LookChrome.White, LookChrome.Black, compact: true));
-        }
+                if (host is null)
+                {
+                    return;
+                }
 
-        box.AddChild(rates);
+                host.SetWatchFilmEnabled(!host.Settings.WatchFilmEnabled);
+                settingsWindow?.Hide();
+                ShowToast(host.Settings.WatchFilmEnabled
+                    ? "Film włączony. Następny wyścig otworzy oglądanie."
+                    : "Film wyłączony. Następny wyścig pokaże wynik.");
+                Refresh();
+            },
+            filmOn ? LookChrome.Team : LookChrome.Paper,
+            filmOn ? LookChrome.TeamOn : LookChrome.Black,
+            compact: true));
         box.AddChild(LookChrome.Primary("Zamknij", () => settingsWindow?.Hide()));
         AddChild(settingsWindow);
         settingsWindow.PopupCentered();
@@ -437,9 +484,21 @@ public sealed partial class CareerShellScreen : Control
 
         if (cta is not null)
         {
-            cta.Text = (day?.PrimaryLabel ?? HubPrimaryActionLabels.AdvanceDay).ToUpperInvariant();
-            cta.Disabled = host.State != GameState.Management;
+            cta.Text = PrimaryCaption(host, day);
+            cta.Disabled = host.State == GameState.RaceLive;
         }
+
+        if (host.State == GameState.RaceLive && host.Watch is not null)
+        {
+            if (watchScreen is null)
+            {
+                ShowWatch();
+            }
+
+            return;
+        }
+
+        HideWatch();
 
         if (nav.TryGetValue(View.Desk, out Button? deskNav))
         {
@@ -563,11 +622,23 @@ public sealed partial class CareerShellScreen : Control
         return code switch
         {
             "RACE_DAY_PENDING" => "Najpierw jedź wyścig. Advance Day jest zablokowane.",
+            "PREP_STRATEGY_INCOMPLETE" => "Ustaw lidera i support.",
             "SAVE_FORBIDDEN_IN_RACE_LIVE" => "Zapis w trakcie etapu jest zablokowany.",
             "LOAD_FORBIDDEN_IN_RACE_LIVE" => "Wczytanie w trakcie etapu jest zablokowane.",
             "INBOX_SOURCE_CANNOT_BE_DISMISSED" => "Terminu wyścigu nie da się schować.",
             "GAME_STATE_INVALID" => "Ta akcja nie jest teraz dostępna.",
             _ => code,
+        };
+    }
+
+    private static string PrimaryCaption(CareerShellHost host, CareerDayProjection? day)
+    {
+        return host.State switch
+        {
+            GameState.RacePreparationFlow => host.Settings.WatchFilmEnabled ? "OGLĄDAJ ETAP" : "JEDŹ WYŚCIG",
+            GameState.RaceResultsFlow => "DALEJ",
+            GameState.RaceDebriefFlow => "ZAMKNIJ",
+            _ => (day?.PrimaryLabel ?? HubPrimaryActionLabels.AdvanceDay).ToUpperInvariant(),
         };
     }
 }

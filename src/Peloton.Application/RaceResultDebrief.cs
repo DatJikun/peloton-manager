@@ -64,6 +64,19 @@ public static class RaceOutcomeQueries
             .ToArray();
     }
 
+    public static string FormatTable(RaceResultProjection result, WorldEntityId? organizationId)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        IReadOnlyList<RaceResultPlacement> rows = organizationId is { } id
+            ? FilterFinishOrderByOrganization(result.FinishOrder, id)
+            : result.FinishOrder;
+        return string.Join(
+            '\n',
+            rows.Select(row => string.Create(
+                CultureInfo.InvariantCulture,
+                $"{row.Place}. {row.Label}  {row.OrganizationName}")));
+    }
+
     public static RaceDebriefProjection BuildDebrief(
         WorldState? world,
         RacePreparationCheckpoint? racePreparation,

@@ -1,6 +1,5 @@
 using System;
 using System.Globalization;
-using System.IO;
 using Godot;
 using Peloton.Application;
 using Peloton.Domain;
@@ -35,6 +34,8 @@ public sealed partial class WatchRaceScreen : Control
     private bool attached;
     private bool returned;
 
+    public WatchRaceHost? ExternalHost { get; set; }
+
     public event Action? ReturnedToManagement;
 
     public void Attach(WatchRaceHost existing)
@@ -68,7 +69,7 @@ public sealed partial class WatchRaceScreen : Control
         title = MakeLabel("WATCH RACE", 42, Black);
         root.AddChild(title);
 
-        status = MakeLabel("Potwierdź plan, wybierz tempo i oglądaj etap.", 16, Gray);
+        status = MakeLabel("Potwierdź plan, wybierz czas filmu i oglądaj etap.", 16, Gray);
         root.AddChild(status);
 
         confirmButton = MakeButton("POTWIERDŹ PLAN", onPressed: OnConfirm);
@@ -79,11 +80,14 @@ public sealed partial class WatchRaceScreen : Control
 
         rateRow = new HBoxContainer();
         rateRow.AddThemeConstantOverride("separation", 8);
-        foreach (int rate in new[] { 1, 2, 5, 20 })
+        foreach (int seconds in WatchFilmDuration.ChoicesSeconds)
         {
-            int captured = rate;
-            Button button = MakeButton($"×{captured}", () => OnSelectRate(captured), compact: true);
-            button.Name = $"Rate{captured}";
+            int captured = seconds;
+            Button button = MakeButton(
+                WatchFilmDuration.Label(captured),
+                () => OnSelectFilm(captured),
+                compact: true);
+            button.Name = $"Film{captured}";
             rateRow.AddChild(button);
         }
 
@@ -125,9 +129,17 @@ public sealed partial class WatchRaceScreen : Control
         continueButton.Visible = false;
         root.AddChild(continueButton);
 
-        if (host is null)
+        if (ExternalHost is not null)
         {
-            string autosavePath = Path.Combine(Path.GetTempPath(), "peloton-watch-prerace.peloton");
+            host = ExternalHost;
+            attached = true;
+        }
+        else if (host is null)
+        {
+            string autosavePath = WatchContentPath.PlaytestSavePath(
+                "peloton-watch-prerace.peloton",
+                OS.HasFeature("editor"),
+                OS.GetExecutablePath());
             host = new WatchRaceHost(
                 ApplicationFactory.Create(WatchContentPath.FindContentRoot()),
                 autosavePath);
@@ -141,7 +153,12 @@ public sealed partial class WatchRaceScreen : Control
             }
         }
 
-        RefreshRateButtons();
+        if (host.Course is not null && map is not null)
+        {
+            map.ShowCourse(host.Course);
+        }
+
+        RefreshFilmButtons();
         Refresh();
     }
 
@@ -172,15 +189,15 @@ public sealed partial class WatchRaceScreen : Control
         Apply(host.ConfirmPreparation());
     }
 
-    private void OnSelectRate(int rate)
+    private void OnSelectFilm(int seconds)
     {
         if (host is null)
         {
             return;
         }
 
-        Apply(host.SelectRate(rate));
-        RefreshRateButtons();
+        Apply(host.SelectFilmDuration(seconds));
+        RefreshFilmButtons();
     }
 
     private void OnStart()
@@ -278,14 +295,14 @@ public sealed partial class WatchRaceScreen : Control
         continueButton!.Visible = host.State is GameState.RaceResultsFlow or GameState.RaceDebriefFlow;
         continueButton.Text = host.State == GameState.RaceDebriefFlow ? "KONIEC" : "WYNIK ZATWIERDZONY";
         pauseButton!.Text = host.PresentationPaused ? "WZNÓW" : "PAUZA";
-        RefreshRateButtons();
+        RefreshFilmButtons();
 
         if (prep)
         {
             title!.Text = "WATCH RACE";
             status!.Text = attached
-                ? $"Kariera · tempo ×{host.SelectedRate} · potwierdź plan albo wróć do biurka."
-                : $"Seed 91234 · tempo ×{host.SelectedRate} · potwierdź plan i oglądaj.";
+                ? $"Kariera · film {WatchFilmDuration.Label(host.SelectedFilmSeconds)} · potwierdź plan albo wróć do biurka."
+                : $"Seed 91234 · film {WatchFilmDuration.Label(host.SelectedFilmSeconds)} · potwierdź plan i oglądaj.";
             clock!.Text = "zegar oglądania czeka na StartRace.";
         }
 
@@ -312,7 +329,7 @@ public sealed partial class WatchRaceScreen : Control
                 : "Pauza na decyzji. Fizyka stoi, aż sztab odpowie.";
             clock!.Text = string.Create(
                 CultureInfo.InvariantCulture,
-                $"watch {view.WatchSecond}s · sim {view.RaceSecond}s · ×{view.Rate} · {(view.Paused ? "pauza" : "film")}");
+                $"film {WatchFilmDuration.Clock(view.WatchSecond, host.SelectedFilmSeconds)} · etap {view.RaceSecond}s{(view.Paused ? " · pauza" : string.Empty)}");
             observations!.Text = FormatObservations(view);
             map?.ShowView(view);
         }
@@ -371,9 +388,11 @@ public sealed partial class WatchRaceScreen : Control
         {
             title!.Text = "WYNIK";
             status!.Text = "Oficjalny wynik z LastRace. Bez drugiego RunBatch.";
-            result.Text = string.Create(
-                CultureInfo.InvariantCulture,
-                $"Zwycięzca {projection.WinnerLabel} ({projection.WinnerId.Value})\n{host!.LastChecksum}");
+            result.Text = RaceOutcomeQueries.FormatTable(projection, organizationId: null)
+                + "\n\n"
+                + string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"Zwycięzca {projection.WinnerLabel} ({projection.WinnerId.Value})\n{host!.LastChecksum}");
             map?.ShowView(null);
             liveRow!.Visible = false;
             decisionBox!.Visible = false;
@@ -388,7 +407,7 @@ public sealed partial class WatchRaceScreen : Control
         }
     }
 
-    private void RefreshRateButtons()
+    private void RefreshFilmButtons()
     {
         if (host is null || rateRow is null)
         {
@@ -399,7 +418,7 @@ public sealed partial class WatchRaceScreen : Control
         {
             if (child is Button button)
             {
-                bool selected = button.Name == $"Rate{host.SelectedRate}";
+                bool selected = button.Name == $"Film{host.SelectedFilmSeconds}";
                 button.Modulate = selected ? Red : Colors.White;
                 button.Disabled = host.State == GameState.RaceLive;
             }
@@ -419,7 +438,7 @@ public sealed partial class WatchRaceScreen : Control
             InterpolatedRiderView rider = view.Riders[index];
             lines[index] = string.Create(
                 CultureInfo.InvariantCulture,
-                $"{rider.RiderId}  {WatchObservationText.Speed(rider.SpeedMps)}  {WatchObservationText.Gap(rider.GapM)}  {WatchObservationText.Shelter(rider.ShelterMultiplier)}  {WatchObservationText.Terrain(rider.Gradient)}");
+                $"{(string.IsNullOrWhiteSpace(rider.Name) ? rider.RiderId.ToString(CultureInfo.InvariantCulture) : rider.Name)}  {WatchObservationText.Speed(rider.SpeedMps)}  {WatchObservationText.Gap(rider.GapM)}  {WatchObservationText.Shelter(rider.ShelterMultiplier)}  {WatchObservationText.Terrain(rider.Gradient)}");
         }
 
         return string.Join('\n', lines);
@@ -432,6 +451,8 @@ public sealed partial class WatchRaceScreen : Control
             "PREP_PLAN_INCOMPLETE" => "Najpierw potwierdź plan.",
             "SAVE_FORBIDDEN_IN_RACE_LIVE" => "Zapis w trakcie etapu jest zablokowany.",
             "LOAD_FORBIDDEN_IN_RACE_LIVE" => "Wczytanie w trakcie etapu jest zablokowane.",
+            "WATCH_FILM_LOCKED" => "Czas filmu ustala się przed startem.",
+            "WATCH_FILM_INVALID" => "Wybierz 30 s, 1 min, 2 min, 3 min albo 5 min.",
             "WATCH_RATE_LOCKED" => "Tempo ustala się przed startem.",
             "GAME_STATE_INVALID" => "Ta akcja nie jest teraz dostępna.",
             _ => reasonCode,

@@ -4,21 +4,23 @@ Godot .NET presentation host. The main scene is a **career shell** (desk, squad,
 calendar, sponsors, finance, scouting, market, history, manager, help). Empty domains
 draw **look-catalog** numbers from `CareerLookCatalog` (the HTML POC) so the screens
 are not blank. That catalog is **not** World. Real Application lives on the desk:
-calendar day, inbox, next command, save.
+calendar day, inbox, next command, save, and **simulate → result table** (D-043).
 
 This is **not** Career Hub. Career Hub (PR #4) stays rejected. The shell is look /
-presentation, not a playable world for those empty domains.
+presentation for empty domains; Hub date, Advance Day / Race next, inbox, calendar,
+people, and default results are real Queries.
 
-Watch Race is a **demo overlay**, not the play path (D-043). The owner has not
-accepted it as the main screen.
+Watch Race is a **demo overlay**, not the play path (D-043). Film is a presentation
+setting (`FILM: WYŁ/WŁ`), off by default. The owner has not accepted watching as the
+main screen.
 
 ## What this is
 
 - Godot 4.x + .NET 8 C# (Godot Mono / .NET).
 - Windows-first target for a later playable client.
-- Today: career shell + Watch overlay + compile stub. No playable career loop.
-- Headless tests stay in `tests/Peloton.Client.Godot.Tests` (`dotnet test` from repo root).
-  Those tests do not need a Godot editor.
+- Today: career shell with Advance Day / Race next and default simulate → results.
+  Watch overlay is optional. Headless tests stay in `tests/Peloton.Client.Godot.Tests`
+  (`dotnet test` from repo root). Those tests do not need a Godot editor.
 
 ## What this is not
 
@@ -36,10 +38,13 @@ with Godot 4.x .NET:
 1. Install [Godot 4.x .NET](https://godotengine.org/download) (not the non-.NET build).
 2. Open this folder as a Godot project (`project.godot`).
 3. Confirm the .NET solution builds from Godot's C# / Build panel.
-4. Press Play. The career shell should open (not Watch Race).
+4. Press Play. The career shell should open (not Watch Race). Race day defaults to
+   simulate → a result table. Watch film stays off unless you turn it on.
 
 If the C# build fails, run `dotnet build` from the repo root first so the Godot
 project can see `Peloton.Application` and `Peloton.Contracts`.
+
+Player-facing description: `HOW_RACE_DAY_WORKS.md`.
 
 ## Layout
 
