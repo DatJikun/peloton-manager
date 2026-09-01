@@ -90,14 +90,14 @@ public sealed class CareerWorldTourPhase7Tests
             organization => string.Equals(organization.OriginDefinitionId, "organization.wt2026.astana", StringComparison.Ordinal));
 
         RaceResultProjection full = Assert.IsType<RaceResultProjection>(application.RaceResult);
-        Assert.Equal(72, full.FinishOrder.Count);
+        Assert.Equal(140, full.FinishOrder.Count);
         IReadOnlyList<RaceResultPlacement> alpecinFiltered =
             Assert.IsType<RaceResultPlacement[]>(application.RaceResultForOrganization(alpecin.Id));
         IReadOnlyList<RaceResultPlacement> astanaFiltered =
             Assert.IsType<RaceResultPlacement[]>(application.RaceResultForOrganization(astana.Id));
 
-        Assert.Equal(4, alpecinFiltered.Count);
-        Assert.Equal(4, astanaFiltered.Count);
+        Assert.Equal(7, alpecinFiltered.Count);
+        Assert.Equal(7, astanaFiltered.Count);
         Assert.All(alpecinFiltered, place =>
         {
             RaceResultPlacement official = full.FinishOrder.Single(item => item.RiderId == place.RiderId);

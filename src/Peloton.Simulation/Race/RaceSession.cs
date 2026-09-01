@@ -119,6 +119,7 @@ public sealed class RaceSession
         }
 
         ApplyCommands();
+        ApplyBunchSprintIntents();
         Dictionary<int, double> groupTargetSpeedMps = DetermineGroupTargetSpeeds();
         Dictionary<WorldEntityId, StepSolve> solves = new();
         foreach (RiderRuntime rider in riders.OrderBy(rider => rider.Profile.RiderId.Value))
@@ -136,6 +137,19 @@ public sealed class RaceSession
             if (rider.Intent == RaceCommandKind.Conserve)
             {
                 desiredSpeedMps = Math.Max(2.0, baseSpeedMps - ConserveSpeedDecreaseMps);
+            }
+            else if (rider.Intent == RaceCommandKind.LaunchSprint)
+            {
+                desiredSpeedMps = BunchSprintResolver.SpeedForPowerW(
+                    rider.Profile.PeakPowerW,
+                    segment.Gradient,
+                    scenario.Definition.AirDensityKgPerM3,
+                    segment.WindSpeedMps,
+                    segment.WindYawDegrees,
+                    rider.Profile.CdAM2,
+                    rider.ShelterMultiplier,
+                    EffectiveCrr(rider.Profile.BaseCrr, rider.Profile.Handling, segment.Surface),
+                    rider.Profile.TotalMassKg);
             }
 
             double desiredAccelerationMps2 = Math.Clamp(
@@ -250,8 +264,62 @@ public sealed class RaceSession
             {
                 RaceCommandKind.Attack => checked(simulationSecond + AttackDurationSeconds),
                 RaceCommandKind.ForcePace => checked(simulationSecond + ForcePaceDurationSeconds),
+                RaceCommandKind.LaunchSprint => int.MaxValue,
                 _ => int.MaxValue,
             };
+        }
+    }
+
+    private void ApplyBunchSprintIntents()
+    {
+        RiderRuntime[] unfinished = riders
+            .Where(rider => rider.FinishTimeSeconds is null)
+            .ToArray();
+        if (unfinished.Length == 0)
+        {
+            return;
+        }
+
+        RiderRuntime leader = unfinished
+            .OrderByDescending(rider => rider.DistanceM)
+            .ThenBy(rider => rider.Profile.RiderId.Value)
+            .First();
+        BunchSprintRiderSnapshot[] snapshots = unfinished
+            .Select(rider => new BunchSprintRiderSnapshot(
+                rider.Profile.RiderId,
+                rider.GroupId,
+                rider.DistanceM,
+                rider.SpeedMps))
+            .ToArray();
+        if (!BunchSprintResolver.ShouldLaunch(
+                scenario.Definition,
+                scenario.ClassifiedStageType,
+                leader.DistanceM,
+                leader.SpeedMps,
+                leader.GroupId,
+                snapshots))
+        {
+            return;
+        }
+
+        double safeSpeedMps = Math.Max(0.1, leader.SpeedMps);
+        foreach (RiderRuntime rider in unfinished)
+        {
+            if (rider.GroupId != leader.GroupId)
+            {
+                continue;
+            }
+
+            double gapM = leader.DistanceM - rider.DistanceM;
+            double gapSeconds = gapM / safeSpeedMps;
+            if (gapM > BunchSprintResolver.LeadGroupGapM &&
+                gapSeconds > BunchSprintResolver.LeadGroupGapSeconds)
+            {
+                continue;
+            }
+
+            rider.Intent = RaceCommandKind.LaunchSprint;
+            rider.IntentUntilSecond = int.MaxValue;
         }
     }
 
@@ -410,6 +478,7 @@ public sealed class RaceSession
                     RaceCommandKind.ForcePace => basePaceMps + ForcePaceSpeedIncreaseMps,
                     RaceCommandKind.Attack => basePaceMps + AttackSpeedIncreaseMps,
                     RaceCommandKind.Conserve => basePaceMps - ConserveSpeedDecreaseMps,
+                    RaceCommandKind.LaunchSprint => basePaceMps,
                     _ => basePaceMps,
                 };
             });

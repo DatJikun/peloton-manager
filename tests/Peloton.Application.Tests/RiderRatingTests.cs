@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Peloton.Application;
 using Peloton.Domain;
@@ -107,7 +108,11 @@ public sealed class RiderRatingTests
             RiderRatingSet[] ratings = world.GetRiderCareersForOrganization(organization.Id)
                 .Select(career => RiderRatingQueries.FromPhysiology(career, career.PotentialOvr))
                 .ToArray();
-            Assert.Equal(4, ratings.Length);
+            int expectedCount = string.Equals(organization.Division, "WorldTour", StringComparison.Ordinal)
+                ? 8
+                : 7;
+            Assert.Equal(expectedCount, ratings.Length);
+            ratings = ratings.Take(4).ToArray();
             bool hasLargeGap = false;
             for (int i = 0; i < ratings.Length; i++)
             {

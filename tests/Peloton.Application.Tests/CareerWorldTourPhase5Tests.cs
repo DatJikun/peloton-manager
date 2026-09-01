@@ -35,9 +35,11 @@ public sealed class CareerWorldTourPhase5Tests
         Assert.True(application.Execute(new CreateWorldCommand(WtScenarioId, GateSeed)).Succeeded);
         WorldState world = application.World!;
 
-        Assert.Equal(18, world.Organizations.Count);
-        Assert.Equal(72, world.RiderCareers.Count);
-        Assert.Equal(72, world.RiderContracts.Count);
+        Assert.Equal(25, world.Organizations.Count);
+        Assert.Equal(18, world.Organizations.Count(organization =>
+            string.Equals(organization.Division, "WorldTour", StringComparison.Ordinal)));
+        Assert.Equal(193, world.RiderCareers.Count);
+        Assert.Equal(193, world.RiderContracts.Count);
         Assert.True(world.CalendarEntries.Count(entry => entry.Kind == CalendarEntryKind.Race) > 36);
         Assert.Equal(36, world.OrganizationRaceEntries
             .Select(entry => entry.RaceContentId)
@@ -81,7 +83,7 @@ public sealed class CareerWorldTourPhase5Tests
         Assert.True(source.Execute(new SaveGameCommand(savePath)).Succeeded);
 
         WorldCheckpoint stored = new SqliteWorldSaveStore().Load(savePath);
-        Assert.Equal(72, stored.World.RiderCareers.Count);
+        Assert.Equal(193, stored.World.RiderCareers.Count);
 
         GameApplication loaded = TestApplication.Create();
         Assert.True(loaded.Execute(new LoadGameCommand(savePath)).Succeeded);
@@ -111,7 +113,7 @@ public sealed class CareerWorldTourPhase5Tests
                 string.Equals(result.RaceContentId, TduRaceContentId, StringComparison.Ordinal)))
             .Select(career => career.Id)
             .ToArray();
-        Assert.Equal(72, starters.Length);
+        Assert.Equal(140, starters.Length);
         Assert.Contains(application.World.LastRace!.WinnerId, starters);
         Assert.All(starters, id => Assert.NotNull(application.World.TryGetRiderCareer(id)));
     }
@@ -142,7 +144,7 @@ public sealed class CareerWorldTourPhase5Tests
             new RacePreparationStrategy(squad[0], squad[1], RaceObjective.StageWin, RaceBriefingKind.Chase),
             employerId);
 
-        Assert.Equal(72, scenario.Riders.Count);
+        Assert.Equal(140, scenario.Riders.Count);
         Assert.Contains(scenario.Riders, rider => rider.OrganizationId == employerId);
     }
 
@@ -205,5 +207,52 @@ public sealed class CareerWorldTourPhase5Tests
         InvalidDataException exception = Assert.Throws<InvalidDataException>(
             () => catalog.Resolve(WtScenarioId));
         Assert.Contains("annualWage", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void MonumentAndGrandTourAssemblerUseUciFieldSizes()
+    {
+        GameApplication application = TestApplication.Create();
+        Assert.True(application.Execute(new CreateWorldCommand(WtScenarioId, GateSeed)).Succeeded);
+        WorldState world = application.World!;
+        WorldRecipe recipe = new JsonScenarioCatalog(TestApplication.ContentRoot).Resolve(WtScenarioId);
+        RaceScenarioTemplate template = new JsonRacePrototypeCatalog(TestApplication.ContentRoot)
+            .ResolveTemplate(PrototypeRaceTemplateId);
+
+        CourseProfile roubaix = world.CourseProfiles.Single(profile =>
+            string.Equals(profile.RaceContentId, "race.wt2026.roubaix", StringComparison.Ordinal));
+        RaceScenario roubaixScenario = WorldRaceScenarioAssembler.Assemble(
+            world,
+            recipe,
+            template,
+            "race.wt2026.roubaix",
+            courseProfile: roubaix,
+            masterSeed: GateSeed);
+        Assert.Equal(175, roubaixScenario.Riders.Count);
+
+        CourseProfile tdfStage = world.CourseProfiles
+            .Where(profile => string.Equals(profile.RaceContentId, "race.wt2026.tdf", StringComparison.Ordinal))
+            .OrderBy(profile => profile.StageIndex)
+            .First();
+        RaceScenario tdfScenario = WorldRaceScenarioAssembler.Assemble(
+            world,
+            recipe,
+            template,
+            "race.wt2026.tdf",
+            courseProfile: tdfStage,
+            masterSeed: GateSeed);
+        Assert.Equal(176, tdfScenario.Riders.Count);
+        Assert.Contains(
+            world.Organizations,
+            organization => string.Equals(
+                organization.OriginDefinitionId,
+                "organization.wt2026.israel",
+                StringComparison.Ordinal));
+        Assert.Contains(
+            world.Organizations,
+            organization => string.Equals(
+                organization.OriginDefinitionId,
+                "organization.wt2026.australia",
+                StringComparison.Ordinal));
     }
 }

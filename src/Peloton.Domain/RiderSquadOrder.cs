@@ -38,6 +38,26 @@ public static class RiderSquadOrder
             return 3;
         }
 
+        if (originDefinitionId.EndsWith(".support-3", StringComparison.Ordinal))
+        {
+            return 4;
+        }
+
+        if (originDefinitionId.EndsWith(".support-4", StringComparison.Ordinal))
+        {
+            return 5;
+        }
+
+        if (originDefinitionId.EndsWith(".support-5", StringComparison.Ordinal))
+        {
+            return 6;
+        }
+
+        if (originDefinitionId.EndsWith(".support-6", StringComparison.Ordinal))
+        {
+            return 7;
+        }
+
         return 10;
     }
 

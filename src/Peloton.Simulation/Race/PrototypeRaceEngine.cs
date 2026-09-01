@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Peloton.Domain;
 
 namespace Peloton.Simulation.Race;
 
@@ -20,7 +21,8 @@ public sealed class RaceScenario
         double initialSpeedMps,
         int maximumDurationSeconds,
         IEnumerable<RaceTacticalPlan>? tacticalPlans = null,
-        string tuningIdentity = "race-tuning.peloton.prototype-v0")
+        string tuningIdentity = "race-tuning.peloton.prototype-v0",
+        ClassifiedStageType? classifiedStageType = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(definition);
@@ -76,6 +78,7 @@ public sealed class RaceScenario
         InitialSpeedMps = initialSpeedMps;
         MaximumDurationSeconds = maximumDurationSeconds;
         TuningIdentity = tuningIdentity;
+        ClassifiedStageType = classifiedStageType;
     }
 
     public string Id { get; }
@@ -95,6 +98,8 @@ public sealed class RaceScenario
     public int MaximumDurationSeconds { get; }
 
     public string TuningIdentity { get; }
+
+    public ClassifiedStageType? ClassifiedStageType { get; }
 }
 
 public interface IRaceEngine

@@ -432,7 +432,13 @@ public static class CareerDayCommand
         output.WriteLine(
             string.Create(
                 CultureInfo.InvariantCulture,
-                $"result=title={result.Title} winner={result.WinnerId.Value} winnerLabel={result.WinnerLabel} routeId={result.RouteId} finishOrder={finishOrder}"));
+                        $"result=title={result.Title} winner={result.WinnerId.Value} winnerLabel={result.WinnerLabel} routeId={result.RouteId} finishOrder={finishOrder}"));
+
+        ClassificationProjection? classifications = application.RaceClassifications;
+        if (classifications is { IsStageRace: true })
+        {
+            output.WriteLine(ClassificationQueries.FormatJerseyLine(classifications));
+        }
 
         AccessContext access = application.GetAccessContext();
         if (access.CurrentOrganizationId is WorldEntityId organizationId)

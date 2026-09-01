@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Peloton.Domain;
@@ -54,6 +55,77 @@ internal static class RaceScenarioFactory
             },
             initialSpeedMps: 11.0,
             maximumDurationSeconds: 600);
+    }
+
+    public static readonly WorldEntityId BunchSprinterId = new(201);
+    public static readonly WorldEntityId BunchClimberId = new(202);
+
+    public static RaceScenario BunchSprintFinish()
+    {
+        List<RaceRiderProfile> riders = new()
+        {
+            Profile(
+                BunchSprinterId.Value,
+                301,
+                criticalPowerW: 370.0,
+                wPrimeCapacityJ: 35_000.0,
+                peakPowerW: 1_250.0,
+                durability: 0.84,
+                positioning: 0.92,
+                massKg: 75.0,
+                cdAM2: 0.32),
+            Profile(
+                BunchClimberId.Value,
+                302,
+                criticalPowerW: 430.0,
+                wPrimeCapacityJ: 25_000.0,
+                peakPowerW: 900.0,
+                durability: 0.90,
+                positioning: 0.70,
+                massKg: 66.0,
+                cdAM2: 0.265),
+        };
+        for (int index = 0; index < 10; index++)
+        {
+            riders.Add(Profile(
+                203 + index,
+                301 + (index % 2),
+                criticalPowerW: 360.0,
+                wPrimeCapacityJ: 24_000.0,
+                peakPowerW: 980.0,
+                durability: 0.80,
+                positioning: 0.72,
+                massKg: 70.0,
+                cdAM2: 0.30));
+        }
+
+        RaceDefinition definition = new(
+            "route.prototype.bunch-sprint",
+            1.225,
+            new[]
+            {
+                new RaceRouteSegment(
+                    "segment.flat-finish",
+                    lengthM: 2_500.0,
+                    gradient: 0.0,
+                    roadWidthM: 8.0,
+                    windSpeedMps: 0.5,
+                    windYawDegrees: 0.0),
+            });
+        RaceStartingPosition[] positions = riders
+            .Select((rider, index) => new RaceStartingPosition(
+                rider.RiderId,
+                (riders.Count - 1 - index) * 0.7))
+            .ToArray();
+        return new RaceScenario(
+            "race.prototype.bunch-sprint",
+            definition,
+            riders,
+            positions,
+            Array.Empty<RaceCommand>(),
+            initialSpeedMps: 11.0,
+            maximumDurationSeconds: 800,
+            classifiedStageType: ClassifiedStageType.Flat);
     }
 
     public static RaceRiderProfile Profile(

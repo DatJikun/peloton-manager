@@ -9,6 +9,7 @@ public enum RaceCommandKind
     ForcePace,
     Attack,
     Conserve,
+    LaunchSprint,
 }
 
 public sealed record RaceCommand
