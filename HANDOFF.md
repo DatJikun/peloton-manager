@@ -10,10 +10,10 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md` (D-049) landed. Next aero honesty: `CdARoad` / `CdATT` (one CdA in the prototype today). Do not close §49.
+`RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md` (D-049) landed. Next playable slice is D-050: New Game club pick, pre-season event entries, per-event leaders on the WorldTour world. CdA Road/TT waits. Do not close §49.
 
 ### Goal
-Bunch-sprint flats, UCI-shaped start lists, after-stage jerseys, and a compare log vs 2025 analogues. Ratings and dense courses stay. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
+D-050: pick club, pick WT events, pick a leader per event — so the year is not one rigid team. WorldTour in the career shell, not the 12-day skeleton. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
 
 ### Status
 Owner (player) directed this on 2026-09-01. **D-049 landed.** Classified Flat is a bunch sprint (sit-in, then last 250 m at peak power). Official WT starts are event-shaped (TDU 140, monuments 175, Grand Tours 176, other WT 154). After a stage the shell/CLI can show GC / points / KOM / youth / team. SimRunner `compare` puts prototype results next to 2025 analogues (not a script). Skeleton soak still uses the short proof circuit. SQLite SchemaVersion 8.
@@ -44,7 +44,7 @@ Działa:
 - paczka Windows do ręcznego playtestu: `playtest/PelotonManager-playtest-windows.zip` (`playtest/CZYTAJ_MNIE.txt`).
 
 Właśnie budujemy:
-- osobne CdA na szosę i na desce (TT), bo w prototypie jest jedna liczba na kolarza.
+- **D-050:** wybór ekipy przy Nowej grze, wybór imprez w kalendarzu, lider na każdą imprezę — żeby rok nie był jedną sztywną czwórką. WorldTour w oknie, nie szkielet. CdA szosa/deska czeka.
 
 Jeszcze nie:
 - nie ma Career Hub — usunięty z repozytorium (D-048); biurko to powłoka `CareerShell.tscn`;
@@ -128,11 +128,13 @@ Baza 2026: 18 ekip męskiego WorldTour plus zaproszone ProTeamy / Australia w `s
 - [x] Career WorldTour slice phase 7 — results filter by any org (D-043) + thin contract negotiation (D-044, SchemaVersion 7)
 - [x] D-046 / D-047 — derived rider ratings + detailed course engine (`RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`, SchemaVersion 8)
 - [x] D-049 — bunch sprint + UCI-shaped fields + classification jerseys (`RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md`)
+- [ ] D-050 — New Game club pick + pre-season entries + per-event leaders (WT world in the career shell)
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
-- [ ] CdARoad vs CdATT (prototype still has one `CdAM2` per rider)
+- [ ] CdARoad vs CdATT (prototype still has one `CdAM2` per rider) — waits until D-050
+- [ ] Infinite career / season rollover / rider aging — later, not this tree
 
 ## Next task
-`CdARoad` / `CdATT`: time-trial aero tuck vs road CdA. Owner asked 2026-09-01. Do not close §49. Do not rebuild Career Hub. Watch film stays off by default. Skeleton race checksum stays.
+**D-050.** Career shell on WorldTour: pick which club you manage, which of the 36 events you enter, and who leads each entered event. Not hardcoded Alpecin. Not one default captain all year. Do not close §49. Do not rebuild Career Hub. Watch film stays off by default. Do not start aging, year-2 routes, sponsor market, or CdA in the same tree. Skeleton soak checksum stays.
 
 ## Known blockers
 - None.
@@ -161,6 +163,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
+- `2026-09-01` — **D-050: club pick, calendar entries, per-event leaders first.** Not one rigid team. Infinite career and aging later. Content stays data-only JSON packs (riders/routes/teams); physics code is the engine, not a Lua mod. CdA and look-catalog finance wait.
 - `2026-09-01` — **Player-facing Polish for cobbles is bruk (D-046).** The rating on the card is **Bruk**. Do not say „kocie łby” to the owner. English code stays `Cobbles`.
 - `2026-09-01` — **Bunch sprint + real fields + all jerseys + compare with real life (D-049).** Classified Flat is a bunch sprint. UCI 7 (8 on Grand Tours) with wildcards. Jerseys are after-stage tables, not D-032. History analogues are for judgment, not a script.
 - `2026-09-01` — **Calibrate 2026 pack from physiology/wage research; lift the 12-starter cap; keep routes diverse.** Research file is a source, not a lock. Keep captain-first cards. Evenepoel 2026 is Red Bull. Official WT Simulate starts the full entered 4-man cards (72). Do not claim a UCI 150–200 field. Do not fake a sprinter win on Flat.
@@ -300,6 +303,7 @@ src/Peloton.Client.Godot/project.godot
 - Nie ustawiaj Watch Race jako domyślnej ścieżki gry (D-043). Nie odbudowuj Career Hub (D-048). Nie merguj starych PR-ów radia/DS Watch na `main`.
 - Nie zostawiaj gotowej pracy na otwartym PR (D-045). Zielony gate → merge do `main` w tej samej sesji. Nie zlewaj stosu starych branchy jeden na drugi.
 - Nie mów właścicielowi „kocie łby”; polska nazwa statystyki to **bruk** (D-046). W kodzie zostaje `Cobbles`.
+- Nie zaczynaj CdA / rynku sponsorów / starzenia, dopóki D-050 (klub, imprezy, liderzy) nie jest w oknie.
 - Nie przywracaj cap 12 na oficjalnym starcie WT. Feel probe seed `91234` pokazuje sprintera przed góralem na sklasyfikowanym płaskim; nie zamykaj §49.
 - Nie zapisuj OVR/POT/kasy/skautingu z `CareerLookCatalog` do World, SQLite ani Commandów. To nie true ability.
 - Nie odpalaj kodujących subagentów z `inherit` (to Grok); kod to Composer 2.5 (D-035).

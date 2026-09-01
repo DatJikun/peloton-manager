@@ -188,3 +188,12 @@ Owner lock 2026-09-01: remove Career Hub from the product. Delete `CareerHub.tsc
 
 ## D-049 — UCI-shaped fields, bunch-sprint flats, classification jerseys
 Owner lock 2026-09-01: official WorldTour start lists follow UCI team size (7 riders; 8 on Grand Tours) and event invites (wildcards), not a 4-man card as the whole peloton. Classified Flat finishes are bunch sprints (peak / W′ / position), not a CP time trial. Stage races expose GC, points, KOM, youth, and team classifications as **after-stage queries**. D-032 (mid-race GC leadership transfer) stays deferred. History analogues are for owner judgment (D-001), not a scripted result. Contract: `RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md`.
+
+## D-050 — Pick club, calendar entries, and per-event leaders before deeper management
+Owner lock 2026-09-01: the next playable slice is **not** CdA split, sponsor market, scouting, or wiring look-catalog finance. First the player must, in the career shell on the WorldTour world:
+
+1. **Choose which organization they manage** at New Game (not hardcoded Alpecin).
+2. **Choose which calendar events that club enters** (pre-season, per event — Tour is one tick, not 21).
+3. **Choose a designated leader for each entered event**, so the year is not one default captain on every start.
+
+Race-day prep may still override. Do not grow a 28-man roster, aging, season rollover, or infinite career in the same tree. Manager identity stays `ManagerCareer` (D-004): the club is a job, not a permanent skin. Watch film stays off by default. Do not rebuild Career Hub.
