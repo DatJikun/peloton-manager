@@ -595,7 +595,7 @@ public sealed partial class CareerShellScreen
         card.SizeFlagsStretchRatio = 5;
         grid.AddChild(table);
         grid.AddChild(card);
-        content.AddChild(grid);
+        content!.AddChild(grid);
     }
 
     private VBoxContainer BuildWorldRiderCard()
@@ -1188,7 +1188,7 @@ public sealed partial class CareerShellScreen
         ClubFinanceProjection? finance = host!.ClubFinance;
         if (finance is null)
         {
-            content.AddChild(Panel("FINANSE", LookChrome.Body("Brak danych finansowych ze świata.", 13, LookChrome.Gray)));
+            content!.AddChild(Panel("FINANSE", LookChrome.Body("Brak danych finansowych ze świata.", 13, LookChrome.Gray)));
             return;
         }
 
@@ -1212,7 +1212,7 @@ public sealed partial class CareerShellScreen
         }
 
         top.AddChild(Stretch(Panel("FINANSE", summary), 12));
-        content.AddChild(top);
+        content!.AddChild(top);
     }
 
     private void BuildScouting()
