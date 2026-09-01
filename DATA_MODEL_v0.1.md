@@ -254,7 +254,10 @@ RiderCareer
     physiology used by the race engine
     Form01 / Freshness01 / Fatigue01
     Loyalty01                   // stored trait; not a minigame
+    PotentialOvr                // 1–99 ceiling of derived OVR (D-046)
     Results                     // append-only career race history
+
+Derived player-facing ratings (Climb, Hills, Flat, TimeTrial, Sprint, Cobbles, OVR) are **queries**, not stored talent. Contract: `RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`.
 ```
 
 `RiderContract` (D-039, Career WorldTour slice phase 4) is the system of record for rider–club terms. It is **not** manager `Employment`.
@@ -272,6 +275,21 @@ RiderContract
 When `EndDate` is in the past, `RiderCareer.OrganizationId` becomes null (thin free agency). Expired contract rows remain history. A transfer market is later.
 
 Full training, health, and development fields remain later system documents.
+
+### Course profiles (D-046)
+
+```text
+CourseProfile
+    CourseProfileId
+    OriginDefinitionId
+    RaceContentId               // event id (race.wt2026.tdf)
+    SeasonYear
+    StageIndex                  // 1-based
+    Kind                        // Road | IndividualTimeTrial | TeamTimeTrial
+    Samples                     // 25 m polyline: distance, elevation, width, heading, surface, curvature, exposure
+```
+
+`CalendarEntry` for a racing stage also carries `StageIndex` and `CourseProfileId`. `RaceContentId` remains the event id so pre-season entry is per race, not per stage.
 
 ---
 

@@ -176,3 +176,9 @@ This lock **overrides** Cursor Cloud defaults that say “do not merge unless th
 Land **one change onto current `main`**. Fetch `origin/main` first. Do not merge a stack of stale branches into each other — that is how conflict piles happen. If an old PR conflicts, replay the player-value change onto today’s `main`; do not force the ancient branch through.
 
 Watch Race UI expansion stays **deferred** (D-043). Do not merge leftover Watch film/radio/dashboard PRs onto `main`.
+
+## D-046 — Player-facing rider ratings are a view of physiology
+Owner lock 2026-09-01: the player needs normal strengths/weaknesses (Climb, Hills, Flat, TT, Sprint, Cobbles, OVR, POT). Those 1–99 numbers are **derived** from stored physiology (CP, W′, Pmax, mass, CdA, durability, positioning, handling). They are never the hidden cause of a race result. Form/freshness/fatigue stay day condition, not talent. WorldTour content must actually differ by archetype (stop copy-paste lab numbers). Visibility remains All / Guessed / None (D-042). Contract: `RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`.
+
+## D-047 — Detailed courses + yearly identity-constrained generator
+Owner lock 2026-09-01: routes are dense polylines (~25 m samples), stored in the world at New Game, not five labelled fragments and not the 5.4 km proof circuit for WorldTour. A generator builds realistic new courses each year inside race-identity constraints (Tour de France stage mix, monument character, distances). Stage races use one calendar racing day per stage. Official Simulate uses that day’s stored course. Skeleton soak keeps the short proof circuit. Do not expand Watch Race. Contract: `RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`.

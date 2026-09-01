@@ -89,3 +89,15 @@ Dynamic sponsor market, inflation, transfer **fees**, Godot Hub, AI managers, D-
 - Career day races after 12 advance days now differ from immediate race-on-create (readiness drift); SimRunner day goldens use winner `20` / `beta-leader` for seed `91234` (with default prep strategy).
 
 Owner slice contract: `CAREER_WORLDTOUR_SLICE_v0.1.md`.
+
+## Rider ratings + courses (D-046 / D-047 specified, not landed)
+
+Contract: `RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`.
+
+Not in code yet:
+
+- derived 1–99 ratings; `PotentialOvr`; WT archetype recalibration;
+- dense `CourseProfile` catalog, yearly generator, calendar-per-stage, schema 8;
+- official WT Simulate still uses the 5.4 km three-segment proof circuit.
+
+Do not treat the proof circuit as the finished route product.

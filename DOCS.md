@@ -36,6 +36,7 @@
 | `SAVE_FORMAT_v0.1.md` | DRAFT | SQLite save contract, schema versions, migrations, content identity i recovery |
 | `TESTING_v0.1.md` | DRAFT | Test layers, golden scenarios, probes, invariants, soak and playtest gates |
 | `CAREER_WORLDTOUR_SLICE_v0.1.md` | DRAFT | Owner 2026-08-31 career slice: world–race bind, WT 2026 pack, contracts, no minigames |
+| `RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md` | DRAFT | D-046 derived 1–99 ratings; D-047 dense courses + yearly generator |
 
 ## Read order for a new AI session
 
@@ -71,9 +72,9 @@ Not in code yet, though named in `DATA_MODEL_v0.1.md`: `OrganizationKnowledgeSto
 
 Remaining system design (do not treat as the next coding task unless `HANDOFF.md` says so):
 
-- Owner slice: `CAREER_WORLDTOUR_SLICE_v0.1.md` (world–race bind first)
-- Rider Performance / Training / Development
-- Calendar / Recruitment / Contracts / Economy-Sponsors
+- Owner slice in progress: `RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md` (D-046 ratings + D-047 courses)
+- Training / development that grows physiology toward POT
+- Recruitment / AI managers / dynamic sponsor market
 
 Do not close the owner §49 fun gate with automations. Do not build the rejected Career Hub.
 

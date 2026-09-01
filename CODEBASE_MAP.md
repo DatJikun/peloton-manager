@@ -54,6 +54,8 @@ Static content lives in `content/peloton.skeleton`, `content/peloton.wt-2026`, a
 | Pre-season planning | `Peloton.Application/PreSeasonPlanning.cs`, `GameApplication.cs` | `PreSeasonPlanningFlow` draft entry by `RaceContentId`; confirm commits `OrganizationRaceEntry` | `CareerWorldTourPhase3Tests` |
 | Race result / debrief | `Peloton.Application/RaceResultDebrief.cs`, `GameApplication.cs` | committed `LastRace` uses world `RiderCareer.Id`; org on `RaceResultPlacement`; `RaceResultForOrganization` filter (D-043); career history append on `RecordRace` | Application + Persistence tests |
 | Contract negotiation | `Peloton.Application/ContractNegotiation.cs`, `GameApplication.cs` | D-044 thin offer/accept in `Management`; no transfer fee | `CareerWorldTourPhase7Tests` |
+| Rider ratings (D-046) | specified, not landed | `RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md` — derived 1–99 view of physiology | pending |
+| Course engine (D-047) | specified, not landed | `RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md` — 25 m polylines, yearly generator, calendar per stage | pending |
 | Career calendar | `Peloton.Domain/CalendarEntry.cs`, `Peloton.Application/CareerCalendarInbox.cs` | stored entries + derived status | Application tests |
 | Career inbox query | `Peloton.Application/CareerCalendarInbox.cs`, `ArchiveInboxItemCommand` | rebuilt race-due + race-result items; dismiss lock on race-due | Application tests |
 | AI managers | Not implemented | `AI_MANAGER_SYSTEM_v0.2.md` | Not implemented |
@@ -61,8 +63,7 @@ Static content lives in `content/peloton.skeleton`, `content/peloton.wt-2026`, a
 | Career scenarios | `content/peloton.skeleton`, `JsonScenarioCatalog.cs` | `CONTENT_FORMAT_v0.1.md` | Application tests |
 | Rules modules | `Peloton.Rules`, scenario JSON | `RULESETS_v0.1.md` | Application + Architecture tests |
 
-Transfer market, sponsors, scouting, knowledge records, Career Hub UI (PR #4), and `D-032` multi-stage leadership transfer are not implemented. Godot career shell shows those domains from `CareerLookCatalog` (look only) and presents D-043 simulate → results. Watch film stays optional. Look-catalog OVR/cash is not World State.
-
+Transfer market, sponsors, scouting, knowledge records, Career Hub UI (PR #4), and `D-032` multi-stage leadership transfer are not implemented. Godot career shell shows those domains from `CareerLookCatalog` (look only) and presents D-043 simulate → results. Watch film stays optional. Look-catalog OVR/cash is not World State. Rider ratings (D-046) and the dense course engine (D-047) are specified in `RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`.
 ## Dependency direction
 
 ```text
