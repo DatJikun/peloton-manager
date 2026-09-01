@@ -363,3 +363,5 @@ Peloton Manager jest na etapie pre-production. Celem jest modularny, determinist
 - `2026-09-01` — Właściciel: Watch Race na razie przesunięte. D-045: gotową pracę mergować do `main` od razu (bez stosu PR-ów i konfliktów). Nie zlewamy starych branchy Watch na `main`.
 - `2026-09-01` — Pętla powłoki kariery (Advance Day / Race next / simulate → tabela wyniku) złącza się na `main` razem z WorldTour. Watch film zostaje opcją, nie ścieżką gry.
 - `2026-09-01` — Właściciel: usuń Career Hub całkowicie. Watch Race zostaje w grze, domyślnie wyłączony (D-048).
+
+- `2026-09-01` — **Listy zadań na noc:** `docs/tasks/2026-09-01-main-agent-engine-release.md` (agent główny: D-054, D-055, md, release) i `docs/tasks/2026-09-01-night-agent-godot-ui.md` (agent nocny: UI Godota do wzorca HTML v3; granice plików, żeby oba agenty się nie gryzły).
