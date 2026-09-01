@@ -164,6 +164,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
+- `2026-09-01` — **Windows playtest zip refreshed** after D-050/D-051 (`playtest/PelotonManager-playtest-windows.zip`). Pack includes `peloton.wt-2026`. Staff/sponsors/scouting/market stay drawings.
 - `2026-09-01` — **D-051 landed (Composer):** Godot desk/finance show `ClubFinanceProjection` (euro); Skład contract offer via D-044 commands; staff/sponsors/scouting/market stay look catalog.
 - `2026-09-01` — **D-050 landed (Composer):** New Game WT club pick (`ListNewGameClubs`, `CreateWorldCommand` employer), pre-season designated leader per event (`SetSeasonRaceLeaderCommand`), `OrganizationRaceEntry.DesignatedLeaderId`, SchemaVersion 9 / checksum v9. Godot opens MainMenu club picker (not auto-skeleton). SimRunner `day --employer`. Default Alpecin CreateWorld unchanged for soak/tests.
 - `2026-09-01` — **D-050: club pick, calendar entries, per-event leaders first.** Not one rigid team. Infinite career and aging later. Content stays data-only JSON packs (riders/routes/teams); physics code is the engine, not a Lua mod. CdA and look-catalog finance wait.
