@@ -223,7 +223,6 @@ public sealed class GameApplication
                         ratings.Ovr,
                         ratings.PotentialOvr);
                 })
-                .OrderBy(entry => entry.OriginDefinitionId, StringComparer.Ordinal)
                 .ToArray();
             return new ClubRosterProjection(riders);
         }

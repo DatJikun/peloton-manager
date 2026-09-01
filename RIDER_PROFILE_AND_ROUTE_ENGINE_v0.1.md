@@ -201,19 +201,24 @@ Hard tests after calibration (CreateWorld `scenario.peloton.wt-2026`):
 
 Skeleton roster physiology **may stay** as the proof pack (do not churn the 10-year soak finish order unless required). Add `potentialOvr` to skeleton JSON (default 75–92 by role). Derived ratings still work on skeleton numbers.
 
-Suggested lab bands (gameplay, not science papers):
+Suggested lab bands (gameplay, not science papers). Canonical copy for the 2026 pack is `content/peloton.wt-2026/README.md`.
 
-| Archetype | kg | CP W | W′ kJ | Pmax W | CdA | notes |
+| Archetype | kg | CP W | CP W/kg | W′ kJ | Pmax W | CdA |
 |---|---|---|---|---|---|---|
-| Elite GC climber (Pogačar-like) | 64–67 | 410–425 | 28–32 | 1050–1150 | 0.27–0.29 | high W/kg, high durability |
-| Elite sprinter (Philipsen-like) | 72–76 | 365–385 | 30–36 | 1550–1750 | 0.30–0.33 | positioning ≥ 0.90 |
-| Classics / punch (MvDP-like) | 69–72 | 395–415 | 30–34 | 1300–1500 | 0.28–0.30 | handling ≥ 0.90, cobbles |
-| TT specialist | 70–74 | 400–420 | 22–26 | 950–1100 | 0.22–0.25 | low Crr |
-| Super-domestique climber | 58–63 | 370–395 | 22–26 | 900–1050 | 0.28 | |
-| Diesel rouleur | 74–80 | 380–400 | 24–28 | 1000–1150 | 0.29 | |
-| Young talent | slightly below leader | | | | | POT 4–12 above OVR |
+| Super-GC | 60–66 | 410–450 | 6.4–6.8 | 27–32 | 1050–1200 | 0.26–0.28 |
+| GC climber | 60–67 | 378–418 | 6.0–6.5 | 24–28 | 950–1100 | 0.27–0.29 |
+| Classics / punch | 70–78 | 368–445 | 5.4–5.9 | 30–34 | 1250–1500 | 0.28–0.30 |
+| Elite sprinter | 69–82 | 350–385 | 4.8–5.4 | 32–35 | 1540–1720 | 0.30–0.33 |
+| TT specialist | 75–82 | 395–430 | 5.2–5.6 | 22–26 | 1100–1400 | 0.23–0.25 |
+| Super-domestique | 60–68 | 370–400 | 5.5–6.2 | 24–28 | 950–1150 | 0.28–0.30 |
+| Diesel rouleur | 72–84 | 360–400 | 5.0–5.5 | 24–28 | 1100–1180 | 0.29–0.31 |
+| Young talent / neo | 61–64 | 370–392 | 5.6–6.2 | 24–27 | 1000–1080 | 0.28–0.30 |
 
-Apply budget-band CP deltas **after** choosing the archetype, not instead of an archetype.
+Wages are a **separate** fact (`wageBand`: star / leader / sprinter / super-domestique / neo / domestique). Do not derive pay from CP at runtime.
+
+Do **not** apply org `budgetBand` as a CP/wage multiplier on top of these archetypes (that was the copy-paste recipe). Org budget is club spending.
+
+WorldTour squad order is `.leader` (captain), `.card` (second protected), `.support-1`, `.support-2`. Default prep uses that order. Do not sort the card alphabetically by origin id.
 
 ### 2.5 CLI / projections
 

@@ -32,11 +32,7 @@ W 2026 Super-GC jedzie w okolicach **6,6–7,0 W/kg przez ~30–40 minut** na kl
 
 Pensje są jeszcze bardziej rozjechane niż waty. Oficjalnie: minimum WorldTour employed veteran **€44 150**, średnia blended ~**€538k**, mediana self-employed **€350k**. Dziennikarsko: Pogačar ~**€8 mln** base, Evenepoel ~**€6,6 mln**, Vingegaard ~**€5 mln**, MVDP / van Aert / Roglič ~**€4 mln**. Domestique często **€100–400k**, neo-pro **€70–300k**.
 
-Paczka `peloton.wt-2026` po D-046 **zaczęła** różnicować archetypy, ale nadal:
-
-- płace są ściśnięte do **€99k–€1,08 mln** (Pogačar w grze zarabia ~7× za mało, van Aert ~16× za mało),
-- masa niektórych gwiazd jest odwrócona (Evenepoel **78 kg** zamiast ~61; van Aert **60 kg** zamiast ~78),
-- każdy kontrakt kończy się w dniu **10000** (placeholder, nie sezon 2026–2028).
+Paczka `peloton.wt-2026` po passie 2026-09-01 ma **pasma archetypu i płacy** na osobę (kapitan, sprinter, super-domestique, neo). Pogačar ~€8 mln / 66 kg; van Aert 78 kg / €4 mln; Bauhaus jest sprinterem. Zostaje: cienka czwórka, kilka złych klubów, `contractEndDay = 10000`.
 
 To jest luka **contentu**, nie silnika. Silnik już chce CP/W′/Pmax/masę (`D-018`, `D-046`). Nie wolno zastąpić tego magicznym `Climbing = 84` jako przyczyną wyniku.
 
@@ -283,39 +279,36 @@ To nie jest błąd silnika. To jest dług cienkiej warstwy tożsamości: slot `l
 
 ---
 
-## 4. Luka względem `content/peloton.wt-2026`
+## 4. Paczka po passie contentu (2026-09-01)
 
-Paczka po D-046 **nie jest już** jednym copy-paste 410 W. Nadal jest **role template** (leader / support-1 / support-2 / card) × `budgetBand`, nie kalibracja osoby.
+Pass wstawił pasma archetypu i płacy do `roster.json`. Nadal oszacowane (`D-038`). Kolejność czwórki: kapitan → karta → pomocnicy.
 
-Odczyt z `roster.json` na `main` (2026-09-01):
-
-| Kolarz | Paczka CP / kg / W/kg / € | Research (rząd wielkości) | Problem |
+| Kolarz | Paczka po passie | Research (rząd wielkości) | Zostaje |
 |---|---|---|---|
-| Pogačar | 432 W, 65 kg, 6,65, **€1,08 mln** | 430–450 W, 66 kg, ~€8 mln | fizjologia w paśmie; **płaca ×7 za niska** |
-| Vingegaard | 426 W, 65 kg, 6,55, €1,08 mln | ~410 W, **60 kg**, ~€5 mln | za ciężki; W/kg zaniżone |
-| Evenepoel | Soudal, 396 W, **78 kg**, **5,08**, €800k | Bora, ~425 W, **61 kg**, ~€6,6 mln | zły klub + archetyp + płaca |
-| van der Poel | 405 W, 70 kg, 5,79, €800k | FTP ~wysokie 400–500 W, **75 kg**, ~€4 mln | za lekki/słaby absolutnie; płaca |
-| van Aert | 387 W, **60 kg**, 6,45, **€243k** | **78 kg**, ~€4 mln | odwrócona masa; płaca ×16 |
-| Roglič | 424 W, 67 kg, 6,33, €1,08 mln | ~65 kg, ~€4 mln | fizjologia bliżej; płaca niska |
-| Philipsen | Pmax **1800**, 75 kg, €350k | pik ~17 W/kg nie 24; pensja raczej mid-high | Pmax za wysoki |
-| Ganna | 390 W, 78 kg, €243k | ~82 kg, TT-monster | za słaby, zła rola w czwórce |
-| Seixas | 376 W, **73 kg**, €280k | **61 kg**; 4. Touru 2026 | masa; za słaby jak na GC top 5 |
-| Pidcock | INEOS, €378k | Q36.5 ProTeam, ~€2,7 mln | zły klub (nawet zła dywizja) |
-| Kooij | Visma, Pmax 1710 | Decathlon 2026 | zły klub; Pmax za wysoki jak Philipsen |
-| Ayuso | **brak** | Lidl–Trek, 7. Touru | cienka czwórka go nie ma |
-| cały pack | wage €99k–€1,08 mln; `contractEndDay=10000` | min €36k, gwiazdy €8 mln, daty 2026–2030 | ściśnięta ekonomia; placeholder dat |
+| Pogačar | 438 W, 66 kg, 6,64, **€8 mln** | 430–450 W, 66 kg, ~€8 mln | fizjologia i płaca w paśmie |
+| Vingegaard | 410 W, **60 kg**, €5 mln | ~410 W, 60 kg, ~€5 mln | OK |
+| Evenepoel | Soudal, 425 W, **61 kg**, €6,5 mln | Bora, ~425 W, 61 kg, ~€6,6 mln | **zły klub** |
+| van der Poel | 430 W, **75 kg**, €4 mln | 75 kg, ~€4 mln | OK |
+| van Aert | 445 W, **78 kg**, €4 mln | 78 kg, ~€4 mln | OK |
+| Philipsen | Pmax **1720**, 75 kg, €1,2 mln | pik lab ~17 W/kg; gameplay 15 s cap | świadomy kompromis |
+| Ganna | 430 W, **82 kg**, CdA 0,23, €1,2 mln | TT-monster | OK na cienkiej czwórce |
+| Bauhaus | 72 kg, Pmax 1600, sprinter | sprinter, nie 60 kg góral | OK |
+| Seixas | 61 kg, neo | 61 kg; 4. Touru 2026 | OK masa; wciąż support-1 |
+| Pidcock | INEOS, €1,8 mln | Q36.5 ProTeam | **zły klub** |
+| Ayuso | **brak** | Lidl–Trek | cienka czwórka |
+| daty | `contractEndDay=10000` | 2026–2030 | placeholder |
 
-`README` paczki nadal uczciwie pisze: physiology/wages = estimated bands. To jest zgodne z `D-038`. D-046 („stop copy-paste lab numbers”) **nie jest domknięty**, dopóki Evenepoel waży 78 kg, a van Aert 60 kg.
+Zostaje: kluby kilku gwiazd, daty kontraktów, 4 nazwiska zamiast 28.
 
-Budżety w `organizations.json` (UAE €50 mln, Visma €32 mln, Picnic €12 mln) są w tej samej skali co Gazzetta/UCI 2026 (średnia ekipa ~€33 mln, super-ekipy ~€45–50 mln). **Payroll gwiazd** w rosterze tej skali nie wypełnia.
+Budżety w `organizations.json` (UAE €50 mln, Visma €32 mln, Picnic €12 mln) są w tej samej skali co Gazzetta/UCI 2026. Payroll gwiazd **wypełnia** rząd wielkości.
 
 ---
 
 ## 5. Co z tego wynika dla gry (bez cichej zmiany locków)
 
 1. **Silnik ma rację.** CP/W′/Pmax/masa/durability są właściwym miejscem prawdy (`D-018`, `D-046`). Research 2026 dostarcza **pasma**, nie nowej statystyki „Climbing”.
-2. **Content ma dług.** Kolejny pass `peloton.wt-2026` powinien kalibrować **osobę**, nie slot `leader`. To zadanie contentowe, nie nowy system.
-3. **Płace gwiazd są historią rynku.** Ściśnięcie do €1,08 mln ukrywa, dlaczego UAE „wyda ile trzeba”. Nie trzeba od razu wpisywać €8 mln — ale rząd wielkości (miliony vs setki tysięcy vs minimum UCI) musi być widoczny, inaczej sponsor market (`D-011`) nie ma zębów.
+2. **Content:** pasma archetypu i płacy są w `roster.json`. Zostaje cienka czwórka, złe kluby kilku gwiazd i placeholder dat kontraktów.
+3. **Płace gwiazd są historią rynku.** Rząd wielkości (miliony vs setki tysięcy) jest widoczny. Sponsor market (`D-011`) ma zęby.
 4. **Daty kontraktów** powinny być sezonami (2026, 2027, 2028…), nie dniem 10000. Cienki `EndDate` już na to pozwala.
 5. **Niepewność zostaje.** D-010 / D-042: gracz w `None` nie dostaje tych watów. Research jest dla autorów contentu i dla All/Guessed, nie dla God-eye AI.
 6. **Nie budować** w tym kroku: aukcji agentów, image rights minigry, employed/self-employed jako UI. Locki `D-039` / `D-044` stoją.

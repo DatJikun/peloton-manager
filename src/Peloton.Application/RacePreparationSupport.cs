@@ -22,7 +22,6 @@ public static class RacePreparationSupport
         }
 
         WorldEntityId[] squad = application.World.GetRiderCareersForOrganization(organizationId)
-            .OrderBy(career => career.Id.Value)
             .Select(career => career.Id)
             .Take(2)
             .ToArray();

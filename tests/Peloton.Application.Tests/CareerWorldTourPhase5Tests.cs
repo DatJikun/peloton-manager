@@ -182,7 +182,7 @@ public sealed class CareerWorldTourPhase5Tests
             Path.Combine(TestApplication.ContentRoot, "peloton.wt-2026", "roster.json"),
             rosterPath);
         string rosterJson = File.ReadAllText(rosterPath);
-        rosterJson = rosterJson.Replace("\"annualWage\": 1080000", "\"annualWage\": 0", StringComparison.Ordinal);
+        rosterJson = rosterJson.Replace("\"annualWage\": 8000000", "\"annualWage\": 0", StringComparison.Ordinal);
         File.WriteAllText(rosterPath, rosterJson);
         File.WriteAllText(
             Path.Combine(packRoot, "pack.json"),

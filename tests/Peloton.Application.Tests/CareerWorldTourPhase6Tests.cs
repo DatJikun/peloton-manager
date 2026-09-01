@@ -34,7 +34,7 @@ public sealed class CareerWorldTourPhase6Tests
         long wageBillAnnual = world.GetRiderCareersForOrganization(alpecin.Id)
             .Select(career => world.RiderContracts.Single(contract => contract.RiderCareerId == career.Id).AnnualWage)
             .Sum(wage => (long)wage);
-        Assert.Equal(1_610_000, wageBillAnnual);
+        Assert.Equal(5_700_000, wageBillAnnual);
 
         ClubFinanceProjection finance = Assert.IsType<ClubFinanceProjection>(application.ClubFinance);
         long expectedDailySponsor = 18_000_000 / 365;

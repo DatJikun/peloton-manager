@@ -213,9 +213,8 @@ public sealed class WorldState
     }
 
     public IReadOnlyList<RiderCareer> GetRiderCareersForOrganization(WorldEntityId organizationId) =>
-        riderCareers
-            .Where(career => career.OrganizationId == organizationId)
-            .OrderBy(career => career.OriginDefinitionId, StringComparer.Ordinal)
+        RiderSquadOrder.OrderSquad(
+                riderCareers.Where(career => career.OrganizationId == organizationId))
             .ToArray();
 
     public bool IsCalendarRaceDue =>

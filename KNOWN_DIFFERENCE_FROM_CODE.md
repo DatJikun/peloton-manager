@@ -51,7 +51,7 @@ Phase 1 out of scope for Godot: Career Hub UI is deleted (D-048). WT CreateWorld
 ## WorldTour 2026 pack (D-036 phase 5 landed)
 
 - `scenario.peloton.wt-2026` CreateWorld: 18 orgs, 72 thin 4-rider squads, 36 content calendar races, employer Alpecin.
-- Physiology, wages, and budgets are estimated gameplay bands (`content/peloton.wt-2026/README.md`). How far those bands sit from the 2026 peloton (W/kg, masses, UCI minima, journalistic star wages, a few club mismatches) is recorded in `WT_2026_PHYSIOLOGY_AND_CONTRACTS_RESEARCH_2026-09-01.md` — research source, not a retune.
+- Physiology, wages, and budgets are estimated gameplay bands (`content/peloton.wt-2026/README.md`). Riders use per-person `archetype` / `wageBand` (not a slot×org-budget copy-paste). Squad order is captain → protected card → helpers. Remaining gaps (wrong clubs for a few stars, `contractEndDay=10000`, 4 names per team): `WT_2026_PHYSIOLOGY_AND_CONTRACTS_RESEARCH_2026-09-01.md`.
 - Official start lists capped at **12 riders** (prototype engine limit); not a UCI field size.
 - Route geometry remains the **synthetic proof circuit** (`race-scenario.peloton.prototype-v0`); WT `RaceContentId` values map to that template at assemble time.
 - `GeneratePeriodicRaces` is false for WT; skeleton keeps periodic race generation.

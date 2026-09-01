@@ -229,7 +229,7 @@ Inside `RacePreparationFlow`, **before** Confirm:
 - `CanStart` / `CanSimulate` still require confirmed plan.
 - `WorldRaceScenarioAssembler` must honour the committed strategy for the player’s organization (leader/support/objective/briefing). Other orgs keep template/delegated defaults.
 - `RacePreparationCheckpoint` stores the strategy; round-trip through SchemaVersion 3 saves.
-- Update `SkeletonCareerRunner` and every test that Confirms prep so they set strategy first (deterministic: first two roster riders by Id as leader/support, StageWin + Chase unless a test says otherwise).
+- Update `SkeletonCareerRunner` and every test that Confirms prep so they set strategy first (deterministic: WorldTour `.leader` then `.card`; skeleton first two by origin id, StageWin + Chase unless a test says otherwise).
 
 Tests: toggle entry then confirm — player skipped race does not block Advance Day and player riders are absent from that start list; strategy required before Confirm; strategy changes the assembled tactical plan; Cancel discards drafts; no tenth GameState; Spy neutrality still holds.
 
@@ -468,27 +468,27 @@ Rider id pattern: `rider.wt2026.{teamSlug}.{role}` with roles `leader`, `support
 | astana | support-2 | Clément Berthet | FRA | 1997 |
 | astana | card | Cees Bol | NED | 1995 |
 
-**Estimated physiology / wage (write into JSON; do not re-derive at runtime):**
+**Estimated physiology / wage:** per-person `archetype` + `wageBand` in `roster.json`. Canonical bands: `content/peloton.wt-2026/README.md`. Do not re-derive at runtime. Org `budgetBand` is club spending only — it does **not** rescale rider CP or wages (the slot×multiplier recipe below is retired).
 
-Shared: `systemMassKg=8`, `cdAM2=0.29`, `baseCrr=0.004`, `wPrimeRecoveryJPerSecond` from role, positioning/handling/tacticalAwareness from role.
+Squad order and default prep: `.leader` (captain), `.card` (second protected), `.support-1`, `.support-2`. Not alphabetical origin id, not WorldEntityId allocation order.
 
-| role | CP | W' | Pmax | Wrec | lowD | highD | mass | pos | han | tac | base wage |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| leader | 410 | 30000 | 1000 | 42 | 0.88 | 0.86 | 67 | 0.86 | 0.80 | 0.84 | 800000 |
-| support-1 | 375 | 26000 | 900 | 40 | 0.82 | 0.80 | 71 | 0.80 | 0.78 | 0.80 | 280000 |
-| support-2 | 360 | 23000 | 870 | 38 | 0.79 | 0.76 | 73 | 0.76 | 0.74 | 0.76 | 180000 |
-| card | 385 | 28000 | 1080 | 40 | 0.83 | 0.82 | 70 | 0.84 | 0.80 | 0.82 | 350000 |
+<details>
+<summary>Retired slot×budgetBand recipe (do not re-apply)</summary>
 
-Budget band from the rider’s org (`organizations.json` `budgetBand`):
+Shared: `systemMassKg=8`, `cdAM2=0.29`, `baseCrr=0.004`.
 
-| band | CP delta | wage multiplier |
-|---|---|---|
-| elite | +8 | 1.35 |
-| high | 0 | 1.00 |
-| mid | −8 | 0.75 |
-| tight | −15 | 0.55 |
+| role | CP | W' | Pmax | mass | base wage |
+|---|---|---|---|---|---|
+| leader | 410 | 30000 | 1000 | 67 | 800000 |
+| support-1 | 375 | 26000 | 900 | 71 | 280000 |
+| support-2 | 360 | 23000 | 870 | 73 | 180000 |
+| card | 385 | 28000 | 1080 | 70 | 350000 |
 
-`criticalPowerW = roleCP + delta`. `peakPowerW = max(rolePmax + delta, criticalPowerW)`. `annualWage = round(baseWage * multiplier)` to nearest 1000. `contractEndDay = 10000`. `loyalty01` default 0.5.
+`criticalPowerW = roleCP + budgetDelta`. That made Bauhaus a 60 kg climber and every captain a cousin of Pogačar.
+
+</details>
+
+`contractEndDay = 10000` still a placeholder. `loyalty01` default 0.5.
 
 #### Domain / recipe
 
@@ -517,7 +517,7 @@ Today the assembler indexes prototype origin ids (`rider.race-prototype.*`) and 
   - Starters: **cap 12**. Take the player employer’s roster (up to 4), then other **entered** orgs by `OriginDefinitionId`, up to 4 riders each, until 12. Order riders by `OriginDefinitionId`.
   - Starting positions: that order, spacing 0.7 as today.
   - Scripted template commands that reference missing origin ids: skip.
-  - Tactical plans: one per org that has a starter. Player org uses committed strategy when present; others use first two roster riders by Id, `StageWin` + `Chase`.
+  - Tactical plans: one per org that has a starter. Player org uses committed strategy when present; others use squad slot order (`.leader` then `.card`), `StageWin` + `Chase`.
 - `BuildOfficialRaceScenario`: `RaceContentId` values like `race.wt2026.omloop` are **not** route files. Resolve the **route/tuning** template via `WorldRecipe.DefaultRaceTemplateId` (prototype circuit). Honesty: route geometry is still the synthetic proof circuit, labelled estimated — not Flanders cobbles.
 
 This cap is an explicit prototype limit (`KNOWN_DIFFERENCE_FROM_CODE.md`), not a UCI 176-rider field.
