@@ -163,3 +163,9 @@ Owner lock 2026-09-01: Watch Race is **not** the playable race product. After pr
 
 ## D-044 — Thin contract negotiation, not an agent board game
 The player can offer a contract (annual wage + inclusive end day) to a rider: own roster (renew), unattached (sign), or another club (thin poach). Accept/reject is a closed formula from current wage and `Loyalty01`. No agent minigame, no counter-offer auction, no transfer fee this pass. Stays inside `Management` (D-031: no tenth GameState).
+
+## D-045 — Player-facing rider ratings are a view of physiology
+Owner lock 2026-09-01: the player needs normal strengths/weaknesses (Climb, Hills, Flat, TT, Sprint, Cobbles, OVR, POT). Those 1–99 numbers are **derived** from stored physiology (CP, W′, Pmax, mass, CdA, durability, positioning, handling). They are never the hidden cause of a race result. Form/freshness/fatigue stay day condition, not talent. WorldTour content must actually differ by archetype (stop copy-paste lab numbers). Visibility remains All / Guessed / None (D-042). Contract: `RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`.
+
+## D-046 — Detailed courses + yearly identity-constrained generator
+Owner lock 2026-09-01: routes are dense polylines (~25 m samples), stored in the world at New Game, not five labelled fragments and not the 5.4 km proof circuit for WorldTour. A generator builds realistic new courses each year inside race-identity constraints (Tour de France stage mix, monument character, distances). Stage races use one calendar racing day per stage. Official Simulate uses that day’s stored course. Skeleton soak keeps the short proof circuit. Do not expand Watch Race. Contract: `RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`.
