@@ -30,7 +30,7 @@ Each rider has **laboratory numbers** that the physics actually uses:
 
 Those numbers **do** create real strengths and weaknesses — **if they differ**. A light rider with high watts/kg drops people on a long climb. A heavy rider with huge peak power wins a bunch sprint. A low-CdA rider beats a stronger engine in a time trial.
 
-The 2026 WorldTour pack **is calibrated** from `WT_2026_PHYSIOLOGY_AND_CONTRACTS_RESEARCH_2026-09-01.md` (estimated gameplay, labelled — not licensed lab dumps). Each rider has an `archetype` and `wageBand`. Pogačar is a climber in the lab numbers; Philipsen is a sprinter. Remaining feel hole: classified Flat still does not produce a bunch-sprint win.
+The 2026 WorldTour pack **is calibrated** from `WT_2026_PHYSIOLOGY_AND_CONTRACTS_RESEARCH_2026-09-01.md` (estimated gameplay, labelled — not licensed lab dumps). Each rider has an `archetype` and `wageBand`. Pogačar is a climber in the lab numbers; Philipsen is a sprinter. Classified Flat bunch-sprint feel probe (seed `91234`): Philipsen ahead of Pogačar; mountain probe still has the climber ahead.
 
 We will **not** replace the physics with Football Manager magic ratings as the thing that decides races (`Climbing = 84` must not be the hidden cause — D-018 / R-003).
 
@@ -458,7 +458,7 @@ Query GC as sum of times for that event (DNF = no GC, or large penalty — pick 
 - Godot map renderer beyond the existing optional Watch overlay
 - Rebuilding Career Hub
 - Real GPS traces of the 2026 UCI routes (legal/data). The generator is the 2026 default.
-- UCI 150–200 pelotons (pack remains 4 riders per WT team / 72 starters when every team is entered)
+- UCI-shaped WorldTour fields (7 per team, 8 on Grand Tours, event wildcards — D-049)
 - Closing §49
 - Full fueling/thermal physiology
 - A player-facing route editor screen

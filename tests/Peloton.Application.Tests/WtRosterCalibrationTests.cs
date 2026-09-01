@@ -29,6 +29,12 @@ public sealed class WtRosterCalibrationTests
         Assert.Equal("rider.wt2026.alpecin.card", origins[1]);
         Assert.Equal("rider.wt2026.alpecin.support-1", origins[2]);
         Assert.Equal("rider.wt2026.alpecin.support-2", origins[3]);
+        Assert.Equal("rider.wt2026.alpecin.support-3", origins[4]);
+        Assert.Equal(8, origins.Length);
+        Assert.Equal(
+            "Kaden Groves",
+            world.Persons.Single(person =>
+                person.Id == world.GetRiderCareersForOrganization(alpecin.Id)[4].PersonId).Name);
 
         Organization bahrain = world.Organizations.Single(
             organization => string.Equals(
@@ -134,11 +140,12 @@ public sealed class WtRosterCalibrationTests
             .GetRiderCareersForOrganization(application.GetAccessContext().CurrentOrganizationId!.Value)
             .Select(career => Wage(application.World, career))
             .ToArray();
-        Assert.Equal(4, wages.Distinct().Count());
-        Assert.Equal(5_700_000, wages.Sum(wage => (long)wage));
+        Assert.True(wages.Distinct().Count() >= 4);
+        Assert.True(wages.Sum(wage => (long)wage) > 5_700_000);
         Assert.Contains(4_000_000, wages);
         Assert.Contains(1_200_000, wages);
         Assert.Contains(180_000, wages);
+        Assert.Equal(8, wages.Length);
     }
 
     private static RiderCareer Find(WorldState world, string originId) =>

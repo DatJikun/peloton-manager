@@ -9,7 +9,7 @@ namespace Peloton.Application;
 
 public static class WorldRaceScenarioAssembler
 {
-    private const int StartersPerOrganization = 4;
+    private const int DefaultStartersPerOrganization = 4;
 
     public static RaceScenario Assemble(
         WorldState world,
@@ -57,6 +57,7 @@ public static class WorldRaceScenarioAssembler
 
         return AssembleWorldTourPath(
             world,
+            recipe,
             template,
             raceContentId,
             careersByOrigin,
@@ -64,7 +65,8 @@ public static class WorldRaceScenarioAssembler
             playerOrganizationId,
             route,
             maximumDurationSeconds,
-            courseProfile is not null);
+            courseProfile is not null,
+            courseProfile?.ClassifiedStageType);
     }
 
     private static RaceScenario AssembleSkeletonPath(
@@ -161,11 +163,13 @@ public static class WorldRaceScenarioAssembler
             template.InitialSpeedMps,
             maximumDurationSeconds,
             tacticalPlans,
-            template.TuningIdentity);
+            template.TuningIdentity,
+            classifiedStageType: null);
     }
 
     private static RaceScenario AssembleWorldTourPath(
         WorldState world,
+        WorldRecipe recipe,
         RaceScenarioTemplate template,
         string raceContentId,
         Dictionary<string, RiderCareer> careersByOrigin,
@@ -173,7 +177,8 @@ public static class WorldRaceScenarioAssembler
         WorldEntityId? playerOrganizationId,
         RaceDefinition route,
         int maximumDurationSeconds,
-        bool generatedCourse)
+        bool generatedCourse,
+        ClassifiedStageType? classifiedStageType)
     {
         WorldEntityId humanAuthorityId = ResolveHumanAuthorityId(world);
         HashSet<WorldEntityId> enteredOrganizationIds = world.OrganizationRaceEntries
@@ -181,15 +186,18 @@ public static class WorldRaceScenarioAssembler
                 string.Equals(entry.RaceContentId, raceContentId, StringComparison.Ordinal) && entry.Entered)
             .Select(entry => entry.OrganizationId)
             .ToHashSet();
-        Dictionary<WorldEntityId, Organization> organizationsById = world.Organizations
-            .ToDictionary(organization => organization.Id);
+        int startersPerTeam = ResolveStartersPerTeam(recipe, raceContentId);
+        HashSet<string>? inviteOriginIds = ResolveInviteOriginIds(recipe, raceContentId);
         List<RiderCareer> selectedCareers = new();
         foreach (Organization organization in world.Organizations
                      .Where(organization => enteredOrganizationIds.Contains(organization.Id))
+                     .Where(organization =>
+                         inviteOriginIds is null ||
+                         inviteOriginIds.Contains(organization.OriginDefinitionId))
                      .OrderBy(organization => organization.OriginDefinitionId, StringComparer.Ordinal))
         {
             selectedCareers.AddRange(
-                world.GetRiderCareersForOrganization(organization.Id).Take(StartersPerOrganization));
+                world.GetRiderCareersForOrganization(organization.Id).Take(startersPerTeam));
         }
 
         RiderCareer[] starters = selectedCareers
@@ -280,7 +288,8 @@ public static class WorldRaceScenarioAssembler
             template.InitialSpeedMps,
             maximumDurationSeconds,
             tacticalPlans.ToArray(),
-            template.TuningIdentity);
+            template.TuningIdentity,
+            classifiedStageType);
     }
 
     private static WorldEntityId ResolveHumanAuthorityId(WorldState world)
@@ -293,6 +302,30 @@ public static class WorldRaceScenarioAssembler
         }
 
         return humanAuthority.Id;
+    }
+
+    private static int ResolveStartersPerTeam(WorldRecipe recipe, string raceContentId)
+    {
+        RaceIdentityConstraints? identity = recipe.RaceIdentities.FirstOrDefault(
+            item => string.Equals(item.RaceContentId, raceContentId, StringComparison.Ordinal));
+        if (identity is not null && identity.StartersPerTeam > 0)
+        {
+            return identity.StartersPerTeam;
+        }
+
+        return DefaultStartersPerOrganization;
+    }
+
+    private static HashSet<string>? ResolveInviteOriginIds(WorldRecipe recipe, string raceContentId)
+    {
+        RaceIdentityConstraints? identity = recipe.RaceIdentities.FirstOrDefault(
+            item => string.Equals(item.RaceContentId, raceContentId, StringComparison.Ordinal));
+        if (identity?.InviteOrganizationIds is not { Count: > 0 })
+        {
+            return null;
+        }
+
+        return identity.InviteOrganizationIds.ToHashSet(StringComparer.Ordinal);
     }
 
     public static RaceRiderProfile ToRaceProfile(RiderCareer career)

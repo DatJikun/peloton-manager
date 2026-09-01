@@ -287,6 +287,27 @@ public sealed class GameApplication
         }
     }
 
+    public ClassificationProjection? RaceClassifications
+    {
+        get
+        {
+            if (State != GameState.RaceResultsFlow || World is null)
+            {
+                return null;
+            }
+
+            CalendarEntry? entry = World.CalendarEntries.FirstOrDefault(
+                item => item.Kind == CalendarEntryKind.Race &&
+                        item.DayNumber == World.LastCompletedRaceDay);
+            if (entry?.RaceContentId is not string raceContentId)
+            {
+                return null;
+            }
+
+            return ClassificationQueries.Build(World, raceContentId);
+        }
+    }
+
     public IReadOnlyList<RaceResultPlacement>? RaceResultForOrganization(WorldEntityId organizationId)
     {
         RaceResultProjection? result = RaceResult;
@@ -1381,12 +1402,21 @@ public sealed class GameApplication
             .Where(id => id is not null)
             .Cast<string>()
             .ToHashSet(StringComparer.Ordinal);
+        Dictionary<string, RaceIdentityConstraints> identitiesByRace = recipe.RaceIdentities
+            .ToDictionary(identity => identity.RaceContentId, StringComparer.Ordinal);
         List<OrganizationRaceEntry> organizationRaceEntries = new();
         foreach (Organization organization in organizations)
         {
             foreach (string raceContentId in eventRaceIds.OrderBy(id => id, StringComparer.Ordinal))
             {
-                organizationRaceEntries.Add(new OrganizationRaceEntry(organization.Id, raceContentId, Entered: true));
+                bool entered = true;
+                if (identitiesByRace.TryGetValue(raceContentId, out RaceIdentityConstraints? identity) &&
+                    identity.InviteOrganizationIds is { Count: > 0 } invites)
+                {
+                    entered = invites.Contains(organization.OriginDefinitionId, StringComparer.Ordinal);
+                }
+
+                organizationRaceEntries.Add(new OrganizationRaceEntry(organization.Id, raceContentId, entered));
             }
         }
 

@@ -96,7 +96,8 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
                     aggregateHash);
                 OrganizationDefinition[] organizations = BuildOrganizations(
                     scenario,
-                    organizationsFile);
+                    organizationsFile,
+                    roster);
                 TeamRaceMappingDefinition[] teamMappings = roster!.TeamMappings
                     .Select(mapping => new TeamRaceMappingDefinition(
                         mapping.OrganizationId,
@@ -153,18 +154,30 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
 
     private static OrganizationDefinition[] BuildOrganizations(
         ScenarioDocument scenario,
-        OrganizationsFileDocument? organizationsFile)
+        OrganizationsFileDocument? organizationsFile,
+        RosterDocument? roster)
     {
+        HashSet<string> organizationIds = new(scenario.Organizations, StringComparer.Ordinal);
+        if (roster is not null)
+        {
+            foreach (RiderDocument rider in roster.Riders)
+            {
+                organizationIds.Add(rider.OrganizationId);
+            }
+        }
+
         if (organizationsFile is null)
         {
-            return scenario.Organizations
+            return organizationIds
+                .OrderBy(id => id, StringComparer.Ordinal)
                 .Select(id => new OrganizationDefinition(id, DisplayName(id)))
                 .ToArray();
         }
 
         Dictionary<string, OrganizationRecordDocument> byId = organizationsFile.Organizations
             .ToDictionary(organization => organization.Id, StringComparer.Ordinal);
-        return scenario.Organizations
+        return organizationIds
+            .OrderBy(id => id, StringComparer.Ordinal)
             .Select(id =>
             {
                 if (!byId.TryGetValue(id, out OrganizationRecordDocument? record))
@@ -243,7 +256,7 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
         }
 
         RaceIdentitiesFileDocument document = ReadJson<RaceIdentitiesFileDocument>(path);
-        return document.Races
+        RaceIdentityConstraints[] identities = document.Races
             .Select(race => new RaceIdentityConstraints(
                 race.RaceContentId,
                 race.Kind,
@@ -264,9 +277,28 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
                 race.TotalKmMax,
                 race.CobbleKmMin,
                 race.CobbleKmMax,
-                race.TerrainPalette))
+                race.TerrainPalette,
+                race.StartersPerTeam,
+                race.InviteOrganizationIds))
             .OrderBy(identity => identity.RaceContentId, StringComparer.Ordinal)
             .ToArray();
+        foreach (RaceIdentityConstraints identity in identities)
+        {
+            if (identity.StartersPerTeam is not 0 and not 7 and not 8)
+            {
+                throw new InvalidDataException(
+                    $"Race '{identity.RaceContentId}' startersPerTeam must be 0, 7, or 8.");
+            }
+
+            if (identity.InviteOrganizationIds is { Count: > 0 } invites &&
+                invites.Distinct(StringComparer.Ordinal).Count() != invites.Count)
+            {
+                throw new InvalidDataException(
+                    $"Race '{identity.RaceContentId}' inviteOrganizationIds must be unique.");
+            }
+        }
+
+        return identities;
     }
 
     private static CalendarFileDocument? TryLoadCalendar(string packRoot, PackDocument pack)
@@ -470,7 +502,9 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
         int TotalKmMax,
         int CobbleKmMin,
         int CobbleKmMax,
-        IReadOnlyList<string> TerrainPalette);
+        IReadOnlyList<string> TerrainPalette,
+        int StartersPerTeam = 0,
+        IReadOnlyList<string>? InviteOrganizationIds = null);
 
     private sealed record OrganizationsFileDocument(IReadOnlyList<OrganizationRecordDocument> Organizations);
 

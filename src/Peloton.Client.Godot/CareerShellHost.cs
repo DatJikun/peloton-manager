@@ -64,6 +64,8 @@ public sealed class CareerShellHost
 
     public RaceResultProjection? Result => application.RaceResult;
 
+    public ClassificationProjection? Classifications => application.RaceClassifications;
+
     public RaceDebriefProjection? Debrief => application.RaceDebrief;
 
     public WorldEntityId? ResultTeamFilter => resultTeamFilter;

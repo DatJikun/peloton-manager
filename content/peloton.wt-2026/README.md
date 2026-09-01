@@ -76,7 +76,7 @@ Alpecin example: van der Poel €4.0M, Philipsen €1.2M, Wærenskjold €320k, 
 
 ## Prototype limits
 
-- Official start lists include **all entered pack riders (72)** — every rider on an entered team's 4-rider squad. Still not a UCI 150–200 field.
+- Official start lists are **event-shaped (D-049)**: Grand Tours 22×8=176, monuments 25×7=175, TDU 20×7=140, other WT 22×7=154. Each WT org has 8 riders (`.leader` `.card` `.support-1`…`.support-6`); extras are estimated. Wildcard ProTeams / Australia national start invited events only.
 - Prototype race session is sequential 1-second `RaceSession.Step`; wall-clock is CPU-fast, not real-time.
 - `GeneratePeriodicRaces` is false: the season is the 36 content calendar races only.
 - Evenepoel 2026 is **Red Bull** (`.leader`); Roglič is Red Bull `.support-1`; Landa leads Soudal.

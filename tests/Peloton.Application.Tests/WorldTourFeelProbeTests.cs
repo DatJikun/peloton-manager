@@ -41,7 +41,7 @@ public sealed class WorldTourFeelProbeTests
         Assert.True(application.Execute(new SimulateRaceCommand(TduRaceContentId)).Succeeded);
 
         RaceResultProjection tduResult = Assert.IsType<RaceResultProjection>(application.RaceResult);
-        Assert.Equal(72, tduResult.FinishOrder.Count);
+        Assert.Equal(140, tduResult.FinishOrder.Count);
         RiderCareer pogacar = FindByOrigin(world, PogacarOriginId);
         Assert.Contains(tduResult.FinishOrder, place => place.RiderId == pogacar.Id);
         log.AppendLine(CultureInfo.InvariantCulture, $"TDU starters={tduResult.FinishOrder.Count} pogacar_place={PlaceOf(tduResult, pogacar.Id)}");
@@ -73,15 +73,11 @@ public sealed class WorldTourFeelProbeTests
         log.AppendLine(CultureInfo.InvariantCulture,
             $"mountain_pogacar={pogaMountain} mountain_philipsen={philMountain} climber_ahead={(pogaMountain > 0 && pogaMountain < philMountain)}");
 
-        Assert.Equal(ClassifiedStageType.Flat, flatStage.ClassifiedStageType);
-        Assert.Equal(72, flatRace.FinishOrder.Count);
-        if (philFlat > 0 && pogaFlat > 0 && philFlat >= pogaFlat)
-        {
-            log.AppendLine("NOTE: sprinter did not beat climber on classified flat; logged only.");
-        }
-
         WriteProbeLog(log.ToString());
 
+        Assert.Equal(ClassifiedStageType.Flat, flatStage.ClassifiedStageType);
+        Assert.True(flatRace.FinishOrder.Count >= 140);
+        Assert.True(philFlat > 0 && pogaFlat > 0 && philFlat < pogaFlat);
         Assert.True(pogaMountain > 0 && philMountain > 0);
         Assert.True(pogaMountain < philMountain);
     }

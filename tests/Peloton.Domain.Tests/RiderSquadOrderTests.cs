@@ -10,6 +10,10 @@ public sealed class RiderSquadOrderTests
     [InlineData("rider.wt2026.alpecin.card", 1)]
     [InlineData("rider.wt2026.alpecin.support-1", 2)]
     [InlineData("rider.wt2026.alpecin.support-2", 3)]
+    [InlineData("rider.wt2026.alpecin.support-3", 4)]
+    [InlineData("rider.wt2026.alpecin.support-4", 5)]
+    [InlineData("rider.wt2026.alpecin.support-5", 6)]
+    [InlineData("rider.wt2026.alpecin.support-6", 7)]
     [InlineData("rider.race-prototype.alpha-leader", 10)]
     public void WorldTourDottedSlotsRankCaptainBeforeCard(string originId, int rank)
     {

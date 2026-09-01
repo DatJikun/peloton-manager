@@ -27,6 +27,9 @@ public sealed class RaceSession
     private const double ForcePaceSpeedIncreaseMps = 1.2;
     private const double AttackSpeedIncreaseMps = 3.0;
     private const double ConserveSpeedDecreaseMps = 0.8;
+    private const double ClassifiedFlatSitInMaxGradient = 0.005;
+    private const double ClassifiedFlatSitInMaxWindMps = 1.5;
+    private const double ClassifiedFlatSitInShelterMultiplier = 0.62;
 
     private readonly RaceScenario scenario;
     private readonly RiderRuntime[] riders;
@@ -119,6 +122,7 @@ public sealed class RaceSession
         }
 
         ApplyCommands();
+        ApplyBunchSprintIntents();
         Dictionary<int, double> groupTargetSpeedMps = DetermineGroupTargetSpeeds();
         Dictionary<WorldEntityId, StepSolve> solves = new();
         foreach (RiderRuntime rider in riders.OrderBy(rider => rider.Profile.RiderId.Value))
@@ -129,7 +133,16 @@ public sealed class RaceSession
             }
 
             RaceRouteSegment segment = scenario.Definition.SegmentAt(rider.DistanceM);
-            double baseSpeedMps = BasePaceMps(segment);
+            double remainingM = scenario.Definition.TotalLengthM - rider.DistanceM;
+            AtmosphereSample atmosphere = AtmosphereForPhysics(segment);
+            if (rider.Intent == RaceCommandKind.LaunchSprint &&
+                remainingM <= BunchSprintResolver.KickDistanceM)
+            {
+                solves.Add(rider.Profile.RiderId, SolveLaunchSprint(rider, segment));
+                continue;
+            }
+
+            double baseSpeedMps = BasePaceMps(atmosphere.Gradient);
             double desiredSpeedMps = groupTargetSpeedMps.TryGetValue(rider.GroupId, out double groupTarget)
                 ? groupTarget
                 : baseSpeedMps;
@@ -142,20 +155,21 @@ public sealed class RaceSession
                 desiredSpeedMps - rider.SpeedMps,
                 -RaceTuning.MaximumDesiredAccelerationMps2,
                 RaceTuning.MaximumDesiredAccelerationMps2);
-            double yawRadians = segment.WindYawDegrees * (Math.PI / 180.0);
-            double headwindMps = Math.Cos(yawRadians) * segment.WindSpeedMps;
-            double crosswindMps = Math.Sin(yawRadians) * segment.WindSpeedMps;
+            double yawRadians = atmosphere.WindYawDegrees * (Math.PI / 180.0);
+            double headwindMps = Math.Cos(yawRadians) * atmosphere.WindSpeedMps;
+            double crosswindMps = Math.Sin(yawRadians) * atmosphere.WindSpeedMps;
             double relativeAirSpeedMps = Math.Sqrt(
                 Math.Pow(Math.Max(0.0, desiredSpeedMps + headwindMps), 2.0) +
                 Math.Pow(crosswindMps, 2.0));
+            double shelterMultiplier = ShelterForPhysics(rider.ShelterMultiplier, remainingM);
             RequiredPowerBreakdown demand = RequiredPowerSolver.Calculate(new RequiredPowerInput(
                 desiredSpeedMps,
                 desiredAccelerationMps2,
-                segment.Gradient,
+                atmosphere.Gradient,
                 scenario.Definition.AirDensityKgPerM3,
                 relativeAirSpeedMps,
                 rider.Profile.CdAM2,
-                rider.ShelterMultiplier,
+                shelterMultiplier,
                 EffectiveCrr(rider.Profile.BaseCrr, rider.Profile.Handling, segment.Surface),
                 rider.Profile.TotalMassKg));
             CapabilityResult capability = CapabilitySolver.Evaluate(
@@ -167,7 +181,7 @@ public sealed class RaceSession
                 desiredSpeedMps,
                 demand.TotalPowerW,
                 capability.RealizablePowerW,
-                segment.Gradient);
+                atmosphere.Gradient);
             solves.Add(rider.Profile.RiderId, new StepSolve(
                 realizedSpeedMps,
                 capability.RealizablePowerW,
@@ -232,6 +246,41 @@ public sealed class RaceSession
         pendingDecisionContext = null;
     }
 
+    private StepSolve SolveLaunchSprint(RiderRuntime rider, RaceRouteSegment segment)
+    {
+        AtmosphereSample atmosphere = AtmosphereForPhysics(segment);
+        CapabilityResult capability = CapabilitySolver.Evaluate(
+            rider.Profile,
+            rider.Physiology,
+            rider.Profile.PeakPowerW,
+            StepSeconds);
+        double targetSpeedMps = BunchSprintResolver.SpeedForPowerW(
+            capability.RealizablePowerW,
+            atmosphere.Gradient,
+            scenario.Definition.AirDensityKgPerM3,
+            atmosphere.WindSpeedMps,
+            atmosphere.WindYawDegrees,
+            rider.Profile.CdAM2,
+            shelterMultiplier: 1.0,
+            EffectiveCrr(rider.Profile.BaseCrr, rider.Profile.Handling, segment.Surface),
+            rider.Profile.TotalMassKg);
+        double accelerationMps2 = Math.Clamp(
+            targetSpeedMps - rider.SpeedMps,
+            -RaceTuning.MaximumDesiredAccelerationMps2,
+            RaceTuning.MaximumDesiredAccelerationMps2);
+        double realizedSpeedMps = Math.Max(2.0, rider.SpeedMps + (accelerationMps2 * StepSeconds));
+        if (accelerationMps2 > 0.0)
+        {
+            realizedSpeedMps = Math.Min(realizedSpeedMps, targetSpeedMps);
+        }
+
+        return new StepSolve(
+            realizedSpeedMps,
+            capability.RealizablePowerW,
+            capability.EffectiveCriticalPowerW,
+            capability.NextState);
+    }
+
     private void ApplyCommands()
     {
         foreach (RaceCommand command in scenario.Commands.Concat(resolvedCommands)
@@ -250,8 +299,62 @@ public sealed class RaceSession
             {
                 RaceCommandKind.Attack => checked(simulationSecond + AttackDurationSeconds),
                 RaceCommandKind.ForcePace => checked(simulationSecond + ForcePaceDurationSeconds),
+                RaceCommandKind.LaunchSprint => int.MaxValue,
                 _ => int.MaxValue,
             };
+        }
+    }
+
+    private void ApplyBunchSprintIntents()
+    {
+        RiderRuntime[] unfinished = riders
+            .Where(rider => rider.FinishTimeSeconds is null)
+            .ToArray();
+        if (unfinished.Length == 0)
+        {
+            return;
+        }
+
+        RiderRuntime leader = unfinished
+            .OrderByDescending(rider => rider.DistanceM)
+            .ThenBy(rider => rider.Profile.RiderId.Value)
+            .First();
+        BunchSprintRiderSnapshot[] snapshots = unfinished
+            .Select(rider => new BunchSprintRiderSnapshot(
+                rider.Profile.RiderId,
+                rider.GroupId,
+                rider.DistanceM,
+                rider.SpeedMps))
+            .ToArray();
+        if (!BunchSprintResolver.ShouldLaunch(
+                scenario.Definition,
+                scenario.ClassifiedStageType,
+                leader.DistanceM,
+                leader.SpeedMps,
+                leader.GroupId,
+                snapshots))
+        {
+            return;
+        }
+
+        double safeSpeedMps = Math.Max(0.1, leader.SpeedMps);
+        foreach (RiderRuntime rider in unfinished)
+        {
+            if (rider.GroupId != leader.GroupId)
+            {
+                continue;
+            }
+
+            double gapM = leader.DistanceM - rider.DistanceM;
+            double gapSeconds = gapM / safeSpeedMps;
+            if (gapM > BunchSprintResolver.LeadGroupGapM &&
+                gapSeconds > BunchSprintResolver.LeadGroupGapSeconds)
+            {
+                continue;
+            }
+
+            rider.Intent = RaceCommandKind.LaunchSprint;
+            rider.IntentUntilSecond = int.MaxValue;
         }
     }
 
@@ -404,12 +507,19 @@ public sealed class RaceSession
             double target = group.Max(rider =>
             {
                 RaceRouteSegment segment = scenario.Definition.SegmentAt(rider.DistanceM);
-                double basePaceMps = BasePaceMps(segment);
+                double remainingM = scenario.Definition.TotalLengthM - rider.DistanceM;
+                bool sitIn = IsClassifiedFlatSitIn(remainingM);
+                double basePaceMps = BasePaceMps(AtmosphereForPhysics(segment).Gradient);
                 return rider.Intent switch
                 {
-                    RaceCommandKind.ForcePace => basePaceMps + ForcePaceSpeedIncreaseMps,
-                    RaceCommandKind.Attack => basePaceMps + AttackSpeedIncreaseMps,
+                    RaceCommandKind.ForcePace => sitIn
+                        ? basePaceMps
+                        : basePaceMps + ForcePaceSpeedIncreaseMps,
+                    RaceCommandKind.Attack => sitIn
+                        ? basePaceMps
+                        : basePaceMps + AttackSpeedIncreaseMps,
                     RaceCommandKind.Conserve => basePaceMps - ConserveSpeedDecreaseMps,
+                    RaceCommandKind.LaunchSprint => basePaceMps,
                     _ => basePaceMps,
                 };
             });
@@ -432,10 +542,12 @@ public sealed class RaceSession
         }
 
         RaceRouteSegment segment = scenario.Definition.SegmentAt(leader.DistanceM);
+        double remainingM = scenario.Definition.TotalLengthM - leader.DistanceM;
+        AtmosphereSample atmosphere = AtmosphereForPhysics(segment);
         GroupResolution resolution = PositionAndGroupResolver.Resolve(new GroupResolutionInput(
             segment.RoadWidthM,
-            segment.WindSpeedMps,
-            segment.WindYawDegrees,
+            atmosphere.WindSpeedMps,
+            atmosphere.WindYawDegrees,
             riders
                 .Where(rider => rider.FinishTimeSeconds is null)
                 .Select(rider => new RaceRiderSnapshot(
@@ -558,9 +670,36 @@ public sealed class RaceSession
         };
     }
 
-    private static double BasePaceMps(RaceRouteSegment segment)
+    private bool IsClassifiedFlatSitIn(double remainingM) =>
+        scenario.ClassifiedStageType == ClassifiedStageType.Flat &&
+        remainingM > BunchSprintResolver.KickDistanceM;
+
+    private double ShelterForPhysics(double shelterMultiplier, double remainingM)
     {
-        return Math.Max(4.0, 11.0 - (Math.Max(0.0, segment.Gradient) * 70.0));
+        if (!IsClassifiedFlatSitIn(remainingM))
+        {
+            return shelterMultiplier;
+        }
+
+        return Math.Min(shelterMultiplier, ClassifiedFlatSitInShelterMultiplier);
+    }
+
+    private AtmosphereSample AtmosphereForPhysics(RaceRouteSegment segment)
+    {
+        if (scenario.ClassifiedStageType != ClassifiedStageType.Flat)
+        {
+            return new AtmosphereSample(segment.Gradient, segment.WindSpeedMps, segment.WindYawDegrees);
+        }
+
+        return new AtmosphereSample(
+            Math.Min(segment.Gradient, ClassifiedFlatSitInMaxGradient),
+            Math.Min(segment.WindSpeedMps, ClassifiedFlatSitInMaxWindMps),
+            WindYawDegrees: 0.0);
+    }
+
+    private static double BasePaceMps(double gradient)
+    {
+        return Math.Max(4.0, 11.0 - (Math.Max(0.0, gradient) * 70.0));
     }
 
     private static double RealizedSpeed(
@@ -619,6 +758,11 @@ public sealed class RaceSession
 
         public double? FinishTimeSeconds { get; set; }
     }
+
+    private readonly record struct AtmosphereSample(
+        double Gradient,
+        double WindSpeedMps,
+        double WindYawDegrees);
 
     private sealed record StepSolve(
         double RealizedSpeedMps,

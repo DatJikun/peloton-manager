@@ -301,6 +301,14 @@ public sealed partial class CareerShellScreen
                 13,
                 LookChrome.Black,
                 bold: true));
+            if (host.Classifications is { IsStageRace: true } classifications)
+            {
+                box.AddChild(LookChrome.Body($"Żółta {JerseyLabel(classifications.GcLeader)}", 12, LookChrome.Gray));
+                box.AddChild(LookChrome.Body($"Zielona {JerseyLabel(classifications.PointsLeader)}", 12, LookChrome.Gray));
+                box.AddChild(LookChrome.Body($"Góry {JerseyLabel(classifications.KomLeader)}", 12, LookChrome.Gray));
+                box.AddChild(LookChrome.Body($"Biała {JerseyLabel(classifications.YouthLeader)}", 12, LookChrome.Gray));
+                box.AddChild(LookChrome.Body($"Drużynowa {JerseyLabel(classifications.TeamLeader)}", 12, LookChrome.Gray));
+            }
 
             HBoxContainer filters = new();
             filters.AddThemeConstantOverride("separation", 6);
@@ -354,6 +362,18 @@ public sealed partial class CareerShellScreen
             13,
             LookChrome.Gray));
         return box;
+    }
+
+    private static string JerseyLabel(ClassificationStanding? standing)
+    {
+        if (standing is null || string.IsNullOrWhiteSpace(standing.Label))
+        {
+            return "—";
+        }
+
+        return standing.OrganizationName.Length == 0
+            ? standing.Label
+            : $"{standing.Label} ({standing.OrganizationName})";
     }
 
     private Button FilterChip(string caption, WorldEntityId? teamId, bool selected)

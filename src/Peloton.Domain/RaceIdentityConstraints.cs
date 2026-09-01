@@ -22,7 +22,9 @@ public sealed record RaceIdentityConstraints(
     int TotalKmMax,
     int CobbleKmMin,
     int CobbleKmMax,
-    IReadOnlyList<string> TerrainPalette);
+    IReadOnlyList<string> TerrainPalette,
+    int StartersPerTeam = 0,
+    IReadOnlyList<string>? InviteOrganizationIds = null);
 
 public sealed record CalendarRaceDetail(
     string Id,

@@ -10,17 +10,17 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`Rider profile + route engine` — landed (`RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`, D-046 / D-047, SchemaVersion 8). Career WorldTour slice phases 1–7 remain landed.
+`RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md` (D-049) landed. Next aero honesty: `CdARoad` / `CdATT` (one CdA in the prototype today). Do not close §49.
 
 ### Goal
-Readable rider strengths/weaknesses (derived 1–99 ratings from real physiology) and a detailed course system (stored default routes + yearly generator). Not five-fragment mocks. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
+Bunch-sprint flats, UCI-shaped start lists, after-stage jerseys, and a compare log vs 2025 analogues. Ratings and dense courses stay. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
 
 ### Status
-Owner (player) directed this on 2026-09-01. **D-046 / D-047 landed.** Ratings 1–99 are a view of physiology. WorldTour CreateWorld stores dense ~25 m courses and one calendar entry per racing stage. Official WT Simulate uses that day’s course. Skeleton soak still uses the short proof circuit. SQLite SchemaVersion 8.
+Owner (player) directed this on 2026-09-01. **D-049 landed.** Classified Flat is a bunch sprint (sit-in, then last 250 m at peak power). Official WT starts are event-shaped (TDU 140, monuments 175, Grand Tours 176, other WT 154). After a stage the shell/CLI can show GC / points / KOM / youth / team. SimRunner `compare` puts prototype results next to 2025 analogues (not a script). Skeleton soak still uses the short proof circuit. SQLite SchemaVersion 8.
 
-**2026-09-01 follow-up landed:** WT pack keeps captain-first cards and archetype/wage bands; Evenepoel is Red Bull; official WT starts are the **full entered pack (72)**; route generator respects identity mins/maxes (Copenhagen stays flat). Classified Flat still does **not** make the sprinter beat the climber. §49 stays open.
+Feel probe seed `91234`: Philipsen 1 vs Pogačar 135 on the flattest stored Flat; Pogačar 8 vs Philipsen 133 on the biggest mountain. TDU starts 140. §49 stays open.
 
-Godot career shell (`CareerShell.tscn`) is the main scene: POC v3 chrome. Hub date, Advance Day / Race next, inbox, save/load, and skeleton people stay Application Queries. Staff / sponsors / finance / scouting / market / look calendar / look OVR come from `CareerLookCatalog` (POC fiction, not World). Those actions toast and do not mutate save. Watch Race is an optional overlay, **off by default** (D-043 / D-048). HTML look lab stays the drawing, not a second client. §49 remains `NOT VERIFIED`. `D-032` remains deferred.
+Godot career shell (`CareerShell.tscn`) is the main scene: POC v3 chrome. Hub date, Advance Day / Race next, inbox, save/load, and skeleton people stay Application Queries. Staff / sponsors / finance / scouting / market / look calendar / look OVR come from `CareerLookCatalog` (POC fiction, not World). Those actions toast and do not mutate save. Watch Race is an optional overlay, **off by default** (D-043 / D-048). HTML look lab stays the drawing, not a second client. §49 remains `NOT VERIFIED`. `D-032` remains deferred. Prototype still stores **one** CdA per rider (Road vs TT is later).
 
 ## Gdzie jest gra (dla właściciela)
 Nie ma jeszcze pełnej gry managerskiej.
@@ -36,13 +36,15 @@ Działa:
 - Advance Day zmienia formę / świeżość / zmęczenie; wyścig używa readiness na CP/Pmax (faza 2);
 - przedsezonowy wybór startów i strategia przed Confirm (faza 3);
 - kontrakty, wypłaty, wygaśnięcie, **cienkie negocjacje** oferty pensji/daty (D-044);
-- paczka WorldTour 2026: 18 ekip, 72 kolarzy, 36 imprez (etapy osobno w kalendarzu), **72 na starcie** (4 na ekipę, nie pole UCI 150–200);
+- paczka WorldTour 2026: 18 ekip WT + wildcards, 8 kolarzy na klub w świecie (200 na CreateWorld), 36 imprez (etapy osobno); **start zależy od wyścigu** (TDU 140, monument 175, Grand Tour 176, inny WT 154);
+- na sklasyfikowanym płaskim sprinter może wygrać finisz z peletonu (Philipsen przed Pogačarem w probe `91234`); na górze góral zostaje góralem;
+- po etapie widać koszulki: GC / punkty / góry / młodzież / drużynowa (tabela, nie polityka DS w trakcie etapu);
 - cienka ekonomia: kasa, sponsor vs płace, notatka o debecie;
 - Godot: powłoka kariery (wygląd z laboratorium HTML); puste działy to rysunek, nie świat;
 - paczka Windows do ręcznego playtestu: `playtest/PelotonManager-playtest-windows.zip` (`playtest/CZYTAJ_MNIE.txt`).
 
 Właśnie budujemy:
-- czekamy na kolejny kierunek właściciela.
+- osobne CdA na szosę i na desce (TT), bo w prototypie jest jedna liczba na kolarza.
 
 Jeszcze nie:
 - nie ma Career Hub — usunięty z repozytorium (D-048); biurko to powłoka `CareerShell.tscn`;
@@ -56,7 +58,7 @@ Tryby All / Guessed / None (widać / częściowo / ukryte OVR i POT) zostają. N
 
 Pieniądze: kasa klubu, płace kolarzy, sponsor tytułowy płaci dzienną opłatę — bez ukrytego podatku.
 
-Baza 2026: 18 ekip męskiego WorldTour w `scenario.peloton.wt-2026`. Fizjologia i płace są oszacowanymi pasmami na osobę (kapitan / sprinter / pomocnik / neo), nie jedną liczbą na klub. Evenepoel 2026 jedzie w Red Bull. 3 lata licencji WT i niższe ligi są w modelu. Oficjalny start WT to cały wpisany peleton paczki (72), nie cap 12. JSON katalogu pozwala na 512 kolarzy; to nie jest twardy sufit fizyki. Symulacja idzie sekundą po sekundzie po każdym kolarzu — na CPU kończy się w sekundy ścienne, nie w czasie rzeczywistym.
+Baza 2026: 18 ekip męskiego WorldTour plus zaproszone ProTeamy / Australia w `scenario.peloton.wt-2026`. Fizjologia i płace są oszacowanymi pasmami na osobę (kapitan / sprinter / pomocnik / neo), nie jedną liczbą na klub. Evenepoel 2026 jedzie w Red Bull. 3 lata licencji WT i niższe ligi są w modelu. Oficjalny start WT ma kształt UCI (7 na ekipę, 8 na Grand Tour, wildcards), nie cap 12 i nie „wszystkie czwórki = 72”. JSON katalogu pozwala na 512 kolarzy; to nie jest twardy sufit fizyki. Symulacja idzie sekundą po sekundzie po każdym kolarzu — na CPU kończy się w sekundy ścienne, nie w czasie rzeczywistym.
 
 ## What works now
 - [x] High-level game design v0.7
@@ -125,10 +127,12 @@ Baza 2026: 18 ekip męskiego WorldTour w `scenario.peloton.wt-2026`. Fizjologia 
 - [x] Career WorldTour slice phase 6 — thin economy (`CashEur`, `ClubFinanceProjection`, SchemaVersion 6)
 - [x] Career WorldTour slice phase 7 — results filter by any org (D-043) + thin contract negotiation (D-044, SchemaVersion 7)
 - [x] D-046 / D-047 — derived rider ratings + detailed course engine (`RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`, SchemaVersion 8)
+- [x] D-049 — bunch sprint + UCI-shaped fields + classification jerseys (`RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md`)
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
+- [ ] CdARoad vs CdATT (prototype still has one `CdAM2` per rider)
 
 ## Next task
-Waiting on owner. Honest remaining feel: classified Flat still does not give the sprinter the win (bunch-sprint finish is not in the prototype). Pack is still 4 names per team, not a UCI 150-rider field. §49 manual playtest and visual avatar review stay owner-only. Career Hub is deleted (D-048). Watch film stays in the game, off by default. No tenth GameState.
+`CdARoad` / `CdATT`: time-trial aero tuck vs road CdA. Owner asked 2026-09-01. Do not close §49. Do not rebuild Career Hub. Watch film stays off by default. Skeleton race checksum stays.
 
 ## Known blockers
 - None.
@@ -157,6 +161,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
+- `2026-09-01` — **Bunch sprint + real fields + all jerseys + compare with real life (D-049).** Classified Flat is a bunch sprint. UCI 7 (8 on Grand Tours) with wildcards. Jerseys are after-stage tables, not D-032. History analogues are for judgment, not a script.
 - `2026-09-01` — **Calibrate 2026 pack from physiology/wage research; lift the 12-starter cap; keep routes diverse.** Research file is a source, not a lock. Keep captain-first cards. Evenepoel 2026 is Red Bull. Official WT Simulate starts the full entered 4-man cards (72). Do not claim a UCI 150–200 field. Do not fake a sprinter win on Flat.
 - `2026-09-01` — **Career Hub deleted; Watch film stays off by default (D-048).** Remove `CareerHub.tscn` / host / screen. Desk is the career shell. Watch Race remains optional (`FILM: WYŁ` default). Do not rebuild the PR #4 dashboard. Do not merge leftover Watch radio/DS PRs.
 - `2026-09-01` — **D-046 / D-047 landed:** derived 1–99 ratings + WT archetype calibration; dense course catalog at CreateWorld; SchemaVersion 8 / checksum v8. TDU stage 1 ~140 km. Replay onto current `main` (career shell kept).
@@ -239,6 +244,7 @@ DESIGN_PRINCIPLES_AND_ANTI_PATTERNS.md
 AI_MANAGER_SYSTEM_v0.2.md
 LONG_SAVE_AND_PERFORMANCE_v0.2.md
 RACE_ENGINE_DESIGN_v0.2.md
+RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md
 KNOWN_DIFFERENCE_FROM_CODE.md
 RACE_SPY_DEBUGGING_v0.1.md
 WORLD_SPY_AND_DECISION_TRACING_v0.1.md
@@ -264,6 +270,7 @@ dotnet test PelotonManager.sln
 dotnet run --project tools/Peloton.SimRunner -- run --scenario scenario.peloton.skeleton --years 10 --seed 91234
 dotnet run --project tools/Peloton.SimRunner -- race --scenario race-scenario.peloton.prototype-v0 --seed 91234
 dotnet run --project tools/Peloton.SimRunner -- watch --scenario race-scenario.peloton.prototype-v0 --seed 91234
+dotnet run --project tools/Peloton.SimRunner -- compare --scenario scenario.peloton.wt-2026 --seed 91234
 dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13
 dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --follow-hub
 dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --through-races
@@ -291,14 +298,14 @@ src/Peloton.Client.Godot/project.godot
 - Nie twierdź, że Godot jest pustym stubem — `CareerShell.tscn` jest oknem kariery; Watch Race zostaje opcjonalnym filmem, domyślnie wyłączonym.
 - Nie ustawiaj Watch Race jako domyślnej ścieżki gry (D-043). Nie odbudowuj Career Hub (D-048). Nie merguj starych PR-ów radia/DS Watch na `main`.
 - Nie zostawiaj gotowej pracy na otwartym PR (D-045). Zielony gate → merge do `main` w tej samej sesji. Nie zlewaj stosu starych branchy jeden na drugi.
-- Nie przywracaj cap 12 na oficjalnym starcie WT. Nie twierdź, że sprinter wygrywa sklasyfikowane płaskie, dopóki feel probe tego nie pokaże. Nie zamykaj §49.
+- Nie przywracaj cap 12 na oficjalnym starcie WT. Feel probe seed `91234` pokazuje sprintera przed góralem na sklasyfikowanym płaskim; nie zamykaj §49.
 - Nie zapisuj OVR/POT/kasy/skautingu z `CareerLookCatalog` do World, SQLite ani Commandów. To nie true ability.
 - Nie odpalaj kodujących subagentów z `inherit` (to Grok); kod to Composer 2.5 (D-035).
 - Nie rozszerzaj scope'u taska bez wskazania PLAYER VALUE i bez decyzji właściciela.
 - Nie zamykaj OQ-TS-001 ani OQ-DM-001 na podstawie checksumy lub allocatora szkieletowego.
 
 ## Handoff summary
-Milestone 0 still supplies the headless .NET 8 spine. The race prototype is the official result path: `PrototypeRaceEngine` plus `content/peloton.race-prototype`, Application commands `StartRaceCommand` / `AdvanceRaceCommand` / `RespondToRaceDecisionCommand` / `BeginRaceWatchCommand` / `AdvanceRaceWatchCommand` / `AbandonRaceLiveCommand`, and SimRunner `race`. A pending DecisionRequest stays in `RaceLive`. SimRunner `watch` and career `day --watch-from-prep` keep the D-033 supervising clock. Godot (`src/Peloton.Client.Godot`) presents the career shell (`CareerShell.tscn`, POC v3 chrome, desk queries, default simulate → result table, plus `CareerLookCatalog` for empty domains). Watch film is optional and **off by default** (D-043 / D-048). Career Hub UI is deleted. Renderer does not drive physics. Look-catalog OVR/cash is not World. The owner look drawing remains `peloton-manager-full-ui-poc-v3.html` (`HTML_UI_LAB.md`). After Simulate/Watch, `RaceResultProjection` and `RaceDebriefProjection` present the committed result without a second `RunBatch`. Spy OFF/ON must match checksum and finish order. `StubRaceEngine` is gone from production assemblies. SQLite `SchemaVersion` is **8**. Owner §49 remains `NOT VERIFIED`. `D-032` is deferred.
+Milestone 0 still supplies the headless .NET 8 spine. The race prototype is the official result path: `PrototypeRaceEngine` plus `content/peloton.race-prototype`, Application commands `StartRaceCommand` / `AdvanceRaceCommand` / `RespondToRaceDecisionCommand` / `BeginRaceWatchCommand` / `AdvanceRaceWatchCommand` / `AbandonRaceLiveCommand`, and SimRunner `race`. A pending DecisionRequest stays in `RaceLive`. SimRunner `watch` and career `day --watch-from-prep` keep the D-033 supervising clock. Godot (`src/Peloton.Client.Godot`) presents the career shell (`CareerShell.tscn`, POC v3 chrome, desk queries, default simulate → result table, plus `CareerLookCatalog` for empty domains). Watch film is optional and **off by default** (D-043 / D-048). Career Hub UI is deleted. Renderer does not drive physics. Look-catalog OVR/cash is not World. The owner look drawing remains `peloton-manager-full-ui-poc-v3.html` (`HTML_UI_LAB.md`). After Simulate/Watch, `RaceResultProjection` and `RaceDebriefProjection` present the committed result without a second `RunBatch`. Spy OFF/ON must match checksum and finish order. `StubRaceEngine` is gone from production assemblies. SQLite `SchemaVersion` is **8**. Owner §49 remains `NOT VERIFIED`. `D-032` is deferred. D-049 bunch sprint / UCI fields / jerseys are in. Prototype CdA is still one number.
 
 This tree joins that career loop onto `main` without dropping the HTML UI lab. The paragraph below preserves the pre-bootstrap design context and owner lessons; implementation status is given above and in `CODEBASE_MAP.md`.
 

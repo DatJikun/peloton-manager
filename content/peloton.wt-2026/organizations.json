@@ -11,7 +11,9 @@
       "name": "Alpecin–Premier Tech",
       "country": "BEL",
       "titleSponsor": "Alpecin",
-      "coSponsors": ["Premier Tech"],
+      "coSponsors": [
+        "Premier Tech"
+      ],
       "bike": "Canyon",
       "groupset": "Shimano",
       "division": "WorldTour",
@@ -39,7 +41,9 @@
       "name": "Decathlon CMA CGM Team",
       "country": "FRA",
       "titleSponsor": "Decathlon",
-      "coSponsors": ["CMA CGM"],
+      "coSponsors": [
+        "CMA CGM"
+      ],
       "bike": "Van Rysel",
       "groupset": "SRAM",
       "division": "WorldTour",
@@ -53,7 +57,9 @@
       "name": "EF Education–EasyPost",
       "country": "USA",
       "titleSponsor": "EF Education",
-      "coSponsors": ["EasyPost"],
+      "coSponsors": [
+        "EasyPost"
+      ],
       "bike": "Cannondale",
       "groupset": "Shimano",
       "division": "WorldTour",
@@ -67,7 +73,9 @@
       "name": "Groupama–FDJ United",
       "country": "FRA",
       "titleSponsor": "Groupama",
-      "coSponsors": ["FDJ"],
+      "coSponsors": [
+        "FDJ"
+      ],
       "bike": "Wilier Triestina",
       "groupset": "Shimano",
       "division": "WorldTour",
@@ -79,10 +87,15 @@
       "id": "organization.wt2026.ineos",
       "uciCode": "IGD",
       "name": "INEOS Grenadiers",
-      "aliases": ["Netcompany–INEOS", "Netcompany INEOS"],
+      "aliases": [
+        "Netcompany–INEOS",
+        "Netcompany INEOS"
+      ],
       "country": "GBR",
       "titleSponsor": "INEOS",
-      "coSponsors": ["Netcompany"],
+      "coSponsors": [
+        "Netcompany"
+      ],
       "bike": "Pinarello",
       "groupset": "Shimano",
       "division": "WorldTour",
@@ -96,7 +109,9 @@
       "name": "Lidl–Trek",
       "country": "GER",
       "titleSponsor": "Lidl",
-      "coSponsors": ["Trek"],
+      "coSponsors": [
+        "Trek"
+      ],
       "bike": "Trek",
       "groupset": "SRAM",
       "division": "WorldTour",
@@ -110,7 +125,9 @@
       "name": "Lotto–Intermarché",
       "country": "BEL",
       "titleSponsor": "Lotto",
-      "coSponsors": ["Intermarché"],
+      "coSponsors": [
+        "Intermarché"
+      ],
       "bike": "Orbea",
       "groupset": "Shimano",
       "division": "WorldTour",
@@ -152,7 +169,10 @@
       "name": "Red Bull–Bora–Hansgrohe",
       "country": "GER",
       "titleSponsor": "Red Bull",
-      "coSponsors": ["Bora", "Hansgrohe"],
+      "coSponsors": [
+        "Bora",
+        "Hansgrohe"
+      ],
       "bike": "Specialized",
       "groupset": "SRAM",
       "division": "WorldTour",
@@ -166,7 +186,9 @@
       "name": "Soudal Quick-Step",
       "country": "BEL",
       "titleSponsor": "Soudal",
-      "coSponsors": ["Quick-Step"],
+      "coSponsors": [
+        "Quick-Step"
+      ],
       "bike": "Specialized",
       "groupset": "Shimano",
       "division": "WorldTour",
@@ -180,7 +202,9 @@
       "name": "Team Jayco AlUla",
       "country": "AUS",
       "titleSponsor": "Jayco",
-      "coSponsors": ["AlUla"],
+      "coSponsors": [
+        "AlUla"
+      ],
       "bike": "Giant",
       "groupset": "Shimano",
       "division": "WorldTour",
@@ -194,7 +218,9 @@
       "name": "Team Picnic PostNL",
       "country": "NED",
       "titleSponsor": "Picnic",
-      "coSponsors": ["PostNL"],
+      "coSponsors": [
+        "PostNL"
+      ],
       "bike": "Lapierre",
       "groupset": "Shimano",
       "division": "WorldTour",
@@ -209,7 +235,9 @@
       "name": "Team Visma | Lease a Bike",
       "country": "NED",
       "titleSponsor": "Visma",
-      "coSponsors": ["Lease a Bike"],
+      "coSponsors": [
+        "Lease a Bike"
+      ],
       "bike": "Cervélo",
       "groupset": "SRAM",
       "division": "WorldTour",
@@ -223,7 +251,9 @@
       "name": "UAE Team Emirates XRG",
       "country": "UAE",
       "titleSponsor": "UAE Team Emirates",
-      "coSponsors": ["XRG"],
+      "coSponsors": [
+        "XRG"
+      ],
       "bike": "Colnago",
       "groupset": "Shimano",
       "division": "WorldTour",
@@ -237,7 +267,9 @@
       "name": "Uno-X Mobility",
       "country": "NOR",
       "titleSponsor": "Uno-X",
-      "coSponsors": ["Mobility"],
+      "coSponsors": [
+        "Mobility"
+      ],
       "bike": "Ridley",
       "groupset": "SRAM",
       "division": "WorldTour",
@@ -251,13 +283,117 @@
       "name": "XDS Astana Team",
       "country": "KAZ",
       "titleSponsor": "XDS",
-      "coSponsors": ["Astana"],
+      "coSponsors": [
+        "Astana"
+      ],
       "bike": "X-Lab",
       "groupset": "Shimano",
       "division": "WorldTour",
       "licenceYearsRemaining": 3,
       "budgetBand": "mid",
       "estimatedBudgetEur": 15000000
+    },
+    {
+      "id": "organization.wt2026.israel",
+      "uciCode": "IPT",
+      "name": "Israel–Premier Tech",
+      "country": "ISR",
+      "titleSponsor": "Israel",
+      "coSponsors": [
+        "Premier Tech"
+      ],
+      "bike": "Factor",
+      "groupset": "Shimano",
+      "division": "ProTeam",
+      "licenceYearsRemaining": 1,
+      "budgetBand": "mid",
+      "estimatedBudgetEur": 8000000
+    },
+    {
+      "id": "organization.wt2026.tudor",
+      "uciCode": "TUD",
+      "name": "Tudor Pro Cycling Team",
+      "country": "SUI",
+      "titleSponsor": "Tudor",
+      "coSponsors": [],
+      "bike": "Specialized",
+      "groupset": "SRAM",
+      "division": "ProTeam",
+      "licenceYearsRemaining": 1,
+      "budgetBand": "mid",
+      "estimatedBudgetEur": 8000000
+    },
+    {
+      "id": "organization.wt2026.q36",
+      "uciCode": "Q36",
+      "name": "Q36.5 Pro Cycling Team",
+      "country": "SUI",
+      "titleSponsor": "Q36.5",
+      "coSponsors": [],
+      "bike": "Scott",
+      "groupset": "Shimano",
+      "division": "ProTeam",
+      "licenceYearsRemaining": 1,
+      "budgetBand": "mid",
+      "estimatedBudgetEur": 7000000
+    },
+    {
+      "id": "organization.wt2026.totalenergies",
+      "uciCode": "TEN",
+      "name": "TotalEnergies",
+      "country": "FRA",
+      "titleSponsor": "TotalEnergies",
+      "coSponsors": [],
+      "bike": "Specialized",
+      "groupset": "Shimano",
+      "division": "ProTeam",
+      "licenceYearsRemaining": 1,
+      "budgetBand": "mid",
+      "estimatedBudgetEur": 7000000
+    },
+    {
+      "id": "organization.wt2026.cofidis",
+      "uciCode": "COF",
+      "name": "Cofidis",
+      "country": "FRA",
+      "titleSponsor": "Cofidis",
+      "coSponsors": [],
+      "bike": "Look",
+      "groupset": "Shimano",
+      "division": "ProTeam",
+      "licenceYearsRemaining": 1,
+      "budgetBand": "mid",
+      "estimatedBudgetEur": 8000000
+    },
+    {
+      "id": "organization.wt2026.unibet",
+      "uciCode": "TDT",
+      "name": "Unibet Tietema Rockets",
+      "country": "NED",
+      "titleSponsor": "Unibet",
+      "coSponsors": [
+        "Tietema"
+      ],
+      "bike": "Canyon",
+      "groupset": "Shimano",
+      "division": "ProTeam",
+      "licenceYearsRemaining": 1,
+      "budgetBand": "tight",
+      "estimatedBudgetEur": 5000000
+    },
+    {
+      "id": "organization.wt2026.australia",
+      "uciCode": "AUS",
+      "name": "Australia",
+      "country": "AUS",
+      "titleSponsor": "Cycling Australia",
+      "coSponsors": [],
+      "bike": "Specialized",
+      "groupset": "Shimano",
+      "division": "National",
+      "licenceYearsRemaining": 0,
+      "budgetBand": "national",
+      "estimatedBudgetEur": 2000000
     }
   ]
 }
