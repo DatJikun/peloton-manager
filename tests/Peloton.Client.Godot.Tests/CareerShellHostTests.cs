@@ -13,6 +13,7 @@ namespace Peloton.Client.Godot.Tests;
 public sealed class CareerShellHostTests
 {
     private const long GateSeed = 91234;
+    private const string AlphaLeaderOriginId = "rider.race-prototype.alpha-leader";
     private const string BetaLeaderOriginId = "rider.race-prototype.beta-leader";
 
     [Fact]
@@ -45,6 +46,85 @@ public sealed class CareerShellHostTests
         Assert.DoesNotContain(roster.Riders, rider => rider.Name.Contains("Beskid", StringComparison.Ordinal));
         Assert.Contains(host.Calendar, entry => entry.Title.Contains("Tour Down Under", StringComparison.Ordinal));
         Assert.True(host.IsWorldTourWorld);
+    }
+
+    [Fact]
+    public void OpenWorldTourClubFinanceShowsUaeSponsorAndEuroCash()
+    {
+        using TemporaryDirectory temp = new();
+        CareerShellHost host = CreateHost(temp.Path);
+        Assert.True(host.OpenWorldTour("organization.wt2026.uae").Succeeded);
+        Assert.True(host.BeginPreSeasonPlanning().Succeeded);
+        Assert.True(host.ConfirmPreSeasonPlan().Succeeded);
+        Assert.Equal(GameState.Management, host.State);
+
+        ClubFinanceProjection finance = Assert.IsType<ClubFinanceProjection>(host.ClubFinance);
+        Assert.Contains("UAE", finance.TitleSponsorName, StringComparison.Ordinal);
+        Assert.Equal(0, finance.CashEur);
+        Assert.True(finance.WageBillAnnual > 0);
+        Assert.DoesNotContain("Beskid", finance.TitleSponsorName, StringComparison.Ordinal);
+        Assert.DoesNotContain("Vetter", finance.TitleSponsorName, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void OpenSkeletonClubFinanceShowsSkeletonSponsorNotBeskid()
+    {
+        using TemporaryDirectory temp = new();
+        CareerShellHost host = CreateHost(temp.Path);
+        Assert.True(host.OpenSkeleton(GateSeed).Succeeded);
+
+        ClubFinanceProjection finance = Assert.IsType<ClubFinanceProjection>(host.ClubFinance);
+        Assert.Equal("Skeleton Sponsor", finance.TitleSponsorName);
+        Assert.Equal(2_000_000, finance.TitleSponsorAnnualFeeEur);
+        Assert.DoesNotContain("Beskid", finance.TitleSponsorName, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ContractOfferAtThresholdUpdatesRosterWage()
+    {
+        using TemporaryDirectory temp = new();
+        CareerShellHost host = CreateHost(temp.Path);
+        Assert.True(host.OpenSkeleton(GateSeed).Succeeded);
+        ClubRosterEntry alphaLeader = Assert.Single(
+            host.ClubRoster!.Riders,
+            rider => string.Equals(rider.OriginDefinitionId, AlphaLeaderOriginId, StringComparison.Ordinal));
+        int threshold = ContractNegotiationQueries.ComputeAcceptThreshold(
+            alphaLeader.AnnualWage,
+            alphaLeader.Loyalty01);
+
+        Assert.True(host.BeginContractNegotiation(alphaLeader.RiderCareerId).Succeeded);
+        Assert.True(host.SetContractOffer(threshold, 10_000).Succeeded);
+        Assert.True(host.ConfirmContractOffer().Succeeded);
+        Assert.Null(host.ContractNegotiation);
+
+        ClubRosterEntry updated = Assert.Single(
+            host.ClubRoster!.Riders,
+            rider => rider.RiderCareerId == alphaLeader.RiderCareerId);
+        Assert.Equal(threshold, updated.AnnualWage);
+    }
+
+    [Fact]
+    public void TooLowContractOfferIsRejectedWithoutChangingWage()
+    {
+        using TemporaryDirectory temp = new();
+        CareerShellHost host = CreateHost(temp.Path);
+        Assert.True(host.OpenSkeleton(GateSeed).Succeeded);
+        ClubRosterEntry alphaLeader = Assert.Single(
+            host.ClubRoster!.Riders,
+            rider => string.Equals(rider.OriginDefinitionId, AlphaLeaderOriginId, StringComparison.Ordinal));
+        int wageBefore = alphaLeader.AnnualWage;
+
+        Assert.True(host.BeginContractNegotiation(alphaLeader.RiderCareerId).Succeeded);
+        Assert.True(host.SetContractOffer(100_000, 10_000).Succeeded);
+        CommandResult confirm = host.ConfirmContractOffer();
+        Assert.False(confirm.Succeeded);
+        Assert.Equal("CONTRACT_OFFER_REJECTED", confirm.ReasonCode);
+        Assert.Null(host.ContractNegotiation);
+
+        ClubRosterEntry after = Assert.Single(
+            host.ClubRoster!.Riders,
+            rider => rider.RiderCareerId == alphaLeader.RiderCareerId);
+        Assert.Equal(wageBefore, after.AnnualWage);
     }
 
     [Fact]

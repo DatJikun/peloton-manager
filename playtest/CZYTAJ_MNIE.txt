@@ -3,9 +3,11 @@ Peloton Manager — playtest na Windows
 To jeszcze nie jest skończona gra. Niebieska powłoka kariery
 (Biurko, Skład, Sztab, kalendarz) plus prawdziwa pętla na świecie WorldTour.
 
-Sponsorzy, finanse, skauting i OVR na tych stronach to jeszcze rysunek.
+Sponsorzy, skauting i OVR na tych stronach to jeszcze rysunek.
 Nie zapisują się do kariery. Skład na biurku i w Kadra to prawdziwi
-kolarze z wybranego klubu (nie Beskid z HTML).
+kolarze z wybranego klubu (nie Beskid z HTML). Finanse na biurku
+i w widoku Finanse pokazują kasę klubu w euro ze świata. Oferty
+kontraktów na karcie zawodnika (Skład) zapisują się przez świat.
 
 Jak uruchomić
 1. Rozpakuj CAŁY folder, nie sam plik .exe.

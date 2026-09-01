@@ -325,6 +325,19 @@ public static class CareerLookCatalog
         return (amount >= 0 ? "+" : "−") + Zloty(Math.Abs(amount));
     }
 
+    public static string Euro(long amount)
+    {
+        string number = Math.Abs(amount).ToString("N0", Pl)
+            .Replace('\u00A0', ' ')
+            .Replace('\u202F', ' ');
+        return number + " €";
+    }
+
+    public static string SignedEuro(long amount)
+    {
+        return (amount >= 0 ? "+" : "−") + Euro(Math.Abs(amount));
+    }
+
     public static string Initials(string name)
     {
         string[] parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries)

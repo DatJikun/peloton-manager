@@ -10,17 +10,17 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md` (D-049) landed. **D-050 landed.** **Next: D-051** — desk / Skład / Finanse show world cash and D-044 offers (`CAREER_FINANCE_CONTRACTS_ON_SCREEN_v0.1.md`). CdA Road/TT waits. Do not close §49.
+`RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md` (D-049) landed. **D-050 landed.** **D-051 landed.** **Next:** CdA Road/TT wait (`RACE_ENGINE_DESIGN_v0.2.md` — do not close §49).
 
 ### Goal
-D-051: wire **kasa i kontrakty** onto the career shell that D-050 already opens on a WorldTour world. Desk and Finanse read `ClubFinanceProjection` (euro). Skład offers annual wage + end day through existing D-044 commands. Default `CreateWorld` still employs Alpecin for tests/soak. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
+D-051 landed: desk / Skład / Finanse read `ClubFinanceProjection` (euro) and Skład writes D-044 contract offers. **Next:** CdA Road/TT. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
 
 ### Status
-Owner (player) directed this on 2026-09-01. **D-049 and D-050 landed.** Classified Flat is a bunch sprint (sit-in, then last 250 m at peak power). Official WT starts are event-shaped (TDU 140, monuments 175, Grand Tours 176, other WT 154). After a stage the shell/CLI can show GC / points / KOM / youth / team. SimRunner `compare` puts prototype results next to 2025 analogues (not a script). Skeleton soak still uses the short proof circuit. SQLite SchemaVersion **9**.
+Owner (player) directed this on 2026-09-01. **D-049, D-050, and D-051 landed.** Classified Flat is a bunch sprint (sit-in, then last 250 m at peak power). Official WT starts are event-shaped (TDU 140, monuments 175, Grand Tours 176, other WT 154). After a stage the shell/CLI can show GC / points / KOM / youth / team. SimRunner `compare` puts prototype results next to 2025 analogues (not a script). Skeleton soak still uses the short proof circuit. SQLite SchemaVersion **9**.
 
 Feel probe seed `91234`: Philipsen 1 vs Pogačar 135 on the flattest stored Flat; Pogačar 8 vs Philipsen 133 on the biggest mountain. TDU starts 140. §49 stays open.
 
-Godot career shell (`CareerShell.tscn`) is the main scene: POC v3 chrome. Hub date, Advance Day / Race next, inbox, save/load, and skeleton people stay Application Queries. Staff / sponsors / finance / scouting / market / look calendar / look OVR come from `CareerLookCatalog` (POC fiction, not World). Those actions toast and do not mutate save. Watch Race is an optional overlay, **off by default** (D-043 / D-048). HTML look lab stays the drawing, not a second client. §49 remains `NOT VERIFIED`. `D-032` remains deferred. Prototype still stores **one** CdA per rider (Road vs TT is later).
+Godot career shell (`CareerShell.tscn`) is the main scene: POC v3 chrome. Hub date, Advance Day / Race next, inbox, save/load, skeleton people, desk finance (euro), squad wages, and contract offers stay Application Queries. Staff / sponsors / scouting / market / look calendar / look OVR come from `CareerLookCatalog` (POC fiction, not World). Those actions toast and do not mutate save. Watch Race is an optional overlay, **off by default** (D-043 / D-048). HTML look lab stays the drawing, not a second client. §49 remains `NOT VERIFIED`. `D-032` remains deferred. Prototype still stores **one** CdA per rider (Road vs TT is later).
 
 ## Gdzie jest gra (dla właściciela)
 Nie ma jeszcze pełnej gry managerskiej.
@@ -40,11 +40,11 @@ Działa:
 - na sklasyfikowanym płaskim sprinter może wygrać finisz z peletonu (Philipsen przed Pogačarem w probe `91234`); na górze góral zostaje góralem;
 - po etapie widać koszulki: GC / punkty / góry / młodzież / drużynowa (tabela, nie polityka DS w trakcie etapu);
 - cienka ekonomia: kasa, sponsor vs płace, notatka o debecie;
-- Godot: powłoka kariery (wygląd z laboratorium HTML); puste działy to rysunek, nie świat;
+- Godot: powłoka kariery (wygląd z laboratorium HTML); desk finanse i oferty kontraktów ze świata; sztab/sponsorzy/skauting/rynek to rysunek;
 - paczka Windows do ręcznego playtestu: `playtest/PelotonManager-playtest-windows.zip` (`playtest/CZYTAJ_MNIE.txt`).
 
 Właśnie budujemy:
-- D-051: kasa i kontrakty na biurku / składzie / finansach (oferta pensji/daty zapisuje się). CdA szosa/deska czeka.
+- CdA szosa/deska czeka.
 
 Jeszcze nie:
 - nie ma Career Hub — usunięty z repozytorium (D-048); biurko to powłoka `CareerShell.tscn`;
@@ -129,13 +129,13 @@ Baza 2026: 18 ekip męskiego WorldTour plus zaproszone ProTeamy / Australia w `s
 - [x] D-046 / D-047 — derived rider ratings + detailed course engine (`RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`, SchemaVersion 8)
 - [x] D-049 — bunch sprint + UCI-shaped fields + classification jerseys (`RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md`)
 - [x] D-050 — New Game club pick + pre-season entries + per-event leaders (WT world in the career shell; SchemaVersion 9)
-- [ ] Thin finance + contracts on the career-shell screens (ClubFinance / BeginContract — look catalog still a drawing)
+- [x] D-051 — desk / Skład / Finanse show world cash (euro) and D-044 contract offers on screen
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 - [ ] CdARoad vs CdATT (prototype still has one `CdAM2` per rider)
 - [ ] Infinite career / season rollover / rider aging — later
 
 ## Next task
-Implement **D-051** (`CAREER_FINANCE_CONTRACTS_ON_SCREEN_v0.1.md`): Godot desk/squad/finance read `ClubFinance` / `ClubRoster` and call D-044 offer commands. Do not close §49. Do not rebuild Career Hub. Watch film stays off by default. Do not start aging, year-2 routes, sponsor market, or CdA in the same tree.
+**CdA Road vs TT** and related race-engine gaps — do not close §49. Do not rebuild Career Hub. Watch film stays off by default. Do not start aging, year-2 routes, or sponsor market in the same tree.
 
 ## Known blockers
 - None.
@@ -164,7 +164,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
-- `2026-09-01` — **D-051: kasa i kontrakty na ekranach.** Desk / Finanse show world euro cash; Skład offer writes D-044. Staff/sponsors/scouting/market stay drawings. Contract: `CAREER_FINANCE_CONTRACTS_ON_SCREEN_v0.1.md`.
+- `2026-09-01` — **D-051 landed (Composer):** Godot desk/finance show `ClubFinanceProjection` (euro); Skład contract offer via D-044 commands; staff/sponsors/scouting/market stay look catalog.
 - `2026-09-01` — **D-050 landed (Composer):** New Game WT club pick (`ListNewGameClubs`, `CreateWorldCommand` employer), pre-season designated leader per event (`SetSeasonRaceLeaderCommand`), `OrganizationRaceEntry.DesignatedLeaderId`, SchemaVersion 9 / checksum v9. Godot opens MainMenu club picker (not auto-skeleton). SimRunner `day --employer`. Default Alpecin CreateWorld unchanged for soak/tests.
 - `2026-09-01` — **D-050: club pick, calendar entries, per-event leaders first.** Not one rigid team. Infinite career and aging later. Content stays data-only JSON packs (riders/routes/teams); physics code is the engine, not a Lua mod. CdA and look-catalog finance wait.
 - `2026-09-01` — **Player-facing Polish for cobbles is bruk (D-046).** The rating on the card is **Bruk**. Do not say „kocie łby” to the owner. English code stays `Cobbles`.

@@ -42,7 +42,7 @@ public sealed partial class CareerShellScreen : Control
     private string lookRaceId = "mila-torino";
     private LookSort deskSquadSort = new("rate", -1);
     private LookSort squadSort = new("last", 1);
-    private int selectedRiderId = 1;
+    private long selectedRiderId;
     private bool negotiating;
     private int staffSelected = 1;
     private LookSort marketSort = new("rate", -1);
@@ -647,6 +647,11 @@ public sealed partial class CareerShellScreen : Control
             "LOAD_FORBIDDEN_IN_RACE_LIVE" => "Wczytanie w trakcie etapu jest zablokowane.",
             "INBOX_SOURCE_CANNOT_BE_DISMISSED" => "Terminu wyścigu nie da się schować.",
             "GAME_STATE_INVALID" => "Ta akcja nie jest teraz dostępna.",
+            "CONTRACT_OFFER_REJECTED" => "Oferta odrzucona.",
+            "CONTRACT_OFFER_INVALID" => "Oferta niepoprawna.",
+            "CONTRACT_OFFER_INCOMPLETE" => "Dokończ ofertę.",
+            "RIDER_NOT_FOUND" => "Nie znaleziono zawodnika.",
+            "EMPLOYER_REQUIRED" => "Brak przypisanego klubu.",
             _ => code,
         };
     }

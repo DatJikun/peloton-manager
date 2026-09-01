@@ -73,6 +73,10 @@ public sealed class CareerShellHost
 
     public ClubRosterProjection? ClubRoster => application.ClubRoster;
 
+    public ClubFinanceProjection? ClubFinance => application.ClubFinance;
+
+    public ContractNegotiationProjection? ContractNegotiation => application.ContractNegotiation;
+
     public bool IsWorldTourWorld =>
         string.Equals(
             application.World?.ContentIdentity.ScenarioId,
@@ -133,6 +137,18 @@ public sealed class CareerShellHost
 
     public CommandResult CancelPreSeasonPlanning() =>
         application.Execute(new CancelPreSeasonPlanningCommand());
+
+    public CommandResult BeginContractNegotiation(WorldEntityId riderCareerId) =>
+        application.Execute(new BeginContractNegotiationCommand(riderCareerId));
+
+    public CommandResult SetContractOffer(int annualWage, int contractEndDay) =>
+        application.Execute(new SetContractOfferCommand(annualWage, contractEndDay));
+
+    public CommandResult ConfirmContractOffer() =>
+        application.Execute(new ConfirmContractOfferCommand());
+
+    public CommandResult CancelContractNegotiation() =>
+        application.Execute(new CancelContractNegotiationCommand());
 
     public string RiderDisplayName(WorldEntityId riderId)
     {

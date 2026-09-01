@@ -537,14 +537,30 @@ public sealed partial class CareerShellScreen
     {
         VBoxContainer box = new();
         box.AddThemeConstantOverride("separation", 6);
-        foreach (LookFinanceRow row in CareerLookCatalog.WeekFinance)
+        ClubFinanceProjection? finance = host!.ClubFinance;
+        if (finance is null)
         {
-            box.AddChild(LookChrome.Kv(row.Label, CareerLookCatalog.SignedZloty(row.Amount)));
+            box.AddChild(LookChrome.Body("Brak danych finansowych ze świata.", 13, LookChrome.Gray));
+            box.AddChild(LookChrome.Solid("księga ›", () => Show(View.Finance), LookChrome.Paper, LookChrome.Black, compact: true));
+            return box;
         }
 
+        box.AddChild(LookChrome.Kv("Kasa", CareerLookCatalog.Euro(finance.CashEur)));
+        box.AddChild(LookChrome.Kv(
+            "Sponsor tytularny",
+            string.Create(
+                CultureInfo.InvariantCulture,
+                $"{finance.TitleSponsorName} · {CareerLookCatalog.Euro(finance.TitleSponsorAnnualFeeEur)} / rok")));
+        box.AddChild(LookChrome.Kv("Sponsor / dzień", CareerLookCatalog.SignedEuro(finance.DailySponsor)));
+        box.AddChild(LookChrome.Kv("Płace / dzień", CareerLookCatalog.SignedEuro(-finance.DailyWages)));
         box.AddChild(LookChrome.Hairline());
-        box.AddChild(LookChrome.Kv("Bilans tygodnia", CareerLookCatalog.SignedZloty(CareerLookCatalog.WeekBalance)));
-        box.AddChild(LookChrome.Kv("Budżet sezonu", CareerLookCatalog.SignedZloty(CareerLookCatalog.SeasonBudget)));
+        box.AddChild(LookChrome.Kv("Bilans dnia", CareerLookCatalog.SignedEuro(finance.DailyNet)));
+        box.AddChild(LookChrome.Kv("Pensja składu / rok", CareerLookCatalog.Euro(finance.WageBillAnnual)));
+        if (finance.Overdrawn)
+        {
+            box.AddChild(LookChrome.Body("Klub jest na debecie", 13, LookChrome.Red, bold: true));
+        }
+
         box.AddChild(LookChrome.Solid("księga ›", () => Show(View.Finance), LookChrome.Paper, LookChrome.Black, compact: true));
         return box;
     }
@@ -594,13 +610,34 @@ public sealed partial class CareerShellScreen
             return box;
         }
 
-        ClubRosterEntry rider = roster.FirstOrDefault(
-            entry => entry.RiderCareerId.Value == selectedRiderId) ?? roster[0];
+        if (selectedRiderId == 0 || roster.All(entry => entry.RiderCareerId.Value != selectedRiderId))
+        {
+            selectedRiderId = roster[0].RiderCareerId.Value;
+        }
+
+        ClubRosterEntry rider = roster.First(entry => entry.RiderCareerId.Value == selectedRiderId);
+        bool isNegotiating = negotiating &&
+            host.ContractNegotiation?.RiderCareerId == rider.RiderCareerId;
+        int today = host.Day?.DayNumber ?? 0;
+        int prefillWage = rider.AnnualWage > 0 ? rider.AnnualWage : 100_000;
+        int prefillEndDay = rider.ContractEndDay > today ? rider.ContractEndDay : today + 365;
+        if (host.ContractNegotiation?.OfferAnnualWage is int draftWage)
+        {
+            prefillWage = draftWage;
+        }
+
+        if (host.ContractNegotiation?.OfferContractEndDay is int draftEndDay)
+        {
+            prefillEndDay = draftEndDay;
+        }
+
         box.AddChild(ProfileHead(rider.Name, string.Create(
             CultureInfo.InvariantCulture,
             $"OVR {rider.Ovr} · POT {rider.PotentialOvr}")));
-        box.AddChild(LookChrome.Kv("Pensja", CareerLookCatalog.Zloty(rider.AnnualWage) + " / rok"));
-        box.AddChild(LookChrome.Kv("Koniec kontraktu", "dzień " + rider.ContractEndDay.ToString(CultureInfo.InvariantCulture)));
+        box.AddChild(LookChrome.Kv("Pensja / rok", CareerLookCatalog.Euro(rider.AnnualWage)));
+        box.AddChild(LookChrome.Kv(
+            "Koniec kontraktu",
+            "dzień " + rider.ContractEndDay.ToString(CultureInfo.InvariantCulture)));
         foreach ((string statLabel, int statValue) in new[]
                  {
                      ("Góry", rider.Climb), ("Pagórki", rider.Hills), ("Płaskie", rider.Flat), ("TT", rider.TimeTrial),
@@ -610,6 +647,62 @@ public sealed partial class CareerShellScreen
             box.AddChild(LookChrome.Kv(statLabel, statValue.ToString(CultureInfo.InvariantCulture)));
         }
 
+        if (isNegotiating)
+        {
+            box.AddChild(LookChrome.Display("OFERTA KONTRAKTOWA", 12, LookChrome.Team));
+            SpinBox wageBox = new();
+            wageBox.MinValue = 1;
+            wageBox.MaxValue = 50_000_000;
+            wageBox.Value = prefillWage;
+            box.AddChild(Labeled("Pensja / rok", wageBox));
+            SpinBox endDayBox = new();
+            endDayBox.MinValue = today + 1;
+            endDayBox.MaxValue = 50_000;
+            endDayBox.Value = Math.Max(prefillEndDay, today + 1);
+            box.AddChild(Labeled("Koniec kontraktu (dzień)", endDayBox));
+            box.AddChild(LookChrome.Solid("Złóż ofertę", () =>
+            {
+                CommandResult set = host.SetContractOffer((int)wageBox.Value, (int)endDayBox.Value);
+                if (!set.Succeeded)
+                {
+                    ShowToast(Reason(set.ReasonCode));
+                    Refresh();
+                    return;
+                }
+
+                CommandResult confirm = host.ConfirmContractOffer();
+                negotiating = false;
+                ShowToast(confirm.Succeeded ? "Kontrakt przyjęty." : Reason(confirm.ReasonCode));
+                Refresh();
+            }, LookChrome.Team, LookChrome.TeamOn, compact: true));
+        }
+
+        HBoxContainer actions = new();
+        actions.AddThemeConstantOverride("separation", 8);
+        actions.AddChild(LookChrome.Solid(isNegotiating ? "Anuluj" : "Negocjuj kontrakt", () =>
+        {
+            if (isNegotiating)
+            {
+                host.CancelContractNegotiation();
+                negotiating = false;
+            }
+            else
+            {
+                CommandResult begin = host.BeginContractNegotiation(rider.RiderCareerId);
+                if (!begin.Succeeded)
+                {
+                    ShowToast(Reason(begin.ReasonCode));
+                }
+                else
+                {
+                    negotiating = true;
+                }
+            }
+
+            Refresh();
+        }, LookChrome.Team, LookChrome.TeamOn, compact: true));
+        actions.AddChild(LookChrome.Solid("Zwolnij z zespołu", () => ShowToast(CareerLookCatalog.NotInWorld), LookChrome.Red, LookChrome.Paper, compact: true));
+        box.AddChild(actions);
         return box;
     }
 
@@ -638,8 +731,13 @@ public sealed partial class CareerShellScreen
             Color fg = selected ? LookChrome.Paper : LookChrome.Black;
             PanelContainer row = LookChrome.ClickRow(selected, () =>
             {
-                selectedRiderId = (int)captured.RiderCareerId.Value;
-                negotiating = false;
+                if (negotiating || host!.ContractNegotiation is not null)
+                {
+                    host.CancelContractNegotiation();
+                    negotiating = false;
+                }
+
+                selectedRiderId = captured.RiderCareerId.Value;
                 RebuildContent();
             });
             row.SizeFlagsHorizontal = SizeFlags.ExpandFill;
@@ -654,7 +752,7 @@ public sealed partial class CareerShellScreen
             inner.AddChild(Cell(captured.TimeTrial.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
             inner.AddChild(Cell(captured.Sprint.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
             inner.AddChild(Cell(captured.Cobbles.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
-            inner.AddChild(Cell(CareerLookCatalog.Zloty(captured.AnnualWage), false, fg, numeric: true));
+            inner.AddChild(Cell(CareerLookCatalog.Euro(captured.AnnualWage), false, fg, numeric: true));
             inner.AddChild(Cell(captured.ContractEndDay.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
             row.AddChild(inner);
             box.AddChild(row);
@@ -1089,47 +1187,34 @@ public sealed partial class CareerShellScreen
     private void BuildFinance()
     {
         content!.AddChild(LookBanner());
+        ClubFinanceProjection? finance = host!.ClubFinance;
+        if (finance is null)
+        {
+            content.AddChild(Panel("FINANSE", LookChrome.Body("Brak danych finansowych ze świata.", 13, LookChrome.Gray)));
+            return;
+        }
+
         HBoxContainer top = Row();
-        VBoxContainer budget = new();
-        budget.AddThemeConstantOverride("separation", 8);
-        budget.AddChild(LookChrome.Display(CareerLookCatalog.SignedZloty(CareerLookCatalog.SeasonBudget), 32, LookChrome.Black));
-        budget.AddChild(LookChrome.Body("wolne środki · 2026", 12, LookChrome.Gray, bold: true));
-        budget.AddChild(LookChrome.Kv("Prognoza 31.12", "+188 000 zł"));
-        budget.AddChild(LookChrome.Kv("Przychody", "7,20 mln zł"));
-        budget.AddChild(LookChrome.Kv("Koszty", "6,79 mln zł"));
-        top.AddChild(Stretch(Panel("BUDŻET", budget), 4));
-
-        VBoxContainer expenses = new();
-        expenses.AddThemeConstantOverride("separation", 8);
-        HBoxContainer bar = new();
-        bar.CustomMinimumSize = new Vector2(0, 18);
-        foreach (LookExpenseSlice slice in CareerLookCatalog.Expenses)
+        VBoxContainer summary = new();
+        summary.AddThemeConstantOverride("separation", 8);
+        summary.AddChild(LookChrome.Display(CareerLookCatalog.Euro(finance.CashEur), 32, LookChrome.Black));
+        summary.AddChild(LookChrome.Body("kasa klubu · euro", 12, LookChrome.Gray, bold: true));
+        summary.AddChild(LookChrome.Kv(
+            "Sponsor tytularny",
+            string.Create(
+                CultureInfo.InvariantCulture,
+                $"{finance.TitleSponsorName} · {CareerLookCatalog.Euro(finance.TitleSponsorAnnualFeeEur)} / rok")));
+        summary.AddChild(LookChrome.Kv("Sponsor / dzień", CareerLookCatalog.SignedEuro(finance.DailySponsor)));
+        summary.AddChild(LookChrome.Kv("Płace / dzień", CareerLookCatalog.SignedEuro(-finance.DailyWages)));
+        summary.AddChild(LookChrome.Kv("Bilans dnia", CareerLookCatalog.SignedEuro(finance.DailyNet)));
+        summary.AddChild(LookChrome.Kv("Pensja składu / rok", CareerLookCatalog.Euro(finance.WageBillAnnual)));
+        if (finance.Overdrawn)
         {
-            ColorRect block = LookChrome.Block(new Color(slice.ColorHex));
-            block.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-            block.SizeFlagsStretchRatio = slice.Percent;
-            bar.AddChild(block);
+            summary.AddChild(LookChrome.Body("Klub jest na debecie", 13, LookChrome.Red, bold: true));
         }
 
-        expenses.AddChild(bar);
-        expenses.AddChild(LookChrome.Body("6,79 mln zł · koszty sezonu", 13, LookChrome.Black, bold: true));
-        foreach (LookExpenseSlice slice in CareerLookCatalog.Expenses)
-        {
-            expenses.AddChild(LookChrome.Kv(slice.Label + " · " + slice.Percent + "%", slice.Amount));
-        }
-
-        top.AddChild(Stretch(Panel("WYDATKI", expenses), 8));
+        top.AddChild(Stretch(Panel("FINANSE", summary), 12));
         content.AddChild(top);
-
-        VBoxContainer ledger = new();
-        ledger.AddThemeConstantOverride("separation", 4);
-        ledger.AddChild(HeaderRow("Data", "Operacja", "Kategoria", "Kwota"));
-        foreach (LookLedgerRow row in CareerLookCatalog.Ledger)
-        {
-            ledger.AddChild(HeaderRow(row.Date, row.Operation, row.Category, CareerLookCatalog.SignedZloty(row.Amount)));
-        }
-
-        content.AddChild(Panel("KSIĘGA OPERACJI", ledger));
     }
 
     private void BuildScouting()
@@ -1471,7 +1556,7 @@ public sealed partial class CareerShellScreen
         real.AddChild(LookChrome.Body("Advance Day przesuwa cały świat o jeden dzień.", 14, LookChrome.Black));
         real.AddChild(LookChrome.Body("W dzień wyścigu ten sam przycisk nazywa się Race next i wchodzi w przygotowanie.", 14, LookChrome.Black));
         real.AddChild(LookChrome.Body("Oglądanie etapu jest opcją w Ustawieniach. Domyślnie dostajesz wynik i tabelę.", 14, LookChrome.Black));
-        real.AddChild(LookChrome.Body("Skrzynka świata nie startuje wyścigu. OVR, kasa i skauci na tych ekranach są rysunkiem.", 14, LookChrome.Black));
+        real.AddChild(LookChrome.Body("Skrzynka świata nie startuje wyścigu. Kasa na biurku i w Finansach to świat (euro). Sztab, sponsorzy, skauting i rynek to rysunek.", 14, LookChrome.Black));
         content.AddChild(Panel("ŚWIAT", real));
     }
 
