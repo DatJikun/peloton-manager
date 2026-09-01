@@ -11,6 +11,7 @@ The prototype is still below the accepted Race Engine contract. Remaining intent
 - fixed one-second step and `double` arithmetic; these are prototype choices, not production locks;
 - simplified shelter slots, drafting, durability, and knowledge-bounded chase decisions;
 - Godot Watch Race exists as a presentation window over the same D-033 clock; it is not a Career Hub and not a fun-gate result;
+- Godot Watch map expands coarse physics segments through an authored route-profile library (3 variants each for flat / climb / descent / rolling / crosswind) and a seeded generator. Official physics stay coarse so goldens do not move;
 - owner engagement gate in `RACE_ENGINE_DESIGN_v0.2.md` §49 remains `NOT VERIFIED`;
 - SimRunner `watch` implements the D-033 headless supervising clock (rates ×1 / ×2 / ×5 / ×20, decision pauses, RNG-neutral focal-rider motion); CLI Watch is not the Godot renderer or an owner §49 playtest;
 - `Form01` / `Freshness01` / `Fatigue01` on `RiderCareer` are applied on Advance Day and official races (phase 2 landed); stored physiology is not mutated — readiness scales CP/Pmax at assemble time only;

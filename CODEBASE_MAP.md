@@ -30,7 +30,7 @@ Static content lives in `content/peloton.skeleton`, `content/peloton.wt-2026`, a
 | `tests/Peloton.Application.Tests` | GameState guards, prep actions, result/debrief projections, Watch/Simulate parity, content identity, Advance Day, RaceLive isolation, CLI contracts, 10-season determinism. |
 | `tests/Peloton.Persistence.Tests` | SQLite schema/content/rules metadata, checksum round trip, prep checkpoint recovery through Results/Debrief, failed-load atomicity, last-race JSON shape. |
 | `tests/Peloton.Architecture.Tests` | Forbidden PlayerTeam-like types, no production `StubRaceEngine`, Godot-free headless assemblies. |
-| `tests/Peloton.Client.Godot.Tests` | Watch interpolator and host command path (StartRace clock, decision pause, LastRace result, abandon rollback). Compiles Godot-free host sources; does not need the Godot editor. |
+| `tests/Peloton.Client.Godot.Tests` | Watch interpolator, film duration, host command path (StartRace clock, decision pause, LastRace result, abandon rollback), and map profile sampling. Compiles Godot-free host sources; does not need the Godot editor. |
 
 ## System ownership
 
@@ -45,7 +45,8 @@ Static content lives in `content/peloton.skeleton`, `content/peloton.wt-2026`, a
 | Race content | `Peloton.Content/JsonRacePrototypeCatalog.cs`, `content/peloton.race-prototype` | `CONTENT_FORMAT_v0.1.md` | `RaceContentTests` |
 | SimRunner race gate | `tools/Peloton.SimRunner/RacePrototypeCommand.cs` | prototype design §11 | `SimRunnerContractTests` |
 | Headless Watch clock | `Peloton.Simulation/Race/RaceWatch.cs`, `tools/Peloton.SimRunner/RaceWatchCommand.cs` | `D-033` clock contract | `RaceWatchTests`, `SimRunnerContractTests` |
-| Godot Watch Race | `src/Peloton.Client.Godot` (`WatchRaceHost`, `WatchRaceScreen`, `project.godot`) | `D-033` renderer; `UI_SITEMAP` RaceLive; §49 still owner-only | `WatchRaceHostTests`, `WatchMotionInterpolatorTests` |
+| Godot Watch Race | `src/Peloton.Client.Godot` (`WatchRaceHost`, `WatchRaceScreen`, `WatchRouteProfile`, `WatchFilmDuration`, `project.godot`) | `D-033` film duration + library-backed map; §49 still owner-only | `WatchRaceHostTests`, `WatchFilmDurationTests`, `WatchRouteProfileTests` |
+| Route profile library | `Peloton.Simulation/Race/RouteProfileLibrary.cs`, `RouteProfileGenerator.cs` | presentation profiles; physics stays coarse | `RouteProfileTests` |
 | Career Hub query | `Peloton.Application/CareerDay.cs`, `ClubRosterProjection`, `ClubFinanceProjection` | `GAME_STATES_v0.1.md` Advance Day; Hub primary action (`advance-day` / `race-next`); employer roster wages via `ClubRosterProjection`; employer cash via `ClubFinanceProjection`; Management only; not a UI dashboard | Application tests, `day` SimRunner |
 | Race preparation | `Peloton.Application/RacePreparation.cs`, `PreSeasonPlanning.cs`, `WorldRaceScenarioAssembler.cs`, `GameApplication.cs` | world roster + route template + entry filter + player strategy (`D-036` phase 1–3); readiness scales CP/Pmax at assemble | Application + Persistence tests |
 | RiderCareer / world–race bind | `Peloton.Domain/RiderCareer.cs`, `RiderContract.cs`, `OrganizationRaceEntry`, `WorldRaceScenarioAssembler.cs`, `content/peloton.skeleton/skeleton-roster.json`, `content/peloton.wt-2026/` | `CAREER_WORLDTOUR_SLICE_v0.1.md` phase 1–7; start lists from entered org rosters (12-rider WT cap); contract expiry on Advance Day; finance tick after expiry; active-contract lookup for wages | `CareerWorldTourBindTests`, `CareerWorldTourPhase2Tests`, `CareerWorldTourPhase3Tests`, `CareerWorldTourPhase4Tests`, `CareerWorldTourPhase5Tests`, `CareerWorldTourPhase6Tests`, `CareerWorldTourPhase7Tests` |

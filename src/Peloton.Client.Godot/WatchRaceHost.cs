@@ -27,8 +27,10 @@ public sealed class WatchRaceHost
         this.raceScenarioId = string.IsNullOrWhiteSpace(raceScenarioId)
             ? RacePreparationDefaults.PrototypeScenarioId
             : raceScenarioId;
-        SelectedRate = 5;
+        SelectedFilmSeconds = WatchFilmDuration.DefaultSeconds;
     }
+
+    public int SelectedFilmSeconds { get; private set; }
 
     public int SelectedRate { get; private set; }
 
@@ -88,19 +90,19 @@ public sealed class WatchRaceHost
         return application.Execute(new ConfirmRacePreparationPlanCommand());
     }
 
-    public CommandResult SelectRate(int rate)
+    public CommandResult SelectFilmDuration(int seconds)
     {
         if (application.State == GameState.RaceLive)
         {
-            return CommandResult.Reject("WATCH_RATE_LOCKED");
+            return CommandResult.Reject("WATCH_FILM_LOCKED");
         }
 
-        if (rate is not (1 or 2 or 5 or 20))
+        if (!WatchFilmDuration.IsChoice(seconds))
         {
-            return CommandResult.Reject("WATCH_RATE_INVALID");
+            return CommandResult.Reject("WATCH_FILM_INVALID");
         }
 
-        SelectedRate = rate;
+        SelectedFilmSeconds = seconds;
         return CommandResult.Success;
     }
 
@@ -113,6 +115,8 @@ public sealed class WatchRaceHost
             return started;
         }
 
+        double routeLengthM = application.RaceWatchCourse?.TotalLengthM ?? 0.0;
+        SelectedRate = WatchFilmDuration.RateFor(routeLengthM, SelectedFilmSeconds);
         CommandResult watching = application.Execute(new BeginRaceWatchCommand(SelectedRate));
         if (!watching.Succeeded)
         {
