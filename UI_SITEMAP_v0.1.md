@@ -164,7 +164,7 @@ If end of day reached:
 
 ```text
 MAIN MENU
-├── Continue Career          → LoadingWorld → Management (or unemployed Career Hub)
+├── Continue Career          → LoadingWorld → Management (or unemployed desk)
 ├── Load Game                → LoadingWorld → …
 ├── New Game                 → [Card Flow] NEW GAME / CAREER SETUP
 │   ├── Scenario / World Base
@@ -180,12 +180,10 @@ MAIN MENU
 └── Credits / Exit
 
 MANAGEMENT — PERSISTENT CAREER SHELL
-├── CAREER HUB / DASHBOARD (HQ)
+├── DESK / BIURKO
 │   ├── ADVANCE DAY (primary)
-│   ├── Season context rail
-│   ├── Problems / risks / recommendations
 │   ├── Next events & deadlines
-│   └── Feed snippets (projection, not source of truth)
+│   └── Inbox snippets (projection, not source of truth)
 ├── INBOX / DECISION QUEUE
 │   ├── Action-required items (DecisionRequests)
 │   ├── Reports & notifications (NotificationProjection)
@@ -277,7 +275,7 @@ DEVELOPER-ONLY (not player sitemap — see DEFERRED)
 | New Game — Starting Employment | Pick org or start unemployed | Public org summaries, vacancy knowledge | none until CreateWorld | New Game flow | Next / Back | card-flow |
 | New Game — Summary | Review world recipe | Composed scenario summary | `CreateWorld` / start save | New Game flow | LoadingWorld | card-flow |
 | Loading World | Load save or bootstrap world | Progress meta | none | Load / New Game | Management / error | blocking (transient) |
-| Career Hub / Dashboard | Orient; central Advance Day | Org problems, deadlines, next events, staff recommendations, workload summaries — all via org + personal knowledge; forecasts where allowed | `AdvanceDay`; open Decision Request handlers | Default after load; end of flows | Any shell tab; Card Flows | persistent |
+| Desk / Biurko | Orient; central Advance Day | Next events, deadlines, inbox — org + personal knowledge; forecasts where allowed | `AdvanceDay`; open Decision Request handlers | Default after load; end of flows | Any shell tab; Card Flows | persistent |
 | Inbox / Decision Queue | Surface action items | NotificationProjection + DecisionRequest summaries; underlying case/offer IDs | `RespondTo…` / domain Commands per item; never "delete deadline" | Hub alert; shell nav | Resolve item or defer if delegable | persistent |
 | Calendar | Plan season & commitments | Calendar entries, rider plans, provenance ("why on calendar") | `AcceptRaceInvitation`, `WithdrawFromRace`, `SetSeasonPriority`, camp/training Commands | Shell nav | Race Prep; Pre-Season Flow | persistent |
 | Pre-Season Planning | Annual plan with audit | Overload warnings, sponsor objective gaps, forecast impacts | Plan Commands (priorities, tentative entries, camps) | Calendar; Hub seasonal prompt | Confirm plan → Management | card-flow |
@@ -463,7 +461,7 @@ Hotseat (future): active `DecisionAuthority` switches viewer; UI must not leak o
 | # | Question | Notes / deadline |
 |---|---|---|
 | OQ-UI-001 | **DecisionRequest routing:** blocking modal vs Inbox-first for management deadlines? | Affects Hub vs Inbox primacy; decide before production Decision Queue routing |
-| OQ-UI-002 | **Unemployed Career Hub layout:** dedicated minimal shell vs full shell with empty org panels disabled? | D-004 requires unemployed path; layout not locked |
+| OQ-UI-002 | **Unemployed desk layout:** dedicated minimal shell vs full shell with empty org panels disabled? | D-004 requires unemployed path; layout not locked |
 | OQ-UI-003 | **Global Advance Day:** callable only from Hub or from any persistent screen? | D-006 UX detail |
 | OQ-UI-004 | **Season Review Card Flow depth:** mandatory full flow vs optional summary panel? | Seasonal loop polish |
 | OQ-UI-005 | **Negotiation UI pattern:** one shared negotiation shell vs per-domain Card Flows? | Must respect "not one generic minigame" (ARCHITECTURE §18) |

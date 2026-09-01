@@ -253,7 +253,7 @@ Po fast sim gracz może zobaczyć Key Race Story. W szkielecie (`D-036`, `D-037`
 - jakie decyzje podjął DS,
 - dlaczego lider stracił.
 
-Fast sim is the default race-day presentation; Watch film is optional.
+Fast sim is the default race-day presentation; Watch film is optional and off by default.
 
 ## 23. Staff must own race decisions
 

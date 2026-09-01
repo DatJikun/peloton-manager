@@ -10,7 +10,7 @@ The prototype is still below the accepted Race Engine contract. Remaining intent
 
 - fixed one-second step and `double` arithmetic; these are prototype choices, not production locks;
 - simplified shelter slots, drafting, durability, and knowledge-bounded chase decisions;
-- Godot Watch Race exists as an **optional** presentation window over the same D-033 clock; the career shell default is simulate → official result table and a presentation-only team filter (D-043), not a KPI dashboard or a fun-gate result;
+- Godot Watch Race exists as an **optional** presentation window over the same D-033 clock, **off by default**; the career shell default is simulate → official result table and a presentation-only team filter (D-043 / D-048);
 - Godot career shell may show POC look-catalog names (Beskid–Vetter, OVR, cash) on empty management domains; those numbers are not World State and not true ability;
 - owner engagement gate in `RACE_ENGINE_DESIGN_v0.2.md` §49 remains `NOT VERIFIED`;
 - SimRunner `watch` implements the D-033 headless supervising clock (rates ×1 / ×2 / ×5 / ×20, decision pauses, RNG-neutral focal-rider motion); CLI Watch is not the Godot renderer or an owner §49 playtest;
@@ -30,7 +30,7 @@ This is an explicit prototype boundary, not an accepted simplification of the fu
 - World checksum label is `peloton-world-checksum-v8`.
 - `CalendarEntry.RaceContentId` stores the calendar race id (`race.wt2026.*` for WT; route template resolved via `DefaultRaceTemplateId`).
 
-Phase 1 out of scope for Godot: Career Hub stays rejected. WT CreateWorld is landed in phase 5.
+Phase 1 out of scope for Godot: Career Hub UI is deleted (D-048). WT CreateWorld is landed in phase 5.
 
 ## Planning windows (D-036 phase 3 landed)
 

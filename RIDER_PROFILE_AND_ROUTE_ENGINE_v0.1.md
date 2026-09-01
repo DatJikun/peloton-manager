@@ -450,8 +450,8 @@ Query GC as sum of times for that event (DNF = no GC, or large penalty — pick 
 
 ### 3.9 Non-goals
 
-- Godot map renderer / Watch Race expansion
-- Career Hub
+- Godot map renderer beyond the existing optional Watch overlay
+- Rebuilding Career Hub
 - Real GPS traces of the 2026 UCI routes (legal/data). The generator is the 2026 default.
 - 150-rider pelotons (starter cap 12 stays)
 - Closing §49

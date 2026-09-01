@@ -27,7 +27,7 @@ This is not a full game yet. This slice turns the prototype into the start of a 
 | 8 | Nie rozumiesz finansów. | Explained in §5. Thin money after wages exist. |
 | 9 | (puste) | AI managerów **nie** zaczynamy, dopóki nie poprosisz. |
 
-§49 fun gate stays a **manual** playtest. Career Hub stays rejected. No tenth GameState.
+§49 fun gate stays a **manual** playtest. Career Hub UI is deleted (D-048). No tenth GameState.
 
 ### 2. Item 4 — OVR / POT modes are not a separate mystery system
 
@@ -650,11 +650,11 @@ Dynamic sponsor market, co-sponsor slots, luxury tax, inflation, marketability, 
 
 ## 5. Owner follow-up 2026-09-01 — Simulate + filter + negotiate
 
-**Landed 2026-09-01** (SchemaVersion 7). Headless commands and queries only; no Godot Hub, no Watch Race expansion.
+**Landed 2026-09-01** (SchemaVersion 7). Headless commands and queries only at that land; Godot career shell came later. Career Hub UI is deleted (D-048).
 
 ### Watch Race
 
-Docs had **Career Hub** as rejected (PR #4). Watch Race was built as the first Godot window after D-033. The owner now rejects Watch Race as the way you play a race. **D-043:** Simulate, then results. Filter the classification by **any** team. Do not grow Godot Watch.
+Watch Race stays an optional film overlay, **off by default**. **D-043:** default path is simulate, then results. Filter the classification by **any** team. Do not make watching the default. Career Hub is deleted (D-048).
 
 ### Results filter
 

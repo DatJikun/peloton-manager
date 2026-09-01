@@ -9,8 +9,8 @@ cycling-management game). Design docs remain the source of contracts. Milestone 
 `dotnet test`, and `tools/Peloton.SimRunner`. The race prototype (`PrototypeRaceEngine`)
 is the official result path; it is still below `RACE_ENGINE_DESIGN_v0.2.md` — see
 `KNOWN_DIFFERENCE_FROM_CODE.md`. Owner lock **D-043**: the playable race path is
-**Simulate then Results**, not Watch Race. Do not expand the Godot Watch Race window.
-Career Hub stays rejected (PR #4). Owner fun gate `RACE_ENGINE_DESIGN_v0.2.md` §49
+**Simulate then Results**, not Watch Race as the default. Watch film stays in the game,
+**off by default** (D-043 / D-048). Do not rebuild Career Hub (deleted). Owner fun gate `RACE_ENGINE_DESIGN_v0.2.md` §49
 remains `NOT VERIFIED`. Several docs are written in Polish.
 
 Do not fabricate build/test/run results. After the skeleton, run the real commands in
@@ -21,7 +21,7 @@ Start reading from `README_FOR_EXTERNAL_AI.md` → `VISION.md` → `DECISIONS.md
 `HANDOFF.md` → `DOCS.md`. `DOCS.md` is the canonical index. Pre-code contracts exist as
 DRAFT `*_v0.1.md` files. Older names without the version suffix may still appear in prose;
 prefer the versioned files listed in `DOCS.md`. Core-loop build order is `D-035`: one
-thing at a time (Watch film+route → world roster → owner watch → calendar → Hub). Do
+thing at a time (Watch film+route → world roster → owner watch → calendar → desk). Do
 not start the later steps in the same tree.
 
 ### Intended stack (owner-decided) and what is pre-installed
@@ -102,8 +102,8 @@ How:
   save / unseeded gameplay RNG; no silent design drift.
 - **Do not merge** when something is serious: failing tests, broken save/load or
   determinism, a lock violation, owner-rejected work, or a change that would ship the
-  wrong product (`StubRaceEngine` as official results; Career Hub PR #4; Watch Race
-  as the play path / leftover Watch UI PRs — D-043, Watch is deferred).
+  wrong product (`StubRaceEngine` as official results; rebuilding Career Hub; Watch Race
+  as the default play path / leftover Watch radio-DS PRs — D-043, film stays optional).
 - Do **not** merge a stack of stale PRs into each other. If an old branch conflicts,
   replay the player-value change onto today’s `main`.
 - High-level check is the default. Deep line-by-line review only if a serious issue is
