@@ -7,7 +7,7 @@ namespace Peloton.Domain;
 /// <summary>
 /// WorldTour origin ids use dotted slots: <c>.leader</c>, <c>.card</c>, <c>.support-1</c>, <c>.support-2</c>.
 /// Alphabetical origin order puts <c>.card</c> before <c>.leader</c>, so the second star became the default captain.
-/// Skeleton origin ids have no dotted slots and keep their existing origin-id order.
+/// Skeleton origin ids use hyphenated names without dotted slots; they keep allocation order (JSON / Id).
 /// </summary>
 public static class RiderSquadOrder
 {
@@ -46,6 +46,6 @@ public static class RiderSquadOrder
         ArgumentNullException.ThrowIfNull(riders);
         return riders
             .OrderBy(career => SlotRank(career.OriginDefinitionId))
-            .ThenBy(career => career.OriginDefinitionId, StringComparer.Ordinal);
+            .ThenBy(career => career.Id.Value);
     }
 }
