@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -13,6 +14,8 @@ namespace Peloton.Content;
 
 public sealed class JsonScenarioCatalog : IScenarioCatalog
 {
+    private const string DefaultRaceTemplateId = "race-scenario.peloton.prototype-v0";
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -40,6 +43,16 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
         {
             PackDocument pack = ReadJson<PackDocument>(packPath);
             string packRoot = Path.GetDirectoryName(packPath)!;
+            RosterDocument? roster = null;
+            foreach (ResourceDocument resource in pack.Resources
+                         .Where(resource => string.Equals(resource.Kind, "roster", StringComparison.Ordinal))
+                         .OrderBy(resource => resource.Path, StringComparer.Ordinal))
+            {
+                string resourcePath = ResolveInsidePack(packRoot, resource.Path);
+                roster = ReadJson<RosterDocument>(resourcePath);
+                break;
+            }
+
             foreach (ResourceDocument resource in pack.Resources
                          .Where(resource => string.Equals(resource.Kind, "scenarios", StringComparison.Ordinal))
                          .OrderBy(resource => resource.Path, StringComparer.Ordinal))
@@ -51,7 +64,9 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
                     continue;
                 }
 
-                Validate(pack, scenario);
+                OrganizationsFileDocument? organizationsFile = TryLoadOrganizations(packRoot, pack);
+                CalendarFileDocument? calendarFile = TryLoadCalendar(packRoot, pack);
+                Validate(pack, scenario, roster, organizationsFile);
                 RulesModuleIdentity[] modules = scenario.Modules
                     .Select(module => new RulesModuleIdentity(
                         module.Slot,
@@ -61,7 +76,14 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
                         module.ParameterIdentity))
                     .OrderBy(module => module.Slot, StringComparer.Ordinal)
                     .ToArray();
-                string aggregateHash = ComputeArtifactHash(packPath, resourcePath);
+                string? rosterPath = ResolveRosterPath(packRoot, pack);
+                string? organizationsPath = ResolveResourcePath(packRoot, pack, "organizations");
+                string? calendarPath = ResolveResourcePath(packRoot, pack, "calendar");
+                string aggregateHash = ComputeArtifactHash(
+                    new[] { packPath, resourcePath, rosterPath, organizationsPath, calendarPath }
+                        .Where(path => path is not null)
+                        .Cast<string>()
+                        .ToArray());
                 ContentIdentity contentIdentity = new(
                     pack.PackId,
                     pack.PackVersion,
@@ -71,31 +93,137 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
                     scenario.Difficulty,
                     scenario.AttributeVisibility,
                     aggregateHash);
-                OrganizationDefinition[] organizations = scenario.Organizations
-                    .Select(organization => new OrganizationDefinition(
-                        organization.Id,
-                        organization.Name,
-                        organization.RacePrototypeTeamId))
+                OrganizationDefinition[] organizations = BuildOrganizations(
+                    scenario,
+                    organizationsFile);
+                TeamRaceMappingDefinition[] teamMappings = roster!.TeamMappings
+                    .Select(mapping => new TeamRaceMappingDefinition(
+                        mapping.OrganizationId,
+                        mapping.RaceTeamId))
+                    .OrderBy(mapping => mapping.OrganizationId, StringComparer.Ordinal)
                     .ToArray();
-                RiderDefinition[] riders = scenario.Riders
+                RiderDefinition[] riders = roster.Riders
                     .Select(rider => new RiderDefinition(
                         rider.Id,
                         rider.Name,
                         rider.OrganizationId,
-                        rider.RacePrototypeRiderId))
+                        rider.CriticalPowerW,
+                        rider.WPrimeCapacityJ,
+                        rider.PeakPowerW,
+                        rider.WPrimeRecoveryJPerSecond,
+                        rider.LowIntensityDurability,
+                        rider.HighIntensityDurability,
+                        rider.BodyMassKg,
+                        rider.SystemMassKg,
+                        rider.CdAM2,
+                        rider.BaseCrr,
+                        rider.Positioning,
+                        rider.Handling,
+                        rider.TacticalAwareness,
+                        rider.AnnualWage,
+                        rider.ContractEndDay,
+                        rider.Loyalty01 ?? 0.5,
+                        rider.Nationality,
+                        rider.BirthYear))
+                    .OrderBy(rider => rider.Id, StringComparer.Ordinal)
                     .ToArray();
-                ManagerDefinition manager = new(scenario.Manager.Id, scenario.Manager.Name);
+                ManagerDefinition manager = new(roster.Manager.Name, roster.Manager.OrganizationId);
+                CalendarRaceDefinition[] calendarRaces = BuildCalendarRaces(scenario, calendarFile);
+                bool generatePeriodicRaces = !UsesCalendarFromContent(modules);
                 return new WorldRecipe(
                     contentIdentity,
                     modules,
                     ResolvedRuleset.ComputeIdentity(modules),
                     organizations,
+                    teamMappings,
                     riders,
-                    manager);
+                    manager,
+                    calendarRaces,
+                    generatePeriodicRaces,
+                    DefaultRaceTemplateId);
             }
         }
 
         throw new InvalidDataException($"Scenario '{scenarioId}' was not found.");
+    }
+
+    private static OrganizationDefinition[] BuildOrganizations(
+        ScenarioDocument scenario,
+        OrganizationsFileDocument? organizationsFile)
+    {
+        if (organizationsFile is null)
+        {
+            return scenario.Organizations
+                .Select(id => new OrganizationDefinition(id, DisplayName(id)))
+                .ToArray();
+        }
+
+        Dictionary<string, OrganizationRecordDocument> byId = organizationsFile.Organizations
+            .ToDictionary(organization => organization.Id, StringComparer.Ordinal);
+        return scenario.Organizations
+            .Select(id =>
+            {
+                if (!byId.TryGetValue(id, out OrganizationRecordDocument? record))
+                {
+                    throw new InvalidDataException($"Organization '{id}' is missing from organizations.json.");
+                }
+
+                return new OrganizationDefinition(
+                    record.Id,
+                    record.Name,
+                    record.Country ?? string.Empty,
+                    record.Division ?? "WorldTour",
+                    record.LicenceYearsRemaining,
+                    record.TitleSponsor ?? string.Empty,
+                    record.Bike ?? string.Empty,
+                    record.Groupset ?? string.Empty,
+                    record.EstimatedBudgetEur);
+            })
+            .ToArray();
+    }
+
+    private static CalendarRaceDefinition[] BuildCalendarRaces(
+        ScenarioDocument scenario,
+        CalendarFileDocument? calendarFile)
+    {
+        if (calendarFile is null)
+        {
+            return Array.Empty<CalendarRaceDefinition>();
+        }
+
+        DateOnly scenarioStart = DateOnly.Parse(
+            scenario.StartDate,
+            CultureInfo.InvariantCulture);
+        return calendarFile.Races
+            .Select(race =>
+            {
+                DateOnly raceStart = DateOnly.Parse(race.Start, CultureInfo.InvariantCulture);
+                int dayNumber = raceStart.DayNumber - scenarioStart.DayNumber;
+                return new CalendarRaceDefinition(race.Id, race.Name, dayNumber);
+            })
+            .OrderBy(race => race.DayNumber)
+            .ThenBy(race => race.Id, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private static bool UsesCalendarFromContent(IReadOnlyList<RulesModuleIdentity> modules)
+    {
+        RulesModuleIdentity? calendar = modules.FirstOrDefault(
+            module => string.Equals(module.Slot, "calendarStructure", StringComparison.Ordinal));
+        return calendar is not null &&
+               string.Equals(calendar.ParameterIdentity, "calendar-from-content", StringComparison.Ordinal);
+    }
+
+    private static OrganizationsFileDocument? TryLoadOrganizations(string packRoot, PackDocument pack)
+    {
+        string? path = ResolveResourcePath(packRoot, pack, "organizations");
+        return path is null ? null : ReadJson<OrganizationsFileDocument>(path);
+    }
+
+    private static CalendarFileDocument? TryLoadCalendar(string packRoot, PackDocument pack)
+    {
+        string? path = ResolveResourcePath(packRoot, pack, "calendar");
+        return path is null ? null : ReadJson<CalendarFileDocument>(path);
     }
 
     private static T ReadJson<T>(string path)
@@ -128,72 +256,68 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
         return candidate;
     }
 
-    private static void Validate(PackDocument pack, ScenarioDocument scenario)
+    private static string? ResolveRosterPath(string packRoot, PackDocument pack) =>
+        ResolveResourcePath(packRoot, pack, "roster");
+
+    private static string? ResolveResourcePath(string packRoot, PackDocument pack, string kind)
+    {
+        ResourceDocument? resource = pack.Resources
+            .FirstOrDefault(item => string.Equals(item.Kind, kind, StringComparison.Ordinal));
+        return resource is null ? null : ResolveInsidePack(packRoot, resource.Path);
+    }
+
+    private static void Validate(
+        PackDocument pack,
+        ScenarioDocument scenario,
+        RosterDocument? roster,
+        OrganizationsFileDocument? organizationsFile)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(pack.PackId);
         ArgumentException.ThrowIfNullOrWhiteSpace(pack.PackVersion);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pack.ContentSchemaVersion);
         ArgumentException.ThrowIfNullOrWhiteSpace(scenario.Id);
-        if (scenario.Organizations is null || scenario.Riders is null)
+        if (scenario.Organizations.Count == 0)
         {
-            throw new InvalidDataException("Skeleton scenario requires organizations and riders.");
-        }
-
-        if (scenario.Organizations.Count != 3)
-        {
-            throw new InvalidDataException("Skeleton scenario requires exactly three organizations.");
-        }
-
-        if (scenario.Riders.Count != 12)
-        {
-            throw new InvalidDataException("Skeleton scenario requires exactly twelve named riders.");
-        }
-
-        if (scenario.Manager is null ||
-            string.IsNullOrWhiteSpace(scenario.Manager.Id) ||
-            string.IsNullOrWhiteSpace(scenario.Manager.Name))
-        {
-            throw new InvalidDataException("Skeleton scenario requires a named manager person.");
-        }
-
-        HashSet<string> organizationIds = new(StringComparer.Ordinal);
-        foreach (OrganizationDocument organization in scenario.Organizations)
-        {
-            if (string.IsNullOrWhiteSpace(organization.Id) ||
-                string.IsNullOrWhiteSpace(organization.Name) ||
-                string.IsNullOrWhiteSpace(organization.RacePrototypeTeamId) ||
-                !organizationIds.Add(organization.Id))
-            {
-                throw new InvalidDataException("Skeleton organizations must be unique named teams.");
-            }
-        }
-
-        HashSet<string> personIds = new(StringComparer.Ordinal) { scenario.Manager.Id };
-        HashSet<string> prototypeRiderIds = new(StringComparer.Ordinal);
-        foreach (RiderDocument rider in scenario.Riders)
-        {
-            if (string.IsNullOrWhiteSpace(rider.Id) ||
-                string.IsNullOrWhiteSpace(rider.Name) ||
-                string.IsNullOrWhiteSpace(rider.OrganizationId) ||
-                string.IsNullOrWhiteSpace(rider.RacePrototypeRiderId) ||
-                !organizationIds.Contains(rider.OrganizationId) ||
-                !personIds.Add(rider.Id) ||
-                !prototypeRiderIds.Add(rider.RacePrototypeRiderId))
-            {
-                throw new InvalidDataException("Skeleton riders must be unique named people on the three teams.");
-            }
-        }
-
-        if (scenario.Riders.GroupBy(rider => rider.OrganizationId, StringComparer.Ordinal)
-            .Any(group => group.Count() != 4))
-        {
-            throw new InvalidDataException("Each skeleton team must have exactly four riders.");
+            throw new InvalidDataException("Scenario requires organizations.");
         }
 
         if (scenario.Modules.Count == 0 ||
             scenario.Modules.Select(module => module.Slot).Distinct(StringComparer.Ordinal).Count() != scenario.Modules.Count)
         {
             throw new InvalidDataException("Scenario rule module slots must be present and unique.");
+        }
+
+        if (roster is null || roster.Riders.Count == 0)
+        {
+            throw new InvalidDataException("Scenario requires a roster with riders.");
+        }
+
+        bool usesCalendarFromContent = scenario.Modules.Any(
+            module => string.Equals(module.Slot, "calendarStructure", StringComparison.Ordinal) &&
+                      string.Equals(module.ParameterIdentity, "calendar-from-content", StringComparison.Ordinal));
+        if (usesCalendarFromContent)
+        {
+            if (organizationsFile is null || organizationsFile.Organizations.Count == 0)
+            {
+                throw new InvalidDataException("WorldTour scenario requires organizations.json.");
+            }
+        }
+        else if (roster.TeamMappings.Count == 0)
+        {
+            throw new InvalidDataException("Skeleton scenario requires team mappings.");
+        }
+
+        foreach (RiderDocument rider in roster.Riders)
+        {
+            if (rider.AnnualWage <= 0)
+            {
+                throw new InvalidDataException($"Rider '{rider.Id}' requires annualWage > 0.");
+            }
+
+            if (rider.ContractEndDay < 0)
+            {
+                throw new InvalidDataException($"Rider '{rider.Id}' requires contractEndDay >= 0.");
+            }
         }
     }
 
@@ -208,6 +332,13 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
         }
 
         return Convert.ToHexString(hash.GetHashAndReset());
+    }
+
+    private static string DisplayName(string definitionId)
+    {
+        int separator = definitionId.LastIndexOf('.');
+        string localName = separator < 0 ? definitionId : definitionId[(separator + 1)..];
+        return localName.Replace('_', ' ');
     }
 
     private sealed record PackDocument(
@@ -225,20 +356,8 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
         string HistoryMode,
         string Difficulty,
         string AttributeVisibility,
-        IReadOnlyList<OrganizationDocument> Organizations,
-        ManagerDocument Manager,
-        IReadOnlyList<RiderDocument> Riders,
+        IReadOnlyList<string> Organizations,
         IReadOnlyList<ModuleDocument> Modules);
-
-    private sealed record OrganizationDocument(string Id, string Name, string RacePrototypeTeamId);
-
-    private sealed record ManagerDocument(string Id, string Name);
-
-    private sealed record RiderDocument(
-        string Id,
-        string Name,
-        string OrganizationId,
-        string RacePrototypeRiderId);
 
     private sealed record ModuleDocument(
         string Slot,
@@ -246,4 +365,56 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
         string Contract,
         int ContractVersion,
         string ParameterIdentity);
+
+    private sealed record RosterDocument(
+        ManagerDocument Manager,
+        IReadOnlyList<TeamMappingDocument> TeamMappings,
+        IReadOnlyList<RiderDocument> Riders);
+
+    private sealed record ManagerDocument(string Name, string OrganizationId);
+
+    private sealed record TeamMappingDocument(string OrganizationId, string RaceTeamId);
+
+    private sealed record RiderDocument(
+        string Id,
+        string Name,
+        string OrganizationId,
+        double CriticalPowerW,
+        double WPrimeCapacityJ,
+        double PeakPowerW,
+        double WPrimeRecoveryJPerSecond,
+        double LowIntensityDurability,
+        double HighIntensityDurability,
+        double BodyMassKg,
+        double SystemMassKg,
+        double CdAM2,
+        double BaseCrr,
+        double Positioning,
+        double Handling,
+        double TacticalAwareness,
+        int AnnualWage,
+        int ContractEndDay,
+        double? Loyalty01 = null,
+        string? Nationality = null,
+        int? BirthYear = null);
+
+    private sealed record OrganizationsFileDocument(IReadOnlyList<OrganizationRecordDocument> Organizations);
+
+    private sealed record OrganizationRecordDocument(
+        string Id,
+        string Name,
+        string? Country,
+        string? Division,
+        int LicenceYearsRemaining,
+        string? TitleSponsor,
+        string? Bike,
+        string? Groupset,
+        long EstimatedBudgetEur);
+
+    private sealed record CalendarFileDocument(IReadOnlyList<CalendarRaceRecordDocument> Races);
+
+    private sealed record CalendarRaceRecordDocument(
+        string Id,
+        string Name,
+        string Start);
 }

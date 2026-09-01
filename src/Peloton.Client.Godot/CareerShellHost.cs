@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Peloton.Application;
 using Peloton.Domain;
+using Peloton.Simulation.Race;
 
 namespace Peloton.Client.Godot;
 
@@ -44,9 +46,19 @@ public sealed class CareerShellHost
 
     public IReadOnlyList<InboxItemProjection> Inbox => application.Inbox;
 
-    public IReadOnlyList<PersonNameProjection> People => application.People;
+    public IReadOnlyList<PersonNameProjection> People =>
+        application.World is null
+            ? Array.Empty<PersonNameProjection>()
+            : application.World.Persons
+                .Select(person => new PersonNameProjection(person.Id, person.Name))
+                .ToArray();
 
-    public IReadOnlyList<OrganizationNameProjection> Organizations => application.Organizations;
+    public IReadOnlyList<OrganizationNameProjection> Organizations =>
+        application.World is null
+            ? Array.Empty<OrganizationNameProjection>()
+            : application.World.Organizations
+                .Select(organization => new OrganizationNameProjection(organization.Id, organization.Name))
+                .ToArray();
 
     public RacePreparationProjection? Preparation => application.RacePreparation;
 
@@ -56,10 +68,24 @@ public sealed class CareerShellHost
 
     public WorldEntityId? ResultTeamFilter => resultTeamFilter;
 
+    public IReadOnlyList<OrganizationNameProjection> ResultTeams =>
+        Result is null
+            ? Array.Empty<OrganizationNameProjection>()
+            : Result.FinishOrder
+                .Where(row => row.OrganizationId is { })
+                .GroupBy(row => row.OrganizationId!.Value)
+                .Select(group => new OrganizationNameProjection(
+                    group.Key,
+                    group.First().OrganizationName))
+                .OrderBy(team => team.Name, StringComparer.Ordinal)
+                .ToArray();
+
     public IReadOnlyList<RaceResultPlacement> VisibleResultTable =>
         Result is null
             ? Array.Empty<RaceResultPlacement>()
-            : RaceOutcomeQueries.FilterPlacements(Result, resultTeamFilter);
+            : resultTeamFilter is { } organizationId
+                ? RaceOutcomeQueries.FilterFinishOrderByOrganization(Result.FinishOrder, organizationId)
+                : Result.FinishOrder;
 
     public WatchRaceHost? Watch { get; private set; }
 
@@ -70,9 +96,27 @@ public sealed class CareerShellHost
         return application.Execute(new CreateWorldCommand(SkeletonScenarioId, seed));
     }
 
+    public string RiderDisplayName(WorldEntityId riderId)
+    {
+        if (application.World is not WorldState world)
+        {
+            return riderId.Value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        RiderCareer? career = world.TryGetRiderCareer(riderId);
+        WorldEntityId personId = career?.PersonId ?? riderId;
+        Person? person = world.Persons.FirstOrDefault(item => item.Id == personId);
+        if (person is not null && !string.IsNullOrWhiteSpace(person.Name))
+        {
+            return person.Name;
+        }
+
+        return career?.OriginDefinitionId ?? riderId.Value.ToString(CultureInfo.InvariantCulture);
+    }
+
     public void SetResultTeamFilter(WorldEntityId? teamId)
     {
-        if (teamId is { } id && (Result is null || Result.Teams.All(team => team.Id != id)))
+        if (teamId is { } id && ResultTeams.All(team => team.Id != id))
         {
             return;
         }
@@ -90,13 +134,35 @@ public sealed class CareerShellHost
         return application.Execute(new ArchiveInboxItemCommand(identity));
     }
 
-    public CommandResult AssignRole(WorldEntityId riderId, string role)
+    public CommandResult SetLeader(WorldEntityId riderId)
     {
-        return application.Execute(new AssignSquadRoleCommand(riderId, role));
+        if (Preparation is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        WorldEntityId support = Preparation.SupportId is { } current && current != riderId
+            ? current
+            : Preparation.Squad.FirstOrDefault(id => id != riderId);
+        if (support.Value == 0)
+        {
+            return CommandResult.Reject("PREP_STRATEGY_RIDERS_INVALID");
+        }
+
+        return application.Execute(new SetRacePreparationStrategyCommand(
+            riderId,
+            support,
+            Preparation.ObjectiveKind ?? RaceObjective.StageWin,
+            Preparation.BriefingKind ?? RaceBriefingKind.Chase));
     }
 
     public CommandResult ConfirmPreparation()
     {
+        if (Preparation is { StrategySet: false })
+        {
+            return RacePreparationSupport.ConfirmWithDefaultStrategy(application);
+        }
+
         return application.Execute(new ConfirmRacePreparationPlanCommand());
     }
 
@@ -219,7 +285,7 @@ public sealed class CareerShellHost
 
     private void PruneResultTeamFilter()
     {
-        if (resultTeamFilter is { } id && (Result is null || Result.Teams.All(team => team.Id != id)))
+        if (resultTeamFilter is { } id && ResultTeams.All(team => team.Id != id))
         {
             resultTeamFilter = null;
         }

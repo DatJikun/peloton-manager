@@ -16,7 +16,7 @@ public static class WorldChecksum
         using MemoryStream buffer = new();
         using (BinaryWriter writer = new(buffer, Encoding.UTF8, leaveOpen: true))
         {
-            writer.Write("peloton-world-checksum-v1");
+            writer.Write("peloton-world-checksum-v7");
             writer.Write(world.WorldId);
             writer.Write(world.MasterSeed);
             writer.Write(world.RngContractVersion);
@@ -39,14 +39,51 @@ public static class WorldChecksum
             {
                 writer.Write(person.Id.Value);
                 writer.Write(person.Name);
+                writer.Write(person.OriginDefinitionId ?? string.Empty);
+                writer.Write(person.Nationality ?? string.Empty);
+                writer.Write(person.BirthYear ?? 0);
             }
 
-            foreach (RosterRider rider in world.RosterRiders.OrderBy(rider => rider.PersonId.Value))
+            foreach (RiderCareer career in world.RiderCareers.OrderBy(career => career.Id.Value))
             {
-                writer.Write(rider.PersonId.Value);
-                writer.Write(rider.OrganizationId.Value);
-                writer.Write(rider.OriginDefinitionId);
-                writer.Write(rider.RacePrototypeRiderId);
+                writer.Write(career.Id.Value);
+                writer.Write(career.PersonId.Value);
+                writer.Write(career.OrganizationId?.Value ?? 0);
+                writer.Write(career.OriginDefinitionId);
+                writer.Write(career.CriticalPowerW);
+                writer.Write(career.WPrimeCapacityJ);
+                writer.Write(career.PeakPowerW);
+                writer.Write(career.WPrimeRecoveryJPerSecond);
+                writer.Write(career.LowIntensityDurability);
+                writer.Write(career.HighIntensityDurability);
+                writer.Write(career.BodyMassKg);
+                writer.Write(career.SystemMassKg);
+                writer.Write(career.CdAM2);
+                writer.Write(career.BaseCrr);
+                writer.Write(career.Positioning);
+                writer.Write(career.Handling);
+                writer.Write(career.TacticalAwareness);
+                writer.Write(career.Form01);
+                writer.Write(career.Freshness01);
+                writer.Write(career.Fatigue01);
+                writer.Write(career.Loyalty01);
+                foreach (RiderCareerResult result in career.Results)
+                {
+                    writer.Write(result.RaceContentId);
+                    writer.Write(result.DayNumber);
+                    writer.Write(result.Place);
+                    writer.Write(result.DidNotFinish);
+                }
+            }
+
+            foreach (RiderContract contract in world.RiderContracts.OrderBy(contract => contract.Id.Value))
+            {
+                writer.Write(contract.Id.Value);
+                writer.Write(contract.RiderCareerId.Value);
+                writer.Write(contract.OrganizationId.Value);
+                writer.Write(contract.AnnualWage);
+                writer.Write(contract.StartDate.DayNumber);
+                writer.Write(contract.EndDate.DayNumber);
             }
 
             foreach (ManagerCareer manager in world.ManagerCareers.OrderBy(manager => manager.Id.Value))
@@ -70,8 +107,16 @@ public static class WorldChecksum
                 writer.Write(organization.Id.Value);
                 writer.Write(organization.OriginDefinitionId);
                 writer.Write(organization.Name);
-                writer.Write(organization.RacePrototypeTeamId);
                 writer.Write(organization.DaysSimulated);
+                writer.Write(organization.Country);
+                writer.Write(organization.Division);
+                writer.Write(organization.LicenceYearsRemaining);
+                writer.Write(organization.TitleSponsor);
+                writer.Write(organization.Bike);
+                writer.Write(organization.Groupset);
+                writer.Write(organization.EstimatedBudgetEur);
+                writer.Write(organization.CashEur);
+                writer.Write(organization.TitleSponsorAnnualFeeEur);
             }
 
             foreach (DecisionAuthority authority in world.DecisionAuthorities.OrderBy(authority => authority.Id.Value))
@@ -93,7 +138,9 @@ public static class WorldChecksum
             }
 
             writer.Write(world.CalendarPeriodDays);
+            writer.Write(world.FinancialYearDays);
             writer.Write(world.LastCompletedRaceDay);
+            writer.Write(world.GeneratePeriodicRaces);
             writer.Write(world.LastDayNotes.Count);
             foreach (string note in world.LastDayNotes)
             {
@@ -110,6 +157,16 @@ public static class WorldChecksum
                 writer.Write(entry.Title);
                 writer.Write(entry.OfficialResult ?? string.Empty);
                 writer.Write(entry.ResultAcknowledged);
+                writer.Write(entry.RaceContentId ?? string.Empty);
+            }
+
+            foreach (OrganizationRaceEntry entry in world.OrganizationRaceEntries
+                         .OrderBy(entry => entry.OrganizationId.Value)
+                         .ThenBy(entry => entry.RaceContentId, StringComparer.Ordinal))
+            {
+                writer.Write(entry.OrganizationId.Value);
+                writer.Write(entry.RaceContentId);
+                writer.Write(entry.Entered);
             }
         }
 

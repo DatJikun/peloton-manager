@@ -118,39 +118,48 @@ Implementacja jest deferred do wieloetapowego/virtual GC. Obecny jednodniowy rac
 ## D-033 — Supervising watch clock, smooth simulation
 Oglądanie nie jest 1:1 z godzinami etapu, ale też nie jest skokiem „1s oglądania = 100s fizyki”.
 
-Zegar oglądania (Watch Race) jest nadzorujący. W Godocie gracz wybiera **czas filmu** przeciętnego etapu (30 s / 1 min / 2 min / 3 min / 5 min; domyślnie 2 min). Aplikacja wylicza rate z estymaty `TotalLengthM / 6 m/s` i `clamp(round(estimate / target), 1, 120)`. Headless CLI nadal używa jawnego tempa ×1 / ×2 / ×5 / ×20 (`--rate`).
+Zegar oglądania (Watch Race) jest nadzorujący: gracz wybiera tempo (np. ×1 / ×2 / ×5 / ×20). Symulacja dostosowuje się do tego zegara i pozostaje płynna. Gdyby na mapie trasy stały ikony kluczowych zawodników, ich pozycja ma wynikać z aktualnej prędkości, gapu, shelteru i terenu w danej chwili — bez teleportów.
 
-Symulacja dostosowuje się do tego zegara i pozostaje płynna. Gdyby na mapie trasy stały ikony kluczowych zawodników, ich pozycja ma wynikać z aktualnej prędkości, gapu, shelteru i terenu w danej chwili — bez teleportów.
+Fizyka zostaje kanoniczna (`R-001`). Prototype `dt = 1s` to krok referencyjny silnika, nie klatka filmu. Renderer może interpolować pozycje między krokami. `DecisionRequest` pauzuje zegar oglądania. Renderer nie steruje fizyką.
 
-Fizyka zostaje kanoniczna (`R-001`). Prototype `dt = 1s` to krok referencyjny silnika, nie klatka filmu. Renderer może interpolować pozycje między krokami. `DecisionRequest` pauzuje zegar oglądania; pauza prezentacji i pauza na decyzji nie zjadają budżetu filmu. Renderer nie steruje fizyką.
-
-Headless komenda `watch` jest na razie skrótem decyzji (start / pauza / meta), nie modelem Watch Race.
+Headless `watch` implements this supervising clock (rates, pause on `DecisionRequest`, RNG-neutral motion). Godot Watch Race is the presentation renderer over the same clock. CLI markdown output is not the owner §49 playtest.
 
 ## D-034 — Race next is the Hub primary on race day
 On a race-due day the Hub primary time-progress control relabels to **Race next** and enters `RacePreparationFlow`. Inbox remains a queue of items and does not launch the race.
 
 Normal Hub primary action stays **Advance Day** (D-006). The `AdvanceDay` command still cannot skip a due race. Race next only opens preparation; starting the race remains a later prep-menu command.
 
-## D-035 — Sequential core-loop build order
-Jedna rzecz na raz. Skład → oglądanie → kalendarz → Hub. Nie równolegle baza zawodników + negocjacje + native HTML.
+## D-035 — Composer 2.5 is the coding subagent
+When this repo is developed with a main Cloud Agent plus subagents, the split is:
 
-1. **Posprzątać Watch.** Wpuścić czas filmu i trasę. Radio/DS osobno, tylko jeśli po oglądaniu właściciel chce. Stare PR-y kariery (Hub/inbox/debrief) olewać — to już w `main`.
-2. **Kadra świata.** 12 nazwanych kolarzy, 3 ekipy, wyścig z ludzi kariery. Manager osobno. Bez transferów. `race` CLI zostaje ze starym goldenem.
-3. **Właściciel ogląda etap.** Czy historia się klei, czy decyzja ma dwa wyjścia, czy chce kolejny. Testy tego nie zamykają. §49 zostaje `NOT VERIFIED` aż właściciel powie.
-4. **Kalendarz 2–3 wyścigów.** Nie jeden co 12 dni. Inne ekipy też jadą.
-5. **Hub w Godocie, cienki.** Advance Day, Race next, skrzynka, wejście w Watch. Wygląd z labu, nie KPI dashboard.
-6. **Przygotowanie z czwórki.** Kogo stawiasz, po co.
-7. **Więcej decyzji w wyścigu.** Tylko jeśli punkt 3 wypadł dobrze. Nie doklejać fizjologii.
-8. **Potem, nie teraz.** Dossier/agent, transfery, sponsorzy, AI na rynku, lider GC (`D-032`), awatarzy na oko właściciela.
+- main agent = Grok 4.6 High (not fast): Markdown, design contracts, review;
+- Composer 2.5: code.
 
-Kolejny krok zaczyna się dopiero gdy poprzedni wylądował. Radio/DS (PR #25) nie wchodzi w krok 1. Godot Hub / look-lab (PR #27, #28) czekają na krok 5. Prezentacja dnia wyścigu: `D-036` (wynik domyślnie, film opcjonalnie), `D-037` (tabela wyników i filtr per zespół; bez nowych decyzji w wyścigu).
+Coding `Task` launches must set the subagent model to Composer 2.5. They must not inherit the main agent and must not use Composer 2.5 Fast unless the owner asked for speed. Composer is not the primary author of VISION, DECISIONS, ARCHITECTURE, HANDOFF, UI sitemap, GAME_STATES, DATA_MODEL, ADRs, or similar governance docs. Operational detail lives in `AGENTS.md` and `.cursor/rules/composer-coding-subagent.mdc`.
 
-## D-036 — Default race day is results, not film
-Owner 2026-08-31: film Watch jest **opcjonalnym ustawieniem prezentacji**, domyślnie **wyłączony**. Domyślna ścieżka dnia wyścigu to kanoniczny headless `SimulateRace` (ten sam silnik co Watch), potem `RaceResultsFlow` z oficjalnym wynikiem i knowledge-bounded wydarzeniami (miejsca czwórki, cel). Włączenie filmu nie zmienia wyniku. Ustawienie nie jest GameState ani World State (`D-031`): nie woła gameplay RNG i nie rusza goldenu. `D-033` zostaje dla ścieżki filmu. §49 zostaje `NOT VERIFIED`.
+## D-036 — Career riders are the people who race
+Official start lists, finish order, and `LastRace` IDs are world `RiderCareer` identities. A disconnected race-only fixture is not the official result path once this bind exists. Race results append to that career’s history. Same person in the club, on the start list, and in the chronicle.
 
-Opis dla gracza: `HOW_RACE_DAY_WORKS.md`.
+## D-037 — Pre-season entry and pre-race strategy stay in the nine states
+Pre-season: the player chooses which races the organization enters (`PreSeasonPlanningFlow`). Pre-race: a strategy step (roles, objective, briefing) sits inside `RacePreparationFlow` before Confirm. Neither adds a tenth GameState (D-031). Career Hub stays rejected.
 
-## D-037 — Results table and per-team filter; no extra in-race decisions
-Owner 2026-08-31: historia dnia wyścigu jest **wystarczająca na teraz**. **Nie dodajemy kolejnych decyzji w tym samym wyścigu** (`D-035` pkt 7 zostaje *not now*). Zamiast tego wynik ma **tabelę** (miejsce, zawodnik, zespół) i **filtr każdego zespołu osobno**. Miejsca w filtrze zostają globalne (2. miejsce nie staje się 1. po odfiltrowaniu). Filtr jest tylko prezentacją: nie jest GameState ani World State, nie woła gameplay RNG i nie rusza goldenu. Film zostaje opcją z `D-036` (domyślnie wył.). Core loop idzie w **headless symulację i warstwę zarządzania**; film jest dodatkiem, nie rdzeniem. §49 zostaje `NOT VERIFIED`.
+## D-038 — 2026 WorldTour content first; lower tiers are architecture
+First real-cycling pack is men’s UCI WorldTour 2026 (18 teams, 2026–2028 licence cycle). Physiology, wages, and budgets may be estimated gameplay numbers and must be labelled as such. Organization records store division and licence-years-remaining so a 3-year WorldTour licence and ProTeam/Continental tiers can exist later. Living promotion/relegation and a full lower-category grid are not required for the first playable season. Commercial licensing of real names is a later problem; the engine must still run on fictional packs.
 
-Opis dla gracza: `HOW_RACE_DAY_WORKS.md`.
+## D-039 — Rider contracts in; loyalty thin; sponsor-loop overkill
+Rider contracts (club, wage, dates) are required. Loyalty is a stored trait, not a minigame. Personal rider sponsors and marketability-as-a-game are overkill for this slice. A quiet marketability number may arrive later with the sponsor economy.
+
+## D-040 — Staff is never a minigame
+Staff (DS, coach, medical, recruitment) may modify briefing quality, training, or knowledge. They do not get their own minigames.
+
+## D-041 — AI managers wait for the owner
+Do not implement AI managers in this slice. Human/AI symmetry (D-002) still applies to the bind: the same commands and world rules, even if only the human authority is wired.
+
+## D-042 — Attribute visibility is All / Guessed / None
+The knowledge spine serves the existing New Game visibility axis. It is not a fourth fog-of-war mode. All may show OVR/POT. Guessed shows ranges and confidence. None does not show rival attributes; results are evidence. Do not build a scouting/dossier game until the owner asks.
+
+## D-043 — Race play path is Simulate + Results, not Watch Race
+Owner lock 2026-09-01: Watch Race is **not** the playable race product. After prep, the player **simulates** and reads **results**. Results can be **filtered by any organization** (public classification, not God-eye live physiology). Do not expand the Godot Watch Race window. Do not treat D-033 as a reason to build more watching UI. The supervising clock may remain in the engine; it is not the career loop. Career Hub stays rejected (PR #4). The Godot **career shell** (`CareerShell.tscn`, POC v3 chrome) is the management presentation for this play path: Advance Day / Race next, simulate, result table, filter by team. It is not Career Hub. Watch film stays an optional setting, off by default.
+
+## D-044 — Thin contract negotiation, not an agent board game
+The player can offer a contract (annual wage + inclusive end day) to a rider: own roster (renew), unattached (sign), or another club (thin poach). Accept/reject is a closed formula from current wage and `Loyalty01`. No agent minigame, no counter-offer auction, no transfer fee this pass. Stays inside `Management` (D-031: no tenth GameState).

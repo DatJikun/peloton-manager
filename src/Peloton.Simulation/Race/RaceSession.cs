@@ -60,6 +60,8 @@ public sealed class RaceSession
 
     public long Seed { get; }
 
+    public RaceScenario Scenario => scenario;
+
     public bool IsCompleted => Result is not null;
 
     public RaceResult? Result { get; private set; }

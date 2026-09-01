@@ -12,21 +12,15 @@ public sealed record RaceResultPlacement(
     int Place,
     WorldEntityId RiderId,
     string Label,
-    WorldEntityId? TeamId,
-    string TeamName);
-
-public sealed record RaceResultTeam(
-    WorldEntityId Id,
-    string Name);
+    WorldEntityId? OrganizationId,
+    string OrganizationName);
 
 public sealed record RaceResultProjection(
     string Title,
     string RouteId,
     WorldEntityId WinnerId,
     string WinnerLabel,
-    IReadOnlyList<RaceResultPlacement> FinishOrder,
-    IReadOnlyList<RaceResultTeam> Teams,
-    IReadOnlyList<string> Headlines);
+    IReadOnlyList<RaceResultPlacement> FinishOrder);
 
 public sealed record RaceDebriefProjection(
     string Objective,
@@ -35,14 +29,11 @@ public sealed record RaceDebriefProjection(
 public static class RaceOutcomeQueries
 {
     public const string UncertainStaffNote = "sztab nie ma pewności";
-    public const string StaffDecisionHeadline =
-        "Sztab miał momenty decyzji: pościg albo czekać na rywali. Bez filmu poszły delegowane.";
 
     public static RaceResultProjection? BuildResult(
         WorldState world,
         RacePreparationCheckpoint? racePreparation,
-        IRaceScenarioCatalog raceScenarioCatalog,
-        int? decisionCount = null)
+        IRaceScenarioCatalog raceScenarioCatalog)
     {
         ArgumentNullException.ThrowIfNull(world);
         ArgumentNullException.ThrowIfNull(raceScenarioCatalog);
@@ -53,49 +44,37 @@ public static class RaceOutcomeQueries
 
         RaceScenario? scenario = TryResolve(racePreparation, raceScenarioCatalog);
         RaceResultPlacement[] finishOrder = world.LastRace.FinishOrder
-            .Select((id, index) => PlaceRow(world, scenario, id, index + 1))
+            .Select((id, index) => BuildPlacement(world, scenario, id, index + 1))
             .ToArray();
-        string title = CompletedCalendarTitle(world) ?? RacePreparationDefaults.Title;
-        string winnerLabel = Label(world, scenario, world.LastRace.WinnerId);
         return new RaceResultProjection(
-            title,
+            CompletedCalendarTitle(world) ?? RacePreparationDefaults.Title,
             world.LastRace.RouteId,
             world.LastRace.WinnerId,
-            winnerLabel,
-            Array.AsReadOnly(finishOrder),
-            Array.AsReadOnly(DistinctTeams(finishOrder)),
-            BuildHeadlines(
-                world,
-                title,
-                world.LastRace.WinnerId,
-                winnerLabel,
-                world.LastRace.FinishOrder,
-                racePreparation,
-                decisionCount));
+            Label(world, scenario, world.LastRace.WinnerId),
+            Array.AsReadOnly(finishOrder));
     }
 
-    public static IReadOnlyList<RaceResultPlacement> FilterPlacements(
-        RaceResultProjection projection,
-        WorldEntityId? teamId)
+    public static IReadOnlyList<RaceResultPlacement> FilterFinishOrderByOrganization(
+        IReadOnlyList<RaceResultPlacement> finishOrder,
+        WorldEntityId organizationId)
     {
-        ArgumentNullException.ThrowIfNull(projection);
-        if (teamId is null)
-        {
-            return projection.FinishOrder;
-        }
-
-        WorldEntityId filter = teamId.Value;
-        return projection.FinishOrder.Where(row => row.TeamId == filter).ToArray();
+        ArgumentNullException.ThrowIfNull(finishOrder);
+        return finishOrder
+            .Where(place => place.OrganizationId == organizationId)
+            .ToArray();
     }
 
-    public static string FormatTable(RaceResultProjection projection, WorldEntityId? teamId)
+    public static string FormatTable(RaceResultProjection result, WorldEntityId? organizationId)
     {
-        ArgumentNullException.ThrowIfNull(projection);
+        ArgumentNullException.ThrowIfNull(result);
+        IReadOnlyList<RaceResultPlacement> rows = organizationId is { } id
+            ? FilterFinishOrderByOrganization(result.FinishOrder, id)
+            : result.FinishOrder;
         return string.Join(
             '\n',
-            FilterPlacements(projection, teamId).Select(row => string.Create(
+            rows.Select(row => string.Create(
                 CultureInfo.InvariantCulture,
-                $"{row.Place}. {row.Label} | {row.TeamName}")));
+                $"{row.Place}. {row.Label}  {row.OrganizationName}")));
     }
 
     public static RaceDebriefProjection BuildDebrief(
@@ -119,54 +98,6 @@ public static class RaceOutcomeQueries
         return new RaceDebriefProjection(
             RacePreparationDefaults.Objective,
             notes.Take(3).ToArray());
-    }
-
-    private static List<string> BuildHeadlines(
-        WorldState world,
-        string title,
-        WorldEntityId winnerId,
-        string winnerLabel,
-        IReadOnlyList<WorldEntityId> finishOrder,
-        RacePreparationCheckpoint? racePreparation,
-        int? decisionCount)
-    {
-        List<string> headlines = new()
-        {
-            $"{title}: wygrał {winnerLabel}.",
-        };
-
-        IReadOnlyList<SquadSeat> seats = CareerRaceBinder.Seats(world, racePreparation?.Assignments);
-        foreach (SquadSeat seat in seats.OrderBy(seat => Place(finishOrder, seat.RiderId)))
-        {
-            int place = Place(finishOrder, seat.RiderId);
-            headlines.Add(string.Create(
-                CultureInfo.InvariantCulture,
-                $"{seat.Name} ({seat.Role}) — {place}. miejsce."));
-        }
-
-        bool teamWon = seats.Any(seat => seat.RiderId == winnerId);
-        headlines.Add(teamWon
-            ? "Cel StageWin: wasz kolarz wygrał."
-            : "Cel StageWin: nie tym razem.");
-        if (decisionCount > 0)
-        {
-            headlines.Add(StaffDecisionHeadline);
-        }
-
-        return headlines;
-    }
-
-    private static int Place(IReadOnlyList<WorldEntityId> finishOrder, WorldEntityId riderId)
-    {
-        for (int index = 0; index < finishOrder.Count; index++)
-        {
-            if (finishOrder[index] == riderId)
-            {
-                return index + 1;
-            }
-        }
-
-        return finishOrder.Count + 1;
     }
 
     private static string? CompletedCalendarTitle(WorldState world)
@@ -206,44 +137,36 @@ public static class RaceOutcomeQueries
         }
     }
 
-    private static RaceResultPlacement PlaceRow(
+    private static RaceResultPlacement BuildPlacement(
         WorldState world,
         RaceScenario? scenario,
         WorldEntityId riderId,
         int place)
     {
-        (WorldEntityId? teamId, string teamName) = TeamOf(world, riderId);
-        return new RaceResultPlacement(place, riderId, Label(world, scenario, riderId), teamId, teamName);
-    }
-
-    private static RaceResultTeam[] DistinctTeams(IReadOnlyList<RaceResultPlacement> finishOrder)
-    {
-        return finishOrder
-            .Where(row => row.TeamId is not null && !string.IsNullOrWhiteSpace(row.TeamName))
-            .GroupBy(row => row.TeamId!.Value)
-            .Select(group => new RaceResultTeam(group.Key, group.First().TeamName))
-            .OrderBy(team => team.Id.Value)
-            .ToArray();
-    }
-
-    private static (WorldEntityId? TeamId, string TeamName) TeamOf(WorldState world, WorldEntityId riderId)
-    {
-        RosterRider? roster = world.RosterRiders.FirstOrDefault(item => item.PersonId == riderId);
-        if (roster is null)
+        RiderCareer? career = world.TryGetRiderCareer(riderId);
+        WorldEntityId? organizationId = career?.OrganizationId;
+        string organizationName = string.Empty;
+        if (organizationId is WorldEntityId resolvedOrganizationId)
         {
-            return (null, string.Empty);
+            Organization? organization = world.Organizations.FirstOrDefault(
+                item => item.Id == resolvedOrganizationId);
+            organizationName = organization?.Name ?? string.Empty;
         }
 
-        Organization? organization = world.Organizations.FirstOrDefault(item => item.Id == roster.OrganizationId);
-        return (roster.OrganizationId, organization?.Name ?? string.Empty);
+        return new RaceResultPlacement(
+            place,
+            riderId,
+            Label(world, scenario, riderId),
+            organizationId,
+            organizationName);
     }
 
-    private static string Label(WorldState? world, RaceScenario? scenario, WorldEntityId riderId)
+    private static string Label(WorldState world, RaceScenario? scenario, WorldEntityId riderId)
     {
-        Person? person = world?.Persons.FirstOrDefault(item => item.Id == riderId);
-        if (person is not null && !string.IsNullOrWhiteSpace(person.Name))
+        RiderCareer? career = world.TryGetRiderCareer(riderId);
+        if (career is not null)
         {
-            return person.Name;
+            return career.OriginDefinitionId;
         }
 
         if (scenario is not null)

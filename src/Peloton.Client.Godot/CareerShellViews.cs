@@ -152,7 +152,10 @@ public sealed partial class CareerShellScreen
         if (prep is not null)
         {
             box.AddChild(LookChrome.Kv("Cel", prep.Objective));
-            box.AddChild(LookChrome.Body("Czwórka z Beskid–Vetter. Wybierz Leader i Card.", 12, LookChrome.Gray));
+            box.AddChild(LookChrome.Body(
+                "Skład klubu. Kliknij kolarza, żeby ustawić lidera. Support idzie z domyślnej strategii.",
+                12,
+                LookChrome.Gray));
         }
 
         return box;
@@ -173,21 +176,17 @@ public sealed partial class CareerShellScreen
             13,
             LookChrome.Black,
             bold: true));
-        foreach (SquadSeat seat in prep.Seats)
+        foreach (WorldEntityId riderId in prep.Squad)
         {
-            SquadSeat captured = seat;
+            WorldEntityId captured = riderId;
+            string role = captured == prep.LeaderId
+                ? "Leader"
+                : captured == prep.SupportId
+                    ? "Support"
+                    : "Skład";
             box.AddChild(LookChrome.Solid(
-                $"{captured.Name} · {captured.Role} — {captured.Why}",
-                () =>
-                {
-                    string next = captured.Role switch
-                    {
-                        SquadRoles.Worker => SquadRoles.Card,
-                        SquadRoles.Card => SquadRoles.Leader,
-                        _ => SquadRoles.Worker,
-                    };
-                    Apply(host.AssignRole(captured.RiderId, next));
-                },
+                $"{host.RiderDisplayName(captured)} · {role}",
+                () => Apply(host.SetLeader(captured)),
                 LookChrome.Paper,
                 LookChrome.Black,
                 compact: true));
@@ -296,23 +295,19 @@ public sealed partial class CareerShellScreen
         if (host!.Result is RaceResultProjection result)
         {
             box.AddChild(LookChrome.Body(
-                string.Create(CultureInfo.InvariantCulture, $"{result.Title} · wygrał {result.WinnerLabel}"),
+                string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"{result.Title} · wygrał {host.RiderDisplayName(result.WinnerId)}"),
                 13,
                 LookChrome.Black,
                 bold: true));
-            foreach (string headline in result.Headlines)
-            {
-                Label line = LookChrome.Body(headline, 12, LookChrome.Gray);
-                line.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-                box.AddChild(line);
-            }
 
             HBoxContainer filters = new();
             filters.AddThemeConstantOverride("separation", 6);
             filters.AddChild(FilterChip("Wszyscy", null, host.ResultTeamFilter is null));
-            foreach (RaceResultTeam team in result.Teams)
+            foreach (OrganizationNameProjection team in host.ResultTeams)
             {
-                RaceResultTeam captured = team;
+                OrganizationNameProjection captured = team;
                 filters.AddChild(FilterChip(
                     captured.Name,
                     captured.Id,
@@ -331,8 +326,8 @@ public sealed partial class CareerShellScreen
                 pos.CustomMinimumSize = new Vector2(48, 0);
                 VBoxContainer meta = new();
                 meta.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-                meta.AddChild(LookChrome.Body(row.Label, 14, LookChrome.Black, bold: true));
-                meta.AddChild(LookChrome.Body(row.TeamName, 11, LookChrome.Gray));
+                meta.AddChild(LookChrome.Body(host.RiderDisplayName(row.RiderId), 14, LookChrome.Black, bold: true));
+                meta.AddChild(LookChrome.Body(row.OrganizationName, 11, LookChrome.Gray));
                 line.AddChild(pos);
                 line.AddChild(meta);
                 box.AddChild(line);

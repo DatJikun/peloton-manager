@@ -13,6 +13,7 @@ namespace Peloton.Client.Godot.Tests;
 public sealed class CareerShellHostTests
 {
     private const long GateSeed = 91234;
+    private const string BetaLeaderOriginId = "rider.race-prototype.beta-leader";
 
     [Fact]
     public void OpenSkeletonStaysInManagementWithHubCalendarAndPeople()
@@ -61,8 +62,8 @@ public sealed class CareerShellHostTests
         Assert.Null(host.Day);
         RacePreparationProjection prep = Assert.IsType<RacePreparationProjection>(host.Preparation);
         Assert.Equal(SkeletonCalendar.OpeningClassic, prep.Title);
-        Assert.Equal(4, prep.Seats.Count);
-        Assert.Contains(prep.Seats, seat => seat.Role == SquadRoles.Leader && seat.Name == "Piotr Kowalczyk");
+        Assert.Equal(4, prep.Squad.Count);
+        Assert.Contains(prep.Squad, rider => host.RiderDisplayName(rider) == "Piotr Kowalczyk");
     }
 
     [Fact]
@@ -80,15 +81,18 @@ public sealed class CareerShellHostTests
         Assert.Null(host.Watch);
         RaceResultProjection result = Assert.IsType<RaceResultProjection>(host.Result);
         Assert.Equal("Opening Classic", result.Title);
-        Assert.Equal("Marco Anconi", result.WinnerLabel);
-        Assert.Equal(3, result.Teams.Count);
-        Assert.Contains(result.FinishOrder, row => row.Label == "Dawid Rutka" && row.TeamName == "Beskid–Vetter");
+        Assert.Equal(BetaLeaderOriginId, result.WinnerLabel);
+        Assert.Equal("Marco Anconi", host.RiderDisplayName(result.WinnerId));
+        Assert.Equal(3, host.ResultTeams.Count);
+        Assert.Contains(
+            result.FinishOrder,
+            row => host.RiderDisplayName(row.RiderId) == "Dawid Rutka" && row.OrganizationName == "Beskid–Vetter");
         Assert.Equal(12, host.VisibleResultTable.Count);
 
-        RaceResultTeam beskid = result.Teams.Single(team => team.Name == "Beskid–Vetter");
+        OrganizationNameProjection beskid = host.ResultTeams.Single(team => team.Name == "Beskid–Vetter");
         host.SetResultTeamFilter(beskid.Id);
         Assert.Equal(4, host.VisibleResultTable.Count);
-        Assert.All(host.VisibleResultTable, row => Assert.Equal("Beskid–Vetter", row.TeamName));
+        Assert.All(host.VisibleResultTable, row => Assert.Equal("Beskid–Vetter", row.OrganizationName));
         host.SetResultTeamFilter(null);
         Assert.Equal(12, host.VisibleResultTable.Count);
 

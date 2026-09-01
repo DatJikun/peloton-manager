@@ -16,6 +16,7 @@ public sealed class WatchRaceHost
     private RaceWatchFrame? previousFrame;
     private double watchAccumulator;
     private bool presentationPaused;
+    private int? rateOverride;
 
     public WatchRaceHost(
         GameApplication application,
@@ -53,10 +54,20 @@ public sealed class WatchRaceHost
 
     public string RiderLabel(WorldEntityId riderId)
     {
-        Person? person = application.World?.Persons.FirstOrDefault(item => item.Id == riderId);
-        return person is null || string.IsNullOrWhiteSpace(person.Name)
-            ? riderId.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)
-            : person.Name;
+        if (application.World is not WorldState world)
+        {
+            return riderId.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        RiderCareer? career = world.TryGetRiderCareer(riderId);
+        WorldEntityId personId = career?.PersonId ?? riderId;
+        Person? person = world.Persons.FirstOrDefault(item => item.Id == personId);
+        if (person is not null && !string.IsNullOrWhiteSpace(person.Name))
+        {
+            return person.Name;
+        }
+
+        return career?.OriginDefinitionId ?? riderId.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
     }
 
     public InterpolatedWatchView? Interpolated
@@ -93,6 +104,11 @@ public sealed class WatchRaceHost
         return application.Execute(new PrepareRaceCommand());
     }
 
+    public CommandResult SetDefaultStrategy()
+    {
+        return RacePreparationSupport.SetDefaultStrategy(application);
+    }
+
     public CommandResult ConfirmPreparation()
     {
         return application.Execute(new ConfirmRacePreparationPlanCommand());
@@ -119,6 +135,22 @@ public sealed class WatchRaceHost
         return CommandResult.Success;
     }
 
+    public CommandResult SelectRate(int rate)
+    {
+        if (application.State == GameState.RaceLive)
+        {
+            return CommandResult.Reject("WATCH_RATE_LOCKED");
+        }
+
+        if (rate < 1)
+        {
+            return CommandResult.Reject("WATCH_RATE_INVALID");
+        }
+
+        rateOverride = rate;
+        return CommandResult.Success;
+    }
+
     public CommandResult StartWatch()
     {
         CommandResult started = application.Execute(
@@ -129,7 +161,7 @@ public sealed class WatchRaceHost
         }
 
         double routeLengthM = application.RaceWatchCourse?.TotalLengthM ?? 0.0;
-        SelectedRate = WatchFilmDuration.RateFor(routeLengthM, SelectedFilmSeconds);
+        SelectedRate = rateOverride ?? WatchFilmDuration.RateFor(routeLengthM, SelectedFilmSeconds);
         CommandResult watching = application.Execute(new BeginRaceWatchCommand(SelectedRate));
         if (!watching.Succeeded)
         {

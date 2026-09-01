@@ -7,7 +7,7 @@
 
 `main` should remain buildable and testable.
 
-Work happens in short-lived branches and is merged through reviewable pull requests once active development begins.
+Work happens in short-lived branches and is merged through reviewable pull requests once active development begins. Cloud Agent coding subagents are Composer 2.5 (D-035); the main agent writes design/governance docs.
 
 ## Branches
 

@@ -2,7 +2,7 @@
 
 **Status:** ACTIVE  
 **Purpose:** opis dnia wyścigu tak, jak widzi go gracz. Nie jest to dokument silnika.  
-**Decyzja:** `D-036`, `D-037`
+**Decyzja:** `D-043` (ścieżka gry: symulacja i wynik; film opcjonalny)
 
 ## W skrócie
 
@@ -12,7 +12,7 @@ Domyślnie **nie oglądasz filmu**. Stawiasz czwórkę, jedziesz wyścig, dostaj
 
 1. **Advance Day** — świat idzie o jeden dzień. Kalendarz i skrzynka mówią, co jest przed Tobą.
 2. W dzień wyścigu przycisk zmienia się na **Race next**. Wchodzisz w przygotowanie.
-3. Przy czwórce z Beskid–Vetter wybierasz, **kto prowadzi** (Leader), **kto ma wynik** (Card) i kto wozi (Worker). Każde miejsce ma jedną linijkę „po co”.
+3. W przygotowaniu widzisz skład klubu. Kliknięciem ustawiasz **lidera**; support i briefing biorą się z domyślnej strategii, jeśli nic nie zmienisz.
 4. **Jedź wyścig** — silnik liczy etap od razu. Nie sterujesz kolarzem palcem.
 5. Na biurku pojawia się **Wynik**: kto wygrał, miejsca Twojej czwórki, czy cel StageWin wyszedł, i czy sztab miał momenty decyzji (dziś: pościg albo czekać na rywali). Bez filmu te decyzje idą delegowane. Pod spodem jest **tabela** — miejsce, nazwisko, zespół. Przyciski **Wszyscy** / Beskid–Vetter / Fala–Karpaty / Ost-Wind filtrują wiersze; miejsca zostają takie jak w całym peletonie.
 6. **Dalej** — krótki debrief sztabu. **Zamknij** — z powrotem na biurko, świat idzie dalej.

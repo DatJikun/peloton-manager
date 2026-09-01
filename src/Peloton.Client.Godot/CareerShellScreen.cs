@@ -622,7 +622,7 @@ public sealed partial class CareerShellScreen : Control
         return code switch
         {
             "RACE_DAY_PENDING" => "Najpierw jedź wyścig. Advance Day jest zablokowane.",
-            "PREP_ROLES_INCOMPLETE" => "Potrzebujesz lidera i karta.",
+            "PREP_STRATEGY_INCOMPLETE" => "Ustaw lidera i support.",
             "SAVE_FORBIDDEN_IN_RACE_LIVE" => "Zapis w trakcie etapu jest zablokowany.",
             "LOAD_FORBIDDEN_IN_RACE_LIVE" => "Wczytanie w trakcie etapu jest zablokowane.",
             "INBOX_SOURCE_CANNOT_BE_DISMISSED" => "Terminu wyścigu nie da się schować.",

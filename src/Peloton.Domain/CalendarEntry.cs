@@ -11,4 +11,5 @@ public sealed record CalendarEntry(
     CalendarEntryKind Kind,
     string Title,
     string? OfficialResult = null,
-    bool ResultAcknowledged = false);
+    bool ResultAcknowledged = false,
+    string? RaceContentId = null);

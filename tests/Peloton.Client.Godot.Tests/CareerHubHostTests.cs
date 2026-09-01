@@ -13,6 +13,7 @@ namespace Peloton.Client.Godot.Tests;
 public sealed class CareerHubHostTests
 {
     private const long GateSeed = 91234;
+    private const string BetaLeaderOriginId = "rider.race-prototype.beta-leader";
 
     [Fact]
     public void HubShowsCalendarInboxAndAdvanceDayWithoutKpiDashboard()
@@ -32,11 +33,11 @@ public sealed class CareerHubHostTests
         Assert.True(host.AdvanceDay().Succeeded);
         Assert.Equal(1, host.Day!.DayNumber);
         Assert.Equal(3, host.Day.DaysUntilNextRace);
-        Assert.DoesNotContain("KPI", host.Day.TodayNotes[0], System.StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("KPI", host.Day.TodayNotes[0], StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
-    public void RaceNextEntersPrepWithNamedSeatsThenSimulatesToResults()
+    public void RaceNextEntersPrepThenSimulatesToResults()
     {
         using TemporaryDirectory temp = new();
         CareerHubHost host = CreateHost(temp.Path);
@@ -49,19 +50,8 @@ public sealed class CareerHubHostTests
         Assert.Equal(GameState.RacePreparationFlow, host.State);
         RacePreparationProjection prep = Assert.IsType<RacePreparationProjection>(host.Preparation);
         Assert.Equal(SkeletonCalendar.OpeningClassic, prep.Title);
-        Assert.Equal(4, prep.Seats.Count);
-        Assert.Contains(prep.Seats, seat => seat.Role == SquadRoles.Leader && seat.Name == "Piotr Kowalczyk");
-        Assert.Contains(prep.Seats, seat => seat.Role == SquadRoles.Card && !string.IsNullOrWhiteSpace(seat.Why));
-
-        WorldEntityId rutka = prep.Seats.Single(seat => seat.Name == "Dawid Rutka").RiderId;
-        Assert.True(host.AssignRole(rutka, SquadRoles.Leader).Succeeded);
-        Assert.False(host.Preparation!.PlanConfirmed);
-        Assert.Equal(SquadRoles.Leader, host.Preparation.Seats.Single(seat => seat.Name == "Dawid Rutka").Role);
-        Assert.Equal(SquadRoles.Worker, host.Preparation.Seats.Single(seat => seat.Name == "Piotr Kowalczyk").Role);
-        Assert.Equal("PREP_ROLES_INCOMPLETE", host.ConfirmPreparation().ReasonCode);
-        Assert.True(host.AssignRole(
-            host.Preparation.Seats.Single(seat => seat.Name == "Piotr Kowalczyk").RiderId,
-            SquadRoles.Card).Succeeded);
+        Assert.Equal(4, prep.Squad.Count);
+        Assert.Contains(prep.Squad, rider => host.RiderDisplayName(rider) == "Piotr Kowalczyk");
 
         Assert.False(host.Settings.WatchFilmEnabled);
         Assert.True(host.RunRace().Succeeded);
@@ -69,31 +59,28 @@ public sealed class CareerHubHostTests
         Assert.Null(host.Watch);
         RaceResultProjection result = Assert.IsType<RaceResultProjection>(host.Result);
         Assert.Equal("Opening Classic", result.Title);
-        Assert.Equal("Marco Anconi", result.WinnerLabel);
-        Assert.Contains(result.Headlines, line => line.Contains("Marco Anconi", StringComparison.Ordinal));
-        Assert.Contains(result.Headlines, line => line.Contains("Dawid Rutka", StringComparison.Ordinal));
-        Assert.Contains(result.Headlines, line => line.Contains("Cel StageWin: nie tym razem.", StringComparison.Ordinal));
-        Assert.Contains(result.Headlines, line => line.Equals(RaceOutcomeQueries.StaffDecisionHeadline, StringComparison.Ordinal));
-        Assert.All(result.Headlines, line => Assert.DoesNotContain("WPrime", line, StringComparison.OrdinalIgnoreCase));
-        Assert.Equal(3, result.Teams.Count);
-        Assert.Contains(result.FinishOrder, row => row.Label == "Dawid Rutka" && row.TeamName == "Beskid–Vetter");
-        Assert.Equal("Fala–Karpaty", result.FinishOrder[0].TeamName);
+        Assert.Equal(BetaLeaderOriginId, result.WinnerLabel);
+        Assert.Equal("Marco Anconi", host.RiderDisplayName(result.WinnerId));
+        Assert.Contains(
+            result.FinishOrder,
+            row => host.RiderDisplayName(row.RiderId) == "Dawid Rutka" && row.OrganizationName == "Beskid–Vetter");
+        Assert.Equal("Fala–Karpaty", result.FinishOrder[0].OrganizationName);
         Assert.Equal(12, host.VisibleResultTable.Count);
 
-        RaceResultTeam beskid = result.Teams.Single(team => team.Name == "Beskid–Vetter");
+        OrganizationNameProjection beskid = host.ResultTeams.Single(team => team.Name == "Beskid–Vetter");
         host.SetResultTeamFilter(beskid.Id);
         Assert.Equal(beskid.Id, host.ResultTeamFilter);
         Assert.Equal(4, host.VisibleResultTable.Count);
-        Assert.All(host.VisibleResultTable, row => Assert.Equal("Beskid–Vetter", row.TeamName));
+        Assert.All(host.VisibleResultTable, row => Assert.Equal("Beskid–Vetter", row.OrganizationName));
         Assert.DoesNotContain(host.VisibleResultTable, row => row.Place == 1);
-        Assert.Contains(host.VisibleResultTable, row => row.Label == "Dawid Rutka");
+        Assert.Contains(host.VisibleResultTable, row => host.RiderDisplayName(row.RiderId) == "Dawid Rutka");
         host.SetResultTeamFilter(null);
         Assert.Null(host.ResultTeamFilter);
         Assert.Equal(12, host.VisibleResultTable.Count);
 
         Assert.True(host.ContinueOutcome().Succeeded);
         Assert.Equal(GameState.RaceDebriefFlow, host.State);
-        Assert.Contains(host.Debrief!.Notes, note => note.Contains("Marco Anconi", StringComparison.Ordinal));
+        Assert.Contains(host.Debrief!.Notes, note => note.Contains(BetaLeaderOriginId, StringComparison.Ordinal));
         Assert.True(host.ContinueOutcome().Succeeded);
         Assert.Equal(GameState.Management, host.State);
         Assert.Null(host.Result);

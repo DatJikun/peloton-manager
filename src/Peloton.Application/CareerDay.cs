@@ -15,6 +15,26 @@ public static class HubPrimaryActionLabels
     public const string RaceNext = "Race next";
 }
 
+public sealed record ClubRosterEntry(
+    WorldEntityId RiderCareerId,
+    string Name,
+    string OriginDefinitionId,
+    int AnnualWage,
+    int ContractEndDay,
+    double Loyalty01);
+
+public sealed record ClubRosterProjection(IReadOnlyList<ClubRosterEntry> Riders);
+
+public sealed record ClubFinanceProjection(
+    long CashEur,
+    long WageBillAnnual,
+    string TitleSponsorName,
+    long TitleSponsorAnnualFeeEur,
+    long DailySponsor,
+    long DailyWages,
+    long DailyNet,
+    bool Overdrawn);
+
 public sealed record CareerDayProjection(
     int DayNumber,
     string ManagerName,

@@ -13,7 +13,7 @@ namespace Peloton.Persistence;
 
 public sealed class SqliteWorldSaveStore : IWorldSaveStore
 {
-    public const int SchemaVersion = 1;
+    public const int SchemaVersion = 7;
 
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
 
@@ -257,9 +257,30 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         string OriginDefinitionId,
         string Name,
         int DaysSimulated,
-        string RacePrototypeTeamId = "")
+        string Country = "",
+        string Division = "Skeleton",
+        int LicenceYearsRemaining = 0,
+        string TitleSponsor = "",
+        string Bike = "",
+        string Groupset = "",
+        long EstimatedBudgetEur = 0,
+        long CashEur = 0,
+        long TitleSponsorAnnualFeeEur = 0)
     {
-        public Organization ToDomain() => new(Id, OriginDefinitionId, Name, DaysSimulated, RacePrototypeTeamId);
+        public Organization ToDomain() => new(
+            Id,
+            OriginDefinitionId,
+            Name,
+            DaysSimulated,
+            Country,
+            Division,
+            LicenceYearsRemaining,
+            TitleSponsor,
+            Bike,
+            Groupset,
+            EstimatedBudgetEur,
+            CashEur,
+            TitleSponsorAnnualFeeEur);
     }
 
     private sealed record RaceDto(
@@ -270,15 +291,145 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         public RaceSummary ToDomain() => new(RouteId, WinnerId, FinishOrder);
     }
 
+    private sealed record RiderCareerResultDto(
+        string RaceContentId,
+        int DayNumber,
+        int Place,
+        bool DidNotFinish)
+    {
+        public RiderCareerResult ToDomain() =>
+            new(RaceContentId, DayNumber, Place, DidNotFinish);
+    }
+
+    private sealed record RiderCareerDto(
+        WorldEntityId Id,
+        WorldEntityId PersonId,
+        WorldEntityId? OrganizationId,
+        string OriginDefinitionId,
+        double CriticalPowerW,
+        double WPrimeCapacityJ,
+        double PeakPowerW,
+        double WPrimeRecoveryJPerSecond,
+        double LowIntensityDurability,
+        double HighIntensityDurability,
+        double BodyMassKg,
+        double SystemMassKg,
+        double CdAM2,
+        double BaseCrr,
+        double Positioning,
+        double Handling,
+        double TacticalAwareness,
+        double Form01,
+        double Freshness01,
+        double Fatigue01,
+        double Loyalty01,
+        IReadOnlyList<RiderCareerResultDto>? Results = null)
+    {
+        public RiderCareer ToDomain() => new(
+            Id,
+            PersonId,
+            OrganizationId,
+            OriginDefinitionId,
+            CriticalPowerW,
+            WPrimeCapacityJ,
+            PeakPowerW,
+            WPrimeRecoveryJPerSecond,
+            LowIntensityDurability,
+            HighIntensityDurability,
+            BodyMassKg,
+            SystemMassKg,
+            CdAM2,
+            BaseCrr,
+            Positioning,
+            Handling,
+            TacticalAwareness,
+            Form01,
+            Freshness01,
+            Fatigue01,
+            Loyalty01,
+            (Results ?? Array.Empty<RiderCareerResultDto>()).Select(result => result.ToDomain()));
+
+        public static RiderCareerDto FromDomain(RiderCareer career) => new(
+            career.Id,
+            career.PersonId,
+            career.OrganizationId,
+            career.OriginDefinitionId,
+            career.CriticalPowerW,
+            career.WPrimeCapacityJ,
+            career.PeakPowerW,
+            career.WPrimeRecoveryJPerSecond,
+            career.LowIntensityDurability,
+            career.HighIntensityDurability,
+            career.BodyMassKg,
+            career.SystemMassKg,
+            career.CdAM2,
+            career.BaseCrr,
+            career.Positioning,
+            career.Handling,
+            career.TacticalAwareness,
+            career.Form01,
+            career.Freshness01,
+            career.Fatigue01,
+            career.Loyalty01,
+            career.Results
+                .Select(result => new RiderCareerResultDto(
+                    result.RaceContentId,
+                    result.DayNumber,
+                    result.Place,
+                    result.DidNotFinish))
+                .ToArray());
+    }
+
+    private sealed record RiderContractDto(
+        WorldEntityId Id,
+        WorldEntityId RiderCareerId,
+        WorldEntityId OrganizationId,
+        int AnnualWage,
+        WorldDate StartDate,
+        WorldDate EndDate)
+    {
+        public RiderContract ToDomain() =>
+            new(Id, RiderCareerId, OrganizationId, AnnualWage, StartDate, EndDate);
+
+        public static RiderContractDto FromDomain(RiderContract contract) =>
+            new(
+                contract.Id,
+                contract.RiderCareerId,
+                contract.OrganizationId,
+                contract.AnnualWage,
+                contract.StartDate,
+                contract.EndDate);
+    }
+
+    private sealed record OrganizationRaceEntryDto(
+        WorldEntityId OrganizationId,
+        string RaceContentId,
+        bool Entered)
+    {
+        public OrganizationRaceEntry ToDomain() =>
+            new(OrganizationId, RaceContentId, Entered);
+
+        public static OrganizationRaceEntryDto FromDomain(OrganizationRaceEntry entry) =>
+            new(entry.OrganizationId, entry.RaceContentId, entry.Entered);
+    }
+
     private sealed record CalendarEntryDto(
         WorldEntityId Id,
         int DayNumber,
         CalendarEntryKind Kind,
         string Title,
         string? OfficialResult = null,
-        bool ResultAcknowledged = false)
+        bool ResultAcknowledged = false,
+        string? RaceContentId = null)
     {
-        public CalendarEntry ToDomain() => new(Id, DayNumber, Kind, Title, OfficialResult, ResultAcknowledged);
+        public CalendarEntry ToDomain() => new(
+            Id,
+            DayNumber,
+            Kind,
+            Title,
+            OfficialResult,
+            ResultAcknowledged,
+            RaceContentId);
     }
 
     private sealed record WorldSnapshotDto(
@@ -301,7 +452,11 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         int LastCompletedRaceDay,
         IReadOnlyList<string> LastDayNotes,
         IReadOnlyList<CalendarEntryDto>? CalendarEntries = null,
-        IReadOnlyList<RosterRider>? RosterRiders = null)
+        IReadOnlyList<RiderCareerDto>? RiderCareers = null,
+        IReadOnlyList<OrganizationRaceEntryDto>? OrganizationRaceEntries = null,
+        IReadOnlyList<RiderContractDto>? RiderContracts = null,
+        bool GeneratePeriodicRaces = true,
+        int FinancialYearDays = 365)
     {
         public static WorldSnapshotDto FromDomain(WorldState world)
         {
@@ -323,7 +478,15 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                         organization.OriginDefinitionId,
                         organization.Name,
                         organization.DaysSimulated,
-                        organization.RacePrototypeTeamId))
+                        organization.Country,
+                        organization.Division,
+                        organization.LicenceYearsRemaining,
+                        organization.TitleSponsor,
+                        organization.Bike,
+                        organization.Groupset,
+                        organization.EstimatedBudgetEur,
+                        organization.CashEur,
+                        organization.TitleSponsorAnnualFeeEur))
                     .ToArray(),
                 world.DecisionAuthorities.ToArray(),
                 world.RaceCount,
@@ -343,9 +506,16 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                         entry.Kind,
                         entry.Title,
                         entry.OfficialResult,
-                        entry.ResultAcknowledged))
+                        entry.ResultAcknowledged,
+                        entry.RaceContentId))
                     .ToArray(),
-                world.RosterRiders.ToArray());
+                world.RiderCareers.Select(RiderCareerDto.FromDomain).ToArray(),
+                world.OrganizationRaceEntries
+                    .Select(OrganizationRaceEntryDto.FromDomain)
+                    .ToArray(),
+                world.RiderContracts.Select(RiderContractDto.FromDomain).ToArray(),
+                world.GeneratePeriodicRaces,
+                world.FinancialYearDays);
         }
 
         public WorldState ToDomain()
@@ -371,7 +541,14 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                 LastDayNotes ?? Array.Empty<string>(),
                 (CalendarEntries ?? Array.Empty<CalendarEntryDto>())
                     .Select(entry => entry.ToDomain()),
-                RosterRiders ?? Array.Empty<RosterRider>());
+                (RiderCareers ?? Array.Empty<RiderCareerDto>())
+                    .Select(career => career.ToDomain()),
+                (OrganizationRaceEntries ?? Array.Empty<OrganizationRaceEntryDto>())
+                    .Select(entry => entry.ToDomain()),
+                (RiderContracts ?? Array.Empty<RiderContractDto>())
+                    .Select(contract => contract.ToDomain()),
+                GeneratePeriodicRaces,
+                FinancialYearDays > 0 ? FinancialYearDays : (GeneratePeriodicRaces ? (CalendarPeriodDays > 0 ? CalendarPeriodDays : 12) : 365));
         }
     }
 }

@@ -388,7 +388,7 @@ public sealed partial class WatchRaceScreen : Control
         {
             title!.Text = "WYNIK";
             status!.Text = "Oficjalny wynik z LastRace. Bez drugiego RunBatch.";
-            result.Text = RaceOutcomeQueries.FormatTable(projection, teamId: null)
+            result.Text = RaceOutcomeQueries.FormatTable(projection, organizationId: null)
                 + "\n\n"
                 + string.Create(
                     CultureInfo.InvariantCulture,

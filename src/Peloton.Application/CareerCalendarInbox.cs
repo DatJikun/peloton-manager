@@ -23,7 +23,7 @@ public sealed record InboxItemProjection(
 
 internal static class CareerProjectionQueries
 {
-    public static IReadOnlyList<CalendarEntryProjection> BuildCalendar(WorldState world)
+    public static IReadOnlyList<CalendarEntryProjection> BuildCalendar(WorldState world, AccessContext access)
     {
         ArgumentNullException.ThrowIfNull(world);
 
@@ -32,22 +32,23 @@ internal static class CareerProjectionQueries
                 entry.Id,
                 entry.DayNumber,
                 FormatKind(entry.Kind),
-                DeriveStatus(world, entry),
+                DeriveStatus(world, entry, access),
                 entry.Title,
                 entry.OfficialResult))
             .ToArray();
     }
 
-    public static IReadOnlyList<InboxItemProjection> BuildInbox(WorldState world)
+    public static IReadOnlyList<InboxItemProjection> BuildInbox(WorldState world, AccessContext access)
     {
         ArgumentNullException.ThrowIfNull(world);
 
-        if (world.IsRaceDue)
+        if (access.CurrentOrganizationId is WorldEntityId organizationId &&
+            world.IsRaceDueForOrganization(organizationId))
         {
             CalendarEntry? dueEntry = world.CalendarEntries
                 .FirstOrDefault(entry =>
                     entry.DayNumber == world.CurrentDate.DayNumber &&
-                    DeriveStatus(world, entry) == "due");
+                    DeriveStatus(world, entry, access) == "due");
             if (dueEntry is not null)
             {
                 return new[]
@@ -87,14 +88,16 @@ internal static class CareerProjectionQueries
     public static string FormatResultIdentity(WorldEntityId entryId) =>
         string.Create(CultureInfo.InvariantCulture, $"calendar:{entryId.Value}:result");
 
-    private static string DeriveStatus(WorldState world, CalendarEntry entry)
+    private static string DeriveStatus(WorldState world, CalendarEntry entry, AccessContext access)
     {
         if (entry.DayNumber <= world.LastCompletedRaceDay)
         {
             return "completed";
         }
 
-        if (entry.DayNumber == world.CurrentDate.DayNumber && world.IsRaceDue)
+        if (entry.DayNumber == world.CurrentDate.DayNumber &&
+            access.CurrentOrganizationId is WorldEntityId organizationId &&
+            world.IsRaceDueForOrganization(organizationId))
         {
             return "due";
         }

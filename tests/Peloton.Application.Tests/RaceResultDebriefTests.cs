@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Peloton.Application;
@@ -18,51 +17,12 @@ public sealed class RaceResultDebriefTests
     private const long GateSeed = 91234;
     private static readonly string[] CommittedResultNotes =
     {
-        "Oficjalny zwycięzca: Marco Anconi.",
+        "Oficjalny zwycięzca: rider.race-prototype.beta-leader.",
     };
     private static readonly string[] UncertainStaffNotes =
     {
         RaceOutcomeQueries.UncertainStaffNote,
     };
-
-    private static readonly string[] SkeletonTeamNames =
-    {
-        "Beskid–Vetter",
-        "Fala–Karpaty",
-        "Ost-Wind",
-    };
-
-    [Fact]
-    public void RaceResultTableNamesTeamsAndKeepsGlobalPlacesWhenFiltered()
-    {
-        GameApplication application = TestApplication.Create();
-        Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", GateSeed)).Succeeded);
-        Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
-        Assert.True(application.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId)).Succeeded);
-
-        RaceResultProjection result = Assert.IsType<RaceResultProjection>(application.RaceResult);
-        Assert.Equal(12, result.FinishOrder.Count);
-        Assert.Equal(3, result.Teams.Count);
-        Assert.Equal(SkeletonTeamNames, result.Teams.Select(team => team.Name));
-        Assert.Equal(4, result.FinishOrder.Count(row => row.TeamName == "Beskid–Vetter"));
-        Assert.Equal(4, result.FinishOrder.Count(row => row.TeamName == "Fala–Karpaty"));
-        Assert.Equal(4, result.FinishOrder.Count(row => row.TeamName == "Ost-Wind"));
-
-        RaceResultTeam beskid = result.Teams.Single(team => team.Name == "Beskid–Vetter");
-        IReadOnlyList<RaceResultPlacement> filtered = RaceOutcomeQueries.FilterPlacements(result, beskid.Id);
-        Assert.Equal(4, filtered.Count);
-        Assert.All(filtered, row => Assert.Equal("Beskid–Vetter", row.TeamName));
-        Assert.Equal(filtered.Select(row => row.Place), filtered.Select(row => row.Place).Distinct());
-        Assert.DoesNotContain(filtered, row => row.Place == 1);
-        Assert.Contains(filtered, row => row.Place > 4);
-        Assert.Equal(
-            RaceOutcomeQueries.FormatTable(result, teamId: null),
-            string.Join('\n', result.FinishOrder.Select(row => $"{row.Place}. {row.Label} | {row.TeamName}")));
-        Assert.DoesNotContain("WPrime", RaceOutcomeQueries.FormatTable(result, beskid.Id), StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("Marco Anconi", RaceOutcomeQueries.FormatTable(result, beskid.Id), StringComparison.Ordinal);
-        Assert.Contains("Beskid–Vetter", RaceOutcomeQueries.FormatTable(result, beskid.Id), StringComparison.Ordinal);
-    }
 
     [Fact]
     public void RaceResultProjectionIsOnlyAvailableInResultsFlowAndDoesNotRerunTheRace()
@@ -75,7 +35,7 @@ public sealed class RaceResultDebriefTests
         Assert.Null(application.RaceResult);
 
         Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(application).Succeeded);
         Assert.True(application.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId)).Succeeded);
 
         Assert.Equal(1, engine.RunBatchCalls);
@@ -83,25 +43,14 @@ public sealed class RaceResultDebriefTests
         Assert.Null(application.RaceDebrief);
         Assert.Equal("Skeleton race", result.Title);
         Assert.Equal("race-route.peloton.synthetic-proof-v0", result.RouteId);
-        Assert.Equal(9, result.WinnerId.Value);
-        Assert.Equal("Marco Anconi", result.WinnerLabel);
+        Assert.Equal(CareerWorldTestSupport.BetaLeaderCareerId(application).Value, result.WinnerId.Value);
+        Assert.Equal("rider.race-prototype.beta-leader", result.WinnerLabel);
         Assert.Equal(12, result.FinishOrder.Count);
-        Assert.Equal("Marco Anconi", result.FinishOrder[0].Label);
-        Assert.Equal(1, result.FinishOrder[0].Place);
-        Assert.Equal("Fala–Karpaty", result.FinishOrder[0].TeamName);
+        Assert.Equal("rider.race-prototype.beta-leader", result.FinishOrder[0].Label);
         Assert.Equal(application.World!.LastRace!.FinishOrder, result.FinishOrder.Select(place => place.RiderId));
         Assert.All(
             result.FinishOrder,
-            place => Assert.False(string.IsNullOrWhiteSpace(place.Label)));
-        Assert.All(
-            result.FinishOrder,
-            place => Assert.False(string.IsNullOrWhiteSpace(place.TeamName)));
-        Assert.Equal(SkeletonTeamNames, result.Teams.Select(team => team.Name));
-        Assert.Contains(result.Headlines, line => line.Contains("Marco Anconi", StringComparison.Ordinal));
-        Assert.Contains(result.Headlines, line => line.Contains("Piotr Kowalczyk", StringComparison.Ordinal));
-        Assert.Contains(result.Headlines, line => line.Contains("Cel StageWin", StringComparison.Ordinal));
-        Assert.Contains(result.Headlines, line => line.Equals(RaceOutcomeQueries.StaffDecisionHeadline, StringComparison.Ordinal));
-        Assert.All(result.Headlines, line => Assert.DoesNotContain("WPrime", line, StringComparison.OrdinalIgnoreCase));
+            place => Assert.StartsWith("rider.race-prototype.", place.Label, StringComparison.Ordinal));
         Assert.Equal(1, engine.RunBatchCalls);
         Assert.Equal(0, engine.CreateSessionCalls);
 
@@ -119,7 +68,7 @@ public sealed class RaceResultDebriefTests
         GameApplication watched = Create(watchEngine);
         Assert.True(watched.Execute(new CreateWorldCommand("scenario.peloton.skeleton", GateSeed)).Succeeded);
         Assert.True(watched.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(watched.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(watched).Succeeded);
         Assert.True(watched.Execute(new StartRaceCommand(
             Path.Combine(temp.Path, "pre-race.peloton"),
             PrototypeRaceScenarioId)).Succeeded);
@@ -129,7 +78,7 @@ public sealed class RaceResultDebriefTests
         GameApplication simulated = Create(simulateEngine);
         Assert.True(simulated.Execute(new CreateWorldCommand("scenario.peloton.skeleton", GateSeed)).Succeeded);
         Assert.True(simulated.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(simulated.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(simulated).Succeeded);
         Assert.True(simulated.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId)).Succeeded);
 
         Assert.Equal(0, watchEngine.RunBatchCalls);
@@ -150,7 +99,7 @@ public sealed class RaceResultDebriefTests
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", GateSeed)).Succeeded);
         Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(application).Succeeded);
         Assert.True(application.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId)).Succeeded);
         Assert.Null(application.RaceDebrief);
 
@@ -193,7 +142,7 @@ public sealed class RaceResultDebriefTests
         GameApplication source = TestApplication.Create();
         Assert.True(source.Execute(new CreateWorldCommand("scenario.peloton.skeleton", GateSeed)).Succeeded);
         Assert.True(source.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(source.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(source).Succeeded);
         string worldChecksum = WorldChecksum.Compute(source.World!);
         Assert.True(source.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId)).Succeeded);
         Assert.Null(source.RacePreparation);
@@ -212,7 +161,7 @@ public sealed class RaceResultDebriefTests
         GameApplication loadedResults = TestApplication.Create();
         Assert.True(loadedResults.Execute(new LoadGameCommand(resultsPath)).Succeeded);
         Assert.Equal(GameState.RaceResultsFlow, loadedResults.State);
-        Assert.Equal("Marco Anconi", loadedResults.RaceResult!.WinnerLabel);
+        Assert.Equal("rider.race-prototype.beta-leader", loadedResults.RaceResult!.WinnerLabel);
         Assert.True(loadedResults.Execute(new AcknowledgeRaceResultsCommand()).Succeeded);
         Assert.Equal("StageWin", loadedResults.RaceDebrief!.Objective);
         Assert.True(loadedResults.Execute(new SaveGameCommand(debriefPath)).Succeeded);
@@ -242,7 +191,7 @@ public sealed class RaceResultDebriefTests
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 42)).Succeeded);
         Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(application).Succeeded);
         Assert.True(application.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId)).Succeeded);
 
         Assert.Null(application.CareerDay);

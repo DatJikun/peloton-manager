@@ -261,7 +261,7 @@ public sealed partial class CareerHubScreen : Control
             : string.Join('\n', host.Inbox.Select(item => $"{item.Category}: {item.Body}"));
         RacePreparationProjection? preparation = host.Preparation;
         prep!.Text = preparation is null
-            ? "Czwórka z Beskid–Vetter. W dzień wyścigu wybierasz, kto prowadzi i kto finiszuje."
+            ? "Skład klubu. W dzień wyścigu wybierasz lidera; reszta strategii jest domyślna."
             : $"{preparation.Title} · {preparation.Objective}";
         RebuildSeats(preparation);
         RebuildResultFilters(host.Result);
@@ -272,7 +272,7 @@ public sealed partial class CareerHubScreen : Control
     {
         if (host.State == GameState.RaceResultsFlow && host.Result is RaceResultProjection result)
         {
-            return $"{result.Title} · wygrał {result.WinnerLabel}";
+            return $"{result.Title} · wygrał {host.RiderDisplayName(result.WinnerId)}";
         }
 
         if (host.State == GameState.RaceDebriefFlow && host.Debrief is RaceDebriefProjection debrief)
@@ -301,7 +301,7 @@ public sealed partial class CareerHubScreen : Control
         if (host.Result is RaceResultProjection result)
         {
             string table = RaceOutcomeQueries.FormatTable(result, host.ResultTeamFilter);
-            return string.Join('\n', result.Headlines) + "\n\n" + table;
+            return table;
         }
 
         if (host.Debrief is RaceDebriefProjection debrief)
@@ -331,9 +331,9 @@ public sealed partial class CareerHubScreen : Control
         }
 
         resultFilterRow.AddChild(MakeFilterButton("Wszyscy", null, host.ResultTeamFilter is null));
-        foreach (RaceResultTeam team in result.Teams)
+        foreach (OrganizationNameProjection team in host.ResultTeams)
         {
-            RaceResultTeam captured = team;
+            OrganizationNameProjection captured = team;
             resultFilterRow.AddChild(MakeFilterButton(
                 captured.Name,
                 captured.Id,
@@ -366,36 +366,25 @@ public sealed partial class CareerHubScreen : Control
             child.QueueFree();
         }
 
-        if (preparation is null)
+        if (preparation is null || host is null)
         {
             return;
         }
 
-        foreach (SquadSeat seat in preparation.Seats)
+        foreach (WorldEntityId riderId in preparation.Squad)
         {
-            SquadSeat captured = seat;
+            WorldEntityId captured = riderId;
+            string role = captured == preparation.LeaderId
+                ? "Leader"
+                : captured == preparation.SupportId
+                    ? "Support"
+                    : "Skład";
             Button button = MakeButton(
-                $"{captured.Name} · {captured.Role} — {captured.Why}",
-                () => OnCycleRole(captured.RiderId, captured.Role));
+                $"{host.RiderDisplayName(captured)} · {role}",
+                () => Apply(host.SetLeader(captured)));
             button.CustomMinimumSize = new Vector2(0, 44);
             seatBox.AddChild(button);
         }
-    }
-
-    private void OnCycleRole(WorldEntityId riderId, string currentRole)
-    {
-        if (host is null)
-        {
-            return;
-        }
-
-        string next = currentRole switch
-        {
-            SquadRoles.Worker => SquadRoles.Card,
-            SquadRoles.Card => SquadRoles.Leader,
-            _ => SquadRoles.Worker,
-        };
-        Apply(host.AssignRole(riderId, next));
     }
 
     private void HideWatch()
@@ -411,7 +400,7 @@ public sealed partial class CareerHubScreen : Control
     private static string Reason(string reasonCode) => reasonCode switch
     {
         "RACE_DAY_PENDING" => "Najpierw jedź wyścig.",
-        "PREP_ROLES_INCOMPLETE" => "Potrzebujesz lidera i karta.",
+        "PREP_STRATEGY_INCOMPLETE" => "Ustaw lidera i support.",
         "GAME_STATE_INVALID" => "Ta akcja nie jest teraz dostępna.",
         _ => reasonCode,
     };

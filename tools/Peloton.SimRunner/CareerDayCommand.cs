@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Peloton.Application;
+using Peloton.Domain;
 using Peloton.Infrastructure;
 using Peloton.Simulation.Race;
 
@@ -232,14 +233,14 @@ public static class CareerDayCommand
 
                             if (options.SimulateFromPrep || options.ThroughResults)
                             {
-                                CommandResult confirm = application.Execute(new ConfirmRacePreparationPlanCommand());
+                                CommandResult confirm = RacePreparationSupport.ConfirmWithDefaultStrategy(application);
                                 if (!confirm.Succeeded)
                                 {
                                     return 1;
                                 }
 
                                 CommandResult simulate = application.Execute(new SimulateRaceCommand(
-                                    PrototypeRaceScenarioId));
+                                    ResolveCurrentRaceContentId(application)));
                                 if (!simulate.Succeeded)
                                 {
                                     return 1;
@@ -283,6 +284,9 @@ public static class CareerDayCommand
         return 0;
     }
 
+    private static string ResolveCurrentRaceContentId(GameApplication application) =>
+        application.World?.TryGetTodaysRaceContentId() ?? PrototypeRaceScenarioId;
+
     private static CommandResult RunSkeletonRace(GameApplication application, string autosaveDirectory)
     {
         Directory.CreateDirectory(autosaveDirectory);
@@ -292,13 +296,14 @@ public static class CareerDayCommand
             return prepare;
         }
 
-        CommandResult confirm = application.Execute(new ConfirmRacePreparationPlanCommand());
+        CommandResult confirm = RacePreparationSupport.ConfirmWithDefaultStrategy(application);
         if (!confirm.Succeeded)
         {
             return confirm;
         }
 
-        CommandResult simulate = application.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId));
+        CommandResult simulate = application.Execute(new SimulateRaceCommand(
+            ResolveCurrentRaceContentId(application)));
         if (!simulate.Succeeded)
         {
             return simulate;
@@ -319,7 +324,7 @@ public static class CareerDayCommand
         string autosaveDirectory,
         TextWriter output)
     {
-        CommandResult confirm = application.Execute(new ConfirmRacePreparationPlanCommand());
+        CommandResult confirm = RacePreparationSupport.ConfirmWithDefaultStrategy(application);
         if (!confirm.Succeeded)
         {
             return 1;
@@ -328,7 +333,7 @@ public static class CareerDayCommand
         Directory.CreateDirectory(autosaveDirectory);
         CommandResult start = application.Execute(new StartRaceCommand(
             Path.Combine(autosaveDirectory, "watch-pre-race.peloton"),
-            PrototypeRaceScenarioId));
+            ResolveCurrentRaceContentId(application)));
         if (!start.Succeeded)
         {
             return 1;
@@ -411,9 +416,8 @@ public static class CareerDayCommand
         }
 
         string squad = string.Join(",", prep.Squad.Select(id => id.Value.ToString(CultureInfo.InvariantCulture)));
-        string seats = string.Join(",", prep.Seats.Select(seat => $"{seat.Name}:{seat.Role}"));
         output.WriteLine(
-            $"prep=title={prep.Title} objective={prep.Objective} squad={squad} seats={seats} planConfirmed={prep.PlanConfirmed.ToString().ToLowerInvariant()} canStart={prep.CanStart.ToString().ToLowerInvariant()} canSimulate={prep.CanSimulate.ToString().ToLowerInvariant()}");
+            $"prep=title={prep.Title} objective={prep.Objective} squad={squad} planConfirmed={prep.PlanConfirmed.ToString().ToLowerInvariant()} canStart={prep.CanStart.ToString().ToLowerInvariant()} canSimulate={prep.CanSimulate.ToString().ToLowerInvariant()}");
     }
 
     private static void WriteResult(TextWriter output, GameApplication application)
@@ -425,18 +429,26 @@ public static class CareerDayCommand
         }
 
         string finishOrder = string.Join(",", result.FinishOrder.Select(place => place.Label));
-        string headlines = string.Join("|", result.Headlines);
         output.WriteLine(
             string.Create(
                 CultureInfo.InvariantCulture,
                 $"result=title={result.Title} winner={result.WinnerId.Value} winnerLabel={result.WinnerLabel} routeId={result.RouteId} finishOrder={finishOrder}"));
-        output.WriteLine($"headlines={headlines}");
-        foreach (RaceResultPlacement row in result.FinishOrder)
+
+        AccessContext access = application.GetAccessContext();
+        if (access.CurrentOrganizationId is WorldEntityId organizationId)
         {
-            output.WriteLine(
-                string.Create(
-                    CultureInfo.InvariantCulture,
-                    $"table={row.Place}. {row.Label} | {row.TeamName}"));
+            IReadOnlyList<RaceResultPlacement>? teamResults = application.RaceResultForOrganization(organizationId);
+            if (teamResults is not null && teamResults.Count > 0)
+            {
+                string teamFinish = string.Join(
+                    ",",
+                    teamResults.Select(place =>
+                        string.Create(CultureInfo.InvariantCulture, $"{place.Place}:{place.Label}")));
+                output.WriteLine(
+                    string.Create(
+                        CultureInfo.InvariantCulture,
+                        $"resultTeam=org={organizationId.Value} finishOrder={teamFinish}"));
+            }
         }
     }
 
@@ -468,6 +480,13 @@ public static class CareerDayCommand
         output.WriteLine($"primaryAction={hub.PrimaryAction}");
         output.WriteLine($"primaryLabel={hub.PrimaryLabel}");
         output.WriteLine($"raceCount={hub.RaceCount.ToString(CultureInfo.InvariantCulture)}");
+        ClubFinanceProjection? finance = application.ClubFinance;
+        if (finance is not null)
+        {
+            output.WriteLine($"cash={finance.CashEur.ToString(CultureInfo.InvariantCulture)}");
+            output.WriteLine($"overdrawn={finance.Overdrawn.ToString().ToLowerInvariant()}");
+        }
+
         foreach (string note in hub.TodayNotes)
         {
             output.WriteLine($"note={note}");

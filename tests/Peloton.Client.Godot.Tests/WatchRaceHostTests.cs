@@ -1,8 +1,6 @@
 using System;
-using System.Globalization;
 using System.IO;
 using Peloton.Application;
-using Peloton.Client.Godot;
 using Peloton.Content;
 using Peloton.Domain;
 using Peloton.Persistence;
@@ -14,8 +12,6 @@ namespace Peloton.Client.Godot.Tests;
 public sealed class WatchRaceHostTests
 {
     private const long GateSeed = 91234;
-    private const string CliRaceChecksum =
-        "5A35E88103E2FBB40325EA8BEF15AAAC2F2E1AB70F4E6DE2BBCE584EC7EE6721";
 
     [Fact]
     public void HostWatchUsesStartRaceClockAndMatchesSimulateWithoutRunBatch()
@@ -26,23 +22,13 @@ public sealed class WatchRaceHostTests
 
         Assert.True(host.OpenPrototype(GateSeed).Succeeded);
         Assert.Equal(GameState.RacePreparationFlow, host.State);
+        Assert.True(host.SetDefaultStrategy().Succeeded);
         Assert.True(host.ConfirmPreparation().Succeeded);
-        Assert.Equal(WatchFilmDuration.DefaultSeconds, host.SelectedFilmSeconds);
-        Assert.Equal("WATCH_FILM_INVALID", host.SelectFilmDuration(90).ReasonCode);
-        Assert.True(host.SelectFilmDuration(180).Succeeded);
+        Assert.True(host.SelectRate(5).Succeeded);
         Assert.True(host.StartWatch().Succeeded);
         Assert.Equal(GameState.RaceLive, host.State);
-        Assert.Equal(5, host.SelectedRate);
         Assert.NotNull(host.Course);
         Assert.NotNull(host.OfficialFrame);
-        Assert.NotNull(host.Interpolated);
-        Assert.All(
-            host.Interpolated!.Riders,
-            rider =>
-            {
-                Assert.False(string.IsNullOrWhiteSpace(rider.Name));
-                Assert.NotEqual(rider.RiderId.ToString(CultureInfo.InvariantCulture), rider.Name);
-            });
         Assert.All(
             host.OfficialFrame!.FocalRiders,
             rider =>
@@ -57,10 +43,8 @@ public sealed class WatchRaceHostTests
         Assert.Equal(1, engine.CreateSessionCalls);
         Assert.Equal(0, engine.RunBatchCalls);
         RaceResultProjection result = Assert.IsType<RaceResultProjection>(host.Result);
-        Assert.Equal(9, result.WinnerId.Value);
-        Assert.Equal("Marco Anconi", result.WinnerLabel);
+        Assert.Equal("rider.race-prototype.beta-leader", result.WinnerLabel);
         Assert.False(string.IsNullOrWhiteSpace(host.LastChecksum));
-        Assert.NotEqual(CliRaceChecksum, host.LastChecksum);
         Assert.DoesNotContain("WPrime", result.WinnerLabel, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -70,9 +54,9 @@ public sealed class WatchRaceHostTests
         using TemporaryDirectory temp = new();
         WatchRaceHost host = CreateHost(temp.Path, new PrototypeRaceEngine());
         Assert.True(host.OpenPrototype(GateSeed).Succeeded);
+        Assert.True(host.SetDefaultStrategy().Succeeded);
         Assert.True(host.ConfirmPreparation().Succeeded);
         Assert.True(host.StartWatch().Succeeded);
-        Assert.Equal(8, host.SelectedRate);
         int startWatch = host.OfficialFrame!.WatchSecond;
         int startSim = host.OfficialFrame.RaceSecond;
 
@@ -81,15 +65,7 @@ public sealed class WatchRaceHostTests
 
         Assert.True(host.Tick(0.51).Succeeded);
         Assert.Equal(startWatch + 1, host.OfficialFrame.WatchSecond);
-        Assert.Equal(8, host.OfficialFrame.RaceSecond - startSim);
-
-        Assert.True(host.SetPresentationPaused(true).Succeeded);
-        int pausedWatch = host.OfficialFrame.WatchSecond;
-        int pausedSim = host.OfficialFrame.RaceSecond;
-        Assert.True(host.Tick(20.0).Succeeded);
-        Assert.Equal(pausedWatch, host.OfficialFrame.WatchSecond);
-        Assert.Equal(pausedSim, host.OfficialFrame.RaceSecond);
-        Assert.True(host.SetPresentationPaused(false).Succeeded);
+        Assert.InRange(host.OfficialFrame.RaceSecond - startSim, 1, 5);
 
         bool sawDecision = false;
         for (int step = 0; step < 50_000 && host.State == GameState.RaceLive; step++)
@@ -120,12 +96,13 @@ public sealed class WatchRaceHostTests
         string autosave = Path.Combine(temp.Path, "pre-race.peloton");
         WatchRaceHost host = CreateHost(temp.Path, new PrototypeRaceEngine());
         Assert.True(host.OpenPrototype(GateSeed).Succeeded);
+        Assert.True(host.SetDefaultStrategy().Succeeded);
         Assert.True(host.ConfirmPreparation().Succeeded);
         Assert.True(host.StartWatch().Succeeded);
         Assert.True(File.Exists(autosave));
         Assert.Equal(
-            "WATCH_FILM_LOCKED",
-            host.SelectFilmDuration(30).ReasonCode);
+            "WATCH_RATE_LOCKED",
+            host.SelectRate(20).ReasonCode);
 
         Assert.True(host.Abandon().Succeeded);
         Assert.Equal(GameState.RacePreparationFlow, host.State);

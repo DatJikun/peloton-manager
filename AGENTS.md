@@ -8,8 +8,10 @@ cycling-management game). Design docs remain the source of contracts. Milestone 
 (Architecture Skeleton) exists as a headless .NET 8 solution: `PelotonManager.sln`,
 `dotnet test`, and `tools/Peloton.SimRunner`. The race prototype (`PrototypeRaceEngine`)
 is the official result path; it is still below `RACE_ENGINE_DESIGN_v0.2.md` — see
-`KNOWN_DIFFERENCE_FROM_CODE.md`. There is still **no playable game UI**.
-Godot is a compile stub only. Several docs are written in Polish.
+`KNOWN_DIFFERENCE_FROM_CODE.md`. Owner lock **D-043**: the playable race path is
+**Simulate then Results**, not Watch Race. Do not expand the Godot Watch Race window.
+Career Hub stays rejected (PR #4). Owner fun gate `RACE_ENGINE_DESIGN_v0.2.md` §49
+remains `NOT VERIFIED`. Several docs are written in Polish.
 
 Do not fabricate build/test/run results. After the skeleton, run the real commands in
 `HANDOFF.md`. Do not treat the race prototype as a passed fun gate, and do not restore
@@ -26,28 +28,23 @@ not start the later steps in the same tree.
 - Owner-decided stack: **Godot .NET + C#**, Windows-first target, **SQLite** embedded
   (file-based, no server/port). See `HANDOFF.md` "Recent owner decisions" and `ARCHITECTURE.md`.
 - **.NET SDK 8** is pre-installed system-wide (`/usr/bin/dotnet`, `dotnet --version` → 8.x).
-  This is the toolchain needed to bootstrap the planned C# solution and run the future
-  headless `Peloton.SimRunner` / race spikes.
+  Use it for `PelotonManager.sln`, `dotnet test`, and `tools/Peloton.SimRunner`.
 - **Godot is NOT installed.** It is GUI/Windows-first and is intentionally not required for
   headless simulation/race-engine testing (see `RACE_ENGINE_DESIGN_v0.2.md`: the race engine
   is testable via `dotnet test` without Godot). Only install Godot if doing UI/manual-feel work.
 
-### Build gate (only meaningful once C# code is bootstrapped)
-`AI_DEVELOPMENT_RULES_v0.1.md` §37 defines the canonical gate. Once a `.sln`/`.csproj`
-exists, run from the repo root:
+### Build gate
+`AI_DEVELOPMENT_RULES_v0.1.md` §37 defines the canonical gate. From the repo root run
+the commands listed in `HANDOFF.md`. The short form is:
 - `dotnet format --verify-no-changes`  (lint/format check)
 - `dotnet build`
 - `dotnet test`
-- `dotnet run --project tools/Peloton.SimRunner -- run --scenario scenario.peloton.skeleton --years 10 --seed 91234`
-- `dotnet run --project tools/Peloton.SimRunner -- race --scenario race-scenario.peloton.prototype-v0 --seed 91234`
-- `dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13`
-- `dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --follow-hub`
-- `dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --through-races`
+- then the SimRunner `run` / `race` / `day` commands from `HANDOFF.md`
 
-`HANDOFF.md` and `CODEBASE_MAP.md` already list the real skeleton commands and projects.
+`HANDOFF.md` and `CODEBASE_MAP.md` list the live commands and projects.
 Keep them current when the layout changes.
 
-### Validating the docs (the repo's current deliverable)
+### Validating the docs
 The active docs are internally consistent: every `*.md` referenced as an existing/active
 document in `DOCS.md` resolves to a real file. Older superseded names may still appear
 in architecture prose. When editing docs, respect `DOCS_GOVERNANCE.md` (hierarchy of
@@ -66,16 +63,19 @@ touching the area it covers.
  owner-accepted look for most career/management screens. Godot `CareerShell.tscn`
  copies the chrome. Do not treat the HTML as the game or as true attributes.
 
-### Collaboration roles (owner lock)
-Default split when this repo is developed with a main Cloud Agent plus Composer 2.5
-subagents:
+### Collaboration roles (owner lock, D-035)
+Default split: the main Cloud Agent writes docs and reviews; **Composer 2.5 is the
+default coding subagent**.
 
 - **Main agent (Grok 4.6 High, not fast):** writes Markdown/docs and reviews Composer
   output. Design contracts (VISION, DECISIONS, ARCHITECTURE, HANDOFF, UI sitemap,
   GAME_STATES, DATA_MODEL, ADRs, and similar governance docs) are authored here, not
   delegated.
-- **Composer 2.5 / Codex:** codes. Do not assign Composer to be the primary author of those
-  design/governance documents.
+- **Composer 2.5:** codes. When launching a `Task` for implementation, tests, or
+  mechanical code edits, set `model` to `composer-2.5`. Do **not** omit `model`
+  (that inherits Grok). Do **not** use `composer-2.5-fast` unless the owner asked
+  for speed. Do not assign Composer to be the primary author of design/governance
+  documents.
 - **Exception:** Composer **may** write Markdown when it is part of the coding work
   (for example a HANDOFF note about what just landed, a `KNOWN DIFFERENCE FROM CODE`
   section, a test/playtest note, or a small contract clarification next to the change)

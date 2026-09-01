@@ -1,4 +1,5 @@
 using Peloton.Domain;
+using Peloton.Simulation.Race;
 
 namespace Peloton.Application;
 
@@ -16,7 +17,19 @@ public sealed record CancelRacePreparationCommand;
 
 public sealed record ConfirmRacePreparationPlanCommand;
 
-public sealed record AssignSquadRoleCommand(WorldEntityId RiderId, string Role);
+public sealed record SetRacePreparationStrategyCommand(
+    WorldEntityId LeaderId,
+    WorldEntityId SupportId,
+    RaceObjective Objective,
+    RaceBriefingKind BriefingKind);
+
+public sealed record BeginPreSeasonPlanningCommand;
+
+public sealed record SetSeasonRaceEntryCommand(string RaceContentId, bool Entered);
+
+public sealed record ConfirmPreSeasonPlanCommand;
+
+public sealed record CancelPreSeasonPlanningCommand;
 
 public sealed record FollowHubPrimaryActionCommand;
 
@@ -44,6 +57,14 @@ public sealed record AcknowledgeRaceResultsCommand;
 public sealed record CompleteRaceDebriefCommand;
 
 public sealed record ArchiveInboxItemCommand(string Identity);
+
+public sealed record BeginContractNegotiationCommand(WorldEntityId RiderCareerId);
+
+public sealed record SetContractOfferCommand(int AnnualWage, int ContractEndDay);
+
+public sealed record ConfirmContractOfferCommand;
+
+public sealed record CancelContractNegotiationCommand;
 
 public sealed record CommandResult(bool Succeeded, string ReasonCode)
 {

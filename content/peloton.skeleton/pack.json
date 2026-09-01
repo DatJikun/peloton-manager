@@ -6,6 +6,10 @@
     {
       "kind": "scenarios",
       "path": "scenario.json"
+    },
+    {
+      "kind": "roster",
+      "path": "skeleton-roster.json"
     }
   ],
   "dependencies": []

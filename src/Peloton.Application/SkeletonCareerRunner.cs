@@ -37,11 +37,28 @@ public sealed class SkeletonCareerRunner
                 for (int day = 0; day < DaysPerSeason; day++)
                 {
                     Ensure(application.Execute(new AdvanceDayCommand()));
-                    if (application.World is { IsRaceDue: true })
+                }
+
+                Ensure(application.Execute(new PrepareRaceCommand()));
+                Ensure(RacePreparationSupport.ConfirmWithDefaultStrategy(application));
+                string autosavePath = Path.Combine(autosaveDirectory, $"season-{season}-pre-race.peloton");
+                Ensure(application.Execute(new StartRaceCommand(
+                    autosavePath,
+                    PrototypeRaceScenarioId)));
+                while (application.State == GameState.RaceLive)
+                {
+                    Ensure(application.Execute(new AdvanceRaceCommand()));
+                    if (application.PendingRaceDecision is PendingRaceDecision decision)
                     {
-                        RunDueRace(autosaveDirectory, season, day);
+                        Ensure(application.Execute(new RespondToRaceDecisionCommand(
+                            decision.RequestId,
+                            decision.AuthorityId,
+                            decision.DelegatedDefaultOption)));
                     }
                 }
+
+                Ensure(application.Execute(new AcknowledgeRaceResultsCommand()));
+                Ensure(application.Execute(new CompleteRaceDebriefCommand()));
             }
 
             return Report(crashed: false, null);
@@ -50,30 +67,6 @@ public sealed class SkeletonCareerRunner
         {
             return Report(crashed: true, exception.Message);
         }
-    }
-
-    private void RunDueRace(string autosaveDirectory, int season, int day)
-    {
-        Ensure(application.Execute(new PrepareRaceCommand()));
-        Ensure(application.Execute(new ConfirmRacePreparationPlanCommand()));
-        string autosavePath = Path.Combine(autosaveDirectory, $"season-{season}-day-{day}-pre-race.peloton");
-        Ensure(application.Execute(new StartRaceCommand(
-            autosavePath,
-            PrototypeRaceScenarioId)));
-        while (application.State == GameState.RaceLive)
-        {
-            Ensure(application.Execute(new AdvanceRaceCommand()));
-            if (application.PendingRaceDecision is PendingRaceDecision decision)
-            {
-                Ensure(application.Execute(new RespondToRaceDecisionCommand(
-                    decision.RequestId,
-                    decision.AuthorityId,
-                    decision.DelegatedDefaultOption)));
-            }
-        }
-
-        Ensure(application.Execute(new AcknowledgeRaceResultsCommand()));
-        Ensure(application.Execute(new CompleteRaceDebriefCommand()));
     }
 
     private SkeletonRunReport Report(bool crashed, string? failureReason)
