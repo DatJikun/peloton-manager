@@ -15,3 +15,5 @@ When launching a `Task` for implementation, coding, tests, or mechanical code ed
 Do **not** omit `model` on coding tasks (omission inherits Grok). Do **not** use `composer-2.5-fast` unless the owner asked for speed. Do not make Composer the primary author of VISION, DECISIONS, ARCHITECTURE, HANDOFF, UI sitemap, GAME_STATES, DATA_MODEL, ADRs, or similar governance docs.
 
 Composer may write Markdown that is part of the coding work (HANDOFF note, KNOWN DIFFERENCE, test note). The main agent still reviews it before it is a project contract.
+
+When the coding gate is green, the session still **merges into `main`** (D-045). Do not leave finished Composer work on an open PR. Watch Race UI expansion stays deferred (D-043).

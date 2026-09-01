@@ -38,7 +38,7 @@ Właśnie budujemy:
 - czekamy na kolejny kierunek właściciela.
 
 Jeszcze nie:
-- nie rozbudowujemy Watch Race (odrzucony jako sposób gry);
+- Watch Race **przesunięte** (D-043) — nie rozbudowujemy i nie mergujemy starych PR-ów Watch;
 - nie ma Career Hub (odrzucony);
 - nie ma scoutingu, dynamicznego rynku sponsorów ani AI managerów w świecie (ekrany Godota pokazują tylko katalog wyglądu);
 - §49 nie jest zaliczone — to ręczny playtest właściciela.
@@ -118,7 +118,7 @@ Baza 2026: 18 ekip męskiego WorldTour w `scenario.peloton.wt-2026`. Fizjologia,
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task
-`Phase 7 landed. Godot career shell is look-only presentation (not Career Hub). Next slice work TBD by owner (no Watch Race UI expansion, no Career Hub, no tenth GameState, do not write look-catalog OVR/cash into World).`
+`Phase 7 + career shell on main. D-045: merge ready work to main in the same session. Next slice TBD by owner. Watch Race deferred — do not merge leftover Watch UI PRs. No Career Hub, no tenth GameState, do not write look-catalog OVR/cash into World.`
 
 ## Known blockers
 - None.
@@ -127,10 +127,19 @@ Baza 2026: 18 ekip męskiego WorldTour w `scenario.peloton.wt-2026`. Fizjologia,
 - None at handoff. Run the commands below again after rebasing or changing packages.
 
 ## Merge policy
-Właściciel nie jest programistą. Gotową pracę mergujemy bez czekania na osobne „merguj”.
+**D-045.** Właściciel nie jest programistą. Gotową pracę **mergujemy do `main` w tej samej sesji**.
+Nie czekamy na osobne „merguj”. Nie zostawiamy stosu otwartych PR-ów — to robi syf konfliktów.
+
+Zielony gate (`dotnet format` / `build` / `test`, plus SimRunner z tego pliku gdy ruszamy kod)
+albo docs-only bez złamania locka → `git fetch origin main`, złączyć **jedną** zmianę na aktualny
+`main`, wypchnąć `main`. Ta zasada **nadpisuje** domyślne „nie merguj, dopóki właściciel nie poprosi”.
+
 Wstrzymujemy merge tylko przy poważnej rzeczy: padające testy, złamany lock (`PlayerTeam`,
-God-eye, mid-race save, cichy dryf designu), odrzucony przez właściciela kierunek (PR #4
-Career Hub), albo stub wyścigu udający prawdziwy Race Engine.
+God-eye, mid-race save, cichy dryf designu), odrzucony kierunek (Career Hub PR #4; Watch Race
+jako sposób gry / rozbudowa Watch — D-043, na razie przesunięte), albo stub wyścigu udający
+prawdziwy Race Engine.
+
+Starych branchy nie zlewamy jeden na drugi. Konflikt = odtworzyć wartość na dzisiejszym `main`.
 
 ## Owner communication
 Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
@@ -138,6 +147,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
+- `2026-09-01` — **Merge ready work to `main` in the same session (D-045).** No waiting for „merguj”. No pile of open PRs (that made a conflict mess). Overrides Cloud “don’t merge unless asked”. Watch Race stays deferred; do not land leftover Watch UI PRs. Stale conflicting branches are replayed onto current `main`, not stacked.
 - `2026-09-01` — **Phase 7 landed (Composer):** `RaceResultForOrganization` (any team); `Begin/Set/Confirm/CancelContractNegotiationCommand`; SchemaVersion 7 / checksum v7. Watch Race UI not expanded.
 - `2026-09-01` — **Watch Race is not the play path (D-043).** Simulate then results; filter classification by any team. Do not expand Godot Watch. Career Hub stays rejected. Docs until now had rejected Career Hub (PR #4), not Watch Race — this is the new lock.
 - `2026-09-01` — **Thin contract negotiation (D-044):** offer wage + end date to own / unattached / other-club rider. Loyalty in the accept formula. No agent board game. No tenth GameState.
@@ -266,7 +276,8 @@ Main scene is `CareerShell.tscn`. `WatchRace.tscn` remains a standalone RaceLive
 - Nie zmieniaj schema save/content bez migration planu.
 - Nie traktuj starych dokumentów jako aktualnych bez sprawdzenia statusu (`HANDOFF.md`, `CODEBASE_MAP.md`, `KNOWN_DIFFERENCE_FROM_CODE.md`).
 - Nie twierdź, że Godot jest pustym stubem — career shell i Watch Race są oknami prezentacji.
-- Nie rozszerzaj Godot Watch Race jako ścieżki gry (D-043). Nie traktuj `CareerShell.tscn` jako Career Hub (PR #4).
+- Nie rozszerzaj Godot Watch Race jako ścieżki gry (D-043). Watch jest przesunięte — nie merguj starych PR-ów filmu/radia/dashboardu Watch na `main`. Nie traktuj `CareerShell.tscn` jako Career Hub (PR #4).
+- Nie zostawiaj gotowej pracy na otwartym PR (D-045). Zielony gate → merge do `main` w tej samej sesji. Nie zlewaj stosu starych branchy jeden na drugi.
 - Nie odpalaj kodujących subagentów z `inherit` (to Grok); kod to Composer 2.5 (D-035).
 - Nie rozszerzaj scope'u taska bez wskazania PLAYER VALUE i bez decyzji właściciela.
 - Nie zamykaj OQ-TS-001 ani OQ-DM-001 na podstawie checksumy lub allocatora szkieletowego.
@@ -302,3 +313,4 @@ Peloton Manager jest na etapie pre-production. Celem jest modularny, determinist
 - `2026-08-31` — Właściciel wskazał `peloton-manager-full-ui-poc-v3.html` jako dobry wstęp wyglądu **większości** ekranów kariery (konstruktywizm 08e, niebieska szyna, Biurko + sidebar). To look lab, nie druga gra. RaceLive zostaje osobnym oknem. Nie wdrażać OVR/POT z PoC jako true ability.
 - `2026-08-31` — Właściciel kazał przenieść ten wygląd do Godota. `CareerShell.tscn` kopiuje chrome; Biurko/kalendarz/skrzynka/ludzie biorą Query ze szkieletu. Puste działy zostają puste. Watch Race nadal blokuje powłokę.
 - `2026-08-31` — Właściciel kazał dodać brakujące działy. Godot pokazuje katalog wyglądu (Beskid–Vetter, OVR, kasa, skauci) jako rysunek; belka dnia i Advance Day / Race next zostają ze świata. Negocjacje i oferty nie zapisują się.
+- `2026-09-01` — Właściciel: Watch Race na razie przesunięte. D-045: gotową pracę mergować do `main` od razu (bez stosu PR-ów i konfliktów). Nie zlewamy starych branchy Watch na `main`.

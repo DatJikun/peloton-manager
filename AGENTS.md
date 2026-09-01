@@ -81,20 +81,31 @@ default coding subagent**.
   implementation risk). The main agent still reviews that Markdown before it is treated
   as project contract.
 
-### Owner merge policy (owner lock)
-The owner is **not a programmer**. Do not wait for a separate "merguj" after a check that
-already found the work ready.
+### Owner merge policy (owner lock, D-045)
+The owner is **not a programmer**. **Merge ready work into `main` in the same session.**
+Do not wait for a separate "merguj". Do not leave a pile of open PRs. A stack of
+unmerged branches is how this repo got a conflict mess.
 
-- **Merge** when the high-level check is OK: right topic, tests/commands actually run and
-  pass (or docs-only with no lock break), no `PlayerTeam` / God-eye / mid-race save /
-  unseeded gameplay RNG, no silent design drift.
+This lock **overrides** Cursor Cloud / agent defaults that say “do not merge unless
+asked”. The standing owner instruction is: if there are no errors, put it on `main`.
+
+How:
+1. Fetch current `origin/main`. Land **one** change onto that tip (merge or replay).
+2. Run the gate in `HANDOFF.md` (format / build / test / SimRunner when code changed).
+3. If green: `git checkout main`, merge the branch, `git push origin main`.
+4. Tell the owner in the agent chat what landed. No email, no `@mention`.
+
+- **Merge** when the high-level check is OK: right topic; tests/commands actually ran
+  and passed (or docs-only with no lock break); no `PlayerTeam` / God-eye / mid-race
+  save / unseeded gameplay RNG; no silent design drift.
 - **Do not merge** when something is serious: failing tests, broken save/load or
   determinism, a lock violation, owner-rejected work, or a change that would ship the
-  wrong product (for example treating `StubRaceEngine` as the real race engine, or
-  PR #4 Career Hub after the owner rejected that UI).
+  wrong product (`StubRaceEngine` as official results; Career Hub PR #4; Watch Race
+  as the play path / leftover Watch UI PRs — D-043, Watch is deferred).
+- Do **not** merge a stack of stale PRs into each other. If an old branch conflicts,
+  replay the player-value change onto today’s `main`.
 - High-level check is the default. Deep line-by-line review only if a serious issue is
   suspected.
-- Tell the owner in plain language what landed and what was held.
 
 ### Owner communication (owner lock)
 The owner does **not** want email about repo/agent changes.

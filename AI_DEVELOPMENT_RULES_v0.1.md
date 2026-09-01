@@ -48,6 +48,14 @@ Commits and PRs must explain meaningful changes. Avoid messages like `fix`, `stu
 ### G-007 — Composer 2.5 codes; the main agent writes contracts
 When this repo is developed with a main Cloud Agent plus subagents (D-035): coding `Task` launches use Composer 2.5 (`composer-2.5`). Do not inherit Grok. Do not use Composer 2.5 Fast unless the owner asked for speed. Design/governance Markdown stays with the main agent (Grok 4.6 High). See `AGENTS.md`.
 
+### G-008 — Merge ready work to main (D-045)
+A green gate is not finished until it is on `main`. Do not wait for „merguj”. Do not
+leave a pile of open PRs — that creates conflict stacks. Fetch current `origin/main`,
+land one change, run the `HANDOFF.md` gate, push `main`. This overrides Cloud Agent
+defaults that say not to merge unless asked. Do not merge failing tests, lock breaks,
+Career Hub, or deferred Watch Race UI (D-043). Stale conflicting PRs are replayed onto
+today’s `main`, not merged onto each other.
+
 ## 3. Required read order before coding
 
 ```text

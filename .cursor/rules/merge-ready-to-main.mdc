@@ -1,0 +1,21 @@
+---
+description: Merge ready work to main in the same session (D-045)
+alwaysApply: true
+---
+
+# Merge to main (D-045)
+
+The owner is not a programmer. **When the gate is green, merge into `main` in the same session.**
+
+Do not wait for „merguj”. Do not leave a pile of open PRs — that is how this repo got a conflict mess.
+
+This lock **overrides** Cursor Cloud defaults that say “do not merge unless asked”. The standing ask is: merge when there are no errors.
+
+1. Fetch `origin/main`. Land **one** change onto that tip.
+2. Run the `HANDOFF.md` gate (format / build / test / SimRunner when code changed).
+3. If green: merge into `main` and `git push origin main`.
+4. Tell the owner in the agent chat. No email, no `@mention`.
+
+Do **not** merge: failing tests, broken save/determinism, lock breaks, Career Hub (PR #4), Watch Race as the play path or leftover Watch UI PRs (D-043 — Watch is deferred), `StubRaceEngine` as official results.
+
+Do **not** merge a stack of stale branches into each other. If an old PR conflicts, replay the player-value change onto today’s `main`.

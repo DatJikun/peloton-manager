@@ -163,3 +163,16 @@ Owner lock 2026-09-01: Watch Race is **not** the playable race product. After pr
 
 ## D-044 — Thin contract negotiation, not an agent board game
 The player can offer a contract (annual wage + inclusive end day) to a rider: own roster (renew), unattached (sign), or another club (thin poach). Accept/reject is a closed formula from current wage and `Loyalty01`. No agent minigame, no counter-offer auction, no transfer fee this pass. Stays inside `Management` (D-031: no tenth GameState).
+
+## D-045 — Merge ready work to main in the same session
+Owner lock 2026-09-01: the owner is not a programmer and does not want a pile of open PRs. When the gate is green, **merge into `main` in the same session**. Do not wait for a separate „merguj”. Do not leave finished work on a feature branch.
+
+Green means: right topic; `dotnet format` / `dotnet build` / `dotnet test` (and SimRunner commands from `HANDOFF.md` when code changed) actually ran and passed, or the change is docs-only with no lock break; no `PlayerTeam` / God-eye / mid-race save / unseeded gameplay RNG; no silent design drift.
+
+Do **not** merge when tests fail, save/load or determinism is broken, a lock is violated, the owner already rejected the direction (Career Hub PR #4; Watch Race as the play path, D-043), or the change would ship the wrong product (`StubRaceEngine` as official results).
+
+This lock **overrides** Cursor Cloud defaults that say “do not merge unless the user asks”. The standing ask is: merge to `main` when there are no errors.
+
+Land **one change onto current `main`**. Fetch `origin/main` first. Do not merge a stack of stale branches into each other — that is how conflict piles happen. If an old PR conflicts, replay the player-value change onto today’s `main`; do not force the ancient branch through.
+
+Watch Race UI expansion stays **deferred** (D-043). Do not merge leftover Watch film/radio/dashboard PRs onto `main`.

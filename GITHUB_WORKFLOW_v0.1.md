@@ -55,16 +55,30 @@ Decision refs:
 
 ## Merge gate
 
+**D-045:** when the gate below is green, merge into `main` **in the same session**.
+Do not wait for the owner to say „merguj”. Do not leave finished work on an open PR.
+This overrides Cloud Agent defaults that forbid merging unless asked.
+
 Before merge:
 
 ```text
-build passes
-relevant tests pass
+work sits on current origin/main (fetch first; one change at a time)
+dotnet format --verify-no-changes
+dotnet build
+dotnet test
+SimRunner commands from HANDOFF.md when simulation/career code changed
 no unexplained architecture violation
 migration exists if schema changed
-World Spy trace added for important automation
-owner manual test done when gameplay feel matters
+no PlayerTeam / God-eye / mid-race save / unseeded gameplay RNG
+not an owner-rejected product (Career Hub; Watch Race as the play path)
 ```
+
+Owner manual feel tests (§49) are **not** a merge blocker for skeleton, docs, look-only
+Godot chrome, or WorldTour slice work. Feel is a later owner playtest.
+
+Do not merge a stack of stale PRs into each other. If an old branch conflicts, replay
+the player-value change onto today’s `main`. Watch Race UI expansion is deferred (D-043);
+do not land leftover Watch film/radio/dashboard PRs.
 
 ## Reverts
 
