@@ -163,6 +163,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
+- `2026-09-01` — **D-038 architecture: same career commands for Continental later.** Playable clubs are scenario data (`playerStartDivisions`). 3-year UCI cycle uses `licenceCycleYears` + `LicenceYearsRemaining`. Do not implement promotion/relegation in D-050. No `if (WorldTour)` employer gate.
 - `2026-09-01` — **D-050: club pick, calendar entries, per-event leaders first.** Not one rigid team. Infinite career and aging later. Content stays data-only JSON packs (riders/routes/teams); physics code is the engine, not a Lua mod. CdA and look-catalog finance wait.
 - `2026-09-01` — **Player-facing Polish for cobbles is bruk (D-046).** The rating on the card is **Bruk**. Do not say „kocie łby” to the owner. English code stays `Cobbles`.
 - `2026-09-01` — **Bunch sprint + real fields + all jerseys + compare with real life (D-049).** Classified Flat is a bunch sprint. UCI 7 (8 on Grand Tours) with wildcards. Jerseys are after-stage tables, not D-032. History analogues are for judgment, not a script.
@@ -305,6 +306,7 @@ src/Peloton.Client.Godot/project.godot
 - Nie zostawiaj gotowej pracy na otwartym PR (D-045). Zielony gate → merge do `main` w tej samej sesji. Nie zlewaj stosu starych branchy jeden na drugi.
 - Nie mów właścicielowi „kocie łby”; polska nazwa statystyki to **bruk** (D-046). W kodzie zostaje `Cobbles`.
 - Nie zaczynaj CdA / rynku sponsorów / starzenia, dopóki D-050 (klub, imprezy, liderzy) nie jest w oknie.
+- Nie twórz osobnej ścieżki kariery dla Continental. Dywizja i 3-letnia licencja UCI to dane na `Organization` + scenariusz (`playerStartDivisions`); awansów nie kodujemy w D-050.
 - Nie przywracaj cap 12 na oficjalnym starcie WT. Feel probe seed `91234` pokazuje sprintera przed góralem na sklasyfikowanym płaskim; nie zamykaj §49.
 - Nie zapisuj OVR/POT/kasy/skautingu z `CareerLookCatalog` do World, SQLite ani Commandów. To nie true ability.
 - Nie odpalaj kodujących subagentów z `inherit` (to Grok); kod to Composer 2.5 (D-035).

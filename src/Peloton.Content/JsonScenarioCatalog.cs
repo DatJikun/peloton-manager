@@ -145,7 +145,9 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
                     calendarRaces,
                     raceIdentities,
                     generatePeriodicRaces,
-                    DefaultRaceTemplateId);
+                    DefaultRaceTemplateId,
+                    scenario.PlayerStartDivisions,
+                    scenario.LicenceCycleYears ?? 0);
             }
         }
 
@@ -438,7 +440,9 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
         string Difficulty,
         string AttributeVisibility,
         IReadOnlyList<string> Organizations,
-        IReadOnlyList<ModuleDocument> Modules);
+        IReadOnlyList<ModuleDocument> Modules,
+        IReadOnlyList<string>? PlayerStartDivisions = null,
+        int? LicenceCycleYears = null);
 
     private sealed record ModuleDocument(
         string Slot,

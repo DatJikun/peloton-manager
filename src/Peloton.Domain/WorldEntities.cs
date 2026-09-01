@@ -67,8 +67,16 @@ public sealed class Organization
 
     public string Country { get; }
 
+    /// <summary>
+    /// Content label (WorldTour / ProTeam / Continental / …), not a C# enum.
+    /// A future UCI licence module changes this string on the same OrganizationId.
+    /// </summary>
     public string Division { get; }
 
+    /// <summary>
+    /// Years left on the current licence. WT 2026–2028 is a 3-year cycle in content;
+    /// living promotion/relegation does not tick this yet.
+    /// </summary>
     public int LicenceYearsRemaining { get; }
 
     public string TitleSponsor { get; }
@@ -105,7 +113,8 @@ public sealed record DecisionAuthority(WorldEntityId Id, DecisionAuthorityKind K
 public sealed record OrganizationRaceEntry(
     WorldEntityId OrganizationId,
     string RaceContentId,
-    bool Entered);
+    bool Entered,
+    WorldEntityId? DesignatedLeaderId = null);
 
 public readonly record struct AccessContext(
     WorldEntityId? ViewerPersonId,

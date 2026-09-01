@@ -87,22 +87,44 @@ public sealed class GameApplication
                 return null;
             }
 
+            Dictionary<WorldEntityId, Person> personsById = World.Persons
+                .ToDictionary(person => person.Id);
             PreSeasonRaceEntryProjection[] races = World.CalendarEntries
                 .Where(entry => entry.Kind == CalendarEntryKind.Race && entry.OfficialResult is null)
                 .OrderBy(entry => entry.DayNumber)
                 .ThenBy(entry => entry.Id.Value)
-                .Select(entry =>
+                .GroupBy(entry => entry.RaceContentId ?? RacePreparationDefaults.PrototypeScenarioId, StringComparer.Ordinal)
+                .Select(group =>
                 {
+                    CalendarEntry entry = group.OrderBy(item => item.DayNumber).First();
                     string raceContentId = entry.RaceContentId ?? RacePreparationDefaults.PrototypeScenarioId;
                     bool entered = preSeasonDraft.EntriesByRaceContentId.TryGetValue(raceContentId, out bool draftEntered)
                         ? draftEntered
                         : World.IsOrganizationEnteredForRace(organizationId, raceContentId);
+                    WorldEntityId? leaderId = preSeasonDraft.LeadersByRaceContentId.TryGetValue(
+                        raceContentId,
+                        out WorldEntityId? draftLeader)
+                        ? draftLeader
+                        : World.OrganizationRaceEntries
+                            .FirstOrDefault(
+                                raceEntry => raceEntry.OrganizationId == organizationId &&
+                                             string.Equals(raceEntry.RaceContentId, raceContentId, StringComparison.Ordinal))
+                            ?.DesignatedLeaderId;
+                    string? leaderName = leaderId is WorldEntityId resolvedLeaderId &&
+                                         World.TryGetRiderCareer(resolvedLeaderId) is RiderCareer leaderCareer &&
+                                         personsById.TryGetValue(leaderCareer.PersonId, out Person? leaderPerson)
+                        ? leaderPerson.Name
+                        : null;
                     return new PreSeasonRaceEntryProjection(
                         raceContentId,
                         entry.DayNumber,
                         entry.Title,
-                        entered);
+                        entered,
+                        leaderId,
+                        leaderName);
                 })
+                .OrderBy(race => race.DayNumber)
+                .ThenBy(race => race.RaceContentId, StringComparer.Ordinal)
                 .ToArray();
             return new PreSeasonPlanningProjection(races);
         }
@@ -186,7 +208,8 @@ public sealed class GameApplication
     {
         get
         {
-            if (World is null || State != GameState.Management)
+            if (World is null ||
+                State is not (GameState.Management or GameState.PreSeasonPlanningFlow))
             {
                 return null;
             }
@@ -379,11 +402,31 @@ public sealed class GameApplication
             return CommandResult.Reject("GAME_STATE_INVALID");
         }
 
+        WorldRecipe recipe;
+        try
+        {
+            recipe = scenarioCatalog.Resolve(command.ScenarioId);
+        }
+        catch (Exception exception) when (exception is IOException or ArgumentException)
+        {
+            return CommandResult.Reject("WORLD_CREATE_FAILED");
+        }
+
+        string employerOrigin = command.EmployerOrganizationOriginId ?? recipe.Manager.OrganizationId;
+        if (command.EmployerOrganizationOriginId is not null)
+        {
+            OrganizationDefinition? employer = recipe.Organizations.FirstOrDefault(
+                organization => string.Equals(organization.Id, employerOrigin, StringComparison.Ordinal));
+            if (employer is null || !EmployerEligibility.IsStartable(employer, recipe))
+            {
+                return CommandResult.Reject("EMPLOYER_NOT_PLAYABLE");
+            }
+        }
+
         State = GameState.LoadingWorld;
         try
         {
-            WorldRecipe recipe = scenarioCatalog.Resolve(command.ScenarioId);
-            World = CreateWorld(recipe, command.Seed);
+            World = CreateWorld(recipe, command.Seed, employerOrigin);
             racePreparation = null;
             preSeasonDraft = null;
             contractNegotiationDraft = null;
@@ -400,6 +443,24 @@ public sealed class GameApplication
             State = GameState.MainMenu;
             return CommandResult.Reject("WORLD_CREATE_FAILED");
         }
+    }
+
+    public IReadOnlyList<NewGameClubProjection> ListNewGameClubs(string scenarioId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(scenarioId);
+        WorldRecipe recipe = scenarioCatalog.Resolve(scenarioId);
+        IEnumerable<OrganizationDefinition> organizations = recipe.Organizations
+            .Where(organization => EmployerEligibility.IsStartable(organization, recipe));
+
+        return organizations
+            .OrderBy(organization => organization.Name, StringComparer.Ordinal)
+            .Select(organization => new NewGameClubProjection(
+                organization.Id,
+                organization.Name,
+                organization.Country,
+                organization.TitleSponsor,
+                organization.Division))
+            .ToArray();
     }
 
     public CommandResult Execute(AdvanceDayCommand command)
@@ -520,6 +581,7 @@ public sealed class GameApplication
         }
 
         Dictionary<string, bool> entries = new(StringComparer.Ordinal);
+        Dictionary<string, WorldEntityId?> leaders = new(StringComparer.Ordinal);
         foreach (CalendarEntry entry in World.CalendarEntries)
         {
             if (entry.Kind != CalendarEntryKind.Race || entry.OfficialResult is not null)
@@ -531,10 +593,14 @@ public sealed class GameApplication
             if (!entries.ContainsKey(raceContentId))
             {
                 entries[raceContentId] = World.IsOrganizationEnteredForRace(organizationId, raceContentId);
+                OrganizationRaceEntry? raceEntry = World.OrganizationRaceEntries.FirstOrDefault(
+                    item => item.OrganizationId == organizationId &&
+                            string.Equals(item.RaceContentId, raceContentId, StringComparison.Ordinal));
+                leaders[raceContentId] = raceEntry?.DesignatedLeaderId;
             }
         }
 
-        preSeasonDraft = new PreSeasonPlanningDraft(entries);
+        preSeasonDraft = new PreSeasonPlanningDraft(entries, leaders);
         State = GameState.PreSeasonPlanningFlow;
         return CommandResult.Success;
     }
@@ -557,6 +623,37 @@ public sealed class GameApplication
         return CommandResult.Success;
     }
 
+    public CommandResult Execute(SetSeasonRaceLeaderCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.PreSeasonPlanningFlow || World is null || preSeasonDraft is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(command.RaceContentId);
+        if (!preSeasonDraft.EntriesByRaceContentId.ContainsKey(command.RaceContentId))
+        {
+            return CommandResult.Reject("RACE_CONTENT_NOT_PLANNABLE");
+        }
+
+        AccessContext access = GetAccessContext();
+        if (access.CurrentOrganizationId is not WorldEntityId organizationId)
+        {
+            return CommandResult.Reject("EMPLOYER_REQUIRED");
+        }
+
+        bool onRoster = World.GetRiderCareersForOrganization(organizationId)
+            .Any(career => career.Id == command.LeaderCareerId);
+        if (!onRoster)
+        {
+            return CommandResult.Reject("PREP_STRATEGY_RIDERS_INVALID");
+        }
+
+        preSeasonDraft.LeadersByRaceContentId[command.RaceContentId] = command.LeaderCareerId;
+        return CommandResult.Success;
+    }
+
     public CommandResult Execute(ConfirmPreSeasonPlanCommand command)
     {
         ArgumentNullException.ThrowIfNull(command);
@@ -574,6 +671,12 @@ public sealed class GameApplication
         foreach ((string raceContentId, bool entered) in preSeasonDraft.EntriesByRaceContentId)
         {
             World.SetOrganizationRaceEntry(organizationId, raceContentId, entered);
+            WorldEntityId? leaderId = preSeasonDraft.LeadersByRaceContentId.TryGetValue(
+                raceContentId,
+                out WorldEntityId? draftLeader)
+                ? draftLeader
+                : null;
+            World.SetOrganizationRaceLeader(organizationId, raceContentId, leaderId);
         }
 
         preSeasonDraft = null;
@@ -1252,7 +1355,7 @@ public sealed class GameApplication
             $"official-race-v1:{world.RaceCount + 1}:{scenario.Id}:{scenario.TuningIdentity}"));
     }
 
-    private static WorldState CreateWorld(WorldRecipe recipe, long seed)
+    private static WorldState CreateWorld(WorldRecipe recipe, long seed, string employerOrganizationOriginId)
     {
         WorldEntityIdAllocator allocator = new();
         Dictionary<string, WorldEntityId> organizationIds = new(StringComparer.Ordinal);
@@ -1360,7 +1463,7 @@ public sealed class GameApplication
         Employment employment = new(
             employmentId,
             managerCareerId,
-            organizationIds[recipe.Manager.OrganizationId],
+            organizationIds[employerOrganizationOriginId],
             new WorldDate(0),
             null);
         DecisionAuthority authority = new(authorityId, DecisionAuthorityKind.HumanInput);

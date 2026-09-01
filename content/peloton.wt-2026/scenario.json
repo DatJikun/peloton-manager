@@ -4,6 +4,10 @@
   "historyMode": "Dynamic",
   "difficulty": "Advanced",
   "attributeVisibility": "Guessed",
+  "playerStartDivisions": [
+    "WorldTour"
+  ],
+  "licenceCycleYears": 3,
   "organizations": [
     "organization.wt2026.alpecin",
     "organization.wt2026.bahrain",

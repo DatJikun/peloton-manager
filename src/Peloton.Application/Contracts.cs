@@ -61,7 +61,9 @@ public sealed record WorldRecipe(
     IReadOnlyList<CalendarRaceDefinition> CalendarRaces,
     IReadOnlyList<RaceIdentityConstraints> RaceIdentities,
     bool GeneratePeriodicRaces,
-    string DefaultRaceTemplateId);
+    string DefaultRaceTemplateId,
+    IReadOnlyList<string>? PlayerStartDivisions = null,
+    int LicenceCycleYears = 0);
 
 public interface IScenarioCatalog
 {

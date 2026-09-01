@@ -146,6 +146,13 @@ Pre-season: the player chooses which races the organization enters (`PreSeasonPl
 ## D-038 — 2026 WorldTour content first; lower tiers are architecture
 First real-cycling pack is men’s UCI WorldTour 2026 (18 teams, 2026–2028 licence cycle). Physiology, wages, and budgets may be estimated gameplay numbers and must be labelled as such. Organization records store division and licence-years-remaining so a 3-year WorldTour licence and ProTeam/Continental tiers can exist later. Living promotion/relegation and a full lower-category grid are not required for the first playable season. Commercial licensing of real names is a later problem; the engine must still run on fictional packs.
 
+Owner lock 2026-09-01 (architecture, not this slice’s feature): when Continental / ProTeam and the UCI **3-year promotion/relegation cycle** arrive, they must reuse the same commands and entities. Do **not** fork a second career path.
+
+- Playable starting clubs come from scenario/rules data (`playerStartDivisions`, `licenceCycleYears`), never `if (division == WorldTour)` in Godot or `CreateWorld`.
+- `Organization.Division` is a content string on a stable `OrganizationId`. Promotion later changes that label and `LicenceYearsRemaining` in place.
+- Pre-season entry, per-event leaders, start lists, and Simulate stay organization-scoped. A Continental calendar is another content pack + invites, not new GameStates.
+- Same human/AI commands (D-002). No `PlayerTeam`. Do not implement the ranking/promotion sim in D-050.
+
 ## D-039 — Rider contracts in; loyalty thin; sponsor-loop overkill
 Rider contracts (club, wage, dates) are required. Loyalty is a stored trait, not a minigame. Personal rider sponsors and marketability-as-a-game are overkill for this slice. A quiet marketability number may arrive later with the sponsor economy.
 
@@ -196,4 +203,4 @@ Owner lock 2026-09-01: the next playable slice is **not** CdA split, sponsor mar
 2. **Choose which calendar events that club enters** (pre-season, per event — Tour is one tick, not 21).
 3. **Choose a designated leader for each entered event**, so the year is not one default captain on every start.
 
-Race-day prep may still override. Do not grow a 28-man roster, aging, season rollover, or infinite career in the same tree. Manager identity stays `ManagerCareer` (D-004): the club is a job, not a permanent skin. Watch film stays off by default. Do not rebuild Career Hub. Contract: `CAREER_CLUB_CALENDAR_LEADERS_v0.1.md`.
+Race-day prep may still override. Do not grow a 28-man roster, aging, season rollover, or infinite career in the same tree. Manager identity stays `ManagerCareer` (D-004): the club is a job, not a permanent skin. Watch film stays off by default. Do not rebuild Career Hub. **D-038:** same commands must work later for Continental / ProTeam and a 3-year UCI licence cycle; do not hard-code WorldTour as the only employer type. Contract: `CAREER_CLUB_CALENDAR_LEADERS_v0.1.md`.

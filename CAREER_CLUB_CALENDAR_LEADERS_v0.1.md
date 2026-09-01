@@ -15,9 +15,11 @@ You start a career by **choosing a WorldTour club** (UAE, Alpecin, Visma, … �
 
 Race morning can still change the leader for that day. Skipping a race means your riders stay home; the rest of the world still races.
 
-**Not in this slice:** 28-man roster, aging, year 2027, CdA split, sponsor market, scouting. Staff / sponsors / finance screens stay a drawing.
+**Not in this slice:** 28-man roster, aging, year 2027, CdA split, sponsor market, scouting, **living UCI promotion/relegation**. Staff / sponsors / finance screens stay a drawing.
 
-**Assumptions (say if wrong):** only the 18 WT clubs are pickable (not wildcard ProTeams / Australia). All invited events start ticked on; you uncheck what you skip. One leader per *event* (one GC leader for the whole Tour).
+Architecture (D-038): the same New Game / pre-season / leader commands must later work for **ProTeam and Continental** and a **3-year UCI licence cycle**. This pack only *lists* WorldTour as startable. Do not hard-code `WorldTour` in CreateWorld or Godot.
+
+**Assumptions (say if wrong):** today’s picker shows the 18 WT clubs (wildcard ProTeams / Australia are in the world but not startable until the pyramid pack). All invited events start ticked on; you uncheck what you skip. One leader per *event* (one GC leader for the whole Tour).
 
 ---
 
@@ -54,14 +56,16 @@ Polish UI copy:
 `CreateWorldCommand(string ScenarioId, long Seed, string? EmployerOrganizationOriginId = null)`
 
 - `null` → recipe `Manager.OrganizationId` (Alpecin / skeleton red). **Existing tests and soak stay green.**
-- Non-null on WT: must be an organization in the recipe with `Division == "WorldTour"`. Else reject `EMPLOYER_NOT_PLAYABLE`.
+- Non-null: organization must exist in the recipe **and** `EmployerEligibility.IsStartable` (recipe `playerStartDivisions`). WT 2026 JSON lists `WorldTour` only. Empty list (skeleton) = every org. Else reject `EMPLOYER_NOT_PLAYABLE`.
+- **Never** `command.ScenarioId == wt-2026 && Division == WorldTour` in Application or Godot. A later pack adds `"Continental"` to `playerStartDivisions` and a 3-year registration rules module; same commands.
+- `licenceCycleYears` on the WT scenario is **3**. Do not tick `LicenceYearsRemaining` in this slice.
 - Manager `Employment` attaches to that org. Do not rewrite rider contracts of other clubs.
 
 Query without a world:
 
 ```text
 NewGameClubProjection(OriginId, Name, Country, TitleSponsor, Division)
-GameApplication.ListNewGameClubs(scenarioId)  // WT: Division WorldTour only, name order
+GameApplication.ListNewGameClubs(scenarioId)  // EmployerEligibility, name order
 ```
 
 ### 3.2 Pre-season entries + leaders
@@ -123,7 +127,7 @@ Print `employer=` (already) and after pre-season confirm, compact `entry=` / `le
 
 1. Default `CreateWorld` WT still employs Alpecin.
 2. `CreateWorld(..., "organization.wt2026.uae")` employs UAE; Alpecin riders stay at Alpecin.
-3. ProTeam / National / unknown origin → `EMPLOYER_NOT_PLAYABLE`.
+3. ProTeam / National / unknown origin → `EMPLOYER_NOT_PLAYABLE` **because they are not in `playerStartDivisions`**, not because C# forbids those division names.
 4. `ListNewGameClubs` returns 18 WT, no Australia national.
 5. Skip Lombardia: player riders absent; Advance Day not blocked; world still races.
 6. Set van der Poel as Roubaix leader → `SetDefaultStrategy` on that day uses him; Philipsen remains default on a classified Flat unless set.
@@ -139,6 +143,7 @@ Feel probe seed `91234` and `compare` stay valid with default Alpecin.
 ## 4. Non-goals
 
 - Aging, season rollover, 28-man roster, CdARoad/CdATT
+- Living UCI promotion/relegation (fields + `playerStartDivisions` / `licenceCycleYears` exist; do not tick licences or re-rank teams in this slice)
 - Dynamic sponsor market, scouting, AI managers
 - Per-stage Tour leadership plan (D-032 stays deferred)
 - Rebuilding Career Hub; Watch as default play path
