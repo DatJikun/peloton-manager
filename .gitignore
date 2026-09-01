@@ -11,3 +11,4 @@ TestResults/
 experiments/avatar_prototype/out/
 __pycache__/
 *.pyc
+playtest/*.zip

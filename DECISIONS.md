@@ -222,3 +222,11 @@ Owner playtest 2026-09-01: the career shell must look like `peloton-manager-full
 4. Sidebar crest is the **employer club**. Skład sorts; geometric avatars; Rynek is world riders filterable by club (D-044 poach). Settings keeps the diagonal team stripe.
 
 No schema bump. Watch film stays off. Do not rebuild Career Hub. Contract: `CAREER_SHELL_DATES_AND_LOOK_v0.1.md`.
+
+## D-053 — Repo hygiene: CI gate, playtest via Releases, no PR pile
+Owner agreed 2026-09-01 to the repository review. Process lock, not a gameplay lock:
+
+1. `.github/workflows/gate.yml` runs `dotnet format` / `build` / `test` and the `HANDOFF.md` SimRunner commands on every push to `main` and every PR. Agents still run the gate locally; CI is the independent proof for the owner, who is not a programmer.
+2. The Windows playtest zip is **not committed** to git. `.github/workflows/playtest-windows.yml` exports it with `tools/pack-windows-playtest.sh` and publishes a GitHub Release when a `playtest-*` tag is pushed. Historical zips (5 × ~66 MB) stay in history until the owner asks for a rewrite.
+3. Stale PRs are closed, not stacked (D-045). Deferred experiment branches (avatar look proposals) stay on `origin` under their old names; they are not merged until the owner decides on avatars.
+4. Feel order after hygiene, per the owner: bruk in the race engine, then the one-team sprint top 5, then CdA Road/TT. §49 stays `NOT VERIFIED`.

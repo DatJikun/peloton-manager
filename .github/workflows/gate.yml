@@ -1,0 +1,62 @@
+name: gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    name: format / build / test / SimRunner
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore PelotonManager.sln
+
+      - name: Format (verify no changes)
+        run: dotnet format PelotonManager.sln --verify-no-changes --no-restore
+
+      - name: Build
+        run: dotnet build PelotonManager.sln --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test PelotonManager.sln --no-build --configuration Release --logger "trx;LogFileName=results.trx"
+
+      # The same SimRunner commands as HANDOFF.md "Commands to run first".
+      - name: SimRunner run (10 skeleton seasons)
+        run: dotnet run --project tools/Peloton.SimRunner --no-build --configuration Release -- run --scenario scenario.peloton.skeleton --years 10 --seed 91234
+
+      - name: SimRunner race (prototype gate)
+        run: dotnet run --project tools/Peloton.SimRunner --no-build --configuration Release -- race --scenario race-scenario.peloton.prototype-v0 --seed 91234
+
+      - name: SimRunner watch
+        run: dotnet run --project tools/Peloton.SimRunner --no-build --configuration Release -- watch --scenario race-scenario.peloton.prototype-v0 --seed 91234
+
+      - name: SimRunner compare (WT 2026 analogues)
+        run: dotnet run --project tools/Peloton.SimRunner --no-build --configuration Release -- compare --scenario scenario.peloton.wt-2026 --seed 91234
+
+      - name: SimRunner day (skeleton, through results)
+        run: dotnet run --project tools/Peloton.SimRunner --no-build --configuration Release -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --simulate-from-prep --through-results
+
+      - name: SimRunner day (WT 2026, UAE employer)
+        run: dotnet run --project tools/Peloton.SimRunner --no-build --configuration Release -- day --scenario scenario.peloton.wt-2026 --seed 91234 --days 1 --employer organization.wt2026.uae
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: '**/TestResults/*.trx'
+          if-no-files-found: ignore

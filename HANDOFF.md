@@ -165,6 +165,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
+- `2026-09-01` — **D-053: repo hygiene (owner agreed to the review list).** (1) GitHub Actions `gate` runs the HANDOFF gate on every push to `main` / PR; a red `gate` on `main` is a blocker. (2) The Windows playtest zip is **no longer committed**; `playtest-windows` workflow builds it from `tools/pack-windows-playtest.sh` and publishes a GitHub Release when a `playtest-*` tag is pushed. (3) All 12 stale PRs (#13–#16 core loop already on `main`; #20/#26 avatar look proposals — branches kept for the deferred avatar decision; #21 archive; #24/#25/#36 Watch film/radio — D-043; #31 Career Hub zip — D-048; #34 docs already on `main`) were closed without merge. Feel order after hygiene: bruk in the engine → sprint one-team top 5 → CdA Road/TT.
 - `2026-09-01` — **D-052 landed (Composer):** `CareerCalendarDates` (1 Jan 2026 epoch); grouped `SeasonEventProjection` / `UpcomingEvents` / `MarketRiders`; Polish inbox; Godot desk/calendar/rynek/squad crest/dates per `CAREER_SHELL_DATES_AND_LOOK_v0.1.md`.
 - `2026-09-01` — **D-052: 1 Jan 2026 dates + HTML look repair.** Calendar dates not “dzień N”; desk max five grouped events; month grid; world inbox in Polish; employer crest; no laboratory banners; Skład sorts + geometric avatars; Rynek is world riders filterable by club. Contract: `CAREER_SHELL_DATES_AND_LOOK_v0.1.md`.
 - `2026-09-01` — **Windows playtest zip refreshed** after D-052 (`playtest/PelotonManager-playtest-windows.zip`). Pack includes `peloton.wt-2026`. Dates from 1 Jan 2026; market is world riders; staff/sponsors/scouting stay drawings.
@@ -275,7 +276,7 @@ CAREER_SHELL_DATES_AND_LOOK_v0.1.md
 ```
 
 ## Commands to run first
-From the repository root:
+The same gate runs in GitHub Actions (`.github/workflows/gate.yml`) on every push to `main`. Check it with `gh run list --workflow gate`. From the repository root:
 
 ```text
 dotnet format --verify-no-changes
@@ -320,9 +321,11 @@ src/Peloton.Client.Godot/project.godot
 - Nie odpalaj kodujących subagentów z `inherit` (to Grok); kod to Composer 2.5 (D-035).
 - Nie rozszerzaj scope'u taska bez wskazania PLAYER VALUE i bez decyzji właściciela.
 - Nie zamykaj OQ-TS-001 ani OQ-DM-001 na podstawie checksumy lub allocatora szkieletowego.
+- Nie commituj `playtest/*.zip` (każdy commit to +66 MB w historii na zawsze). Paczkę Windows publikuje workflow `playtest-windows` po wypchnięciu tagu `playtest-YYYY-MM-DD` (D-053).
+- Nie otwieraj nowego PR-a, jeśli poprzedni z tej sesji nie jest zmergowany albo zamknięty (D-045 / D-053).
 
 ## Handoff summary
-Milestone 0 still supplies the headless .NET 8 spine. The race prototype is the official result path: `PrototypeRaceEngine` plus `content/peloton.race-prototype`, Application commands `StartRaceCommand` / `AdvanceRaceCommand` / `RespondToRaceDecisionCommand` / `BeginRaceWatchCommand` / `AdvanceRaceWatchCommand` / `AbandonRaceLiveCommand`, and SimRunner `race`. A pending DecisionRequest stays in `RaceLive`. SimRunner `watch` and career `day --watch-from-prep` keep the D-033 supervising clock. Godot (`src/Peloton.Client.Godot`) presents the career shell (`CareerShell.tscn`, POC v3 chrome, desk queries, default simulate → result table, plus `CareerLookCatalog` for empty domains). Watch film is optional and **off by default** (D-043 / D-048). Career Hub UI is deleted. Renderer does not drive physics. Look-catalog OVR is not World; desk/squad/finance cash and contract offers are. The owner look drawing remains `peloton-manager-full-ui-poc-v3.html` (`HTML_UI_LAB.md`). After Simulate/Watch, `RaceResultProjection` and `RaceDebriefProjection` present the committed result without a second `RunBatch`. Spy OFF/ON must match checksum and finish order. `StubRaceEngine` is gone from production assemblies. SQLite `SchemaVersion` is **9**. Owner §49 remains `NOT VERIFIED`. `D-032` is deferred. D-049 bunch sprint / UCI fields / jerseys are in. D-050 New Game club pick / pre-season leaders are in. D-051 desk finance and squad offers are in. D-052 is the next coding task. Prototype CdA is still one number.
+Milestone 0 still supplies the headless .NET 8 spine. The race prototype is the official result path: `PrototypeRaceEngine` plus `content/peloton.race-prototype`, Application commands `StartRaceCommand` / `AdvanceRaceCommand` / `RespondToRaceDecisionCommand` / `BeginRaceWatchCommand` / `AdvanceRaceWatchCommand` / `AbandonRaceLiveCommand`, and SimRunner `race`. A pending DecisionRequest stays in `RaceLive`. SimRunner `watch` and career `day --watch-from-prep` keep the D-033 supervising clock. Godot (`src/Peloton.Client.Godot`) presents the career shell (`CareerShell.tscn`, POC v3 chrome, desk queries, default simulate → result table, plus `CareerLookCatalog` for empty domains). Watch film is optional and **off by default** (D-043 / D-048). Career Hub UI is deleted. Renderer does not drive physics. Look-catalog OVR is not World; desk/squad/finance cash and contract offers are. The owner look drawing remains `peloton-manager-full-ui-poc-v3.html` (`HTML_UI_LAB.md`). After Simulate/Watch, `RaceResultProjection` and `RaceDebriefProjection` present the committed result without a second `RunBatch`. Spy OFF/ON must match checksum and finish order. `StubRaceEngine` is gone from production assemblies. SQLite `SchemaVersion` is **9**. Owner §49 remains `NOT VERIFIED`. `D-032` is deferred. D-049 bunch sprint / UCI fields / jerseys are in. D-050 New Game club pick / pre-season leaders are in. D-051 desk finance and squad offers are in. D-052 dates and HTML look are in. Prototype CdA is still one number.
 
 This tree joins that career loop onto `main` without dropping the HTML UI lab. The paragraph below preserves the pre-bootstrap design context and owner lessons; implementation status is given above and in `CODEBASE_MAP.md`.
 

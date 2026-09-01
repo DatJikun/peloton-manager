@@ -80,6 +80,12 @@ Do not merge a stack of stale PRs into each other. If an old branch conflicts, r
 the player-value change onto today’s `main`. Watch film stays optional and off by default
 (D-043 / D-048); do not land leftover Watch radio/DS dashboard PRs. Do not rebuild Career Hub.
 
+**D-053:** the same gate runs in GitHub Actions (`.github/workflows/gate.yml`) on every
+push to `main` and every PR. After `git push origin main`, check `gh run list --workflow gate`;
+a red run on `main` is fixed or reverted in the same session. Close stale PRs instead of
+leaving them open. Never commit `playtest/*.zip`; push a `playtest-YYYY-MM-DD` tag and let
+`playtest-windows.yml` publish the GitHub Release.
+
 ## Reverts
 
 If a merged change badly breaks an invariant, prefer a clear Git revert over stacking emergency patches when practical. History should show what happened.
