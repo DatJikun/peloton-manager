@@ -1,5 +1,7 @@
-# Godot client stub
+# Godot Watch Race client
 
-This project reserves the future client boundary and references only `Peloton.Application`.
+Presentation only. Open `project.godot` in Godot 4.4 .NET.
 
-Milestone 0 contains no Godot SDK dependency, scenes, nodes, HQ UI, cards, or race visualization. Headless tests and `Peloton.SimRunner` are the executable surfaces. A later Godot client must use Application Commands and knowledge-bounded Queries rather than owning World State or opening SQLite directly.
+This project issues Application Commands and Queries through `Peloton.Infrastructure`. It interpolates official `RaceWatch` snapshots, pauses on a knowledge-bounded decision, and shows Results from `LastRace`.
+
+It does **not** own World State, open SQLite, or drive race physics. It is not a Career Hub. Headless tests and `Peloton.SimRunner` remain the executable surfaces that do not need the Godot editor.

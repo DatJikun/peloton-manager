@@ -23,7 +23,7 @@ public sealed class CareerWatchTests
         GameApplication watched = Create(watchEngine);
         Assert.True(watched.Execute(new CreateWorldCommand("scenario.peloton.skeleton", GateSeed)).Succeeded);
         Assert.True(watched.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(watched.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(watched).Succeeded);
         Assert.True(watched.Execute(new StartRaceCommand(
             Path.Combine(temp.Path, "watch-pre-race.peloton"),
             PrototypeRaceScenarioId)).Succeeded);
@@ -36,14 +36,14 @@ public sealed class CareerWatchTests
         Assert.Equal(1, watchEngine.CreateSessionCalls);
         Assert.Equal(0, watchEngine.RunBatchCalls);
         RaceResultProjection watchResult = Assert.IsType<RaceResultProjection>(watched.RaceResult);
-        Assert.Equal(1006, watchResult.WinnerId.Value);
+        Assert.Equal(CareerWorldTestSupport.BetaLeaderCareerId(watched).Value, watchResult.WinnerId.Value);
         Assert.Null(watched.CareerDay);
 
         CountingRaceEngine simulateEngine = new();
         GameApplication simulated = Create(simulateEngine);
         Assert.True(simulated.Execute(new CreateWorldCommand("scenario.peloton.skeleton", GateSeed)).Succeeded);
         Assert.True(simulated.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(simulated.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(simulated).Succeeded);
         Assert.True(simulated.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId)).Succeeded);
 
         Assert.Equal(1, simulateEngine.RunBatchCalls);
@@ -65,7 +65,9 @@ public sealed class CareerWatchTests
 
         Assert.Equivalent(rateOne.Application.World!.LastRace, rateTwenty.Application.World!.LastRace, strict: true);
         Assert.Equal(rateOne.Application.LastOfficialChecksum, rateTwenty.Application.LastOfficialChecksum);
-        Assert.Equal(1006, rateOne.Application.World.LastRace!.WinnerId.Value);
+        Assert.Equal(
+            CareerWorldTestSupport.BetaLeaderCareerId(rateOne.Application).Value,
+            rateOne.Application.World.LastRace!.WinnerId.Value);
         Assert.True(rateOne.WatchSecond > rateTwenty.WatchSecond);
         Assert.Equal(
             WorldChecksum.Compute(rateOne.Application.World),
@@ -77,7 +79,7 @@ public sealed class CareerWatchTests
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", GateSeed)).Succeeded);
         Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(application.Execute(new ConfirmRacePreparationPlanCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(application).Succeeded);
         Assert.True(application.Execute(new StartRaceCommand(
             Path.Combine(autosaveDirectory, "pre-race.peloton"),
             PrototypeRaceScenarioId)).Succeeded);

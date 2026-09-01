@@ -2,7 +2,7 @@
 
 **Version:** 0.1  
 **Status:** REVIEW  
-**Authority:** mandatory implementation workflow under `DECISIONS.md`, `ARCHITECTURE.md`, `DOCS_GOVERNANCE.md`  
+**Authority:** mandatory implementation workflow under `DECISIONS.md` (D-028, D-035), `ARCHITECTURE.md`, `DOCS_GOVERNANCE.md`  
 **Purpose:** allow a non-programmer owner to safely develop the project with multiple AI coding sessions without silent architecture drift, undocumented behavior, giant risky changes or impossible-to-debug regressions.
 
 ---
@@ -45,6 +45,9 @@ A feature is not complete merely because it compiles.
 ### G-006 — Git history is project memory
 Commits and PRs must explain meaningful changes. Avoid messages like `fix`, `stuff`, `update files`.
 
+### G-007 — Composer 2.5 codes; the main agent writes contracts
+When this repo is developed with a main Cloud Agent plus subagents (D-035): coding `Task` launches use Composer 2.5 (`composer-2.5`). Do not inherit Grok. Do not use Composer 2.5 Fast unless the owner asked for speed. Design/governance Markdown stays with the main agent (Grok 4.6 High). See `AGENTS.md`.
+
 ## 3. Required read order before coding
 
 ```text
@@ -57,7 +60,7 @@ DESIGN_PRINCIPLES_AND_ANTI_PATTERNS.md
 AI_DEVELOPMENT_RULES_v0.1.md
 ```
 
-Then read only system docs relevant to the task. Do not feed every design document to every coding session when unnecessary.
+Then read only system docs relevant to the task. On Cursor Cloud also follow `AGENTS.md`. Coding subagents are Composer 2.5 (G-007, D-035). Do not feed every design document to every coding session when unnecessary.
 
 ## 4. Task card before implementation
 
@@ -534,7 +537,7 @@ If build/test/migration/benchmark/platform behavior was not actually verified, m
 
 ## 37. Build gate
 
-Future canonical commands may include:
+Canonical commands after bootstrap (live list is in `HANDOFF.md`):
 
 ```text
 dotnet format --verify-no-changes
@@ -543,7 +546,7 @@ dotnet test
 dotnet run --project tools/Peloton.SimRunner -- <scenario>
 ```
 
-After repo bootstrap, `HANDOFF.md` must contain the real commands.
+`HANDOFF.md` is the source of the real SimRunner flags. Do not invent a shorter gate.
 
 ## 38. Architecture tests
 

@@ -16,7 +16,7 @@
 
 **Last reviewed:** 2026-08-25
 
-**Related decisions/ADRs:** D-002, D-003, D-004, D-005, D-007, D-009, D-010, D-013, D-014, D-015, D-024, D-025, D-027, D-031
+**Related decisions/ADRs:** D-002, D-003, D-004, D-005, D-007, D-009, D-010, D-013, D-014, D-015, D-024, D-025, D-027, D-031, D-036
 
 ---
 
@@ -197,6 +197,8 @@ Person
     PersonId
     OriginDefinitionId?
     identity/profile references
+    Nationality?                // ISO3; WT pack phase 5
+    BirthYear?                  // WT pack phase 5; not a full lifecycle date
     birth/death or lifecycle dates where applicable
     lifecycle status
 ```
@@ -237,6 +239,40 @@ ManagerCareer
 
 `ManagerCareer` does not contain a `PlayerTeam` flag and does not become a different type when controlled by a human.
 
+### 6.4 RiderCareer (career slice)
+
+`RiderCareer` is the racing career of a `Person`. Official race `RiderId` values are `RiderCareer.Id`.
+
+Minimum contract for the WorldTour slice (`CAREER_WORLDTOUR_SLICE_v0.1.md`, D-036):
+
+```text
+RiderCareer
+    RiderCareerId
+    PersonId
+    OrganizationId?             // current club from the active RiderContract; null = unattached
+    OriginDefinitionId
+    physiology used by the race engine
+    Form01 / Freshness01 / Fatigue01
+    Loyalty01                   // stored trait; not a minigame
+    Results                     // append-only career race history
+```
+
+`RiderContract` (D-039, Career WorldTour slice phase 4) is the system of record for rider–club terms. It is **not** manager `Employment`.
+
+```text
+RiderContract
+    RiderContractId
+    RiderCareerId
+    OrganizationId
+    AnnualWage                  // whole game-euros / year
+    StartDate
+    EndDate                     // inclusive last contracted day
+```
+
+When `EndDate` is in the past, `RiderCareer.OrganizationId` becomes null (thin free agency). Expired contract rows remain history. A transfer market is later.
+
+Full training, health, and development fields remain later system documents.
+
 ---
 
 ## 7. Employment
@@ -270,6 +306,8 @@ Invariants:
 
 The future contract system may generalize employment terms. This document locks the identity and lifecycle boundary only.
 
+**Slice lock (OQ-DM-002, Career WorldTour phase 4):** manager `Employment` stays manager-only. Riders use `RiderContract`. Do not store rider wages on `Employment`. A single generic contract table is still later.
+
 ---
 
 ## 8. Organization
@@ -287,6 +325,15 @@ Organization
     organization identity and strategy references
     active manager EmploymentId?  // derived/indexed from Employment lifecycle
     OrganizationKnowledgeStoreId
+    Country?                    // ISO3; Career WorldTour slice phase 5
+    Division?                   // WorldTour / ProTeam / Continental / Skeleton
+    LicenceYearsRemaining?      // 3-year WT cycle; Picnic = 1
+    TitleSponsor?
+    Bike?
+    Groupset?
+    EstimatedBudgetEur?         // labelled estimated gameplay; title-sponsor fee source in phase 6
+    CashEur                     // mutable; may be negative (overdrawn)
+    TitleSponsorAnnualFeeEur
 ```
 
 `Employment` is the system of record for the relationship. If active-employment references are stored on ManagerCareer or Organization for efficient lookup, validation must keep them consistent with that lifecycle.
@@ -764,7 +811,7 @@ ScheduledWork triggers AI review
 | ID | Question | Decision deadline |
 |---|---|---|
 | OQ-DM-001 | One global WorldEntityId allocator or typed per-entity allocators with equivalent no-reuse guarantees | Before `SAVE_FORMAT_v0.1.md` is accepted |
-| OQ-DM-002 | Exact boundary between a manager Employment record and the future generic contract model | Before Contracts/Data Model expansion |
+| OQ-DM-002 | Exact boundary between a manager Employment record and the future generic contract model | Slice lock in place: Employment = managers, RiderContract = riders. Generic shared table still later. |
 | OQ-DM-003 | Which personal observations remain portable raw records versus summarized Relationship/Knowledge memory | Before persistence schema for Personal Knowledge |
 | OQ-DM-004 | Exact interim/vacancy authority assignment rules when an Organization has no ManagerCareer | Before AI organization skeleton implementation |
 | OQ-DM-005 | Which DecisionRecord fields are permanent domain history versus compactable diagnostic detail | Before World Spy persistence and SAVE_FORMAT are accepted |
@@ -775,7 +822,7 @@ ScheduledWork triggers AI review
 
 - rider physiology, performance, development, training, health, and race truth fields;
 - detailed staff role/capacity model;
-- contracts, negotiations, market competition, sponsor, finance, and equipment fields;
+- contract **market** (renew/sign/negotiate), sponsor, finance, and equipment fields (thin `RiderContract` wage+expiry is in the Career WorldTour slice);
 - calendar, race edition, stage, result, and classification schemas;
 - organization strategy and effective branding structures;
 - content pack and rules-transition schemas;
