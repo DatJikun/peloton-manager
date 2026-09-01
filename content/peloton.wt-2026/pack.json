@@ -1,0 +1,25 @@
+{
+  "packId": "peloton.wt-2026",
+  "packVersion": "0.1.0-draft",
+  "contentSchemaVersion": 1,
+  "notes": "WorldTour 2026 content pack. Physiology/wages/budgets are estimated gameplay bands. Route geometry uses the synthetic prototype circuit.",
+  "resources": [
+    {
+      "kind": "scenarios",
+      "path": "scenario.json"
+    },
+    {
+      "kind": "roster",
+      "path": "roster.json"
+    },
+    {
+      "kind": "organizations",
+      "path": "organizations.json"
+    },
+    {
+      "kind": "calendar",
+      "path": "calendar.json"
+    }
+  ],
+  "dependencies": []
+}

@@ -9,6 +9,8 @@ namespace Peloton.Application;
 public interface IRaceScenarioCatalog
 {
     RaceScenario Resolve(string scenarioId);
+
+    RaceScenarioTemplate ResolveTemplate(string scenarioId);
 }
 
 public sealed record PendingRaceDecision(

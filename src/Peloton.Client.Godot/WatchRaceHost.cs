@@ -78,6 +78,11 @@ public sealed class WatchRaceHost
         return application.Execute(new PrepareRaceCommand());
     }
 
+    public CommandResult SetDefaultStrategy()
+    {
+        return RacePreparationSupport.SetDefaultStrategy(application);
+    }
+
     public CommandResult ConfirmPreparation()
     {
         return application.Execute(new ConfirmRacePreparationPlanCommand());

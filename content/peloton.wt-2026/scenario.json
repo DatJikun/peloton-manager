@@ -1,0 +1,43 @@
+{
+  "id": "scenario.peloton.wt-2026",
+  "startDate": "2026-01-01",
+  "historyMode": "Dynamic",
+  "difficulty": "Advanced",
+  "attributeVisibility": "Guessed",
+  "organizations": [
+    "organization.wt2026.alpecin",
+    "organization.wt2026.bahrain",
+    "organization.wt2026.decathlon",
+    "organization.wt2026.ef",
+    "organization.wt2026.fdj",
+    "organization.wt2026.ineos",
+    "organization.wt2026.lidl-trek",
+    "organization.wt2026.lotto",
+    "organization.wt2026.movistar",
+    "organization.wt2026.nsn",
+    "organization.wt2026.redbull",
+    "organization.wt2026.soudal",
+    "organization.wt2026.jayco",
+    "organization.wt2026.picnic",
+    "organization.wt2026.visma",
+    "organization.wt2026.uae",
+    "organization.wt2026.unox",
+    "organization.wt2026.astana"
+  ],
+  "modules": [
+    {
+      "slot": "calendarStructure",
+      "id": "rules.peloton.calendar.wt2026",
+      "contract": "calendar-structure",
+      "contractVersion": 1,
+      "parameterIdentity": "calendar-from-content"
+    },
+    {
+      "slot": "competitionRules",
+      "id": "rules.peloton.race.prototype-v0",
+      "contract": "race-prototype",
+      "contractVersion": 1,
+      "parameterIdentity": "race-tuning.peloton.prototype-v0"
+    }
+  ]
+}

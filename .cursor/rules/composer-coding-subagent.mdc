@@ -1,0 +1,17 @@
+---
+description: Composer 2.5 is the default coding subagent (D-035 / AGENTS.md)
+alwaysApply: true
+---
+
+# Coding subagent lock (D-035)
+
+When this repo is developed with a main Cloud Agent plus subagents:
+
+- **Main agent (Grok 4.6 High, not fast):** writes Markdown/docs and reviews. Design contracts stay here.
+- **Composer 2.5:** default coding subagent.
+
+When launching a `Task` for implementation, coding, tests, or mechanical code edits, set `model` to `composer-2.5`.
+
+Do **not** omit `model` on coding tasks (omission inherits Grok). Do **not** use `composer-2.5-fast` unless the owner asked for speed. Do not make Composer the primary author of VISION, DECISIONS, ARCHITECTURE, HANDOFF, UI sitemap, GAME_STATES, DATA_MODEL, ADRs, or similar governance docs.
+
+Composer may write Markdown that is part of the coding work (HANDOFF note, KNOWN DIFFERENCE, test note). The main agent still reviews it before it is a project contract.
