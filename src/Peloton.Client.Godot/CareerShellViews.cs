@@ -763,7 +763,7 @@ public sealed partial class CareerShellScreen
 
     private VBoxContainer BuildRiderCard()
     {
-        LookRider? rider = CareerLookCatalog.Rider(selectedRiderId) ?? CareerLookCatalog.Riders[0];
+        LookRider? rider = CareerLookCatalog.Rider((int)selectedRiderId) ?? CareerLookCatalog.Riders[0];
         VBoxContainer box = new();
         box.AddThemeConstantOverride("separation", 8);
         box.AddChild(ProfileHead(rider.FullName, $"{rider.Nat} · {rider.Age} lat · {rider.Role}"));
