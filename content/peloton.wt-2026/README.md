@@ -13,6 +13,8 @@ Men's UCI WorldTour 2026 pack wired to `scenario.peloton.wt-2026`.
 | Wages and budgets | Estimated gameplay numbers (`budgetBand` multipliers) |
 | Route geometry | **Generated dense profiles** (~25 m samples) from `race-identities.json` at CreateWorld; stored on world. Skeleton soak still uses the proof circuit. |
 
+Public 2026 physiology/wage bands versus this pack: `WT_2026_PHYSIOLOGY_AND_CONTRACTS_RESEARCH_2026-09-01.md` (research source, not a lock). Do not treat pack numbers as a UCI dump.
+
 Commercial licensing of real names and jerseys remains a later legal problem. The engine must still run on fictional packs (`scenario.peloton.skeleton`).
 
 ## Prototype limits

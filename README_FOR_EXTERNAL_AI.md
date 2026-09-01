@@ -18,7 +18,8 @@
 14. `WORLD_SPY_AND_DECISION_TRACING_v0.1.md`
 15. `RACE_ENGINE_RESEARCH_2026-08-25.md`
 16. `MANAGER_GAMES_AND_CYCLING_RESEARCH_2026-08-31.md`
-17. `DOCS_GOVERNANCE.md`
+17. `WT_2026_PHYSIOLOGY_AND_CONTRACTS_RESEARCH_2026-09-01.md`
+18. `DOCS_GOVERNANCE.md`
 
 
 ## What we want from you
@@ -40,7 +41,7 @@ When proposing a change, explain the problem it solves and which current decisio
 
 Pre-production, but the architecture skeleton and race prototype already exist in code. `HANDOFF.md` and `CODEBASE_MAP.md` are the live snapshot. `UI_SITEMAP_v0.1.md`, `GAME_STATES_v0.1.md`, and `DATA_MODEL_v0.1.md` remain DRAFT contracts; several identities from the data model are not in code yet (knowledge stores, recruitment). Rider careers are bound to race via `RiderCareer`.
 
-Genre/management research lives in `MANAGER_GAMES_AND_CYCLING_RESEARCH_2026-08-31.md` (source, not a lock).
+Genre/management research lives in `MANAGER_GAMES_AND_CYCLING_RESEARCH_2026-08-31.md` (source, not a lock). 2026 rider physiology and wage/contract estimates live in `WT_2026_PHYSIOLOGY_AND_CONTRACTS_RESEARCH_2026-09-01.md` (source, not a lock; does not retune `peloton.wt-2026`).
 
 Godot career shell (`CareerShell.tscn`) presents Advance Day / Race next / simulate / results (D-043). Watch Race is **optional film**, off by default; do not make it the default play path. Career Hub UI is deleted (D-048). Owner fun gate `RACE_ENGINE_DESIGN_v0.2.md` §49 is `NOT VERIFIED` — do not close it with automations.
 

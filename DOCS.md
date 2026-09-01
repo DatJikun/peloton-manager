@@ -31,6 +31,7 @@
 | `CODEBASE_MAP.md` | ACTIVE | Fast navigation map of code ownership and debugging entry points |
 | `RACE_ENGINE_RESEARCH_2026-08-25.md` | RESEARCH SOURCE | Research basis for physiology, physics, DS information and tactics |
 | `MANAGER_GAMES_AND_CYCLING_RESEARCH_2026-08-31.md` | RESEARCH SOURCE | Cycling as a management sport (calendar, licences, sponsors, transfers) plus why manager games work; does not replace Vision/Decisions |
+| `WT_2026_PHYSIOLOGY_AND_CONTRACTS_RESEARCH_2026-09-01.md` | RESEARCH SOURCE | 2026 peloton physiology bands and contract/wage estimates vs `peloton.wt-2026`; does not replace Vision/Decisions or retune the pack |
 | `CONTENT_FORMAT_v0.1.md` | DRAFT | JSON content packs, manifesty, IDs, dependencies, overrides i deterministic resolution |
 | `RULESETS_v0.1.md` | DRAFT | Składane moduły reguł, compatibility i effective-dated transitions |
 | `SAVE_FORMAT_v0.1.md` | DRAFT | SQLite save contract, schema versions, migrations, content identity i recovery |

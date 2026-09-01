@@ -111,6 +111,7 @@ Baza 2026: 18 ekip męskiego WorldTour w `scenario.peloton.wt-2026`. Fizjologia,
 - [x] Save Format v0.1 (DRAFT)
 - [x] Testing v0.1 (DRAFT)
 - [x] Manager-games + cycling-as-management research (RESEARCH SOURCE, 2026-08-31) — nie zmienia locków
+- [x] WT 2026 physiology + contracts/wages research (RESEARCH SOURCE, 2026-09-01) — nie zmienia locków, nie retunuje `roster.json`
 - [x] Docs snapshot 2026-08-31: Godot Watch is real (not a stub); Composer 2.5 coding lock (D-035)
 - [x] Career WorldTour slice phase 1 — world–race bind (`RiderCareer`, SchemaVersion 2, career results)
 - [x] Career WorldTour slice phase 2 — form / freshness / fatigue on Advance Day and in official races
@@ -242,6 +243,7 @@ CODEBASE_MAP.md
 RACE_ENGINE_RESEARCH_2026-08-25.md
 HTML_UI_LAB.md
 MANAGER_GAMES_AND_CYCLING_RESEARCH_2026-08-31.md
+WT_2026_PHYSIOLOGY_AND_CONTRACTS_RESEARCH_2026-09-01.md
 CAREER_WORLDTOUR_SLICE_v0.1.md
 HOW_RACE_DAY_WORKS.md
 AGENTS.md
@@ -295,6 +297,8 @@ Milestone 0 still supplies the headless .NET 8 spine. The race prototype is the 
 This tree joins that career loop onto `main` without dropping the HTML UI lab. The paragraph below preserves the pre-bootstrap design context and owner lessons; implementation status is given above and in `CODEBASE_MAP.md`.
 
 Peloton Manager jest na etapie pre-production. Celem jest modularny, deterministyczny manager kolarstwa z matematyczną symulacją i emergent history. Epoki składają się z niezależnych modułów content/rules. Race gameplay jest krytycznym ryzykiem: wcześniejszy projekt managerski właściciela okazał się nudny przez brak ciekawych decyzji w trakcie meczu, więc realizm nie może usprawiedliwiać pasywnej rozgrywki. RNG musi być izolowany per domena, aby kosmetyczne zmiany nie wpływały na gameplay. Truth należy do Simulation, natomiast Knowledge do konkretnych organizacji. Human i AI używają tych samych Application Commands oraz rynku; AI nie posiada magicznego dostępu do ukrytych atrybutów. Wyniki są evidence, a nie bezpośrednim odczytem ability. Dossier jest sprawą rekrutacyjną z kontaktem z agentem, a nie paskiem postępu. UI Godota nie może posiadać logiki świata. Advance Day jest jedyną podstawową jednostką postępu UX, ale scheduler pozostaje event-driven i symuluje cały świat niezależnie od gracza. AI managerowie korzystają z tych samych Commands co człowiek; ich różnorodność wynika z traits, skills, knowledge, staffu, identity organizacji i kontekstu rulesetu. Efektywność cech managerów jest mierzona przez batchowe i 100-letnie symulacje w wielu epokach. Stable IDs nigdy nie są ponownie używane, a stare encje są kompaktowane zamiast kasowane z historii. UI Sitemap, Game States, minimalny Data Model, Content Format, Rulesets, Save Format i Testing są w DRAFT i czekają na owner review. Content resolution zapisuje dokładną tożsamość packów, dependencies i overrides. Rules modules składają świat bez globalnego przełącznika epoki, a ich przejścia są effective-dated. Save jest kontraktem pliku SQLite z wersją schematu, obowiązkową migracją, recovery i dokładną content/rules identity; nie zawiera mid-race snapshotu ani scheduler runtime jako World State. Testing definiuje warstwy, golden families, kanoniczny przepis Dynamic+Advanced+Guessed i gate Milestone 0; nie zamyka fun gate'u automatami. Race prototype v0 jest oficjalną ścieżką wyników, ale nadal poniżej pełnego kontraktu `RACE_ENGINE_DESIGN_v0.2.md`; §49 pozostaje do ręcznego playtestu właściciela.
+
+- `2026-09-01` — Research źródłowy `WT_2026_PHYSIOLOGY_AND_CONTRACTS_RESEARCH_2026-09-01.md`: pasma mocy i mas sezonu 2026 oraz minima/średnie/top pensji UCI+dziennikarstwo vs cienka paczka `peloton.wt-2026`. Nie zmienia locków; nie retunuje `roster.json`. D-038 (estimated, labelled) zostaje.
 
 - `2026-08-31` — Research źródłowy `MANAGER_GAMES_AND_CYCLING_RESEARCH_2026-08-31.md`: kolarstwo poza rowerem (sponsor-vehiculum, licencje UCI, kalendarz szczytów, rynek bez okna FIFA) oraz gatunek menedżerów (FM/CM/OOTP/PCM/F1/MM). Nie zmienia locków; potwierdza VISION/DECISIONS i uzupełnia lukę obok researchu wyścigu.
 
