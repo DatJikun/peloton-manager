@@ -185,3 +185,6 @@ Owner lock 2026-09-01: routes are dense polylines (~25 m samples), stored in the
 
 ## D-048 — Career Hub UI is deleted; Watch film stays, off by default
 Owner lock 2026-09-01: remove Career Hub from the product. Delete `CareerHub.tscn` / `CareerHubHost` / `CareerHubScreen` and do not rebuild that dashboard (PR #4). The desk is the career shell. Watch Race remains an optional film in that shell, **off by default**; the player can turn it on. Simulate then results stays the default race-day path.
+
+## D-049 — UCI-shaped fields, bunch-sprint flats, classification jerseys
+Owner lock 2026-09-01: official WorldTour start lists follow UCI team size (7 riders; 8 on Grand Tours) and event invites (wildcards), not a 4-man card as the whole peloton. Classified Flat finishes are bunch sprints (peak / W′ / position), not a CP time trial. Stage races expose GC, points, KOM, youth, and team classifications as **after-stage queries**. D-032 (mid-race GC leadership transfer) stays deferred. History analogues are for owner judgment (D-001), not a scripted result. Contract: `RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md`.

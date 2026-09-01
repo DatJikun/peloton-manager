@@ -458,7 +458,7 @@ Query GC as sum of times for that event (DNF = no GC, or large penalty — pick 
 - Godot map renderer beyond the existing optional Watch overlay
 - Rebuilding Career Hub
 - Real GPS traces of the 2026 UCI routes (legal/data). The generator is the 2026 default.
-- UCI 150–200 pelotons (pack remains 4 riders per WT team / 72 starters when every team is entered)
+- UCI-shaped WorldTour fields (7 per team, 8 on Grand Tours, event wildcards — D-049)
 - Closing §49
 - Full fueling/thermal physiology
 - A player-facing route editor screen

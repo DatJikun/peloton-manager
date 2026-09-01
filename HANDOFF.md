@@ -10,7 +10,7 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`Rider profile + route engine` — landed (`RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`, D-046 / D-047, SchemaVersion 8). Career WorldTour slice phases 1–7 remain landed.
+`Rider profile + route engine` landed. Next slice: `RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md` (D-049).
 
 ### Goal
 Readable rider strengths/weaknesses (derived 1–99 ratings from real physiology) and a detailed course system (stored default routes + yearly generator). Not five-fragment mocks. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
@@ -42,7 +42,7 @@ Działa:
 - paczka Windows do ręcznego playtestu: `playtest/PelotonManager-playtest-windows.zip` (`playtest/CZYTAJ_MNIE.txt`).
 
 Właśnie budujemy:
-- czekamy na kolejny kierunek właściciela.
+- finisz sprinterski na płaskim; realna stawka (7/8 na ekipę + wildcards); wszystkie koszulki po etapie; porównanie z wynikami z życia (2025 i podobne), nie skrypt.
 
 Jeszcze nie:
 - nie ma Career Hub — usunięty z repozytorium (D-048); biurko to powłoka `CareerShell.tscn`;
@@ -125,10 +125,11 @@ Baza 2026: 18 ekip męskiego WorldTour w `scenario.peloton.wt-2026`. Fizjologia 
 - [x] Career WorldTour slice phase 6 — thin economy (`CashEur`, `ClubFinanceProjection`, SchemaVersion 6)
 - [x] Career WorldTour slice phase 7 — results filter by any org (D-043) + thin contract negotiation (D-044, SchemaVersion 7)
 - [x] D-046 / D-047 — derived rider ratings + detailed course engine (`RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`, SchemaVersion 8)
+- [ ] D-049 — bunch sprint + UCI-shaped fields + classification jerseys (`RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md`)
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task
-Waiting on owner. Honest remaining feel: classified Flat still does not give the sprinter the win (bunch-sprint finish is not in the prototype). Pack is still 4 names per team, not a UCI 150-rider field. §49 manual playtest and visual avatar review stay owner-only. Career Hub is deleted (D-048). Watch film stays in the game, off by default. No tenth GameState.
+Implement `RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md` (D-049): bunch sprint on classified Flat; UCI-shaped fields; GC/points/KOM/youth/team queries; SimRunner `compare` vs 2025 analogues. Do not close §49. Do not rebuild Career Hub. Watch film stays off by default. Skeleton race checksum stays.
 
 ## Known blockers
 - None.
@@ -157,6 +158,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
+- `2026-09-01` — **Bunch sprint + real fields + all jerseys + compare with real life (D-049).** Classified Flat is a bunch sprint. UCI 7 (8 on Grand Tours) with wildcards. Jerseys are after-stage tables, not D-032. History analogues are for judgment, not a script.
 - `2026-09-01` — **Calibrate 2026 pack from physiology/wage research; lift the 12-starter cap; keep routes diverse.** Research file is a source, not a lock. Keep captain-first cards. Evenepoel 2026 is Red Bull. Official WT Simulate starts the full entered 4-man cards (72). Do not claim a UCI 150–200 field. Do not fake a sprinter win on Flat.
 - `2026-09-01` — **Career Hub deleted; Watch film stays off by default (D-048).** Remove `CareerHub.tscn` / host / screen. Desk is the career shell. Watch Race remains optional (`FILM: WYŁ` default). Do not rebuild the PR #4 dashboard. Do not merge leftover Watch radio/DS PRs.
 - `2026-09-01` — **D-046 / D-047 landed:** derived 1–99 ratings + WT archetype calibration; dense course catalog at CreateWorld; SchemaVersion 8 / checksum v8. TDU stage 1 ~140 km. Replay onto current `main` (career shell kept).
@@ -239,6 +241,7 @@ DESIGN_PRINCIPLES_AND_ANTI_PATTERNS.md
 AI_MANAGER_SYSTEM_v0.2.md
 LONG_SAVE_AND_PERFORMANCE_v0.2.md
 RACE_ENGINE_DESIGN_v0.2.md
+RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md
 KNOWN_DIFFERENCE_FROM_CODE.md
 RACE_SPY_DEBUGGING_v0.1.md
 WORLD_SPY_AND_DECISION_TRACING_v0.1.md
