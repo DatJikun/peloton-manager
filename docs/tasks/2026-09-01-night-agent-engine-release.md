@@ -1,7 +1,7 @@
 # Zadanie na noc — silnik wyścigu (D-055), pliki md, release
 
 **Dla:** osobnego Cloud Agenta uruchomionego przez właściciela na noc 2026-09-01/02.  
-**Równolegle pracuje agent główny:** kończy **D-054** (bruk / sprint / pozycja, gałąź `cursor/d054-position-selection-9a2c`) i robi **UI Godota**. Nie dubluj tych dwóch rzeczy.
+**Równolegle pracują:** agent nr 2 (roster depth, tylko `content/peloton.wt-2026/roster.json` — nie dotykaj rostera poza migracją klucza CdA; przy konflikcie w `roster.json` po Twojej migracji **on** regeneruje, Ty tylko zachowaj fallback `cdAM2` w loaderze), agent nr 3 (nowy projekt `src/Peloton.Avatars`, nie dotykaj). Agent główny kończy **D-054** (bruk / sprint / pozycja, gałąź `cursor/d054-position-selection-9a2c`) i robi **UI Godota**. Nie dubluj tych dwóch rzeczy.
 
 ## Przeczytaj najpierw (w tej kolejności)
 1. `AGENTS.md` — role D-035: **kod pisze Composer 2.5** (`model: composer-2.5` na każdym `Task` kodującym; nie `inherit`, nie `-fast`); merge D-045 / D-053; bez maili i `@mention`.
