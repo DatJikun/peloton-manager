@@ -16,6 +16,15 @@ public sealed class CareerShellHostTests
     private const string BetaLeaderOriginId = "rider.race-prototype.beta-leader";
 
     [Fact]
+    public void CareerHubUiFilesAreGone()
+    {
+        string godotRoot = Path.Combine(RepositoryRoot(), "src", "Peloton.Client.Godot");
+        Assert.False(File.Exists(Path.Combine(godotRoot, "CareerHub.tscn")));
+        Assert.False(File.Exists(Path.Combine(godotRoot, "CareerHubHost.cs")));
+        Assert.False(File.Exists(Path.Combine(godotRoot, "CareerHubScreen.cs")));
+    }
+
+    [Fact]
     public void OpenSkeletonStaysInManagementWithHubCalendarAndPeople()
     {
         using TemporaryDirectory temp = new();
@@ -167,12 +176,17 @@ public sealed class CareerShellHostTests
 
     private static string ContentRoot()
     {
+        return Path.Combine(RepositoryRoot(), "content");
+    }
+
+    private static string RepositoryRoot()
+    {
         DirectoryInfo? current = new(AppContext.BaseDirectory);
         while (current is not null)
         {
             if (File.Exists(Path.Combine(current.FullName, "PelotonManager.sln")))
             {
-                return Path.Combine(current.FullName, "content");
+                return current.FullName;
             }
 
             current = current.Parent;

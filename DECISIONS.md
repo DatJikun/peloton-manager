@@ -141,7 +141,7 @@ Coding `Task` launches must set the subagent model to Composer 2.5. They must no
 Official start lists, finish order, and `LastRace` IDs are world `RiderCareer` identities. A disconnected race-only fixture is not the official result path once this bind exists. Race results append to that career’s history. Same person in the club, on the start list, and in the chronicle.
 
 ## D-037 — Pre-season entry and pre-race strategy stay in the nine states
-Pre-season: the player chooses which races the organization enters (`PreSeasonPlanningFlow`). Pre-race: a strategy step (roles, objective, briefing) sits inside `RacePreparationFlow` before Confirm. Neither adds a tenth GameState (D-031). Career Hub stays rejected.
+Pre-season: the player chooses which races the organization enters (`PreSeasonPlanningFlow`). Pre-race: a strategy step (roles, objective, briefing) sits inside `RacePreparationFlow` before Confirm. Neither adds a tenth GameState (D-031). Career Hub UI is deleted (D-048).
 
 ## D-038 — 2026 WorldTour content first; lower tiers are architecture
 First real-cycling pack is men’s UCI WorldTour 2026 (18 teams, 2026–2028 licence cycle). Physiology, wages, and budgets may be estimated gameplay numbers and must be labelled as such. Organization records store division and licence-years-remaining so a 3-year WorldTour licence and ProTeam/Continental tiers can exist later. Living promotion/relegation and a full lower-category grid are not required for the first playable season. Commercial licensing of real names is a later problem; the engine must still run on fictional packs.
@@ -158,8 +158,8 @@ Do not implement AI managers in this slice. Human/AI symmetry (D-002) still appl
 ## D-042 — Attribute visibility is All / Guessed / None
 The knowledge spine serves the existing New Game visibility axis. It is not a fourth fog-of-war mode. All may show OVR/POT. Guessed shows ranges and confidence. None does not show rival attributes; results are evidence. Do not build a scouting/dossier game until the owner asks.
 
-## D-043 — Race play path is Simulate + Results, not Watch Race
-Owner lock 2026-09-01: Watch Race is **not** the playable race product. After prep, the player **simulates** and reads **results**. Results can be **filtered by any organization** (public classification, not God-eye live physiology). Do not expand the Godot Watch Race window. Do not treat D-033 as a reason to build more watching UI. The supervising clock may remain in the engine; it is not the career loop. Career Hub stays rejected (PR #4). The Godot **career shell** (`CareerShell.tscn`, POC v3 chrome) is the management presentation for this play path: Advance Day / Race next, simulate, result table, filter by team. It is not Career Hub. Watch film stays an optional setting, off by default.
+## D-043 — Race play path is Simulate + Results; Watch film is optional and off by default
+Owner lock 2026-09-01, updated the same day: after prep, the **default** path is **simulate then results**. Results can be **filtered by any organization** (public classification, not God-eye live physiology). **Watch Race stays in the game** as an optional film overlay (`FILM: WYŁ/WŁ`), **off by default**. Turning it on does not change the official result. Do not make watching the default play path. Do not merge leftover radio / DS-dashboard Watch PRs as a second race product. The Godot **career shell** (`CareerShell.tscn`, POC v3 chrome) is the management presentation: Advance Day / Race next, simulate, result table, filter by team. Career Hub UI is **deleted** (D-048).
 
 ## D-044 — Thin contract negotiation, not an agent board game
 The player can offer a contract (annual wage + inclusive end day) to a rider: own roster (renew), unattached (sign), or another club (thin poach). Accept/reject is a closed formula from current wage and `Loyalty01`. No agent minigame, no counter-offer auction, no transfer fee this pass. Stays inside `Management` (D-031: no tenth GameState).
@@ -169,16 +169,19 @@ Owner lock 2026-09-01: the owner is not a programmer and does not want a pile of
 
 Green means: right topic; `dotnet format` / `dotnet build` / `dotnet test` (and SimRunner commands from `HANDOFF.md` when code changed) actually ran and passed, or the change is docs-only with no lock break; no `PlayerTeam` / God-eye / mid-race save / unseeded gameplay RNG; no silent design drift.
 
-Do **not** merge when tests fail, save/load or determinism is broken, a lock is violated, the owner already rejected the direction (Career Hub PR #4; Watch Race as the play path, D-043), or the change would ship the wrong product (`StubRaceEngine` as official results).
+Do **not** merge when tests fail, save/load or determinism is broken, a lock is violated, the owner already rejected the direction (rebuilding Career Hub; Watch Race as the **default** play path, D-043), or the change would ship the wrong product (`StubRaceEngine` as official results).
 
 This lock **overrides** Cursor Cloud defaults that say “do not merge unless the user asks”. The standing ask is: merge to `main` when there are no errors.
 
 Land **one change onto current `main`**. Fetch `origin/main` first. Do not merge a stack of stale branches into each other — that is how conflict piles happen. If an old PR conflicts, replay the player-value change onto today’s `main`; do not force the ancient branch through.
 
-Watch Race UI expansion stays **deferred** (D-043). Do not merge leftover Watch film/radio/dashboard PRs onto `main`.
+Watch Race stays in the game, **off by default** (D-043 / D-048). Do not merge leftover Watch radio/DS dashboard PRs onto `main`. Do not rebuild Career Hub.
 
 ## D-046 — Player-facing rider ratings are a view of physiology
 Owner lock 2026-09-01: the player needs normal strengths/weaknesses (Climb, Hills, Flat, TT, Sprint, Cobbles, OVR, POT). Those 1–99 numbers are **derived** from stored physiology (CP, W′, Pmax, mass, CdA, durability, positioning, handling). They are never the hidden cause of a race result. Form/freshness/fatigue stay day condition, not talent. WorldTour content must actually differ by archetype (stop copy-paste lab numbers). Visibility remains All / Guessed / None (D-042). Contract: `RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`.
 
 ## D-047 — Detailed courses + yearly identity-constrained generator
-Owner lock 2026-09-01: routes are dense polylines (~25 m samples), stored in the world at New Game, not five labelled fragments and not the 5.4 km proof circuit for WorldTour. A generator builds realistic new courses each year inside race-identity constraints (Tour de France stage mix, monument character, distances). Stage races use one calendar racing day per stage. Official Simulate uses that day’s stored course. Skeleton soak keeps the short proof circuit. Do not expand Watch Race. Contract: `RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`.
+Owner lock 2026-09-01: routes are dense polylines (~25 m samples), stored in the world at New Game, not five labelled fragments and not the 5.4 km proof circuit for WorldTour. A generator builds realistic new courses each year inside race-identity constraints (Tour de France stage mix, monument character, distances). Stage races use one calendar racing day per stage. Official Simulate uses that day’s stored course. Skeleton soak keeps the short proof circuit. Watch film stays optional and off by default. Contract: `RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`.
+
+## D-048 — Career Hub UI is deleted; Watch film stays, off by default
+Owner lock 2026-09-01: remove Career Hub from the product. Delete `CareerHub.tscn` / `CareerHubHost` / `CareerHubScreen` and do not rebuild that dashboard (PR #4). The desk is the career shell. Watch Race remains an optional film in that shell, **off by default**; the player can turn it on. Simulate then results stays the default race-day path.

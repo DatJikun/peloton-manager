@@ -2,7 +2,7 @@
 
 **Status:** ACTIVE  
 **Purpose:** opis dnia wyścigu tak, jak widzi go gracz. Nie jest to dokument silnika.  
-**Decyzja:** `D-043` (ścieżka gry: symulacja i wynik; film opcjonalny)
+**Decyzja:** `D-043` / `D-048` (ścieżka gry: symulacja i wynik; film w grze, domyślnie wyłączony)
 
 ## W skrócie
 

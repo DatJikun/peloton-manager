@@ -13,12 +13,12 @@
 `Rider profile + route engine` — landed (`RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`, D-046 / D-047, SchemaVersion 8). Career WorldTour slice phases 1–7 remain landed.
 
 ### Goal
-Readable rider strengths/weaknesses (derived 1–99 ratings from real physiology) and a detailed course system (stored default routes + yearly generator). Not five-fragment mocks. Do not close §49. Do not build Career Hub. Do not expand Watch Race.
+Readable rider strengths/weaknesses (derived 1–99 ratings from real physiology) and a detailed course system (stored default routes + yearly generator). Not five-fragment mocks. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
 
 ### Status
 Owner (player) directed this on 2026-09-01. **D-046 / D-047 landed.** Ratings 1–99 are a view of physiology. WorldTour CreateWorld stores dense ~25 m courses and one calendar entry per racing stage. Official WT Simulate uses that day’s course. Skeleton soak still uses the short proof circuit. SQLite SchemaVersion 8.
 
-Godot career shell (`CareerShell.tscn`) is the main scene: POC v3 chrome. Hub date, Advance Day / Race next, inbox, save/load, and skeleton people stay Application Queries. Staff / sponsors / finance / scouting / market / look calendar / look OVR come from `CareerLookCatalog` (POC fiction, not World). Those actions toast and do not mutate save. Watch Race remains a blocking overlay, not the play path (D-043). HTML look lab stays the drawing, not a second client. §49 remains `NOT VERIFIED`. `D-032` remains deferred.
+Godot career shell (`CareerShell.tscn`) is the main scene: POC v3 chrome. Hub date, Advance Day / Race next, inbox, save/load, and skeleton people stay Application Queries. Staff / sponsors / finance / scouting / market / look calendar / look OVR come from `CareerLookCatalog` (POC fiction, not World). Those actions toast and do not mutate save. Watch Race is an optional overlay, **off by default** (D-043 / D-048). HTML look lab stays the drawing, not a second client. §49 remains `NOT VERIFIED`. `D-032` remains deferred.
 
 ## Gdzie jest gra (dla właściciela)
 Nie ma jeszcze pełnej gry managerskiej.
@@ -43,8 +43,8 @@ Właśnie budujemy:
 - czekamy na kolejny kierunek właściciela.
 
 Jeszcze nie:
-- Watch Race **przesunięte** (D-043) — nie rozbudowujemy i nie mergujemy starych PR-ów Watch;
-- nie ma Career Hub (odrzucony, PR #4) — powłoka `CareerShell.tscn` to inny, zaakceptowany wygląd;
+- nie ma Career Hub — usunięty z repozytorium (D-048); biurko to powłoka `CareerShell.tscn`;
+- Watch Race **jest w grze**, ale **domyślnie wyłączony** — FILM: WŁ włącza oglądanie; nie mergujemy starych PR-ów radia/DS;
 - nie ma scoutingu, dynamicznego rynku sponsorów ani AI managerów w świecie (ekrany Godota pokazują tylko katalog wyglądu);
 - §49 nie jest zaliczone — to ręczny playtest właściciela.
 
@@ -123,7 +123,9 @@ Baza 2026: 18 ekip męskiego WorldTour w `scenario.peloton.wt-2026`. Fizjologia,
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 
 ## Next task
-Waiting on owner: §49 manual playtest and visual avatar review. No Career Hub, no Watch Race expansion, no tenth GameState.## Known blockers
+Waiting on owner: §49 manual playtest and visual avatar review. Career Hub is deleted (D-048). Watch film stays in the game, off by default. No tenth GameState.
+
+## Known blockers
 - None.
 
 ## Known failing tests
@@ -138,8 +140,8 @@ albo docs-only bez złamania locka → `git fetch origin main`, złączyć **jed
 `main`, wypchnąć `main`. Ta zasada **nadpisuje** domyślne „nie merguj, dopóki właściciel nie poprosi”.
 
 Wstrzymujemy merge tylko przy poważnej rzeczy: padające testy, złamany lock (`PlayerTeam`,
-God-eye, mid-race save, cichy dryf designu), odrzucony kierunek (Career Hub PR #4; Watch Race
-jako sposób gry / rozbudowa Watch — D-043, na razie przesunięte), albo stub wyścigu udający
+God-eye, mid-race save, cichy dryf designu), odrzucony kierunek (odbudowa Career Hub;
+Watch Race jako **domyślny** sposób gry — D-043, film zostaje opcją), albo stub wyścigu udający
 prawdziwy Race Engine.
 
 Starych branchy nie zlewamy jeden na drugi. Konflikt = odtworzyć wartość na dzisiejszym `main`.
@@ -150,11 +152,12 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
-- `2026-09-01` — **D-046 / D-047 landed:** derived 1–99 ratings + WT archetype calibration; dense course catalog at CreateWorld; SchemaVersion 8 / checksum v8. TDU stage 1 ~140 km. Watch Race UI not expanded. Replay onto current `main` (career shell kept).
+- `2026-09-01` — **Career Hub deleted; Watch film stays off by default (D-048).** Remove `CareerHub.tscn` / host / screen. Desk is the career shell. Watch Race remains optional (`FILM: WYŁ` default). Do not rebuild the PR #4 dashboard. Do not merge leftover Watch radio/DS PRs.
+- `2026-09-01` — **D-046 / D-047 landed:** derived 1–99 ratings + WT archetype calibration; dense course catalog at CreateWorld; SchemaVersion 8 / checksum v8. TDU stage 1 ~140 km. Replay onto current `main` (career shell kept).
 - `2026-09-01` — **Normal rider stats + real routes (D-046, D-047).** Ratings 1–99 are a view of physiology, not a second magic engine. Courses are dense polylines with a yearly generator under race-identity constraints. Not a five-chunk mock. Contract: `RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`. (D-045 on `main` is the merge-to-main lock.)
-- `2026-09-01` — **Merge ready work to `main` in the same session (D-045).** No waiting for „merguj”. No pile of open PRs (that made a conflict mess). Overrides Cloud “don’t merge unless asked”. Watch Race stays deferred; do not land leftover Watch UI PRs. Stale conflicting branches are replayed onto current `main`, not stacked.
+- `2026-09-01` — **Merge ready work to `main` in the same session (D-045).** No waiting for „merguj”. No pile of open PRs (that made a conflict mess). Overrides Cloud “don’t merge unless asked”. Watch film stays optional and off by default; do not land leftover Watch radio/DS PRs. Stale conflicting branches are replayed onto current `main`, not stacked.
 - `2026-09-01` — **Phase 7 landed (Composer):** `RaceResultForOrganization` (any team); `Begin/Set/Confirm/CancelContractNegotiationCommand`; SchemaVersion 7 / checksum v7. Watch Race UI not expanded.
-- `2026-09-01` — **Watch Race is not the play path (D-043).** Simulate then results; filter classification by any team. Do not expand Godot Watch. Career Hub stays rejected. Docs until now had rejected Career Hub (PR #4), not Watch Race — this is the new lock.
+- `2026-09-01` — **Watch Race is not the default play path (D-043).** Simulate then results; filter classification by any team. Film stays in the game, off by default. Career Hub later deleted (D-048).
 - `2026-09-01` — **Thin contract negotiation (D-044):** offer wage + end date to own / unattached / other-club rider. Loyalty in the accept formula. No agent board game. No tenth GameState.
 - `2026-08-31` — **Phase 6 specified:** club cash, daily wage vs title-sponsor fee, no luxury tax, SchemaVersion 6. Prep title uses the calendar race name.
 - `2026-08-31` — **Phase 5 landed (Composer):** `scenario.peloton.wt-2026` CreateWorld, 18 orgs, 72 riders, 36-race calendar, 12-starter prototype cap, `calendar-from-content`, SchemaVersion 5 / checksum v5. Skeleton soak unchanged.
@@ -278,8 +281,8 @@ src/Peloton.Client.Godot/project.godot
 - Nie twórz `new Random()` w systemach gameplayowych.
 - Nie zmieniaj schema save/content bez migration planu.
 - Nie traktuj starych dokumentów jako aktualnych bez sprawdzenia statusu (`HANDOFF.md`, `CODEBASE_MAP.md`, `KNOWN_DIFFERENCE_FROM_CODE.md`).
-- Nie twierdź, że Godot jest pustym stubem — `CareerShell.tscn` jest oknem kariery; Watch Race zostaje opcjonalnym filmem.
-- Nie rozszerzaj Godot Watch Race jako ścieżki gry (D-043). Watch jest przesunięte — nie merguj starych PR-ów filmu/radia/dashboardu Watch na `main`. Nie traktuj `CareerShell.tscn` jako Career Hub (PR #4).
+- Nie twierdź, że Godot jest pustym stubem — `CareerShell.tscn` jest oknem kariery; Watch Race zostaje opcjonalnym filmem, domyślnie wyłączonym.
+- Nie ustawiaj Watch Race jako domyślnej ścieżki gry (D-043). Nie odbudowuj Career Hub (D-048). Nie merguj starych PR-ów radia/DS Watch na `main`.
 - Nie zostawiaj gotowej pracy na otwartym PR (D-045). Zielony gate → merge do `main` w tej samej sesji. Nie zlewaj stosu starych branchy jeden na drugi.
 - Nie zapisuj OVR/POT/kasy/skautingu z `CareerLookCatalog` do World, SQLite ani Commandów. To nie true ability.
 - Nie odpalaj kodujących subagentów z `inherit` (to Grok); kod to Composer 2.5 (D-035).
@@ -287,7 +290,7 @@ src/Peloton.Client.Godot/project.godot
 - Nie zamykaj OQ-TS-001 ani OQ-DM-001 na podstawie checksumy lub allocatora szkieletowego.
 
 ## Handoff summary
-Milestone 0 still supplies the headless .NET 8 spine. The race prototype is the official result path: `PrototypeRaceEngine` plus `content/peloton.race-prototype`, Application commands `StartRaceCommand` / `AdvanceRaceCommand` / `RespondToRaceDecisionCommand` / `BeginRaceWatchCommand` / `AdvanceRaceWatchCommand` / `AbandonRaceLiveCommand`, and SimRunner `race`. A pending DecisionRequest stays in `RaceLive`. SimRunner `watch` and career `day --watch-from-prep` keep the D-033 supervising clock. Godot (`src/Peloton.Client.Godot`) presents the career shell (`CareerShell.tscn`, POC v3 chrome, Hub queries, default simulate → result table, plus `CareerLookCatalog` for empty domains). Watch film is optional (D-043), not the play path. Renderer does not drive physics. Look-catalog OVR/cash is not World. The owner look drawing remains `peloton-manager-full-ui-poc-v3.html` (`HTML_UI_LAB.md`). After Simulate/Watch, `RaceResultProjection` and `RaceDebriefProjection` present the committed result without a second `RunBatch`. Spy OFF/ON must match checksum and finish order. `StubRaceEngine` is gone from production assemblies. SQLite `SchemaVersion` is **7**. Owner §49 remains `NOT VERIFIED`. `D-032` is deferred.
+Milestone 0 still supplies the headless .NET 8 spine. The race prototype is the official result path: `PrototypeRaceEngine` plus `content/peloton.race-prototype`, Application commands `StartRaceCommand` / `AdvanceRaceCommand` / `RespondToRaceDecisionCommand` / `BeginRaceWatchCommand` / `AdvanceRaceWatchCommand` / `AbandonRaceLiveCommand`, and SimRunner `race`. A pending DecisionRequest stays in `RaceLive`. SimRunner `watch` and career `day --watch-from-prep` keep the D-033 supervising clock. Godot (`src/Peloton.Client.Godot`) presents the career shell (`CareerShell.tscn`, POC v3 chrome, desk queries, default simulate → result table, plus `CareerLookCatalog` for empty domains). Watch film is optional and **off by default** (D-043 / D-048). Career Hub UI is deleted. Renderer does not drive physics. Look-catalog OVR/cash is not World. The owner look drawing remains `peloton-manager-full-ui-poc-v3.html` (`HTML_UI_LAB.md`). After Simulate/Watch, `RaceResultProjection` and `RaceDebriefProjection` present the committed result without a second `RunBatch`. Spy OFF/ON must match checksum and finish order. `StubRaceEngine` is gone from production assemblies. SQLite `SchemaVersion` is **8**. Owner §49 remains `NOT VERIFIED`. `D-032` is deferred.
 
 This tree joins that career loop onto `main` without dropping the HTML UI lab. The paragraph below preserves the pre-bootstrap design context and owner lessons; implementation status is given above and in `CODEBASE_MAP.md`.
 
@@ -319,3 +322,4 @@ Peloton Manager jest na etapie pre-production. Celem jest modularny, determinist
 - `2026-08-31` — Właściciel kazał dodać brakujące działy. Godot pokazuje katalog wyglądu (Beskid–Vetter, OVR, kasa, skauci) jako rysunek; belka dnia i Advance Day / Race next zostają ze świata. Negocjacje i oferty nie zapisują się.
 - `2026-09-01` — Właściciel: Watch Race na razie przesunięte. D-045: gotową pracę mergować do `main` od razu (bez stosu PR-ów i konfliktów). Nie zlewamy starych branchy Watch na `main`.
 - `2026-09-01` — Pętla powłoki kariery (Advance Day / Race next / simulate → tabela wyniku) złącza się na `main` razem z WorldTour. Watch film zostaje opcją, nie ścieżką gry.
+- `2026-09-01` — Właściciel: usuń Career Hub całkowicie. Watch Race zostaje w grze, domyślnie wyłączony (D-048).

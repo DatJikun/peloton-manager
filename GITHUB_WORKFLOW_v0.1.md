@@ -70,15 +70,15 @@ SimRunner commands from HANDOFF.md when simulation/career code changed
 no unexplained architecture violation
 migration exists if schema changed
 no PlayerTeam / God-eye / mid-race save / unseeded gameplay RNG
-not an owner-rejected product (Career Hub; Watch Race as the play path)
+not an owner-rejected product (rebuilding Career Hub; Watch Race as the default play path)
 ```
 
 Owner manual feel tests (§49) are **not** a merge blocker for skeleton, docs, look-only
 Godot chrome, or WorldTour slice work. Feel is a later owner playtest.
 
 Do not merge a stack of stale PRs into each other. If an old branch conflicts, replay
-the player-value change onto today’s `main`. Watch Race UI expansion is deferred (D-043);
-do not land leftover Watch film/radio/dashboard PRs.
+the player-value change onto today’s `main`. Watch film stays optional and off by default
+(D-043 / D-048); do not land leftover Watch radio/DS dashboard PRs. Do not rebuild Career Hub.
 
 ## Reverts
 

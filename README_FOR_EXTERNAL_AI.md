@@ -42,7 +42,7 @@ Pre-production, but the architecture skeleton and race prototype already exist i
 
 Genre/management research lives in `MANAGER_GAMES_AND_CYCLING_RESEARCH_2026-08-31.md` (source, not a lock).
 
-Godot career shell (`CareerShell.tscn`) presents Advance Day / Race next / simulate / results (D-043). Watch Race is **deferred** as the play path: optional film only; do not expand watching UI. It is not Career Hub. Owner fun gate `RACE_ENGINE_DESIGN_v0.2.md` §49 is `NOT VERIFIED` — do not close it with automations.
+Godot career shell (`CareerShell.tscn`) presents Advance Day / Race next / simulate / results (D-043). Watch Race is **optional film**, off by default; do not make it the default play path. Career Hub UI is deleted (D-048). Owner fun gate `RACE_ENGINE_DESIGN_v0.2.md` §49 is `NOT VERIFIED` — do not close it with automations.
 
 Do not begin a new gameplay system until `HANDOFF.md` Next task (or the owner) says so. Do not treat stale README sentences as current. If code and an accepted document conflict, follow `DOCS_GOVERNANCE.md`: decide whether it is a bug, stale docs, or a later decision.
 

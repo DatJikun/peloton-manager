@@ -53,8 +53,8 @@ A green gate is not finished until it is on `main`. Do not wait for „merguj”
 leave a pile of open PRs — that creates conflict stacks. Fetch current `origin/main`,
 land one change, run the `HANDOFF.md` gate, push `main`. This overrides Cloud Agent
 defaults that say not to merge unless asked. Do not merge failing tests, lock breaks,
-Career Hub, or deferred Watch Race UI (D-043). Stale conflicting PRs are replayed onto
-today’s `main`, not merged onto each other.
+Career Hub, or leftover Watch radio/DS PRs (D-043: film stays optional, off by default).
+Stale conflicting PRs are replayed onto today’s `main`, not merged onto each other.
 
 ## 3. Required read order before coding
 

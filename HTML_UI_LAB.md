@@ -24,7 +24,7 @@ POC names are look labels. `UI_SITEMAP_v0.1.md` stays the domain contract.
 
 | POC | Sitemap domain |
 |---|---|
-| Biurko | Career Hub / Dashboard |
+| Biurko | Desk (career day) |
 | Skład | Squad / Roster |
 | Sztab | Organization → staff |
 | Kalendarz | Calendar |
@@ -51,7 +51,7 @@ Names (Beskid–Vetter, Kowalczyk, …), invented races, OVR/POT bars, fatigue %
 
 - World logic, Commands, SQLite, RNG.
 - Replacing Godot with an HTML client.
-- Shipping this dashboard as the playable game (rejected Career Hub UI, PR #4).
+- Rebuilding Career Hub (deleted, D-048).
 - In-game AI tutorial sentences on every screen.
 - Photoreal portraits, watts, invented race commentary.
 

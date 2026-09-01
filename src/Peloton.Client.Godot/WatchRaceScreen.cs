@@ -311,7 +311,7 @@ public sealed partial class WatchRaceScreen : Control
             title!.Text = "WATCH RACE";
             status!.Text = attached
                 ? "Etap zamknięty. Wracasz do biurka."
-                : "Etap zamknięty. To nie jest Career Hub.";
+                : "Etap zamknięty. Otwórz powłokę kariery, żeby wrócić na biurko.";
             liveRow!.Visible = false;
             decisionBox!.Visible = false;
             if (attached)
