@@ -104,6 +104,10 @@ Landed:
 
 Remaining limits:
 
+- Seed `91234` WT catalog classifies **zero** `Flat` stages (Copenhagen Sprint is a Mountain, ~274 km / ~11 km gain). Stage-plan leftover slots are truncated before flats, and hilly bricks often exceed the classifier’s 1200 m Hilly threshold.
+- Official 12-rider cap fills Alpecin then remaining entered orgs by `OriginDefinitionId` (Astana, Bahrain). Pogačar does not start official WT races.
+- WorldTour tactical “leader” is the first roster row by origin id (`.card` before `.leader`), so Philipsen / Narváez / Kooij get the briefing, not MvDP / Pogačar / Vingegaard.
+- Feel probe (`WorldTourFeelProbeTests`, seed 91234): climber beats sprinter on a MountainSummit; cobbles still won by GC; prototype finish gaps are minutes-to-hours, not bunch seconds.
 - No yearly re-generation after season 2026 in play yet (generator exists; Advance Day does not roll new seasons).
 - No full GC jersey UI; stage times are stored only.
 - §49 still `NOT VERIFIED`.

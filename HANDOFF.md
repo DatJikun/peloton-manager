@@ -16,7 +16,7 @@
 Readable rider strengths/weaknesses (derived 1–99 ratings from real physiology) and a detailed course system (stored default routes + yearly generator). Not five-fragment mocks. Do not close §49. Do not build Career Hub. Do not expand Watch Race.
 
 ### Status
-Owner (player) directed this on 2026-09-01. **D-046 / D-047 landed.** Ratings 1–99 are a view of physiology. WorldTour CreateWorld stores dense ~25 m courses and one calendar entry per racing stage. Official WT Simulate uses that day’s course. Skeleton soak still uses the short proof circuit. SQLite SchemaVersion 8.
+Owner (player) directed rider ratings + routes on 2026-09-01. **D-046 / D-047 landed.** A 2026 feel probe (seed 91234) then showed: no classified Flat stages; official 12-cap is Alpecin+Astana+Bahrain so Pogačar never starts; climber beats sprinter on a summit; cobbles still go to GC; time gaps are huge. Waiting on owner wage + physiology research before recalibrating the pack. SQLite SchemaVersion 8.
 
 Godot career shell (`CareerShell.tscn`) is the main scene: POC v3 chrome. Hub date, Advance Day / Race next, inbox, save/load, and skeleton people stay Application Queries. Staff / sponsors / finance / scouting / market / look calendar / look OVR come from `CareerLookCatalog` (POC fiction, not World). Those actions toast and do not mutate save. Watch Race remains a blocking overlay, not the play path (D-043). HTML look lab stays the drawing, not a second client. §49 remains `NOT VERIFIED`. `D-032` remains deferred.
 
@@ -40,7 +40,7 @@ Działa:
 - paczka Windows do ręcznego playtestu: `playtest/PelotonManager-playtest-windows.zip` (`playtest/CZYTAJ_MNIE.txt`).
 
 Właśnie budujemy:
-- czekamy na kolejny kierunek właściciela.
+- czekamy na research właściciela (płace + fizjologia); feel probe 2026 jest w `WorldTourFeelProbeTests`.
 
 Jeszcze nie:
 - Watch Race **przesunięte** (D-043) — nie rozbudowujemy i nie mergujemy starych PR-ów Watch;
