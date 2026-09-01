@@ -10,33 +10,34 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`Career WorldTour slice` — landed (`CAREER_WORLDTOUR_SLICE_v0.1.md` phases 1–6)
+`Career WorldTour slice` — landed (`CAREER_WORLDTOUR_SLICE_v0.1.md` phases 1–7)
 
 ### Goal
 The people in the club are the people who race. Results become career history. Then form-on-day, pre-season race picks, pre-race strategy, contracts, and a 2026 WorldTour content pack. Do not close §49 with automations. Do not build Career Hub.
 
 ### Status
-Owner (player) directed the slice on 2026-08-31 (D-036–D-042). **Phase 1 world–race bind landed** (2026-08-31): career `RiderCareer` rows are the official start list; SchemaVersion 2; see `KNOWN_DIFFERENCE_FROM_CODE.md`. **Phase 2 day state landed** (2026-08-31): rest tick on Advance Day, race load on `RecordRace`, readiness-scaled CP/Pmax in `WorldRaceScenarioAssembler`; tests in `CareerWorldTourPhase2Tests`. **Phase 3 planning windows landed** (2026-08-31): `OrganizationRaceEntry`, pre-season draft/confirm/cancel, pre-race `SetRacePreparationStrategyCommand`, delegated auto-sim on skipped race days, SQLite SchemaVersion 3; tests in `CareerWorldTourPhase3Tests`. **Phase 4 contracts landed** (2026-08-31): `RiderContract` wage/expiry, nullable `RiderCareer.OrganizationId`, `ClubRosterProjection`, SQLite SchemaVersion 4; tests in `CareerWorldTourPhase4Tests`. **Phase 5 WT pack landed** (2026-08-31): `scenario.peloton.wt-2026` CreateWorld, 18 orgs, 72 riders, 36-race calendar, 12-starter cap, `calendar-from-content`, SQLite SchemaVersion 5; tests in `CareerWorldTourPhase5Tests`. **Phase 6 thin economy landed** (2026-08-31): `Organization.CashEur`, daily sponsor fee vs wage bill, `ClubFinanceProjection`, overdrawn hub note, prep title from calendar, SQLite SchemaVersion 6; tests in `CareerWorldTourPhase6Tests`.
+Owner (player) directed the slice on 2026-08-31 (D-036–D-042) and 2026-09-01 (D-043–D-044). **Phases 1–7 landed.** Phase 7 (2026-09-01): results filter by any organization; thin contract negotiation in Management; SQLite SchemaVersion 7.
 
 ## Gdzie jest gra (dla właściciela)
 Nie ma jeszcze pełnej gry managerskiej.
 
 Działa:
-- w Godot okno Watch Race;
-- w CLI pętla dnia i ten sam człowiek na starcie co w klubie (most fazy 1);
+- wyścig: **symulacja i wynik** (D-043); wynik można filtrować po każdej ekipie;
+- w CLI pętla dnia i ten sam człowiek na starcie co w klubie;
 - wynik zapisuje się na karierze kolarza (`RiderCareerResult`);
 - Advance Day zmienia formę / świeżość / zmęczenie; wyścig używa readiness na CP/Pmax (faza 2);
-- przedsezonowy wybór startów (`PreSeasonPlanningFlow`) i strategia przed Confirm w prep (faza 3);
-- kontrakty kolarzy (`RiderContract`), wypłaty, wygaśnięcie i `ClubRosterProjection` (faza 4);
-- paczka WorldTour 2026 (`scenario.peloton.wt-2026`): 18 ekip, 72 kolarzy, kalendarz 36 wyścigów, cap 12 na starcie (faza 5);
-- cienka ekonomia klubu: kasa, dzienna opłata sponsora vs płace, `ClubFinanceProjection`, notatka o debecie (faza 6).
+- przedsezonowy wybór startów i strategia przed Confirm (faza 3);
+- kontrakty, wypłaty, wygaśnięcie, **cienkie negocjacje** oferty pensji/daty (D-044);
+- paczka WorldTour 2026: 18 ekip, 72 kolarzy, kalendarz 36 wyścigów, cap 12 na starcie;
+- cienka ekonomia: kasa, sponsor vs płace, notatka o debecie.
 
 Właśnie budujemy:
-- czekamy na kolejny kierunek właściciela (slice 1–6 jest w kodzie).
+- czekamy na kolejny kierunek właściciela.
 
 Jeszcze nie:
-- nie ma scoutingu, dynamicznego rynku sponsorów ani AI managerów;
+- nie rozbudowujemy Watch Race (odrzucony jako sposób gry);
 - nie ma Career Hub (odrzucony);
+- nie ma scoutingu, dynamicznego rynku sponsorów ani AI managerów;
 - §49 nie jest zaliczone — to ręczny playtest właściciela.
 
 Tryby All / Guessed / None (widać / częściowo / ukryte OVR i POT) zostają. Nie dokładamy czwartej mgły.
@@ -131,6 +132,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
+- `2026-09-01` — **Phase 7 landed (Composer):** `RaceResultForOrganization` (any team); `Begin/Set/Confirm/CancelContractNegotiationCommand`; SchemaVersion 7 / checksum v7. Watch Race UI not expanded.
 - `2026-09-01` — **Watch Race is not the play path (D-043).** Simulate then results; filter classification by any team. Do not expand Godot Watch. Career Hub stays rejected. Docs until now had rejected Career Hub (PR #4), not Watch Race — this is the new lock.
 - `2026-09-01` — **Thin contract negotiation (D-044):** offer wage + end date to own / unattached / other-club rider. Loyalty in the accept formula. No agent board game. No tenth GameState.
 - `2026-08-31` — **Phase 6 specified:** club cash, daily wage vs title-sponsor fee, no luxury tax, SchemaVersion 6. Prep title uses the calendar race name.

@@ -62,7 +62,7 @@ These DRAFT contracts exist and still await owner REVIEW. They are not a reason 
 2. `CONTENT_FORMAT_v0.1.md`, `RULESETS_v0.1.md`, `SAVE_FORMAT_v0.1.md`, `TESTING_v0.1.md`
 3. `RACE_ENGINE_DESIGN_v0.2.md` — REVIEW; official results already use `PrototypeRaceEngine` below this contract
 
-Already in code (thin versus those contracts): Milestone 0 spine, nine GameStates, SQLite SchemaVersion 6, skeleton Advance Day with form tick and club cash, prototype race bound to world `RiderCareer` rows, pre-season entry + pre-race strategy, rider contracts, `scenario.peloton.wt-2026` CreateWorld (18 teams, 12-starter cap), CLI Hub/inbox/prep/Watch, Godot Watch Race presentation. See `HANDOFF.md`.
+Already in code (thin versus those contracts): Milestone 0 spine, nine GameStates, SQLite SchemaVersion 7, skeleton Advance Day with form tick and club cash, prototype race bound to world `RiderCareer` rows, pre-season entry + pre-race strategy, rider contracts and thin negotiation, results filter by any organization, `scenario.peloton.wt-2026` CreateWorld (18 teams, 12-starter cap), CLI Hub/inbox/prep/Simulate. Official race play path is Simulate then Results (D-043), not Watch Race. See `HANDOFF.md`.
 
 Not in code yet, though named in `DATA_MODEL_v0.1.md`: `OrganizationKnowledgeStore`, `PersonalKnowledge`, `RecruitmentCase`. AI managers, dynamic sponsor market, training, and a full legal rules engine are not implemented.
 

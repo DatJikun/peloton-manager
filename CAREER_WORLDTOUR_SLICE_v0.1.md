@@ -650,6 +650,8 @@ Dynamic sponsor market, co-sponsor slots, luxury tax, inflation, marketability, 
 
 ## 5. Owner follow-up 2026-09-01 — Simulate + filter + negotiate
 
+**Landed 2026-09-01** (SchemaVersion 7). Headless commands and queries only; no Godot Hub, no Watch Race expansion.
+
 ### Watch Race
 
 Docs had **Career Hub** as rejected (PR #4). Watch Race was built as the first Godot window after D-033. The owner now rejects Watch Race as the way you play a race. **D-043:** Simulate, then results. Filter the classification by **any** team. Do not grow Godot Watch.

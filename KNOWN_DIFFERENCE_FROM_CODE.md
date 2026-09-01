@@ -25,8 +25,8 @@ This is an explicit prototype boundary, not an accepted simplification of the fu
 - `RiderCareer.Id` is the official race `RiderId`; `LastRace` finish order and `RiderCareerResult` history use those world IDs.
 - `CreateWorld` materializes riders from `content/peloton.skeleton/skeleton-roster.json` (stable `OriginDefinitionId`s from the prototype pack).
 - Prep squad is the player employer's world roster (`RiderCareer.OrganizationId`; null = unattached).
-- SQLite `SchemaVersion` is **6** (cash/fee landed in phase 6). Schema 1–5 saves may refuse to load.
-- World checksum label is `peloton-world-checksum-v6`.
+- SQLite `SchemaVersion` is **7** (results filter + negotiation landed in phase 7). Schema 1–6 saves may refuse to load.
+- World checksum label is `peloton-world-checksum-v7`.
 - `CalendarEntry.RaceContentId` stores the calendar race id (`race.wt2026.*` for WT; route template resolved via `DefaultRaceTemplateId`).
 
 Phase 1 out of scope for Godot: Career Hub stays rejected. WT CreateWorld is landed in phase 5.
