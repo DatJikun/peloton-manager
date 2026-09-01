@@ -15,8 +15,6 @@ public static class CareerLookCatalog
     public const string ClubCrest = "BESKID–VETTER";
     public const string ClubSub = "PROTEAM · LOOK LAB";
     public const string NotInWorld = "Jeszcze nie w tej wersji.";
-    public const string Banner =
-        "Rysunek laboratorium · liczby nie są światem · dzień i Advance Day są na belce.";
 
     private static readonly CultureInfo Pl = CultureInfo.GetCultureInfo("pl-PL");
 

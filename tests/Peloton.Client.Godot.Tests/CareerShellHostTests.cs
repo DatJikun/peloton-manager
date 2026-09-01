@@ -55,9 +55,11 @@ public sealed class CareerShellHostTests
         CareerShellHost host = CreateHost(temp.Path);
         Assert.True(host.OpenWorldTour("organization.wt2026.ineos").Succeeded);
         Assert.True(host.BeginPreSeasonPlanning().Succeeded);
+        Assert.Contains("INEOS", host.EmployerName, StringComparison.Ordinal);
         Assert.True(host.ConfirmPreSeasonPlan().Succeeded);
 
         Assert.Contains("INEOS", host.Day!.EmployerName, StringComparison.Ordinal);
+        Assert.Contains("INEOS", host.EmployerName, StringComparison.Ordinal);
         Assert.True(host.UpcomingEvents.Count <= 5);
         Assert.Contains("Tour Down Under", host.UpcomingEvents[0].Name, StringComparison.Ordinal);
         Assert.NotEmpty(host.MarketRiders);

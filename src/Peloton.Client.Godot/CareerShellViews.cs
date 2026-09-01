@@ -615,7 +615,17 @@ public sealed partial class CareerShellScreen
             endDayBox.MinValue = today + 1;
             endDayBox.MaxValue = 50_000;
             endDayBox.Value = Math.Max(prefillEndDay, today + 1);
-            box.AddChild(Labeled("Koniec kontraktu (dzień)", endDayBox));
+            Label endPreview = LookChrome.Body(
+                CareerCalendarDates.FormatLong((int)endDayBox.Value),
+                12,
+                LookChrome.Gray,
+                bold: true);
+            endDayBox.ValueChanged += number =>
+            {
+                endPreview.Text = CareerCalendarDates.FormatLong((int)number);
+            };
+            box.AddChild(Labeled("Koniec kontraktu", endDayBox));
+            box.AddChild(endPreview);
             box.AddChild(LookChrome.Solid("Złóż ofertę", () =>
             {
                 CommandResult set = host.SetContractOffer((int)wageBox.Value, (int)endDayBox.Value);
@@ -674,11 +684,12 @@ public sealed partial class CareerShellScreen
         }
 
         ScrollContainer scroll = new();
-        scroll.HorizontalScrollMode = ScrollContainer.ScrollMode.Auto;
+        scroll.HorizontalScrollMode = ScrollContainer.ScrollMode.ShowAlways;
+        scroll.VerticalScrollMode = ScrollContainer.ScrollMode.Disabled;
         scroll.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-        scroll.SizeFlagsVertical = SizeFlags.ExpandFill;
         VBoxContainer table = new();
         table.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        table.CustomMinimumSize = new Vector2(1080, 0);
         HBoxContainer heads = new();
         foreach ((string Label, string Key) col in new[]
                  {
@@ -734,48 +745,6 @@ public sealed partial class CareerShellScreen
 
         scroll.AddChild(table);
         box.AddChild(scroll);
-        return box;
-    }
-
-    private VBoxContainer BuildRiderCard()
-    {
-        LookRider? rider = CareerLookCatalog.Rider((int)selectedRiderId) ?? CareerLookCatalog.Riders[0];
-        VBoxContainer box = new();
-        box.AddThemeConstantOverride("separation", 8);
-        box.AddChild(ProfileHead(rider.FullName, $"{rider.Nat} · {rider.Age} lat · {rider.Role}"));
-        box.AddChild(LookChrome.Kv("OVR / POT", rider.Rate + " / " + rider.Pot));
-        box.AddChild(LookChrome.Kv("Forma / morale", rider.Form + " / " + rider.Morale));
-        foreach ((string Label, int Value) stat in new[]
-                 {
-                     ("Góry", rider.Mountain), ("Pagórki", rider.Hill), ("Sprint", rider.Sprint), ("TT", rider.Tt),
-                     ("Bruk", rider.Cobbles), ("Wytrzymałość", rider.Stamina), ("Regeneracja", rider.Recovery), ("Forma", rider.Form),
-                 })
-        {
-            box.AddChild(LookChrome.Stat(stat.Label, stat.Value));
-        }
-
-        box.AddChild(LookChrome.Display("KONTRAKT", 12, LookChrome.Team));
-        box.AddChild(LookChrome.Kv("Ważny do", rider.ContractEnd));
-        box.AddChild(LookChrome.Kv("Pensja", CareerLookCatalog.Zloty(rider.Salary) + " / mies."));
-        box.AddChild(LookChrome.Kv("Premia", rider.Bonus));
-        box.AddChild(LookChrome.Kv("Agent", rider.Agent));
-        if (negotiating)
-        {
-            box.AddChild(LookChrome.Body("Oferta kontraktowa (rysunek)", 12, LookChrome.Gray, bold: true));
-            int offer = (int)Math.Round(rider.Salary * 1.12);
-            box.AddChild(LookChrome.Kv("Propozycja pensji", CareerLookCatalog.Zloty(offer) + " / mies."));
-            box.AddChild(LookChrome.Solid("Złóż ofertę", () => ShowToast(CareerLookCatalog.NotInWorld), LookChrome.Team, LookChrome.TeamOn, compact: true));
-        }
-
-        HBoxContainer actions = new();
-        actions.AddThemeConstantOverride("separation", 8);
-        actions.AddChild(LookChrome.Solid(negotiating ? "Zamknij negocjacje" : "Negocjuj kontrakt", () =>
-        {
-            negotiating = !negotiating;
-            RebuildContent();
-        }, LookChrome.Team, LookChrome.TeamOn, compact: true));
-        actions.AddChild(LookChrome.Solid("Zwolnij z zespołu", () => ShowToast(CareerLookCatalog.NotInWorld), LookChrome.Red, LookChrome.Paper, compact: true));
-        box.AddChild(actions);
         return box;
     }
 
@@ -1332,8 +1301,14 @@ public sealed partial class CareerShellScreen
         };
         tableWrap.AddChild(Labeled("Klub", clubFilter));
 
+        ScrollContainer tableScroll = new();
+        tableScroll.HorizontalScrollMode = ScrollContainer.ScrollMode.ShowAlways;
+        tableScroll.VerticalScrollMode = ScrollContainer.ScrollMode.Auto;
+        tableScroll.CustomMinimumSize = new Vector2(0, 420);
+        tableScroll.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         VBoxContainer table = new();
         table.AddThemeConstantOverride("separation", 4);
+        table.CustomMinimumSize = new Vector2(960, 0);
         HBoxContainer heads = new();
         foreach ((string Label, string Key) col in new[]
                  {
@@ -1389,7 +1364,8 @@ public sealed partial class CareerShellScreen
             table.AddChild(LookChrome.Body("Brak zawodników na rynku.", 13, LookChrome.Gray));
         }
 
-        tableWrap.AddChild(table);
+        tableScroll.AddChild(table);
+        tableWrap.AddChild(tableScroll);
         grid.AddChild(Stretch(Panel("DOSTĘPNI ZAWODNICY", tableWrap), 8));
         VBoxContainer marketCard = Stretch(Panel("ZAWODNIK", BuildMarketCard()), 4);
         marketCard.CustomMinimumSize = new Vector2(340, 0);
@@ -1455,7 +1431,17 @@ public sealed partial class CareerShellScreen
             endDayBox.MinValue = today + 1;
             endDayBox.MaxValue = 50_000;
             endDayBox.Value = Math.Max(prefillEndDay, today + 1);
-            box.AddChild(Labeled("Koniec kontraktu (dzień)", endDayBox));
+            Label endPreview = LookChrome.Body(
+                CareerCalendarDates.FormatLong((int)endDayBox.Value),
+                12,
+                LookChrome.Gray,
+                bold: true);
+            endDayBox.ValueChanged += number =>
+            {
+                endPreview.Text = CareerCalendarDates.FormatLong((int)number);
+            };
+            box.AddChild(Labeled("Koniec kontraktu", endDayBox));
+            box.AddChild(endPreview);
             box.AddChild(LookChrome.Solid("Złóż ofertę", () =>
             {
                 CommandResult set = host.SetContractOffer((int)wageBox.Value, (int)endDayBox.Value);
@@ -1655,22 +1641,14 @@ public sealed partial class CareerShellScreen
             return;
         }
 
-        IReadOnlyList<SeasonEventProjection> upcoming = host.UpcomingEvents;
-        if (upcoming.Count > 0)
+        if (selectedEventId is not null &&
+            host.SeasonEvents.Any(item => item.RaceContentId == selectedEventId))
         {
-            if (selectedEventId is null ||
-                upcoming.All(item => item.RaceContentId != selectedEventId))
-            {
-                selectedEventId = upcoming[0].RaceContentId;
-            }
-
             return;
         }
 
-        if (selectedEventId is null && host.SeasonEvents.Count > 0)
-        {
-            selectedEventId = host.SeasonEvents[0].RaceContentId;
-        }
+        selectedEventId = host.UpcomingEvents.FirstOrDefault()?.RaceContentId
+            ?? host.SeasonEvents.FirstOrDefault()?.RaceContentId;
     }
 
     private SeasonEventProjection? FindSelectedEvent()

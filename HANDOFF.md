@@ -40,7 +40,7 @@ Działa:
 - na sklasyfikowanym płaskim sprinter może wygrać finisz z peletonu (Philipsen przed Pogačarem w probe `91234`); na górze góral zostaje góralem;
 - po etapie widać koszulki: GC / punkty / góry / młodzież / drużynowa (tabela, nie polityka DS w trakcie etapu);
 - cienka ekonomia: kasa, sponsor vs płace, notatka o debecie;
-- Godot: powłoka kariery (wygląd z laboratorium HTML); desk finanse i oferty kontraktów ze świata; sztab/sponsorzy/skauting/rynek to rysunek;
+- Godot: powłoka kariery (wygląd z HTML); daty od 1 stycznia 2026; herb to wybrany klub; biurko pokazuje max 5 całych wyścigów; kalendarz to siatka miesiąca; inbox ze świata; rynek to kolarze ze świata z filtrem klubu; sztab/sponsorzy/skauting jeszcze nie w świecie;
 - paczka Windows do ręcznego playtestu: `playtest/PelotonManager-playtest-windows.zip` (`playtest/CZYTAJ_MNIE.txt`).
 
 Właśnie budujemy:

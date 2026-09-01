@@ -400,6 +400,27 @@ public sealed class GameApplication
     public IReadOnlyList<MarketRiderProjection> MarketRiders =>
         World is null ? Array.Empty<MarketRiderProjection>() : CareerProjectionQueries.BuildMarketRiders(World, GetAccessContext());
 
+    public string? EmployerName
+    {
+        get
+        {
+            if (World is null)
+            {
+                return null;
+            }
+
+            AccessContext access = GetAccessContext();
+            if (access.CurrentOrganizationId is not WorldEntityId organizationId)
+            {
+                return null;
+            }
+
+            Organization? employer = World.Organizations.FirstOrDefault(
+                organization => organization.Id == organizationId);
+            return employer?.Name;
+        }
+    }
+
     public IReadOnlyList<InboxItemProjection> Inbox =>
         World is null ? Array.Empty<InboxItemProjection>() : CareerProjectionQueries.BuildInbox(World, GetAccessContext());
 

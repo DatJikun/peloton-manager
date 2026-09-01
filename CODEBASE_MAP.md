@@ -66,7 +66,7 @@ Static content lives in `content/peloton.skeleton`, `content/peloton.wt-2026`, a
 | Career scenarios | `content/peloton.skeleton`, `JsonScenarioCatalog.cs` | `CONTENT_FORMAT_v0.1.md` | Application tests |
 | Rules modules | `Peloton.Rules`, scenario JSON | `RULESETS_v0.1.md` | Application + Architecture tests |
 
-Transfer market, sponsors, scouting, knowledge records, and `D-032` multi-stage leadership transfer are not implemented. Career Hub UI is deleted (D-048). Godot career shell shows staff/sponsors/scouting/market from `CareerLookCatalog` (look only); desk finance and squad offers use world projections. Watch film stays optional and off by default. Look-catalog OVR is not World State. Rider ratings (D-046) and the dense course engine (D-047) are landed.
+Transfer market listing (world riders not on the employer roster, club filter, D-044 poach) is in. Sponsors, scouting, knowledge records, and `D-032` multi-stage leadership transfer are not implemented. Career Hub UI is deleted (D-048). Godot career shell shows staff/sponsors/scouting from `CareerLookCatalog` (look only); desk finance, squad offers, calendar dates/events, inbox, crest, and market use world projections. Watch film stays optional and off by default. Look-catalog OVR is not World State. Rider ratings (D-046) and the dense course engine (D-047) are landed.
 
 ## Dependency direction
 

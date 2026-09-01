@@ -51,6 +51,8 @@ public sealed class CareerShellHost
 
     public IReadOnlyList<MarketRiderProjection> MarketRiders => application.MarketRiders;
 
+    public string? EmployerName => Day?.EmployerName ?? application.EmployerName;
+
     public IReadOnlyList<InboxItemProjection> Inbox => application.Inbox;
 
     public IReadOnlyList<PersonNameProjection> People =>

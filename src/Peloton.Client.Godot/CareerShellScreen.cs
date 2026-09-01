@@ -521,18 +521,9 @@ public sealed partial class CareerShellScreen : Control
 
         if (sidebarCrest is not null)
         {
-            if (host.State == GameState.MainMenu)
-            {
-                sidebarCrest.Text = "PELOTON";
-            }
-            else if (day?.EmployerName is { Length: > 0 } employer)
-            {
-                sidebarCrest.Text = employer.ToUpperInvariant();
-            }
-            else
-            {
-                sidebarCrest.Text = "PELOTON";
-            }
+            sidebarCrest.Text = host.State == GameState.MainMenu
+                ? "PELOTON"
+                : (host.EmployerName ?? "PELOTON").ToUpperInvariant();
         }
 
         if (sidebarSub is not null)
@@ -571,7 +562,7 @@ public sealed partial class CareerShellScreen : Control
 
         if (employerName is not null)
         {
-            employerName.Text = (day?.EmployerName ?? "—").ToUpperInvariant();
+            employerName.Text = (host.EmployerName ?? "—").ToUpperInvariant();
         }
 
         if (cta is not null)
