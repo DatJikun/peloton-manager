@@ -45,6 +45,12 @@ public sealed class CareerShellHost
 
     public IReadOnlyList<CalendarEntryProjection> Calendar => application.Calendar;
 
+    public IReadOnlyList<SeasonEventProjection> SeasonEvents => application.SeasonEvents;
+
+    public IReadOnlyList<SeasonEventProjection> UpcomingEvents => application.UpcomingEvents;
+
+    public IReadOnlyList<MarketRiderProjection> MarketRiders => application.MarketRiders;
+
     public IReadOnlyList<InboxItemProjection> Inbox => application.Inbox;
 
     public IReadOnlyList<PersonNameProjection> People =>

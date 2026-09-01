@@ -164,6 +164,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
+- `2026-09-01` — **D-052 landed (Composer):** `CareerCalendarDates` (1 Jan 2026 epoch); grouped `SeasonEventProjection` / `UpcomingEvents` / `MarketRiders`; Polish inbox; Godot desk/calendar/rynek/squad crest/dates per `CAREER_SHELL_DATES_AND_LOOK_v0.1.md`.
 - `2026-09-01` — **D-052: 1 Jan 2026 dates + HTML look repair.** Calendar dates not “dzień N”; desk max five grouped events; month grid; world inbox in Polish; employer crest; no laboratory banners; Skład sorts + geometric avatars; Rynek is world riders filterable by club. Contract: `CAREER_SHELL_DATES_AND_LOOK_v0.1.md`.
 - `2026-09-01` — **Windows playtest zip refreshed** after D-050/D-051 (`playtest/PelotonManager-playtest-windows.zip`). Pack includes `peloton.wt-2026`. Staff/sponsors/scouting/market stay drawings.
 - `2026-09-01` — **D-051 landed (Composer):** Godot desk/finance show `ClubFinanceProjection` (euro); Skład contract offer via D-044 commands; staff/sponsors/scouting/market stay look catalog.

@@ -12,7 +12,6 @@ public sealed partial class CareerShellScreen
 {
     private void BuildNewGame()
     {
-        content!.AddChild(LookBanner());
         VBoxContainer inner = new();
         inner.AddThemeConstantOverride("separation", 6);
         inner.AddChild(LookChrome.Body(
@@ -46,16 +45,15 @@ public sealed partial class CareerShellScreen
                 compact: true));
         }
 
-        content.AddChild(Panel("NOWA GRA — WYBIERZ ZESPÓŁ", inner));
+        content!.AddChild(Panel("NOWA GRA — WYBIERZ ZESPÓŁ", inner));
     }
 
     private void BuildSeasonPlan()
     {
-        content!.AddChild(LookBanner());
         PreSeasonPlanningProjection? plan = host!.PreSeasonPlanning;
         if (plan is null)
         {
-            content.AddChild(Panel("PLAN SEZONU", LookChrome.Body("Brak planu sezonu.", 13, LookChrome.Gray)));
+            content!.AddChild(Panel("PLAN SEZONU", LookChrome.Body("Brak planu sezonu.", 13, LookChrome.Gray)));
             return;
         }
 
@@ -70,7 +68,7 @@ public sealed partial class CareerShellScreen
             row.AddChild(LookChrome.Body(
                 string.Create(
                     CultureInfo.InvariantCulture,
-                    $"dzień {captured.DayNumber} · {captured.Title}"),
+                    $"{CareerCalendarDates.FormatLong(captured.DayNumber)} · {captured.Title}"),
                 14,
                 LookChrome.Black,
                 bold: true));
@@ -116,14 +114,11 @@ public sealed partial class CareerShellScreen
             list.AddChild(WrapCard(row));
         }
 
-        content.AddChild(Panel("PLAN SEZONU", list));
+        content!.AddChild(Panel("PLAN SEZONU", list));
     }
 
     private void BuildDesk()
     {
-        content!.AddChild(LookBanner());
-        content.AddChild(BuildWorldStrip());
-
         HBoxContainer top = Row();
         VBoxContainer list = Panel("NADCHODZĄCE WYŚCIGI", BuildUpcomingList());
         list.SizeFlagsHorizontal = SizeFlags.ExpandFill;
@@ -141,7 +136,7 @@ public sealed partial class CareerShellScreen
         raceCol.AddChild(Panel("INBOX", BuildDeskInbox()));
         top.AddChild(list);
         top.AddChild(raceCol);
-        content.AddChild(top);
+        content!.AddChild(top);
 
         HBoxContainer mid = Row();
         VBoxContainer squad = Panel("SKŁAD — OCENA", BuildDeskSquad());
@@ -152,40 +147,13 @@ public sealed partial class CareerShellScreen
         results.SizeFlagsStretchRatio = 5;
         mid.AddChild(squad);
         mid.AddChild(results);
-        content.AddChild(mid);
+        content!.AddChild(mid);
 
         HBoxContainer bottom = Row();
         bottom.AddChild(Stretch(Panel("RANKING", BuildRanking()), 4));
         bottom.AddChild(Stretch(Panel("FINANSE · TYDZIEŃ", BuildWeekFinance()), 4));
         bottom.AddChild(Stretch(Panel("NOTATKI SZTABU", BuildStaffNotes()), 4));
-        content.AddChild(bottom);
-    }
-
-    private VBoxContainer BuildWorldStrip()
-    {
-        VBoxContainer box = new();
-        box.AddThemeConstantOverride("separation", 6);
-        CareerDayProjection? day = host!.Day;
-        box.AddChild(LookChrome.Body(
-            day is null
-                ? "Świat szkieletu jest poza biurkiem (przygotowanie / etap)."
-                : string.Create(
-                    CultureInfo.InvariantCulture,
-                    $"Świat: dzień {day.DayNumber} · {day.PrimaryLabel} · wyścigów {day.RaceCount} · pracodawca {day.EmployerName}"),
-            13,
-            LookChrome.Black,
-            bold: true));
-        foreach (CalendarEntryProjection entry in host.Calendar)
-        {
-            box.AddChild(LookChrome.Body(
-                string.Create(
-                    CultureInfo.InvariantCulture,
-                    $"kalendarz świata: dzień {entry.DayNumber} · {entry.Title} · {entry.Status}"),
-                12,
-                LookChrome.Gray));
-        }
-
-        return Panel(host!.IsWorldTourWorld ? "ŚWIAT WTOUR" : "ŚWIAT SZKIELETU", box);
+        content!.AddChild(bottom);
     }
 
     private VBoxContainer BuildUpcomingList()
@@ -194,36 +162,40 @@ public sealed partial class CareerShellScreen
         list.AddThemeConstantOverride("separation", 6);
         Button more = LookChrome.Solid("pełny kalendarz ›", () => Show(View.Calendar), LookChrome.Paper, LookChrome.Black, compact: true);
         list.AddChild(more);
-        foreach (CalendarEntryProjection entry in host!.Calendar)
+        foreach (SeasonEventProjection item in host!.UpcomingEvents)
         {
-            CalendarEntryProjection captured = entry;
-            bool active = lookRaceId == captured.Title ||
-                (lookRaceId == "mila-torino" && captured == host.Calendar[0]);
+            SeasonEventProjection captured = item;
+            bool active = selectedEventId == captured.RaceContentId;
             Color fg = active ? LookChrome.Paper : LookChrome.Black;
             PanelContainer row = LookChrome.ClickRow(active, () =>
             {
-                lookRaceId = captured.Title;
+                selectedEventId = captured.RaceContentId;
                 RebuildContent();
             });
             HBoxContainer inner = new();
             inner.AddThemeConstantOverride("separation", 10);
             Label date = LookChrome.Body(
-                string.Create(CultureInfo.InvariantCulture, $"dzień {captured.DayNumber}"),
+                CareerCalendarDates.FormatLong(captured.StartDay),
                 12,
                 fg,
                 bold: true);
-            date.CustomMinimumSize = new Vector2(84, 0);
+            date.CustomMinimumSize = new Vector2(140, 0);
             VBoxContainer names = new();
             names.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-            names.AddChild(LookChrome.Body(captured.Title, 14, fg, bold: true));
-            names.AddChild(LookChrome.Body(
-                string.Create(CultureInfo.InvariantCulture, $"{captured.Kind} · {captured.Status}"),
-                11,
-                active ? LookChrome.Hair : LookChrome.Gray));
+            names.AddChild(LookChrome.Body(captured.Name, 14, fg, bold: true));
+            string subtitle = captured.StageCount > 1
+                ? string.Create(CultureInfo.InvariantCulture, $"{captured.StageCount} etapów")
+                : "jednodniowy";
+            names.AddChild(LookChrome.Body(subtitle, 11, active ? LookChrome.Hair : LookChrome.Gray));
             inner.AddChild(date);
             inner.AddChild(names);
             row.AddChild(inner);
             list.AddChild(row);
+        }
+
+        if (host.UpcomingEvents.Count == 0)
+        {
+            list.AddChild(LookChrome.Body("Brak nadchodzących wyścigów.", 13, LookChrome.Gray));
         }
 
         return list;
@@ -233,8 +205,8 @@ public sealed partial class CareerShellScreen
     {
         VBoxContainer box = new();
         box.AddThemeConstantOverride("separation", 8);
-        CalendarEntryProjection? entry = FindCalendarEntry(lookRaceId);
-        if (entry is null)
+        SeasonEventProjection? item = FindSelectedEvent();
+        if (item is null)
         {
             box.AddChild(LookChrome.Body("Kalendarz świata jest pusty.", 13, LookChrome.Gray));
             return box;
@@ -242,20 +214,26 @@ public sealed partial class CareerShellScreen
 
         HBoxContainer head = new();
         head.AddThemeConstantOverride("separation", 10);
-        Label name = LookChrome.Display(entry.Title.ToUpperInvariant(), 26, LookChrome.Black);
+        Label name = LookChrome.Display(item.Name.ToUpperInvariant(), 26, LookChrome.Black);
         name.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         head.AddChild(name);
-        head.AddChild(LookChrome.Chip(entry.Kind, "inv"));
+        head.AddChild(LookChrome.Chip(item.Status, "inv"));
         box.AddChild(head);
         box.AddChild(LookChrome.Body(
-            string.Create(CultureInfo.InvariantCulture, $"dzień {entry.DayNumber} · {entry.Status}"),
+            CareerCalendarDates.FormatRange(item.StartDay, item.EndDay),
             13,
             LookChrome.Gray,
             bold: true));
-        if (!string.IsNullOrWhiteSpace(entry.OfficialResult))
-        {
-            box.AddChild(LookChrome.Kv("Wynik", entry.OfficialResult));
-        }
+        string stageLabel = item.StageCount > 1
+            ? string.Create(CultureInfo.InvariantCulture, $"{item.StageCount} etapów")
+            : "jednodniowy";
+        box.AddChild(LookChrome.Kv("Format", stageLabel));
+        box.AddChild(LookChrome.Solid(
+            "otwórz wyścig ›",
+            () => OpenRaceEvent(View.Desk),
+            LookChrome.Team,
+            LookChrome.TeamOn,
+            compact: true));
 
         RacePreparationProjection? prep = host!.Preparation;
         if (prep is not null)
@@ -308,7 +286,13 @@ public sealed partial class CareerShellScreen
     {
         VBoxContainer box = new();
         box.AddThemeConstantOverride("separation", 8);
-        foreach (InboxItemProjection item in host!.Inbox)
+        if (host!.Inbox.Count == 0)
+        {
+            box.AddChild(LookChrome.Body("Brak spraw.", 14, LookChrome.Gray, bold: true));
+            return box;
+        }
+
+        foreach (InboxItemProjection item in host.Inbox)
         {
             InboxItemProjection captured = item;
             VBoxContainer mail = new();
@@ -317,7 +301,7 @@ public sealed partial class CareerShellScreen
             mail.AddChild(LookChrome.Body(captured.Body, 14, LookChrome.Black, bold: true));
             if (captured.Category == "race-due")
             {
-                mail.AddChild(LookChrome.Body("Skrzynka nie otwiera wyścigu. Użyj Race next.", 12, LookChrome.Gray));
+                mail.AddChild(LookChrome.Solid("Jedź wyścig", () => Apply(host.FollowPrimary()), LookChrome.Team, LookChrome.TeamOn, compact: true));
             }
             else
             {
@@ -330,33 +314,6 @@ public sealed partial class CareerShellScreen
             }
 
             box.AddChild(WrapCard(mail));
-        }
-
-        foreach (LookMail mail in CareerLookCatalog.DeskMail)
-        {
-            VBoxContainer card = new();
-            card.AddThemeConstantOverride("separation", 4);
-            HBoxContainer head = new();
-            head.AddThemeConstantOverride("separation", 8);
-            head.AddChild(LookChrome.Chip(mail.Index, mail.Urgent ? "red" : string.Empty));
-            Label subj = LookChrome.Body(mail.Subject, 14, LookChrome.Black, bold: true);
-            subj.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-            head.AddChild(subj);
-            head.AddChild(LookChrome.Body(mail.When, 11, LookChrome.Gray, bold: true));
-            card.AddChild(head);
-            if (!string.IsNullOrEmpty(mail.From))
-            {
-                card.AddChild(LookChrome.Body(mail.From, 12, LookChrome.Team, bold: true));
-            }
-
-            if (!string.IsNullOrEmpty(mail.Body))
-            {
-                Label body = LookChrome.Body(mail.Body, 13, LookChrome.Black);
-                body.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-                card.AddChild(body);
-            }
-
-            box.AddChild(WrapCard(card));
         }
 
         return box;
@@ -636,7 +593,7 @@ public sealed partial class CareerShellScreen
         box.AddChild(LookChrome.Kv("Pensja / rok", CareerLookCatalog.Euro(rider.AnnualWage)));
         box.AddChild(LookChrome.Kv(
             "Koniec kontraktu",
-            "dzień " + rider.ContractEndDay.ToString(CultureInfo.InvariantCulture)));
+            CareerCalendarDates.FormatLong(rider.ContractEndDay)));
         foreach ((string statLabel, int statValue) in new[]
                  {
                      ("Góry", rider.Climb), ("Pagórki", rider.Hills), ("Płaskie", rider.Flat), ("TT", rider.TimeTrial),
@@ -716,14 +673,31 @@ public sealed partial class CareerShellScreen
             return box;
         }
 
+        ScrollContainer scroll = new();
+        scroll.HorizontalScrollMode = ScrollContainer.ScrollMode.Auto;
+        scroll.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        scroll.SizeFlagsVertical = SizeFlags.ExpandFill;
+        VBoxContainer table = new();
+        table.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         HBoxContainer heads = new();
-        foreach (string col in new[] { "Zawodnik", "OVR", "POT", "Góry", "Pagórki", "Płaskie", "TT", "Sprint", "Bruk", "Pensja", "Koniec" })
+        foreach ((string Label, string Key) col in new[]
+                 {
+                     ("Zawodnik", "last"), ("OVR", "ovr"), ("POT", "pot"), ("Góry", "climb"), ("Pagórki", "hills"),
+                     ("Płaskie", "flat"), ("TT", "tt"), ("Sprint", "sprint"), ("Bruk", "cobbles"),
+                     ("Pensja", "wage"), ("Koniec", "end"),
+                 })
         {
-            heads.AddChild(LookChrome.Body(col, 11, LookChrome.Gray, bold: true));
+            string key = col.Key;
+            heads.AddChild(SortHead(col.Label, key, squadSort, () =>
+            {
+                int fresh = key is "last" ? 1 : -1;
+                squadSort = CareerLookCatalog.Toggle(squadSort, key, fresh);
+                RebuildContent();
+            }, numeric: key is not "last"));
         }
 
-        box.AddChild(heads);
-        foreach (ClubRosterEntry rider in roster)
+        table.AddChild(heads);
+        foreach (ClubRosterEntry rider in SortSquad(roster))
         {
             ClubRosterEntry captured = rider;
             bool selected = captured.RiderCareerId.Value == selectedRiderId;
@@ -742,6 +716,7 @@ public sealed partial class CareerShellScreen
             row.SizeFlagsHorizontal = SizeFlags.ExpandFill;
             HBoxContainer inner = new();
             inner.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+            inner.AddChild(LookChrome.Avatar(captured.Name, mini: true));
             inner.AddChild(Cell(captured.Name, true, fg));
             inner.AddChild(Cell(captured.Ovr.ToString(CultureInfo.InvariantCulture), true, fg, numeric: true));
             inner.AddChild(Cell(captured.PotentialOvr.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
@@ -752,11 +727,13 @@ public sealed partial class CareerShellScreen
             inner.AddChild(Cell(captured.Sprint.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
             inner.AddChild(Cell(captured.Cobbles.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
             inner.AddChild(Cell(CareerLookCatalog.Euro(captured.AnnualWage), false, fg, numeric: true));
-            inner.AddChild(Cell(captured.ContractEndDay.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
+            inner.AddChild(Cell(CareerCalendarDates.FormatLong(captured.ContractEndDay), false, fg, numeric: false));
             row.AddChild(inner);
-            box.AddChild(row);
+            table.AddChild(row);
         }
 
+        scroll.AddChild(table);
+        box.AddChild(scroll);
         return box;
     }
 
@@ -804,7 +781,6 @@ public sealed partial class CareerShellScreen
 
     private void BuildStaff()
     {
-        content!.AddChild(LookBanner());
         HBoxContainer grid = Row();
         VBoxContainer list = new();
         list.AddThemeConstantOverride("separation", 8);
@@ -833,7 +809,7 @@ public sealed partial class CareerShellScreen
         VBoxContainer staffCard = Stretch(Panel("PROFIL PRACOWNIKA", BuildStaffCard()), 5);
         staffCard.CustomMinimumSize = new Vector2(340, 0);
         grid.AddChild(staffCard);
-        content.AddChild(grid);
+        content!.AddChild(grid);
     }
 
     private VBoxContainer BuildStaffCard()
@@ -861,78 +837,13 @@ public sealed partial class CareerShellScreen
 
     private void BuildCalendar()
     {
-        content!.AddChild(LookBanner());
         HBoxContainer grid = Row();
-        grid.AddChild(Stretch(Panel("KALENDARZ WYŚCIGÓW", BuildWorldCalendarList()), 8));
-        grid.AddChild(Stretch(Panel("WYŚCIG", BuildWorldCalendarDetail()), 4));
-        content.AddChild(grid);
-        content.AddChild(BuildWorldStrip());
+        grid.AddChild(Stretch(Panel("KALENDARZ WYŚCIGÓW", BuildWorldMonthGrid()), 8));
+        grid.AddChild(Stretch(Panel("WYŚCIG", BuildCalendarEventDetail()), 4));
+        content!.AddChild(grid);
     }
 
-    private VBoxContainer BuildWorldCalendarList()
-    {
-        VBoxContainer list = new();
-        list.AddThemeConstantOverride("separation", 6);
-        foreach (CalendarEntryProjection entry in host!.Calendar)
-        {
-            CalendarEntryProjection captured = entry;
-            bool active = lookRaceId == captured.Title;
-            Color fg = active ? LookChrome.Paper : LookChrome.Black;
-            PanelContainer row = LookChrome.ClickRow(active, () =>
-            {
-                lookRaceId = captured.Title;
-                RebuildContent();
-            });
-            HBoxContainer inner = new();
-            inner.AddThemeConstantOverride("separation", 10);
-            Label date = LookChrome.Body(
-                string.Create(CultureInfo.InvariantCulture, $"dzień {captured.DayNumber}"),
-                12,
-                fg,
-                bold: true);
-            date.CustomMinimumSize = new Vector2(84, 0);
-            VBoxContainer names = new();
-            names.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-            names.AddChild(LookChrome.Body(captured.Title, 14, fg, bold: true));
-            names.AddChild(LookChrome.Body(
-                string.Create(CultureInfo.InvariantCulture, $"{captured.Kind} · {captured.Status}"),
-                11,
-                active ? LookChrome.Hair : LookChrome.Gray));
-            inner.AddChild(date);
-            inner.AddChild(names);
-            row.AddChild(inner);
-            list.AddChild(row);
-        }
-
-        return list;
-    }
-
-    private VBoxContainer BuildWorldCalendarDetail()
-    {
-        VBoxContainer box = new();
-        box.AddThemeConstantOverride("separation", 8);
-        CalendarEntryProjection? entry = FindCalendarEntry(lookRaceId);
-        if (entry is null)
-        {
-            box.AddChild(LookChrome.Body("Kalendarz świata jest pusty.", 13, LookChrome.Gray));
-            return box;
-        }
-
-        box.AddChild(LookChrome.Display(entry.Title.ToUpperInvariant(), 22, LookChrome.Black));
-        box.AddChild(LookChrome.Body(
-            string.Create(CultureInfo.InvariantCulture, $"dzień {entry.DayNumber} · {entry.Status}"),
-            13,
-            LookChrome.Gray,
-            bold: true));
-        if (!string.IsNullOrWhiteSpace(entry.OfficialResult))
-        {
-            box.AddChild(LookChrome.Kv("Wynik", entry.OfficialResult));
-        }
-
-        return box;
-    }
-
-    private VBoxContainer BuildMonthGrid(LookCalendarMonth month)
+    private VBoxContainer BuildWorldMonthGrid()
     {
         VBoxContainer box = new();
         box.AddThemeConstantOverride("separation", 8);
@@ -940,23 +851,36 @@ public sealed partial class CareerShellScreen
         nav.AddThemeConstantOverride("separation", 12);
         Button prev = LookChrome.Solid("‹", () =>
         {
-            if (monthIndex > 0)
+            if (calendarMonth > 1)
             {
-                monthIndex--;
-                RebuildContent();
+                calendarMonth--;
             }
+            else
+            {
+                calendarYear--;
+                calendarMonth = 12;
+            }
+
+            RebuildContent();
         }, LookChrome.Paper, LookChrome.Black, compact: true);
-        prev.Disabled = monthIndex == 0;
         Button next = LookChrome.Solid("›", () =>
         {
-            if (monthIndex < CareerLookCatalog.Months.Count - 1)
+            if (calendarMonth < 12)
             {
-                monthIndex++;
-                RebuildContent();
+                calendarMonth++;
             }
+            else
+            {
+                calendarYear++;
+                calendarMonth = 1;
+            }
+
+            RebuildContent();
         }, LookChrome.Paper, LookChrome.Black, compact: true);
-        next.Disabled = monthIndex == CareerLookCatalog.Months.Count - 1;
-        Label title = LookChrome.Display(month.Label.ToUpperInvariant(), 22, LookChrome.Black);
+        Label title = LookChrome.Display(
+            CareerCalendarDates.FormatMonthNav(calendarYear, calendarMonth),
+            22,
+            LookChrome.Black);
         title.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         title.HorizontalAlignment = HorizontalAlignment.Center;
         nav.AddChild(prev);
@@ -977,7 +901,17 @@ public sealed partial class CareerShellScreen
         }
 
         box.AddChild(head);
-        IReadOnlyList<LookCalendarCell> cells = CareerLookCatalog.Cells(month);
+
+        DateOnly firstOfMonth = new(calendarYear, calendarMonth, 1);
+        int offset = ((int)firstOfMonth.DayOfWeek + 6) % 7;
+        DateOnly gridStart = firstOfMonth.AddDays(-offset);
+        int todayDay = host!.Day?.DayNumber ?? 0;
+        Dictionary<int, SeasonEventProjection> startsByDay = host.SeasonEvents
+            .Where(item => CareerCalendarDates.ToDate(item.StartDay).Year == calendarYear &&
+                           CareerCalendarDates.ToDate(item.StartDay).Month == calendarMonth)
+            .GroupBy(item => item.StartDay)
+            .ToDictionary(group => group.Key, group => group.First());
+
         VBoxContainer weeks = new();
         weeks.AddThemeConstantOverride("separation", 4);
         weeks.SizeFlagsHorizontal = SizeFlags.ExpandFill;
@@ -986,7 +920,12 @@ public sealed partial class CareerShellScreen
             HBoxContainer row = LookEqualCell.Strip();
             for (int col = 0; col < LookEqualCell.CalendarColumns; col++)
             {
-                row.AddChild(BuildDayCell(cells[(week * LookEqualCell.CalendarColumns) + col]));
+                DateOnly cellDate = gridStart.AddDays((week * LookEqualCell.CalendarColumns) + col);
+                int dayNumber = CareerCalendarDates.DayNumberFromDate(cellDate);
+                bool outsideMonth = cellDate.Month != calendarMonth;
+                bool isToday = dayNumber == todayDay;
+                startsByDay.TryGetValue(dayNumber, out SeasonEventProjection? eventStart);
+                row.AddChild(BuildWorldDayCell(cellDate.Day, outsideMonth, isToday, eventStart));
             }
 
             weeks.AddChild(row);
@@ -996,28 +935,32 @@ public sealed partial class CareerShellScreen
         return box;
     }
 
-    private LookEqualCell BuildDayCell(LookCalendarCell cell)
+    private LookEqualCell BuildWorldDayCell(
+        int day,
+        bool outsideMonth,
+        bool isToday,
+        SeasonEventProjection? eventStart)
     {
         LookEqualCell slot = new(LookEqualCell.DayHeight);
-        bool selected = cell.Race is not null && cell.Race.Id == lookCalRaceId;
+        bool selected = eventStart is not null && selectedEventId == eventStart.RaceContentId;
         PanelContainer panel = new();
         panel.AddThemeStyleboxOverride(
             "panel",
-            LookChrome.ChipBox(cell.IsToday ? LookChrome.Paper : selected ? LookChrome.Black : LookChrome.White));
-        if (cell.OutsideMonth)
+            LookChrome.ChipBox(isToday ? LookChrome.Paper : selected ? LookChrome.Black : LookChrome.White));
+        if (outsideMonth)
         {
             panel.Modulate = new Color(1, 1, 1, 0.45f);
         }
 
-        if (cell.Race is LookCalendarRace race)
+        if (eventStart is not null)
         {
-            LookCalendarRace captured = race;
+            SeasonEventProjection captured = eventStart;
             panel.MouseDefaultCursorShape = CursorShape.PointingHand;
             panel.GuiInput += e =>
             {
                 if (e is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left })
                 {
-                    lookCalRaceId = captured.Id;
+                    selectedEventId = captured.RaceContentId;
                     RebuildContent();
                     panel.AcceptEvent();
                 }
@@ -1027,23 +970,19 @@ public sealed partial class CareerShellScreen
         VBoxContainer inner = new();
         inner.AddThemeConstantOverride("separation", 2);
         Color numColor = selected ? LookChrome.Paper : LookChrome.Gray;
-        Label number = LookChrome.Body(cell.Day.ToString(CultureInfo.InvariantCulture), 11, numColor, bold: true);
+        Label number = LookChrome.Body(day.ToString(CultureInfo.InvariantCulture), 11, numColor, bold: true);
         number.ClipText = true;
         inner.AddChild(number);
-        if (cell.Race is LookCalendarRace eventRace)
+        if (eventStart is not null)
         {
             Color eventFg = selected ? LookChrome.Black : LookChrome.Paper;
-            Label name = LookChrome.Body(eventRace.Name, 10, eventFg, bold: true);
+            Label name = LookChrome.Body(eventStart.Name, 10, eventFg, bold: true);
             name.AutowrapMode = TextServer.AutowrapMode.Arbitrary;
             name.ClipText = true;
             name.SizeFlagsHorizontal = SizeFlags.ExpandFill;
             name.SizeFlagsVertical = SizeFlags.ExpandFill;
             name.MouseFilter = MouseFilterEnum.Ignore;
-            Label cat = LookChrome.Body(eventRace.Category, 10, eventFg);
-            cat.ClipText = true;
-            cat.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-            cat.MouseFilter = MouseFilterEnum.Ignore;
-            ColorRect chip = LookChrome.Block(eventRace.Category == "Monument" ? LookChrome.Red : LookChrome.Team);
+            ColorRect chip = LookChrome.Block(LookChrome.Team);
             if (selected)
             {
                 chip.Color = LookChrome.Paper;
@@ -1060,7 +999,6 @@ public sealed partial class CareerShellScreen
             ev.OffsetBottom = -3;
             ev.MouseFilter = MouseFilterEnum.Ignore;
             ev.AddChild(name);
-            ev.AddChild(cat);
             chip.AddChild(ev);
             inner.AddChild(chip);
         }
@@ -1084,55 +1022,84 @@ public sealed partial class CareerShellScreen
         return slot;
     }
 
-    private VBoxContainer BuildCalendarRaceDetail()
+    private VBoxContainer BuildCalendarEventDetail()
     {
-        LookCalendarRace? race = CareerLookCatalog.CalendarRace(lookCalRaceId);
         VBoxContainer box = new();
         box.AddThemeConstantOverride("separation", 8);
-        if (race is null)
+        SeasonEventProjection? item = FindSelectedEvent();
+        if (item is null)
         {
-            box.AddChild(LookChrome.Body("Brak wyścigu w tym miesiącu.", 13, LookChrome.Gray));
+            box.AddChild(LookChrome.Body("Wybierz wyścig z kalendarza.", 13, LookChrome.Gray));
             return box;
         }
 
-        HBoxContainer head = new();
-        Label title = LookChrome.Display(race.Name.ToUpperInvariant(), 22, LookChrome.Black);
-        title.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-        title.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-        head.AddChild(title);
-        head.AddChild(LookChrome.Chip(race.Category, race.Category == "Monument" ? "inv" : "ok"));
-        box.AddChild(head);
-        box.AddChild(LookChrome.Body(
-            string.Create(CultureInfo.InvariantCulture, $"{race.Day:00}.{race.Month:00}.{race.Year} · {race.Category} · {race.DistanceKm} km"),
-            12,
-            LookChrome.Gray,
-            bold: true));
-        LookRaceMap map = new();
-        map.SetRace(race);
-        box.AddChild(map);
-        box.AddChild(LookChrome.Kv("Trasa", race.Route));
-        Label desc = LookChrome.Body(race.Desc, 13, LookChrome.Black);
-        desc.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-        box.AddChild(desc);
-        box.AddChild(LookChrome.Body("Najlepiej pasujący zawodnicy", 11, LookChrome.Gray, bold: true));
-        foreach (int id in race.FitIds)
-        {
-            LookRider? rider = CareerLookCatalog.Rider(id);
-            if (rider is null)
-            {
-                continue;
-            }
+        box.AddChild(LookChrome.Display(item.Name.ToUpperInvariant(), 22, LookChrome.Black));
+        box.AddChild(LookChrome.Body(CareerCalendarDates.FormatRange(item.StartDay, item.EndDay), 13, LookChrome.Gray, bold: true));
+        string stageLabel = item.StageCount > 1
+            ? string.Create(CultureInfo.InvariantCulture, $"{item.StageCount} etapów")
+            : "jednodniowy";
+        box.AddChild(LookChrome.Kv("Format", stageLabel));
+        box.AddChild(LookChrome.Solid(
+            "otwórz wyścig ›",
+            () => OpenRaceEvent(View.Calendar),
+            LookChrome.Team,
+            LookChrome.TeamOn,
+            compact: true));
+        return box;
+    }
 
-            box.AddChild(LookChrome.Kv(rider.FullName + " · " + rider.Role, CareerLookCatalog.FitScore(rider).ToString(CultureInfo.InvariantCulture)));
+    private void BuildRaceEvent()
+    {
+        SeasonEventProjection? item = FindSelectedEvent();
+        if (item is null)
+        {
+            content!.AddChild(Panel("WYŚCIG", LookChrome.Body("Brak wybranego wyścigu.", 13, LookChrome.Gray)));
+            return;
         }
 
-        box.AddChild(LookChrome.Solid("Ustaw skład", () => ShowToast(CareerLookCatalog.NotInWorld), LookChrome.Team, LookChrome.TeamOn, compact: true));
-        return box;
+        content!.AddChild(LookChrome.Solid(
+            "‹ wróć",
+            () => Show(raceEventBackView),
+            LookChrome.Paper,
+            LookChrome.Black,
+            compact: true));
+        VBoxContainer header = new();
+        header.AddThemeConstantOverride("separation", 6);
+        header.AddChild(LookChrome.Display(item.Name.ToUpperInvariant(), 28, LookChrome.Black));
+        header.AddChild(LookChrome.Body(CareerCalendarDates.FormatRange(item.StartDay, item.EndDay), 14, LookChrome.Gray, bold: true));
+        content!.AddChild(Panel("WYŚCIG", header));
+
+        VBoxContainer stages = new();
+        stages.AddThemeConstantOverride("separation", 6);
+        IReadOnlyList<CalendarEntryProjection> stageRows = host!.Calendar
+            .Where(entry => string.Equals(entry.RaceContentId, item.RaceContentId, StringComparison.Ordinal))
+            .OrderBy(entry => entry.DayNumber)
+            .ToArray();
+        foreach (CalendarEntryProjection stage in stageRows)
+        {
+            CalendarEntryProjection captured = stage;
+            VBoxContainer row = new();
+            row.AddThemeConstantOverride("separation", 2);
+            row.AddChild(LookChrome.Body(
+                string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"{CareerCalendarDates.FormatLong(captured.DayNumber)} · {captured.Title}"),
+                14,
+                LookChrome.Black,
+                bold: true));
+            if (!string.IsNullOrWhiteSpace(captured.OfficialResult))
+            {
+                row.AddChild(LookChrome.Body(captured.OfficialResult, 12, LookChrome.Gray));
+            }
+
+            stages.AddChild(WrapCard(row));
+        }
+
+        content!.AddChild(Panel("ETAPY", stages));
     }
 
     private void BuildSponsors()
     {
-        content!.AddChild(LookBanner());
         HBoxContainer grid = Row();
         VBoxContainer list = new();
         list.AddThemeConstantOverride("separation", 8);
@@ -1180,7 +1147,7 @@ public sealed partial class CareerShellScreen
         grid.AddChild(Stretch(Panel("PARTNERZY", list), 4));
         grid.AddChild(Stretch(Panel("UMOWA", detail), 4));
         grid.AddChild(Stretch(Panel("CELE", goals), 4));
-        content.AddChild(grid);
+        content!.AddChild(grid);
     }
 
     private void BuildFinance()
@@ -1217,7 +1184,6 @@ public sealed partial class CareerShellScreen
 
     private void BuildScouting()
     {
-        content!.AddChild(LookBanner());
         VBoxContainer form = new();
         form.AddThemeConstantOverride("separation", 8);
         OptionButton scout = new();
@@ -1246,7 +1212,7 @@ public sealed partial class CareerShellScreen
             string focusName = focus.GetItemText(focus.Selected);
             int length = days.GetSelectedId();
             scoutMissions.Add(new LookScoutMission(scoutMissions.Count + 10, scoutId, regionName, focusName, length, length, "W toku"));
-            ShowToast(CareerLookCatalog.NotInWorld + " Misja zostaje tylko na ekranie.");
+            ShowToast(CareerLookCatalog.NotInWorld);
             RebuildContent();
         }, LookChrome.Team, LookChrome.TeamOn, compact: true));
 
@@ -1287,11 +1253,11 @@ public sealed partial class CareerShellScreen
         HBoxContainer grid = Row();
         grid.AddChild(Stretch(Panel("NOWA MISJA", form), 7));
         grid.AddChild(Stretch(Panel("AKTYWNE MISJE", missions), 5));
-        content.AddChild(grid);
+        content!.AddChild(grid);
         HBoxContainer lower = Row();
         lower.AddChild(Stretch(Panel("ZAKOŃCZONE RAPORTY", reports), 4));
         lower.AddChild(Stretch(Panel("RAPORT", BuildReportDetail()), 8));
-        content.AddChild(lower);
+        content!.AddChild(lower);
     }
 
     private VBoxContainer BuildReportDetail()
@@ -1330,89 +1296,213 @@ public sealed partial class CareerShellScreen
 
     private void BuildMarket()
     {
-        content!.AddChild(LookBanner());
+        IReadOnlyList<MarketRiderProjection> riders = FilteredMarketRiders();
+        if (selectedMarketRiderId == 0 ||
+            riders.All(rider => rider.RiderCareerId.Value != selectedMarketRiderId))
+        {
+            selectedMarketRiderId = riders.Count > 0 ? riders[0].RiderCareerId.Value : 0;
+        }
+
         HBoxContainer grid = Row();
+        VBoxContainer tableWrap = new();
+        tableWrap.AddThemeConstantOverride("separation", 8);
+        OptionButton clubFilter = new();
+        clubFilter.AddItem("Wszystkie", 0);
+        int filterIndex = 0;
+        int selectedFilterIndex = 0;
+        foreach (string club in host!.MarketRiders
+                     .Select(rider => rider.OrganizationName)
+                     .Where(name => !string.IsNullOrWhiteSpace(name))
+                     .Distinct(StringComparer.Ordinal)
+                     .OrderBy(name => name, StringComparer.Ordinal))
+        {
+            filterIndex++;
+            clubFilter.AddItem(club, filterIndex);
+            if (string.Equals(club, marketClubFilter, StringComparison.Ordinal))
+            {
+                selectedFilterIndex = filterIndex;
+            }
+        }
+
+        clubFilter.Selected = selectedFilterIndex;
+        clubFilter.ItemSelected += index =>
+        {
+            marketClubFilter = index <= 0 ? string.Empty : clubFilter.GetItemText((int)index);
+            RebuildContent();
+        };
+        tableWrap.AddChild(Labeled("Klub", clubFilter));
+
         VBoxContainer table = new();
         table.AddThemeConstantOverride("separation", 4);
         HBoxContainer heads = new();
         foreach ((string Label, string Key) col in new[]
                  {
-                     ("Imię", "first"), ("Nazwisko", "last"), ("Wiek", "age"), ("Profil", "role"),
-                     ("OVR", "rate"), ("POT", "pot"), ("Forma", "form"), ("Pensja", "salary"), ("Zainteres.", "interest"),
+                     ("Zawodnik", "name"), ("Klub", "club"), ("OVR", "ovr"), ("POT", "pot"),
+                     ("Góry", "climb"), ("Pensja", "wage"), ("Koniec", "end"),
                  })
         {
             string key = col.Key;
             heads.AddChild(SortHead(col.Label, key, marketSort, () =>
             {
-                int fresh = key is "first" or "last" or "role" ? 1 : -1;
+                int fresh = key is "name" or "club" ? 1 : -1;
                 marketSort = CareerLookCatalog.Toggle(marketSort, key, fresh);
                 RebuildContent();
-            }, numeric: IsNumericColumn(key)));
+            }, numeric: key is not ("name" or "club")));
         }
 
         table.AddChild(heads);
-        foreach (LookTransfer row in CareerLookCatalog.SortedTransfers(marketSort))
+        foreach (MarketRiderProjection row in SortMarket(riders))
         {
-            LookTransfer captured = row;
-            bool selected = captured.Id == marketSelected;
+            MarketRiderProjection captured = row;
+            bool selected = captured.RiderCareerId.Value == selectedMarketRiderId;
             Color fg = selected ? LookChrome.Paper : LookChrome.Black;
             PanelContainer line = LookChrome.ClickRow(selected, () =>
             {
-                marketSelected = captured.Id;
-                watchingTransfer = false;
+                selectedMarketRiderId = captured.RiderCareerId.Value;
+                negotiating = false;
                 RebuildContent();
             });
             HBoxContainer inner = new();
             inner.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-            inner.AddChild(Cell(captured.First, false, fg));
-            inner.AddChild(Cell(captured.Last + "\n" + captured.Nat, true, fg));
-            inner.AddChild(Cell(captured.Age.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
-            inner.AddChild(Cell(captured.Role, false, fg));
-            inner.AddChild(Cell(captured.Rate.ToString(CultureInfo.InvariantCulture), true, fg, numeric: true));
-            inner.AddChild(Cell(captured.Pot.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
-            inner.AddChild(Cell(captured.Form.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
-            inner.AddChild(Cell(CareerLookCatalog.Zloty(captured.Salary), false, fg, numeric: true));
-            inner.AddChild(Cell(captured.Interest.ToString(CultureInfo.InvariantCulture), true, fg, numeric: true));
+            inner.AddChild(LookChrome.Avatar(captured.Name, mini: true));
+            inner.AddChild(Cell(captured.Name, true, fg));
+            inner.AddChild(Cell(
+                string.IsNullOrWhiteSpace(captured.OrganizationName) ? "—" : captured.OrganizationName,
+                false,
+                fg));
+            inner.AddChild(Cell(captured.Ovr.ToString(CultureInfo.InvariantCulture), true, fg, numeric: true));
+            inner.AddChild(Cell(captured.PotentialOvr.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
+            inner.AddChild(Cell(captured.Climb.ToString(CultureInfo.InvariantCulture), false, fg, numeric: true));
+            inner.AddChild(Cell(CareerLookCatalog.Euro(captured.AnnualWage), false, fg, numeric: true));
+            inner.AddChild(Cell(
+                captured.ContractEndDay > 0
+                    ? CareerCalendarDates.FormatLong(captured.ContractEndDay)
+                    : "—",
+                false,
+                fg));
             line.AddChild(inner);
             table.AddChild(line);
         }
 
-        grid.AddChild(Stretch(Panel("DOSTĘPNI ZAWODNICY", table), 8));
+        if (riders.Count == 0)
+        {
+            table.AddChild(LookChrome.Body("Brak zawodników na rynku.", 13, LookChrome.Gray));
+        }
+
+        tableWrap.AddChild(table);
+        grid.AddChild(Stretch(Panel("DOSTĘPNI ZAWODNICY", tableWrap), 8));
         VBoxContainer marketCard = Stretch(Panel("ZAWODNIK", BuildMarketCard()), 4);
         marketCard.CustomMinimumSize = new Vector2(340, 0);
         grid.AddChild(marketCard);
-        content.AddChild(grid);
+        content!.AddChild(grid);
     }
 
     private VBoxContainer BuildMarketCard()
     {
-        LookTransfer row = CareerLookCatalog.Transfer(marketSelected) ?? CareerLookCatalog.Transfers[0];
+        MarketRiderProjection? row = host!.MarketRiders
+            .FirstOrDefault(rider => rider.RiderCareerId.Value == selectedMarketRiderId);
         VBoxContainer box = new();
         box.AddThemeConstantOverride("separation", 8);
-        box.AddChild(ProfileHead(row.FullName, $"{row.Nat} · {row.Age} lat · {row.Role}"));
-        box.AddChild(LookChrome.Kv("OVR / POT", row.Rate + " / " + row.Pot));
-        box.AddChild(LookChrome.Kv("Klub", row.Team));
-        box.AddChild(LookChrome.Kv("Kontrakt", row.Contract));
-        box.AddChild(LookChrome.Kv("Pensja", CareerLookCatalog.Zloty(row.Salary) + " / mies."));
-        string interestKind = row.Interest >= 75 ? "ok" : row.Interest < 55 ? "warn" : string.Empty;
-        box.AddChild(LookChrome.Kv("Zainteresowanie", row.Interest + "/100"));
-        box.AddChild(LookChrome.Chip(row.Interest + "/100", interestKind));
+        if (row is null)
+        {
+            box.AddChild(LookChrome.Body("Wybierz zawodnika z listy.", 13, LookChrome.Gray));
+            return box;
+        }
+
+        bool isNegotiating = negotiating &&
+            host.ContractNegotiation?.RiderCareerId == row.RiderCareerId;
+        int today = host.Day?.DayNumber ?? 0;
+        int prefillWage = row.AnnualWage > 0 ? row.AnnualWage : 100_000;
+        int prefillEndDay = row.ContractEndDay > today ? row.ContractEndDay : today + 365;
+        if (host.ContractNegotiation?.OfferAnnualWage is int draftWage)
+        {
+            prefillWage = draftWage;
+        }
+
+        if (host.ContractNegotiation?.OfferContractEndDay is int draftEndDay)
+        {
+            prefillEndDay = draftEndDay;
+        }
+
+        box.AddChild(ProfileHead(
+            row.Name,
+            string.Create(CultureInfo.InvariantCulture, $"OVR {row.Ovr} · POT {row.PotentialOvr}")));
+        box.AddChild(LookChrome.Kv(
+            "Klub",
+            string.IsNullOrWhiteSpace(row.OrganizationName) ? "—" : row.OrganizationName));
+        box.AddChild(LookChrome.Kv("Pensja / rok", CareerLookCatalog.Euro(row.AnnualWage)));
+        box.AddChild(LookChrome.Kv(
+            "Koniec kontraktu",
+            row.ContractEndDay > 0 ? CareerCalendarDates.FormatLong(row.ContractEndDay) : "—"));
+        foreach ((string statLabel, int statValue) in new[]
+                 {
+                     ("Góry", row.Climb), ("Pagórki", row.Hills), ("Płaskie", row.Flat), ("TT", row.TimeTrial),
+                     ("Sprint", row.Sprint), ("Bruk", row.Cobbles),
+                 })
+        {
+            box.AddChild(LookChrome.Kv(statLabel, statValue.ToString(CultureInfo.InvariantCulture)));
+        }
+
+        if (isNegotiating)
+        {
+            box.AddChild(LookChrome.Display("OFERTA KONTRAKTOWA", 12, LookChrome.Team));
+            SpinBox wageBox = new();
+            wageBox.MinValue = 1;
+            wageBox.MaxValue = 50_000_000;
+            wageBox.Value = prefillWage;
+            box.AddChild(Labeled("Pensja / rok", wageBox));
+            SpinBox endDayBox = new();
+            endDayBox.MinValue = today + 1;
+            endDayBox.MaxValue = 50_000;
+            endDayBox.Value = Math.Max(prefillEndDay, today + 1);
+            box.AddChild(Labeled("Koniec kontraktu (dzień)", endDayBox));
+            box.AddChild(LookChrome.Solid("Złóż ofertę", () =>
+            {
+                CommandResult set = host.SetContractOffer((int)wageBox.Value, (int)endDayBox.Value);
+                if (!set.Succeeded)
+                {
+                    ShowToast(Reason(set.ReasonCode));
+                    Refresh();
+                    return;
+                }
+
+                CommandResult confirm = host.ConfirmContractOffer();
+                negotiating = false;
+                ShowToast(confirm.Succeeded ? "Kontrakt przyjęty." : Reason(confirm.ReasonCode));
+                Refresh();
+            }, LookChrome.Team, LookChrome.TeamOn, compact: true));
+        }
+
         HBoxContainer actions = new();
         actions.AddThemeConstantOverride("separation", 8);
-        actions.AddChild(LookChrome.Solid("Rozpocznij negocjacje", () => ShowToast(CareerLookCatalog.NotInWorld), LookChrome.Team, LookChrome.TeamOn, compact: true));
-        actions.AddChild(LookChrome.Solid(watchingTransfer ? "Obserwowany" : "Obserwuj", () =>
+        actions.AddChild(LookChrome.Solid(isNegotiating ? "Anuluj" : "Negocjuj kontrakt", () =>
         {
-            watchingTransfer = !watchingTransfer;
-            ShowToast(watchingTransfer ? "Obserwacja tylko na tym ekranie." : CareerLookCatalog.NotInWorld);
-            RebuildContent();
-        }, LookChrome.Paper, LookChrome.Black, compact: true));
+            if (isNegotiating)
+            {
+                host.CancelContractNegotiation();
+                negotiating = false;
+            }
+            else
+            {
+                CommandResult begin = host.BeginContractNegotiation(row.RiderCareerId);
+                if (!begin.Succeeded)
+                {
+                    ShowToast(Reason(begin.ReasonCode));
+                }
+                else
+                {
+                    negotiating = true;
+                }
+            }
+
+            Refresh();
+        }, LookChrome.Team, LookChrome.TeamOn, compact: true));
         box.AddChild(actions);
         return box;
     }
 
     private void BuildHistory()
     {
-        content!.AddChild(LookBanner());
         VBoxContainer events = new();
         events.AddThemeConstantOverride("separation", 10);
         foreach (LookHistoryEvent item in CareerLookCatalog.Chronicle)
@@ -1442,8 +1532,8 @@ public sealed partial class CareerShellScreen
         HBoxContainer top = Row();
         top.AddChild(Stretch(Panel("KRONIKA ZESPOŁU", events), 8));
         top.AddChild(Stretch(Panel("REKORDY ZESPOŁU", records), 4));
-        content.AddChild(top);
-        content.AddChild(Panel("ARCHIWUM WYNIKÓW", archive));
+        content!.AddChild(top);
+        content!.AddChild(Panel("ARCHIWUM WYNIKÓW", archive));
 
         VBoxContainer world = new();
         bool any = false;
@@ -1456,7 +1546,9 @@ public sealed partial class CareerShellScreen
 
             any = true;
             world.AddChild(LookChrome.Body(
-                string.Create(CultureInfo.InvariantCulture, $"dzień {entry.DayNumber} · {entry.Title} · {entry.OfficialResult}"),
+                string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"{CareerCalendarDates.FormatLong(entry.DayNumber)} · {entry.Title} · {entry.OfficialResult}"),
                 14,
                 LookChrome.Black,
                 bold: true));
@@ -1472,12 +1564,11 @@ public sealed partial class CareerShellScreen
             world.AddChild(LookChrome.Body("Liczba wyścigów świata: " + day.RaceCount, 12, LookChrome.Gray));
         }
 
-        content.AddChild(Panel("KRONIKA ŚWIATA", world));
+        content!.AddChild(Panel("KRONIKA ŚWIATA", world));
     }
 
     private void BuildManager()
     {
-        content!.AddChild(LookBanner());
         LookManager manager = CareerLookCatalog.Manager;
         VBoxContainer profile = new();
         profile.AddThemeConstantOverride("separation", 8);
@@ -1519,23 +1610,22 @@ public sealed partial class CareerShellScreen
         HBoxContainer grid = Row();
         grid.AddChild(Stretch(Panel("PROFIL MANAGERA", profile), 7));
         grid.AddChild(Stretch(Panel("KONTRAKT", contract), 5));
-        content.AddChild(grid);
+        content!.AddChild(grid);
         HBoxContainer lower = Row();
         lower.AddChild(Stretch(Panel("KARIERA", career), 6));
         lower.AddChild(Stretch(Panel("OSIĄGNIĘCIA", achievements), 6));
-        content.AddChild(lower);
+        content!.AddChild(lower);
 
         CareerDayProjection? day = host!.Day;
         VBoxContainer world = new();
         world.AddThemeConstantOverride("separation", 8);
         world.AddChild(LookChrome.Display((day?.ManagerName ?? "—").ToUpperInvariant(), 22, LookChrome.Black));
         world.AddChild(LookChrome.Kv("Pracodawca świata", day?.EmployerName ?? "bez klubu"));
-        content.AddChild(Panel("MANAGER ŚWIATA", world));
+        content!.AddChild(Panel("MANAGER ŚWIATA", world));
     }
 
     private void BuildHelp()
     {
-        content!.AddChild(LookBanner());
         HBoxContainer cards = Row();
         foreach (LookHelpCard card in CareerLookCatalog.Help)
         {
@@ -1548,39 +1638,113 @@ public sealed partial class CareerShellScreen
             cards.AddChild(Stretch(Panel(card.Title.ToUpperInvariant(), body), 3));
         }
 
-        content.AddChild(cards);
+        content!.AddChild(cards);
         VBoxContainer real = new();
         real.AddThemeConstantOverride("separation", 8);
         real.AddChild(LookChrome.Body("Advance Day przesuwa cały świat o jeden dzień.", 14, LookChrome.Black));
         real.AddChild(LookChrome.Body("W dzień wyścigu ten sam przycisk nazywa się Race next i wchodzi w przygotowanie.", 14, LookChrome.Black));
         real.AddChild(LookChrome.Body("Oglądanie etapu jest opcją w Ustawieniach. Domyślnie dostajesz wynik i tabelę.", 14, LookChrome.Black));
-        real.AddChild(LookChrome.Body("Skrzynka świata nie startuje wyścigu. Kasa na biurku i w Finansach to świat (euro). Sztab, sponsorzy, skauting i rynek to rysunek.", 14, LookChrome.Black));
-        content.AddChild(Panel("ŚWIAT", real));
+        real.AddChild(LookChrome.Body("Skrzynka świata nie startuje wyścigu. Kasa na biurku i w Finansach to świat (euro). Sztab, sponsorzy i skauting to jeszcze nie w tej wersji.", 14, LookChrome.Black));
+        content!.AddChild(Panel("ŚWIAT", real));
     }
 
-    private CalendarEntryProjection? FindCalendarEntry(string title)
+    private void EnsureSelectedEvent()
     {
-        IReadOnlyList<CalendarEntryProjection> calendar = host!.Calendar;
-        CalendarEntryProjection? fallback = null;
-        for (int index = 0; index < calendar.Count; index++)
+        if (host is null)
         {
-            CalendarEntryProjection item = calendar[index];
-            if (item.Title == title)
-            {
-                return item;
-            }
-
-            fallback ??= item;
+            return;
         }
 
-        return fallback;
+        IReadOnlyList<SeasonEventProjection> upcoming = host.UpcomingEvents;
+        if (upcoming.Count > 0)
+        {
+            if (selectedEventId is null ||
+                upcoming.All(item => item.RaceContentId != selectedEventId))
+            {
+                selectedEventId = upcoming[0].RaceContentId;
+            }
+
+            return;
+        }
+
+        if (selectedEventId is null && host.SeasonEvents.Count > 0)
+        {
+            selectedEventId = host.SeasonEvents[0].RaceContentId;
+        }
     }
 
-    private static Label LookBanner()
+    private SeasonEventProjection? FindSelectedEvent()
     {
-        Label label = LookChrome.Body(CareerLookCatalog.Banner, 12, LookChrome.Gray, bold: true);
-        label.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-        return label;
+        if (host is null || selectedEventId is null)
+        {
+            return null;
+        }
+
+        return host.SeasonEvents.FirstOrDefault(item => item.RaceContentId == selectedEventId)
+            ?? host.UpcomingEvents.FirstOrDefault(item => item.RaceContentId == selectedEventId);
+    }
+
+    private void OpenRaceEvent(View backView)
+    {
+        raceEventBackView = backView;
+        Show(View.RaceEvent);
+    }
+
+    private ClubRosterEntry[] SortSquad(IReadOnlyList<ClubRosterEntry> roster)
+    {
+        IEnumerable<ClubRosterEntry> ordered = squadSort.Key switch
+        {
+            "ovr" => roster.OrderBy(rider => rider.Ovr),
+            "pot" => roster.OrderBy(rider => rider.PotentialOvr),
+            "climb" => roster.OrderBy(rider => rider.Climb),
+            "hills" => roster.OrderBy(rider => rider.Hills),
+            "flat" => roster.OrderBy(rider => rider.Flat),
+            "tt" => roster.OrderBy(rider => rider.TimeTrial),
+            "sprint" => roster.OrderBy(rider => rider.Sprint),
+            "cobbles" => roster.OrderBy(rider => rider.Cobbles),
+            "wage" => roster.OrderBy(rider => rider.AnnualWage),
+            "end" => roster.OrderBy(rider => rider.ContractEndDay),
+            _ => roster.OrderBy(rider => rider.Name, StringComparer.Ordinal),
+        };
+
+        return squadSort.Dir > 0
+            ? ordered.ToArray()
+            : ordered.Reverse().ToArray();
+    }
+
+    private IReadOnlyList<MarketRiderProjection> FilteredMarketRiders()
+    {
+        if (host is null)
+        {
+            return Array.Empty<MarketRiderProjection>();
+        }
+
+        if (string.IsNullOrWhiteSpace(marketClubFilter))
+        {
+            return host.MarketRiders;
+        }
+
+        return host.MarketRiders
+            .Where(rider => string.Equals(rider.OrganizationName, marketClubFilter, StringComparison.Ordinal))
+            .ToArray();
+    }
+
+    private MarketRiderProjection[] SortMarket(IReadOnlyList<MarketRiderProjection> riders)
+    {
+        IEnumerable<MarketRiderProjection> ordered = marketSort.Key switch
+        {
+            "club" => riders.OrderBy(rider => rider.OrganizationName, StringComparer.Ordinal),
+            "ovr" => riders.OrderBy(rider => rider.Ovr),
+            "pot" => riders.OrderBy(rider => rider.PotentialOvr),
+            "climb" => riders.OrderBy(rider => rider.Climb),
+            "wage" => riders.OrderBy(rider => rider.AnnualWage),
+            "end" => riders.OrderBy(rider => rider.ContractEndDay),
+            _ => riders.OrderBy(rider => rider.Name, StringComparer.Ordinal),
+        };
+
+        return marketSort.Dir > 0
+            ? ordered.ToArray()
+            : ordered.Reverse().ToArray();
     }
 
     private static HBoxContainer ProfileHead(string name, string meta)

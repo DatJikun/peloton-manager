@@ -27,7 +27,7 @@ public sealed class CareerLookCatalogTests
         Assert.Equal("PW", CareerLookCatalog.Initials("dr Piotr Wysocki"));
         Assert.Equal("★★★★☆", CareerLookCatalog.Stars(4));
         Assert.False(string.IsNullOrWhiteSpace(CareerLookCatalog.NotInWorld));
-        Assert.Contains("laboratorium", CareerLookCatalog.Banner);
+        Assert.Contains("wersji", CareerLookCatalog.NotInWorld);
     }
 
     [Fact]

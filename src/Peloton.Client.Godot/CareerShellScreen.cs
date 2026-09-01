@@ -23,6 +23,7 @@ public sealed partial class CareerShellScreen : Control
         History,
         Help,
         Manager,
+        RaceEvent,
     }
 
     private CareerShellHost? host;
@@ -33,23 +34,26 @@ public sealed partial class CareerShellScreen : Control
     private Label? dateMeta;
     private Label? racePill;
     private Label? employerName;
+    private Label? sidebarCrest;
+    private Label? sidebarSub;
+    private Label? yearPill;
     private Button? cta;
     private Label? toast;
     private Control? content;
     private readonly Dictionary<View, Button> nav = new();
     private Window? settingsWindow;
     private WatchRaceScreen? watchScreen;
-    private string lookRaceId = "mila-torino";
-    private LookSort deskSquadSort = new("rate", -1);
+    private string? selectedEventId;
+    private View raceEventBackView = View.Desk;
     private LookSort squadSort = new("last", 1);
     private long selectedRiderId;
     private bool negotiating;
     private int staffSelected = 1;
-    private LookSort marketSort = new("rate", -1);
-    private int marketSelected = 101;
-    private bool watchingTransfer;
-    private int monthIndex = 1;
-    private string lookCalRaceId = "mila-torino";
+    private LookSort marketSort = new("ovr", -1);
+    private long selectedMarketRiderId;
+    private string marketClubFilter = string.Empty;
+    private int calendarYear = 2026;
+    private int calendarMonth = 1;
     private int reportSelected = 1;
     private int selectedSponsorId = 1;
     private readonly List<LookScoutMission> scoutMissions = new(CareerLookCatalog.Missions);
@@ -127,8 +131,10 @@ public sealed partial class CareerShellScreen : Control
 
         VBoxContainer crest = new();
         crest.AddThemeConstantOverride("separation", 4);
-        Label club = LookChrome.Display(CareerLookCatalog.ClubCrest, 13, LookChrome.TeamOn);
-        Label sub = LookChrome.Body(CareerLookCatalog.ClubSub, 10, LookChrome.TeamOn, bold: true);
+        Label club = LookChrome.Display("PELOTON", 13, LookChrome.TeamOn);
+        sidebarCrest = club;
+        Label sub = LookChrome.Body("PELOTON", 10, LookChrome.TeamOn, bold: true);
+        sidebarSub = sub;
         sub.Modulate = new Color(1, 1, 1, 0.7f);
         crest.AddChild(club);
         crest.AddChild(sub);
@@ -214,13 +220,13 @@ public sealed partial class CareerShellScreen : Control
         HBoxContainer date = new();
         date.RotationDegrees = -1.2f;
         date.AddThemeConstantOverride("separation", 6);
-        dateNumber = LookChrome.Display("DZIEŃ", 26, LookChrome.TeamOn);
+        dateNumber = LookChrome.Display("1 STY", 26, LookChrome.TeamOn);
         dateNumber.AddThemeStyleboxOverride("normal", LookChrome.Fill(LookChrome.Team, 10, 6));
         ColorRect d1 = LookChrome.Block(LookChrome.Team);
         d1.AddChild(dateNumber);
         dateNumber.SetAnchorsPreset(LayoutPreset.FullRect);
         d1.CustomMinimumSize = new Vector2(92, 42);
-        dateWord = LookChrome.Display("0", 26, LookChrome.Paper);
+        dateWord = LookChrome.Display("PN", 26, LookChrome.Paper);
         ColorRect d2 = LookChrome.Block(LookChrome.Black);
         d2.CustomMinimumSize = new Vector2(64, 42);
         dateWord.SetAnchorsPreset(LayoutPreset.FullRect);
@@ -232,10 +238,14 @@ public sealed partial class CareerShellScreen : Control
         date.AddChild(d1);
         date.AddChild(d2);
         VBoxContainer meta = new();
-        dateMeta = LookChrome.Body("Szkielet świata", 12, LookChrome.Black, bold: true);
+        dateMeta = LookChrome.Body("Nowa gra", 12, LookChrome.Black, bold: true);
         meta.AddChild(dateMeta);
         date.AddChild(meta);
         top.AddChild(date);
+
+        yearPill = LookChrome.Body("Rok 2026", 13, LookChrome.Black, bold: true);
+        yearPill.AddThemeStyleboxOverride("normal", LookChrome.Fill(LookChrome.White, 14, 9));
+        top.AddChild(yearPill);
 
         racePill = LookChrome.Body("WYŚCIG", 13, LookChrome.Black, bold: true);
         racePill.AddThemeStyleboxOverride("normal", LookChrome.Fill(LookChrome.White, 14, 9));
@@ -368,9 +378,18 @@ public sealed partial class CareerShellScreen : Control
         };
         settingsWindow.CloseRequested += () => settingsWindow?.Hide();
 
-        ColorRect back = LookChrome.Block(LookChrome.White);
+        ColorRect back = LookChrome.Block(LookChrome.Paper);
         back.SetAnchorsPreset(LayoutPreset.FullRect);
         settingsWindow.AddChild(back);
+
+        ColorRect stripe = LookChrome.Block(LookChrome.Team);
+        stripe.SetAnchorsPreset(LayoutPreset.FullRect);
+        stripe.OffsetTop = 220;
+        stripe.OffsetBottom = -60;
+        stripe.RotationDegrees = -8;
+        stripe.MouseFilter = MouseFilterEnum.Ignore;
+        stripe.Modulate = new Color(1, 1, 1, 0.9f);
+        settingsWindow.AddChild(stripe);
 
         VBoxContainer box = new();
         box.SetAnchorsPreset(LayoutPreset.FullRect);
@@ -451,38 +470,102 @@ public sealed partial class CareerShellScreen : Control
         }
 
         CareerDayProjection? day = host.Day;
+        int dayNumber = day?.DayNumber ?? 0;
         if (dateNumber is not null)
         {
-            dateNumber.Text = "DZIEŃ";
+            dateNumber.Text = host.State == GameState.MainMenu
+                ? "—"
+                : CareerCalendarDates.FormatSlab(dayNumber);
         }
 
         if (dateWord is not null)
         {
-            dateWord.Text = (day?.DayNumber ?? 0).ToString(CultureInfo.InvariantCulture);
+            dateWord.Text = host.State == GameState.MainMenu
+                ? "—"
+                : CareerCalendarDates.FormatWeekdayShort(dayNumber);
         }
 
         if (dateMeta is not null)
         {
-            dateMeta.Text = host.State switch
+            string flow = host.State switch
             {
                 GameState.MainMenu => "Nowa gra",
                 GameState.PreSeasonPlanningFlow => "Plan sezonu",
-                _ when host.IsWorldTourWorld => day is null
-                    ? "WorldTour"
-                    : string.Create(CultureInfo.InvariantCulture, $"WorldTour · dzień {day.DayNumber}"),
-                _ => day is null
-                    ? "Szkielet świata"
-                    : string.Create(CultureInfo.InvariantCulture, $"Szkielet · dzień {day.DayNumber}"),
+                _ => string.Empty,
+            };
+            if (host.State == GameState.MainMenu || host.State == GameState.PreSeasonPlanningFlow)
+            {
+                dateMeta.Text = flow;
+            }
+            else if (day is null)
+            {
+                dateMeta.Text = host.IsWorldTourWorld ? "WorldTour" : "Szkielet świata";
+            }
+            else
+            {
+                string baseMeta = string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"{CareerCalendarDates.FormatWeekdayLong(dayNumber)} · {CareerCalendarDates.FormatLong(dayNumber)}");
+                dateMeta.Text = string.IsNullOrEmpty(flow) ? baseMeta : $"{baseMeta} · {flow}";
+            }
+        }
+
+        if (yearPill is not null)
+        {
+            int year = host.State == GameState.MainMenu
+                ? 2026
+                : CareerCalendarDates.ToDate(dayNumber).Year;
+            yearPill.Text = string.Create(CultureInfo.InvariantCulture, $"Rok {year}");
+        }
+
+        if (sidebarCrest is not null)
+        {
+            if (host.State == GameState.MainMenu)
+            {
+                sidebarCrest.Text = "PELOTON";
+            }
+            else if (day?.EmployerName is { Length: > 0 } employer)
+            {
+                sidebarCrest.Text = employer.ToUpperInvariant();
+            }
+            else
+            {
+                sidebarCrest.Text = "PELOTON";
+            }
+        }
+
+        if (sidebarSub is not null)
+        {
+            sidebarSub.Text = host.State switch
+            {
+                GameState.MainMenu => "PELOTON",
+                _ when host.IsWorldTourWorld => "WORLDTOUR · 2026",
+                _ when host.State is not GameState.MainMenu => "SZKIELET · 2026",
+                _ => "PELOTON",
             };
         }
 
         if (racePill is not null)
         {
-            racePill.Text = day is null
-                ? "WYŚCIG"
-                : day.RaceDueToday
-                    ? "WYŚCIG DZIŚ"
-                    : string.Create(CultureInfo.InvariantCulture, $"WYŚCIG ZA {day.DaysUntilNextRace} DNI");
+            if (day is null)
+            {
+                racePill.Text = "WYŚCIG";
+            }
+            else if (day.RaceDueToday)
+            {
+                racePill.Text = "WYŚCIG DZIŚ";
+            }
+            else if (day.DaysUntilNextRace > 0)
+            {
+                int nextDay = day.NextRaceDayNumber;
+                racePill.Text = string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"{CareerCalendarDates.FormatSlab(nextDay)} · za {day.DaysUntilNextRace} dni");
+            }
+            else
+            {
+                racePill.Text = "BRAK WYŚCIGU";
+            }
         }
 
         if (employerName is not null)
@@ -507,6 +590,11 @@ public sealed partial class CareerShellScreen : Control
         }
 
         HideWatch();
+        EnsureSelectedEvent();
+        if (day is not null)
+        {
+            (calendarYear, calendarMonth) = CareerCalendarDates.MonthFromDayNumber(day.DayNumber);
+        }
 
         if (nav.TryGetValue(View.Desk, out Button? deskNav))
         {
@@ -580,6 +668,9 @@ public sealed partial class CareerShellScreen : Control
                 break;
             case View.Market:
                 BuildMarket();
+                break;
+            case View.RaceEvent:
+                BuildRaceEvent();
                 break;
             case View.History:
                 BuildHistory();

@@ -391,6 +391,15 @@ public sealed class GameApplication
     public IReadOnlyList<CalendarEntryProjection> Calendar =>
         World is null ? Array.Empty<CalendarEntryProjection>() : CareerProjectionQueries.BuildCalendar(World, GetAccessContext());
 
+    public IReadOnlyList<SeasonEventProjection> SeasonEvents =>
+        World is null ? Array.Empty<SeasonEventProjection>() : CareerProjectionQueries.BuildSeasonEvents(World, GetAccessContext());
+
+    public IReadOnlyList<SeasonEventProjection> UpcomingEvents =>
+        World is null ? Array.Empty<SeasonEventProjection>() : CareerProjectionQueries.BuildUpcomingEvents(World, GetAccessContext());
+
+    public IReadOnlyList<MarketRiderProjection> MarketRiders =>
+        World is null ? Array.Empty<MarketRiderProjection>() : CareerProjectionQueries.BuildMarketRiders(World, GetAccessContext());
+
     public IReadOnlyList<InboxItemProjection> Inbox =>
         World is null ? Array.Empty<InboxItemProjection>() : CareerProjectionQueries.BuildInbox(World, GetAccessContext());
 

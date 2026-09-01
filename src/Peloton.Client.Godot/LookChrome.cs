@@ -187,14 +187,26 @@ internal static class LookChrome
 
     public static PanelContainer Avatar(string name, bool mini = false)
     {
-        int size = mini ? 36 : 52;
+        int width = mini ? 48 : 110;
+        int height = mini ? 58 : 130;
         PanelContainer panel = new();
-        panel.CustomMinimumSize = new Vector2(size, size);
+        panel.CustomMinimumSize = new Vector2(width, height);
         panel.AddThemeStyleboxOverride("panel", ChipBox(White));
-        Label initials = Display(CareerLookCatalog.Initials(name), mini ? 12 : 18, Black);
+
+        ColorRect lower = Block(Team);
+        lower.SetAnchorsPreset(Control.LayoutPreset.BottomWide);
+        lower.AnchorTop = mini ? 0.62f : 0.68f;
+        lower.OffsetTop = 0;
+        lower.OffsetBottom = 0;
+        lower.MouseFilter = Control.MouseFilterEnum.Ignore;
+        panel.AddChild(lower);
+
+        Label initials = Display(CareerLookCatalog.Initials(name), mini ? 14 : 28, Black);
         initials.HorizontalAlignment = HorizontalAlignment.Center;
         initials.VerticalAlignment = VerticalAlignment.Center;
         initials.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        initials.OffsetBottom = mini ? -18 : -34;
+        initials.MouseFilter = Control.MouseFilterEnum.Ignore;
         panel.AddChild(initials);
         return panel;
     }

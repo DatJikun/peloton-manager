@@ -49,6 +49,24 @@ public sealed class CareerShellHostTests
     }
 
     [Fact]
+    public void OpenWorldTourIneosShowsEmployerUpcomingAndMarketRiders()
+    {
+        using TemporaryDirectory temp = new();
+        CareerShellHost host = CreateHost(temp.Path);
+        Assert.True(host.OpenWorldTour("organization.wt2026.ineos").Succeeded);
+        Assert.True(host.BeginPreSeasonPlanning().Succeeded);
+        Assert.True(host.ConfirmPreSeasonPlan().Succeeded);
+
+        Assert.Contains("INEOS", host.Day!.EmployerName, StringComparison.Ordinal);
+        Assert.True(host.UpcomingEvents.Count <= 5);
+        Assert.Contains("Tour Down Under", host.UpcomingEvents[0].Name, StringComparison.Ordinal);
+        Assert.NotEmpty(host.MarketRiders);
+        Assert.Contains(
+            host.MarketRiders,
+            rider => string.Equals(rider.OrganizationOriginId, "organization.wt2026.uae", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void OpenWorldTourClubFinanceShowsUaeSponsorAndEuroCash()
     {
         using TemporaryDirectory temp = new();

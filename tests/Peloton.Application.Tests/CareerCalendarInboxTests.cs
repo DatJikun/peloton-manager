@@ -42,7 +42,7 @@ public sealed class CareerCalendarInboxTests
         Assert.Equal("due", entry.Status);
         InboxItemProjection inboxItem = Assert.Single(application.Inbox);
         Assert.Equal("race-due", inboxItem.Category);
-        Assert.Equal("A race is due today.", inboxItem.Body);
+        Assert.Equal("Dziś jest wyścig: Skeleton race.", inboxItem.Body);
         Assert.Equal(12, inboxItem.DayNumber);
         Assert.Equal($"calendar:{entry.Id.Value}:due", inboxItem.Identity);
         Assert.Equal(entry.Id, inboxItem.RelatedEntryId);
@@ -82,7 +82,7 @@ public sealed class CareerCalendarInboxTests
         InboxItemProjection resultItem = Assert.Single(application.Inbox);
         Assert.Equal("race-result", resultItem.Category);
         Assert.Equal($"calendar:{firstRaceEntryId.Value}:result", resultItem.Identity);
-        Assert.Contains(completed.OfficialResult, resultItem.Body, StringComparison.Ordinal);
+        Assert.Contains("zakończony", resultItem.Body, StringComparison.Ordinal);
         Assert.True(application.Execute(new AdvanceDayCommand()).Succeeded);
         Assert.Equal(13, application.World!.CurrentDate.DayNumber);
     }

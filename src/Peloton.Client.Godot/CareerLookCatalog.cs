@@ -14,7 +14,7 @@ public static class CareerLookCatalog
     public const string ClubName = "Beskid–Vetter";
     public const string ClubCrest = "BESKID–VETTER";
     public const string ClubSub = "PROTEAM · LOOK LAB";
-    public const string NotInWorld = "Jeszcze nie w świecie — to rysunek laboratorium.";
+    public const string NotInWorld = "Jeszcze nie w tej wersji.";
     public const string Banner =
         "Rysunek laboratorium · liczby nie są światem · dzień i Advance Day są na belce.";
 
