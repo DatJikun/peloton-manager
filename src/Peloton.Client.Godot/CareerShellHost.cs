@@ -13,6 +13,7 @@ public sealed class CareerShellHost
 {
     public const long SkeletonSeed = 91234;
     public const string SkeletonScenarioId = "scenario.peloton.skeleton";
+    public const string WorldTourScenarioId = "scenario.peloton.wt-2026";
     private const string SettingsFileName = "presentation-settings.txt";
 
     private readonly GameApplication application;
@@ -68,6 +69,16 @@ public sealed class CareerShellHost
 
     public RaceDebriefProjection? Debrief => application.RaceDebrief;
 
+    public PreSeasonPlanningProjection? PreSeasonPlanning => application.PreSeasonPlanning;
+
+    public ClubRosterProjection? ClubRoster => application.ClubRoster;
+
+    public bool IsWorldTourWorld =>
+        string.Equals(
+            application.World?.ContentIdentity.ScenarioId,
+            WorldTourScenarioId,
+            StringComparison.Ordinal);
+
     public WorldEntityId? ResultTeamFilter => resultTeamFilter;
 
     public IReadOnlyList<OrganizationNameProjection> ResultTeams =>
@@ -97,6 +108,31 @@ public sealed class CareerShellHost
         Watch = null;
         return application.Execute(new CreateWorldCommand(SkeletonScenarioId, seed));
     }
+
+    public CommandResult OpenWorldTour(string employerOriginId, long seed = SkeletonSeed)
+    {
+        resultTeamFilter = null;
+        Watch = null;
+        return application.Execute(new CreateWorldCommand(WorldTourScenarioId, seed, employerOriginId));
+    }
+
+    public IReadOnlyList<NewGameClubProjection> ListNewGameClubs(string scenarioId) =>
+        application.ListNewGameClubs(scenarioId);
+
+    public CommandResult BeginPreSeasonPlanning() =>
+        application.Execute(new BeginPreSeasonPlanningCommand());
+
+    public CommandResult SetSeasonRaceEntry(string raceContentId, bool entered) =>
+        application.Execute(new SetSeasonRaceEntryCommand(raceContentId, entered));
+
+    public CommandResult SetSeasonRaceLeader(string raceContentId, WorldEntityId leaderId) =>
+        application.Execute(new SetSeasonRaceLeaderCommand(raceContentId, leaderId));
+
+    public CommandResult ConfirmPreSeasonPlan() =>
+        application.Execute(new ConfirmPreSeasonPlanCommand());
+
+    public CommandResult CancelPreSeasonPlanning() =>
+        application.Execute(new CancelPreSeasonPlanningCommand());
 
     public string RiderDisplayName(WorldEntityId riderId)
     {

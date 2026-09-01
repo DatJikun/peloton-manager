@@ -1,11 +1,11 @@
 Peloton Manager — playtest na Windows
 
-To jeszcze nie jest skończona gra. To niebieska powłoka kariery
-(Biurko, Skład, Sztab, kalendarz) plus prawdziwa pętla: kolejne dni,
-przygotowanie czwórki, wyścig i tabela wyników.
+To jeszcze nie jest skończona gra. Niebieska powłoka kariery
+(Biurko, Skład, Sztab, kalendarz) plus prawdziwa pętla na świecie WorldTour.
 
 Sponsorzy, finanse, skauting i OVR na tych stronach to jeszcze rysunek.
-Nie zapisują się do kariery.
+Nie zapisują się do kariery. Skład na biurku i w Kadra to prawdziwi
+kolarze z wybranego klubu (nie Beskid z HTML).
 
 Jak uruchomić
 1. Rozpakuj CAŁY folder, nie sam plik .exe.
@@ -15,12 +15,17 @@ Jak uruchomić
 
 Nie instalujesz Godota ani .NET. Wszystko jest w tym folderze.
 
+Nowa gra
+1. Wybierz klub WorldTour (18 drużyn).
+2. Plan sezonu: zaznacz Jedziemy / Pomijamy dla 36 imprez i wybierz lidera.
+3. Zatwierdź sezon — wchodzisz na biurko z prawdziwym kalendarzem i składem.
+
 Co robić na biurku
 - ADVANCE DAY — świat idzie o jeden dzień.
 - W dzień wyścigu przycisk zmienia się na Race next.
 - W przygotowaniu ustaw jednego Leader i jednego Card, reszta wozi.
 - JEDŹ WYŚCIG — dostajesz wynik i tabelę.
-- WYNIK: Wszyscy, albo jeden zespół (Beskid–Vetter / Fala–Karpaty / Ost-Wind).
+- WYNIK: Wszyscy albo filtr po nazwie zespołu ze świata (np. Alpecin, UAE).
 - Film jest wyłączony. W Ustawieniach FILM: WŁ włącza oglądanie etapu; wynik zostaje ten sam.
 
 Zapis autosave leży w podfolderze saves obok gry.

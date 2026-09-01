@@ -92,12 +92,6 @@ public sealed partial class CareerShellScreen : Control
             ApplicationFactory.Create(WatchContentPath.FindContentRoot()),
             WatchContentPath.PlaytestSavePath("career-skeleton.peloton", editor, exe),
             WatchContentPath.PlaytestSavePath("peloton-career-prerace.peloton", editor, exe));
-        CommandResult opened = host.OpenSkeleton();
-        if (!opened.Succeeded)
-        {
-            ShowToast($"Nie udało się otworzyć świata ({opened.ReasonCode}).");
-        }
-
         Refresh();
     }
 
@@ -286,6 +280,12 @@ public sealed partial class CareerShellScreen : Control
             return;
         }
 
+        if (host.State == GameState.PreSeasonPlanningFlow)
+        {
+            Apply(host.ConfirmPreSeasonPlan());
+            return;
+        }
+
         if (host.State == GameState.Management)
         {
             Apply(host.FollowPrimary());
@@ -463,9 +463,17 @@ public sealed partial class CareerShellScreen : Control
 
         if (dateMeta is not null)
         {
-            dateMeta.Text = day is null
-                ? "Szkielet świata"
-                : string.Create(CultureInfo.InvariantCulture, $"Szkielet · dzień {day.DayNumber}");
+            dateMeta.Text = host.State switch
+            {
+                GameState.MainMenu => "Nowa gra",
+                GameState.PreSeasonPlanningFlow => "Plan sezonu",
+                _ when host.IsWorldTourWorld => day is null
+                    ? "WorldTour"
+                    : string.Create(CultureInfo.InvariantCulture, $"WorldTour · dzień {day.DayNumber}"),
+                _ => day is null
+                    ? "Szkielet świata"
+                    : string.Create(CultureInfo.InvariantCulture, $"Szkielet · dzień {day.DayNumber}"),
+            };
         }
 
         if (racePill is not null)
@@ -533,6 +541,18 @@ public sealed partial class CareerShellScreen : Control
         foreach (Node child in content!.GetChildren())
         {
             child.QueueFree();
+        }
+
+        if (host!.State == GameState.MainMenu)
+        {
+            BuildNewGame();
+            return;
+        }
+
+        if (host.State == GameState.PreSeasonPlanningFlow)
+        {
+            BuildSeasonPlan();
+            return;
         }
 
         switch (current)
@@ -635,6 +655,7 @@ public sealed partial class CareerShellScreen : Control
     {
         return host.State switch
         {
+            GameState.PreSeasonPlanningFlow => "ZATWIERDŹ SEZON",
             GameState.RacePreparationFlow => host.Settings.WatchFilmEnabled ? "OGLĄDAJ ETAP" : "JEDŹ WYŚCIG",
             GameState.RaceResultsFlow => "DALEJ",
             GameState.RaceDebriefFlow => "ZAMKNIJ",

@@ -15,6 +15,7 @@ public sealed record CareerDayOptions(
     long Seed,
     int Days,
     string ContentRoot,
+    string? EmployerOrganizationOriginId,
     bool ThroughRaces,
     bool FollowHub,
     bool SimulateFromPrep,
@@ -145,6 +146,7 @@ public sealed record CareerDayOptions(
             seed,
             days,
             Path.GetFullPath(contentRoot),
+            values.TryGetValue("--employer", out string? employer) ? employer : null,
             throughRaces,
             followHub,
             simulateFromPrep,
@@ -174,7 +176,8 @@ public static class CareerDayCommand
         ArgumentNullException.ThrowIfNull(output);
         ArgumentNullException.ThrowIfNull(error);
         GameApplication application = ApplicationFactory.Create(options.ContentRoot);
-        CommandResult create = application.Execute(new CreateWorldCommand(options.ScenarioId, options.Seed));
+        CommandResult create = application.Execute(
+            new CreateWorldCommand(options.ScenarioId, options.Seed, options.EmployerOrganizationOriginId));
         if (!create.Succeeded)
         {
             error.WriteLine($"crashed=true reason={create.ReasonCode}");

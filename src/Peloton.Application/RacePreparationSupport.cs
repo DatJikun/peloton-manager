@@ -23,16 +23,30 @@ public static class RacePreparationSupport
 
         WorldEntityId[] squad = application.World.GetRiderCareersForOrganization(organizationId)
             .Select(career => career.Id)
-            .Take(2)
             .ToArray();
         if (squad.Length < 2)
         {
             return CommandResult.Reject("PREP_STRATEGY_RIDERS_INVALID");
         }
 
+        WorldEntityId leader = squad[0];
+        if (application.World.TryGetTodaysRaceContentId() is string raceContentId)
+        {
+            OrganizationRaceEntry? entry = application.World.OrganizationRaceEntries.FirstOrDefault(
+                item => item.OrganizationId == organizationId &&
+                        string.Equals(item.RaceContentId, raceContentId, StringComparison.Ordinal));
+            if (entry?.DesignatedLeaderId is WorldEntityId designatedLeaderId &&
+                squad.Contains(designatedLeaderId))
+            {
+                leader = designatedLeaderId;
+            }
+        }
+
+        WorldEntityId support = squad.First(id => id != leader);
+
         return application.Execute(new SetRacePreparationStrategyCommand(
-            squad[0],
-            squad[1],
+            leader,
+            support,
             RaceObjective.StageWin,
             RaceBriefingKind.Chase));
     }

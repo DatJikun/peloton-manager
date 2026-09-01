@@ -14,10 +14,10 @@ Domyślnie **nie oglądasz filmu**. Stawiasz czwórkę, jedziesz wyścig, dostaj
 2. W dzień wyścigu przycisk zmienia się na **Race next**. Wchodzisz w przygotowanie.
 3. W przygotowaniu widzisz skład klubu. Kliknięciem ustawiasz **lidera**; support i briefing biorą się z domyślnej strategii, jeśli nic nie zmienisz.
 4. **Jedź wyścig** — silnik liczy etap od razu. Nie sterujesz kolarzem palcem.
-5. Na biurku pojawia się **Wynik**: kto wygrał, miejsca Twojej czwórki, czy cel StageWin wyszedł, i czy sztab miał momenty decyzji (dziś: pościg albo czekać na rywali). Bez filmu te decyzje idą delegowane. Pod spodem jest **tabela** — miejsce, nazwisko, zespół. Przyciski **Wszyscy** / Beskid–Vetter / Fala–Karpaty / Ost-Wind filtrują wiersze; miejsca zostają takie jak w całym peletonie.
+5. Na biurku pojawia się **Wynik**: kto wygrał, miejsca Twojej czwórki, czy cel StageWin wyszedł, i czy sztab miał momenty decyzji (dziś: pościg albo czekać na rywali). Bez filmu te decyzje idą delegowane. Pod spodem jest **tabela** — miejsce, nazwisko, zespół. Przyciski **Wszyscy** / nazwy zespołów z kalendarza WorldTour filtrują wiersze; miejsca zostają takie jak w całym peletonie.
 6. **Dalej** — krótki debrief sztabu. **Zamknij** — z powrotem na biurko, świat idzie dalej.
 
-Inne ekipy też jadą. Kalendarz sezonu to trzy wyścigi: Opening Classic, Hill Classic, Season Finale.
+Inne ekipy też jadą. Kalendarz sezonu to 36 imprez WorldTour (Tour to jeden tick, nie 21 etapów w planie).
 
 ## Film (opcjonalnie)
 

@@ -13,7 +13,7 @@ namespace Peloton.Persistence;
 
 public sealed class SqliteWorldSaveStore : IWorldSaveStore
 {
-    public const int SchemaVersion = 8;
+    public const int SchemaVersion = 9;
 
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
 
@@ -407,13 +407,14 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
     private sealed record OrganizationRaceEntryDto(
         WorldEntityId OrganizationId,
         string RaceContentId,
-        bool Entered)
+        bool Entered,
+        WorldEntityId? DesignatedLeaderId = null)
     {
         public OrganizationRaceEntry ToDomain() =>
-            new(OrganizationId, RaceContentId, Entered);
+            new(OrganizationId, RaceContentId, Entered, DesignatedLeaderId);
 
         public static OrganizationRaceEntryDto FromDomain(OrganizationRaceEntry entry) =>
-            new(entry.OrganizationId, entry.RaceContentId, entry.Entered);
+            new(entry.OrganizationId, entry.RaceContentId, entry.Entered, entry.DesignatedLeaderId);
     }
 
     private sealed record CourseSampleDto(

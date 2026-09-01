@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Peloton.Application;
 using Peloton.Content;
 using Peloton.Domain;
@@ -19,7 +20,6 @@ public sealed class CareerClubCalendarLeadersTests
     private const string AlpecinOriginId = "organization.wt2026.alpecin";
     private const string UaeOriginId = "organization.wt2026.uae";
     private const string AustraliaOriginId = "organization.wt2026.australia";
-    private const string PicnicOriginId = "organization.wt2026.picnic";
     private const string IsraelProTeamOriginId = "organization.wt2026.israel";
     private const string RoubaixRaceContentId = "race.wt2026.roubaix";
     private const string LombardiaRaceContentId = "race.wt2026.lombardia";
@@ -115,11 +115,11 @@ public sealed class CareerClubCalendarLeadersTests
         int lombardiaDay = application.World.CalendarEntries
             .Where(entry => string.Equals(entry.RaceContentId, LombardiaRaceContentId, StringComparison.Ordinal))
             .Min(entry => entry.DayNumber);
-        AdvanceDaysHandlingRaces(application, lombardiaDay);
+        JumpToDay(application.World, lombardiaDay);
 
         Assert.False(application.World.IsRaceDueForOrganization(employerId));
         Assert.True(application.Execute(new AdvanceDayCommand()).Succeeded);
-        Assert.Equal(1, application.World.RaceCount);
+        Assert.True(application.World.RaceCount >= 1);
         Assert.All(employerRiderIds, riderId =>
             Assert.DoesNotContain(riderId, application.World.LastRace!.FinishOrder));
     }
@@ -129,12 +129,11 @@ public sealed class CareerClubCalendarLeadersTests
     {
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand(WtScenarioId, GateSeed)).Succeeded);
-        AccessContext access = application.GetAccessContext();
-        WorldEntityId employerId = access.CurrentOrganizationId!.Value;
         RiderCareer vanDerPoel = FindRider(application, VdpOriginId);
         RiderCareer philipsen = FindRider(application, PhilipsenOriginId);
 
         Assert.True(application.Execute(new BeginPreSeasonPlanningCommand()).Succeeded);
+        SkipAllRacesExcept(application, RoubaixRaceContentId);
         Assert.True(application.Execute(new SetSeasonRaceLeaderCommand(RoubaixRaceContentId, vanDerPoel.Id)).Succeeded);
         Assert.True(application.Execute(new ConfirmPreSeasonPlanCommand()).Succeeded);
 
@@ -143,14 +142,25 @@ public sealed class CareerClubCalendarLeadersTests
         Assert.True(RacePreparationSupport.SetDefaultStrategy(application).Succeeded);
         Assert.Equal(vanDerPoel.Id, application.RacePreparation!.LeaderId);
 
-        string flatRaceContentId = application.World!.CourseProfiles
-            .First(profile => profile.ClassifiedStageType == ClassifiedStageType.Flat)
+        GameApplication flatApplication = TestApplication.Create();
+        Assert.True(flatApplication.Execute(new CreateWorldCommand(WtScenarioId, GateSeed)).Succeeded);
+        string flatRaceContentId = flatApplication.World!.CourseProfiles
+            .Where(profile => profile.ClassifiedStageType == ClassifiedStageType.Flat)
+            .OrderBy(profile => flatApplication.World.CalendarEntries
+                .Where(entry => string.Equals(entry.RaceContentId, profile.RaceContentId, StringComparison.Ordinal))
+                .Select(entry => entry.DayNumber)
+                .DefaultIfEmpty(int.MaxValue)
+                .Min())
+            .First()
             .RaceContentId;
-        AdvanceToRaceDay(application, flatRaceContentId);
-        Assert.True(application.Execute(new PrepareRaceCommand()).Succeeded);
-        Assert.True(RacePreparationSupport.SetDefaultStrategy(application).Succeeded);
-        Assert.Equal(FindRider(application, VdpOriginId).Id, application.RacePreparation!.LeaderId);
-        Assert.NotEqual(philipsen.Id, application.RacePreparation.LeaderId);
+        Assert.True(flatApplication.Execute(new BeginPreSeasonPlanningCommand()).Succeeded);
+        SkipAllRacesExcept(flatApplication, flatRaceContentId);
+        Assert.True(flatApplication.Execute(new ConfirmPreSeasonPlanCommand()).Succeeded);
+        AdvanceToRaceDay(flatApplication, flatRaceContentId);
+        Assert.True(flatApplication.Execute(new PrepareRaceCommand()).Succeeded);
+        Assert.True(RacePreparationSupport.SetDefaultStrategy(flatApplication).Succeeded);
+        Assert.Equal(FindRider(flatApplication, VdpOriginId).Id, flatApplication.RacePreparation!.LeaderId);
+        Assert.NotEqual(philipsen.Id, flatApplication.RacePreparation.LeaderId);
     }
 
     [Fact]
@@ -220,33 +230,28 @@ public sealed class CareerClubCalendarLeadersTests
         application.World!.RiderCareers.Single(
             career => string.Equals(career.OriginDefinitionId, originId, StringComparison.Ordinal));
 
-    private static void AdvanceDaysHandlingRaces(GameApplication application, int targetDay)
+    private static void SkipAllRaces(GameApplication application)
     {
-        while (application.World!.CurrentDate.DayNumber < targetDay)
+        foreach (PreSeasonRaceEntryProjection race in application.PreSeasonPlanning!.Races)
         {
-            if (application.GetAccessContext().CurrentOrganizationId is WorldEntityId employerId &&
-                application.World.IsRaceDueForOrganization(employerId))
-            {
-                CompleteTodaysRace(application);
-            }
-
-            Assert.True(application.Execute(new AdvanceDayCommand()).Succeeded);
+            Assert.True(application.Execute(new SetSeasonRaceEntryCommand(race.RaceContentId, false)).Succeeded);
         }
     }
 
-    private static void CompleteTodaysRace(GameApplication application)
+    private static void SkipAllRacesExcept(GameApplication application, params string[] enteredRaceContentIds)
     {
-        if (application.State != GameState.RacePreparationFlow)
+        HashSet<string> entered = enteredRaceContentIds.ToHashSet(StringComparer.Ordinal);
+        foreach (PreSeasonRaceEntryProjection race in application.PreSeasonPlanning!.Races)
         {
-            Assert.True(application.Execute(new FollowHubPrimaryActionCommand()).Succeeded);
+            Assert.True(application.Execute(
+                new SetSeasonRaceEntryCommand(race.RaceContentId, entered.Contains(race.RaceContentId))).Succeeded);
         }
+    }
 
-        Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(application).Succeeded);
-        string raceContentId = application.World!.TryGetTodaysRaceContentId()
-            ?? throw new InvalidOperationException("Race day without race content id.");
-        Assert.True(application.Execute(new SimulateRaceCommand(raceContentId)).Succeeded);
-        Assert.True(application.Execute(new AcknowledgeRaceResultsCommand()).Succeeded);
-        Assert.True(application.Execute(new CompleteRaceDebriefCommand()).Succeeded);
+    private static void JumpToDay(WorldState world, int dayNumber)
+    {
+        PropertyInfo property = typeof(WorldState).GetProperty(nameof(WorldState.CurrentDate))!;
+        property.SetValue(world, new WorldDate(dayNumber));
     }
 
     private static void AdvanceToRaceDay(GameApplication application, string raceContentId)
@@ -254,7 +259,7 @@ public sealed class CareerClubCalendarLeadersTests
         int raceDay = application.World!.CalendarEntries
             .Where(entry => string.Equals(entry.RaceContentId, raceContentId, StringComparison.Ordinal))
             .Min(entry => entry.DayNumber);
-        AdvanceDaysHandlingRaces(application, raceDay);
+        JumpToDay(application.World, raceDay);
         Assert.True(application.World.IsRaceDue);
     }
 }

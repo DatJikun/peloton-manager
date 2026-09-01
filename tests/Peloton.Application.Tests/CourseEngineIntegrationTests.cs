@@ -105,7 +105,7 @@ public sealed class CourseEngineIntegrationTests
     }
 
     [Fact]
-    public void SchemaVersionEightRoundTripsCourseSamples()
+    public void SchemaVersionNineRoundTripsCourseSamples()
     {
         using TemporaryDirectory temp = new();
         string savePath = System.IO.Path.Combine(temp.Path, "wt-v8.peloton");

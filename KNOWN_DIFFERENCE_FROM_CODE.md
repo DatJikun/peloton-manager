@@ -26,8 +26,8 @@ This is an explicit prototype boundary, not an accepted simplification of the fu
 - `RiderCareer.Id` is the official race `RiderId`; `LastRace` finish order and `RiderCareerResult` history use those world IDs.
 - `CreateWorld` materializes riders from `content/peloton.skeleton/skeleton-roster.json` (stable `OriginDefinitionId`s from the prototype pack).
 - Prep squad is the player employer's world roster (`RiderCareer.OrganizationId`; null = unattached).
-- SQLite `SchemaVersion` is **8** (derived ratings + course profiles landed). Schema 1–7 saves may refuse to load.
-- World checksum label is `peloton-world-checksum-v8`.
+- SQLite `SchemaVersion` is **9** (D-050 designated leaders). Schema 1–8 saves may refuse to load.
+- World checksum label is `peloton-world-checksum-v9`.
 - `CalendarEntry.RaceContentId` stores the calendar race id (`race.wt2026.*` for WT; route template resolved via `DefaultRaceTemplateId`).
 
 Phase 1 out of scope for Godot: Career Hub UI is deleted (D-048). WT CreateWorld is landed in phase 5.
@@ -121,4 +121,16 @@ Contract: `RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md`.
 - Official start lists: Grand Tours 22×8=176, monuments 25×7=175, TDU 20×7=140, other WT 22×7=154. Wildcard orgs have 8 riders so Grand Tours can take 8. Skeleton soak and standalone `race` stay 12 on the proof circuit.
 - Jerseys are queries (`ClassificationQueries`): GC, points, KOM, youth, team. SimRunner `day --through-results` prints them. Godot result table has thin jersey lines. D-032 stays deferred.
 - SimRunner `compare --scenario scenario.peloton.wt-2026 --seed 91234` writes analogues vs 2025 (not a script, D-001). TdF stage-1 analogue can land Philipsen; names are not forced to match history.
-- SchemaVersion stays **8**.
+- SchemaVersion stays **9**.
+
+## Club pick, calendar entries, per-event leaders (D-050 landed)
+
+Contract: `CAREER_CLUB_CALENDAR_LEADERS_v0.1.md`.
+
+- `CreateWorldCommand(ScenarioId, Seed, EmployerOrganizationOriginId?)` — `null` keeps recipe default (Alpecin on WT, skeleton red on skeleton). Non-null must pass `EmployerEligibility` (`playerStartDivisions` on the scenario).
+- `OrganizationRaceEntry` adds optional `DesignatedLeaderId`; pre-season draft stores entered + leader per `RaceContentId`; confirm writes both.
+- `SetSeasonRaceLeaderCommand` — leader must be on employer roster (`PREP_STRATEGY_RIDERS_INVALID` otherwise).
+- `RacePreparationSupport.SetDefaultStrategy` uses designated leader when still on roster, else squad-order captain.
+- Godot `_Ready` opens **Nowa gra** (18 WT clubs), then **Plan sezonu**; desk squad + squad + calendar read world projections, not `CareerLookCatalog` Beskid riders.
+- `OpenSkeleton` remains on `CareerShellHost` for tests; `OpenWorldTour(employerOriginId)` for WT play path.
+- SimRunner `day` accepts optional `--employer organization.wt2026.*`.

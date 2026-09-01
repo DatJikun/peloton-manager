@@ -10,10 +10,10 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md` (D-049) landed. Next playable slice is D-050: New Game club pick, pre-season event entries, per-event leaders on the WorldTour world. CdA Road/TT waits. Do not close §49.
+`RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md` (D-049) landed. **D-050 landed:** New Game picks a WorldTour club; pre-season ticks 36 events and a designated leader per entered event. CdA Road/TT waits. Do not close §49.
 
 ### Goal
-D-050: pick club, pick WT events, pick a leader per event — so the year is not one rigid team. WorldTour in the career shell, not the 12-day skeleton. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
+D-050 landed: pick club, pick WT events, pick a leader per event — so the year is not one rigid team. Godot opens **Nowa gra** (18 WT clubs), then **Plan sezonu**, then management on that world. Default `CreateWorld` still employs Alpecin for tests/soak. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
 
 ### Status
 Owner (player) directed this on 2026-09-01. **D-049 landed.** Classified Flat is a bunch sprint (sit-in, then last 250 m at peak power). Official WT starts are event-shaped (TDU 140, monuments 175, Grand Tours 176, other WT 154). After a stage the shell/CLI can show GC / points / KOM / youth / team. SimRunner `compare` puts prototype results next to 2025 analogues (not a script). Skeleton soak still uses the short proof circuit. SQLite SchemaVersion 8.
@@ -128,13 +128,13 @@ Baza 2026: 18 ekip męskiego WorldTour plus zaproszone ProTeamy / Australia w `s
 - [x] Career WorldTour slice phase 7 — results filter by any org (D-043) + thin contract negotiation (D-044, SchemaVersion 7)
 - [x] D-046 / D-047 — derived rider ratings + detailed course engine (`RIDER_PROFILE_AND_ROUTE_ENGINE_v0.1.md`, SchemaVersion 8)
 - [x] D-049 — bunch sprint + UCI-shaped fields + classification jerseys (`RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md`)
-- [ ] D-050 — New Game club pick + pre-season entries + per-event leaders (WT world in the career shell)
+- [x] D-050 — New Game club pick + pre-season entries + per-event leaders (WT world in the career shell; SchemaVersion 9)
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
 - [ ] CdARoad vs CdATT (prototype still has one `CdAM2` per rider) — waits until D-050
 - [ ] Infinite career / season rollover / rider aging — later, not this tree
 
 ## Next task
-**D-050.** Career shell on WorldTour: pick which club you manage, which of the 36 events you enter, and who leads each entered event. Not hardcoded Alpecin. Not one default captain all year. Do not close §49. Do not rebuild Career Hub. Watch film stays off by default. Do not start aging, year-2 routes, sponsor market, or CdA in the same tree. Skeleton soak checksum stays.
+**After D-050.** CdARoad vs CdATT, sponsor market, scouting, aging, and infinite career stay deferred. Do not close §49. Do not rebuild Career Hub. Watch film stays off by default.
 
 ## Known blockers
 - None.
@@ -163,7 +163,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
-- `2026-09-01` — **D-038 architecture: same career commands for Continental later.** Playable clubs are scenario data (`playerStartDivisions`). 3-year UCI cycle uses `licenceCycleYears` + `LicenceYearsRemaining`. Do not implement promotion/relegation in D-050. No `if (WorldTour)` employer gate.
+- `2026-09-01` — **D-050 landed (Composer):** New Game WT club pick (`ListNewGameClubs`, `CreateWorldCommand` employer), pre-season designated leader per event (`SetSeasonRaceLeaderCommand`), `OrganizationRaceEntry.DesignatedLeaderId`, SchemaVersion 9 / checksum v9. Godot opens MainMenu club picker (not auto-skeleton). SimRunner `day --employer`. Default Alpecin CreateWorld unchanged for soak/tests.
 - `2026-09-01` — **D-050: club pick, calendar entries, per-event leaders first.** Not one rigid team. Infinite career and aging later. Content stays data-only JSON packs (riders/routes/teams); physics code is the engine, not a Lua mod. CdA and look-catalog finance wait.
 - `2026-09-01` — **Player-facing Polish for cobbles is bruk (D-046).** The rating on the card is **Bruk**. Do not say „kocie łby” to the owner. English code stays `Cobbles`.
 - `2026-09-01` — **Bunch sprint + real fields + all jerseys + compare with real life (D-049).** Classified Flat is a bunch sprint. UCI 7 (8 on Grand Tours) with wildcards. Jerseys are after-stage tables, not D-032. History analogues are for judgment, not a script.
@@ -282,7 +282,7 @@ dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.
 dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --through-races
 dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --simulate-from-prep
 dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --simulate-from-prep --through-results
-dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --watch-from-prep --rate 5
+dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.wt-2026 --seed 91234 --days 1 --employer organization.wt2026.uae
 ```
 
 Godot career shell (Godot 4.4 .NET, not required for headless tests). Main scene is `CareerShell.tscn`. Default race day is simulate → results; film is a setting:

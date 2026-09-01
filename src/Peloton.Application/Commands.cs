@@ -3,7 +3,7 @@ using Peloton.Simulation.Race;
 
 namespace Peloton.Application;
 
-public sealed record CreateWorldCommand(string ScenarioId, long Seed);
+public sealed record CreateWorldCommand(string ScenarioId, long Seed, string? EmployerOrganizationOriginId = null);
 
 public sealed record AdvanceDayCommand;
 
@@ -26,6 +26,8 @@ public sealed record SetRacePreparationStrategyCommand(
 public sealed record BeginPreSeasonPlanningCommand;
 
 public sealed record SetSeasonRaceEntryCommand(string RaceContentId, bool Entered);
+
+public sealed record SetSeasonRaceLeaderCommand(string RaceContentId, WorldEntityId LeaderCareerId);
 
 public sealed record ConfirmPreSeasonPlanCommand;
 

@@ -16,7 +16,7 @@ public static class WorldChecksum
         using MemoryStream buffer = new();
         using (BinaryWriter writer = new(buffer, Encoding.UTF8, leaveOpen: true))
         {
-            writer.Write("peloton-world-checksum-v8");
+            writer.Write("peloton-world-checksum-v9");
             writer.Write(world.WorldId);
             writer.Write(world.MasterSeed);
             writer.Write(world.RngContractVersion);
@@ -203,6 +203,7 @@ public static class WorldChecksum
                 writer.Write(entry.OrganizationId.Value);
                 writer.Write(entry.RaceContentId);
                 writer.Write(entry.Entered);
+                writer.Write(entry.DesignatedLeaderId?.Value ?? 0);
             }
         }
 

@@ -272,11 +272,29 @@ public sealed class WorldState
                      string.Equals(entry.RaceContentId, raceContentId, StringComparison.Ordinal));
         if (index >= 0)
         {
-            organizationRaceEntries[index] = new OrganizationRaceEntry(organizationId, raceContentId, entered);
+            OrganizationRaceEntry existing = organizationRaceEntries[index];
+            organizationRaceEntries[index] = existing with { Entered = entered };
             return;
         }
 
         organizationRaceEntries.Add(new OrganizationRaceEntry(organizationId, raceContentId, entered));
+        organizationRaceEntries.Sort(CompareOrganizationRaceEntries);
+    }
+
+    public void SetOrganizationRaceLeader(WorldEntityId organizationId, string raceContentId, WorldEntityId? leaderId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(raceContentId);
+        int index = organizationRaceEntries.FindIndex(
+            entry => entry.OrganizationId == organizationId &&
+                     string.Equals(entry.RaceContentId, raceContentId, StringComparison.Ordinal));
+        if (index >= 0)
+        {
+            OrganizationRaceEntry existing = organizationRaceEntries[index];
+            organizationRaceEntries[index] = existing with { DesignatedLeaderId = leaderId };
+            return;
+        }
+
+        organizationRaceEntries.Add(new OrganizationRaceEntry(organizationId, raceContentId, Entered: false, leaderId));
         organizationRaceEntries.Sort(CompareOrganizationRaceEntries);
     }
 

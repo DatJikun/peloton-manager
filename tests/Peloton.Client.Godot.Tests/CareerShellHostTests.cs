@@ -25,6 +25,29 @@ public sealed class CareerShellHostTests
     }
 
     [Fact]
+    public void OpenWorldTourStartsPreSeasonWithWorldRosterAndCalendar()
+    {
+        using TemporaryDirectory temp = new();
+        CareerShellHost host = CreateHost(temp.Path);
+        Assert.Equal(GameState.MainMenu, host.State);
+
+        Assert.True(host.OpenWorldTour("organization.wt2026.uae").Succeeded);
+        Assert.True(host.BeginPreSeasonPlanning().Succeeded);
+        Assert.Equal(GameState.PreSeasonPlanningFlow, host.State);
+        PreSeasonPlanningProjection plan = Assert.IsType<PreSeasonPlanningProjection>(host.PreSeasonPlanning);
+        Assert.True(plan.Races.Count >= 30);
+        Assert.Contains(plan.Races, race => race.Title.Contains("Tour Down Under", StringComparison.Ordinal));
+
+        Assert.True(host.ConfirmPreSeasonPlan().Succeeded);
+        Assert.Equal(GameState.Management, host.State);
+        ClubRosterProjection roster = Assert.IsType<ClubRosterProjection>(host.ClubRoster);
+        Assert.Contains(roster.Riders, rider => rider.Name.Contains("Pogačar", StringComparison.Ordinal));
+        Assert.DoesNotContain(roster.Riders, rider => rider.Name.Contains("Beskid", StringComparison.Ordinal));
+        Assert.Contains(host.Calendar, entry => entry.Title.Contains("Tour Down Under", StringComparison.Ordinal));
+        Assert.True(host.IsWorldTourWorld);
+    }
+
+    [Fact]
     public void OpenSkeletonStaysInManagementWithHubCalendarAndPeople()
     {
         using TemporaryDirectory temp = new();
