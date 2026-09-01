@@ -25,6 +25,7 @@
       "simRaceContentId": "race.wt2026.tour_down_under",
       "simStageIndex": 5,
       "preferClassifiedStageType": "MountainSummit",
+      "pickHighestGainStage": true,
       "realEvent": "Santos Tour Down Under 2025 stage 5 (Willunga Hill)",
       "realKind": "uphill finish",
       "realWinner": "Jhonatan Narváez",

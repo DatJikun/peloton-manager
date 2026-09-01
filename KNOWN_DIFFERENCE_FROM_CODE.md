@@ -112,3 +112,13 @@ Remaining limits:
 - No yearly re-generation after season 2026 in play yet (generator exists; Advance Day does not roll new seasons).
 - Jersey tables exist as after-stage queries (GC / points / KOM / youth / team). D-032 mid-race GC leadership stays deferred.
 - §49 still `NOT VERIFIED`.
+
+## Sprint feel, UCI fields, jerseys (D-049 landed)
+
+Contract: `RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md`.
+
+- Classified Flat: sit-in until the last 250 m, then `LaunchSprint` spends `PeakPowerW`. Noisy 25 m samples do not string the bunch. Feel probe seed `91234`: Philipsen 1, Pogačar 135 on the flattest stored Flat; Pogačar 8, Philipsen 133 on the biggest mountain. TDU starts 140.
+- Official start lists: Grand Tours 22×8=176, monuments 25×7=175, TDU 20×7=140, other WT 22×7=154. Wildcard orgs have 8 riders so Grand Tours can take 8. Skeleton soak and standalone `race` stay 12 on the proof circuit.
+- Jerseys are queries (`ClassificationQueries`): GC, points, KOM, youth, team. SimRunner `day --through-results` prints them. Godot result table has thin jersey lines. D-032 stays deferred.
+- SimRunner `compare --scenario scenario.peloton.wt-2026 --seed 91234` writes analogues vs 2025 (not a script, D-001). TdF stage-1 analogue can land Philipsen; names are not forced to match history.
+- SchemaVersion stays **8**.

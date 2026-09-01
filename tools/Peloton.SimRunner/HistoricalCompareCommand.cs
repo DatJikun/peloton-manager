@@ -304,6 +304,12 @@ public static class HistoricalCompareCommand
             CourseProfile[] typed = profiles
                 .Where(profile => profile.ClassifiedStageType == wanted)
                 .ToArray();
+            if (typed.Length == 0 &&
+                wanted is ClassifiedStageType.Mountain or ClassifiedStageType.MountainSummit)
+            {
+                return profiles.OrderByDescending(profile => profile.ElevationGainM).First();
+            }
+
             if (typed.Length > 0)
             {
                 profiles = typed;
