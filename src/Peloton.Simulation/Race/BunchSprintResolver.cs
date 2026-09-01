@@ -89,7 +89,8 @@ public static class BunchSprintResolver
             return false;
         }
 
-        if (MeanGradientOfLastWindow(definition) >= MaximumMeanGradient)
+        if (MeanGradientOfLastWindow(definition) >= MaximumMeanGradient &&
+            classifiedStageType != ClassifiedStageType.Flat)
         {
             return false;
         }

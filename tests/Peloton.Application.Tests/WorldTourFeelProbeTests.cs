@@ -73,12 +73,11 @@ public sealed class WorldTourFeelProbeTests
         log.AppendLine(CultureInfo.InvariantCulture,
             $"mountain_pogacar={pogaMountain} mountain_philipsen={philMountain} climber_ahead={(pogaMountain > 0 && pogaMountain < philMountain)}");
 
+        WriteProbeLog(log.ToString());
+
         Assert.Equal(ClassifiedStageType.Flat, flatStage.ClassifiedStageType);
         Assert.True(flatRace.FinishOrder.Count >= 140);
         Assert.True(philFlat > 0 && pogaFlat > 0 && philFlat < pogaFlat);
-
-        WriteProbeLog(log.ToString());
-
         Assert.True(pogaMountain > 0 && philMountain > 0);
         Assert.True(pogaMountain < philMountain);
     }

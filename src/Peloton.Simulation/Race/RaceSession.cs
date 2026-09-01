@@ -27,6 +27,8 @@ public sealed class RaceSession
     private const double ForcePaceSpeedIncreaseMps = 1.2;
     private const double AttackSpeedIncreaseMps = 3.0;
     private const double ConserveSpeedDecreaseMps = 0.8;
+    private const double ClassifiedFlatSitInMaxGradient = 0.005;
+    private const double ClassifiedFlatSitInMaxWindMps = 1.5;
 
     private readonly RaceScenario scenario;
     private readonly RiderRuntime[] riders;
@@ -130,13 +132,15 @@ public sealed class RaceSession
             }
 
             RaceRouteSegment segment = scenario.Definition.SegmentAt(rider.DistanceM);
+            double remainingM = scenario.Definition.TotalLengthM - rider.DistanceM;
+            AtmosphereSample atmosphere = AtmosphereForPhysics(segment, remainingM);
             if (rider.Intent == RaceCommandKind.LaunchSprint)
             {
                 solves.Add(rider.Profile.RiderId, SolveLaunchSprint(rider, segment));
                 continue;
             }
 
-            double baseSpeedMps = BasePaceMps(segment);
+            double baseSpeedMps = BasePaceMps(atmosphere.Gradient);
             double desiredSpeedMps = groupTargetSpeedMps.TryGetValue(rider.GroupId, out double groupTarget)
                 ? groupTarget
                 : baseSpeedMps;
@@ -149,16 +153,16 @@ public sealed class RaceSession
                 desiredSpeedMps - rider.SpeedMps,
                 -RaceTuning.MaximumDesiredAccelerationMps2,
                 RaceTuning.MaximumDesiredAccelerationMps2);
-            double yawRadians = segment.WindYawDegrees * (Math.PI / 180.0);
-            double headwindMps = Math.Cos(yawRadians) * segment.WindSpeedMps;
-            double crosswindMps = Math.Sin(yawRadians) * segment.WindSpeedMps;
+            double yawRadians = atmosphere.WindYawDegrees * (Math.PI / 180.0);
+            double headwindMps = Math.Cos(yawRadians) * atmosphere.WindSpeedMps;
+            double crosswindMps = Math.Sin(yawRadians) * atmosphere.WindSpeedMps;
             double relativeAirSpeedMps = Math.Sqrt(
                 Math.Pow(Math.Max(0.0, desiredSpeedMps + headwindMps), 2.0) +
                 Math.Pow(crosswindMps, 2.0));
             RequiredPowerBreakdown demand = RequiredPowerSolver.Calculate(new RequiredPowerInput(
                 desiredSpeedMps,
                 desiredAccelerationMps2,
-                segment.Gradient,
+                atmosphere.Gradient,
                 scenario.Definition.AirDensityKgPerM3,
                 relativeAirSpeedMps,
                 rider.Profile.CdAM2,
@@ -174,7 +178,7 @@ public sealed class RaceSession
                 desiredSpeedMps,
                 demand.TotalPowerW,
                 capability.RealizablePowerW,
-                segment.Gradient);
+                atmosphere.Gradient);
             solves.Add(rider.Profile.RiderId, new StepSolve(
                 realizedSpeedMps,
                 capability.RealizablePowerW,
@@ -499,11 +503,17 @@ public sealed class RaceSession
             double target = group.Max(rider =>
             {
                 RaceRouteSegment segment = scenario.Definition.SegmentAt(rider.DistanceM);
-                double basePaceMps = BasePaceMps(segment);
+                double remainingM = scenario.Definition.TotalLengthM - rider.DistanceM;
+                bool sitIn = IsClassifiedFlatSitIn(remainingM);
+                double basePaceMps = BasePaceMps(AtmosphereForPhysics(segment, remainingM).Gradient);
                 return rider.Intent switch
                 {
-                    RaceCommandKind.ForcePace => basePaceMps + ForcePaceSpeedIncreaseMps,
-                    RaceCommandKind.Attack => basePaceMps + AttackSpeedIncreaseMps,
+                    RaceCommandKind.ForcePace => sitIn
+                        ? basePaceMps
+                        : basePaceMps + ForcePaceSpeedIncreaseMps,
+                    RaceCommandKind.Attack => sitIn
+                        ? basePaceMps
+                        : basePaceMps + AttackSpeedIncreaseMps,
                     RaceCommandKind.Conserve => basePaceMps - ConserveSpeedDecreaseMps,
                     RaceCommandKind.LaunchSprint => basePaceMps,
                     _ => basePaceMps,
@@ -528,10 +538,12 @@ public sealed class RaceSession
         }
 
         RaceRouteSegment segment = scenario.Definition.SegmentAt(leader.DistanceM);
+        double remainingM = scenario.Definition.TotalLengthM - leader.DistanceM;
+        AtmosphereSample atmosphere = AtmosphereForPhysics(segment, remainingM);
         GroupResolution resolution = PositionAndGroupResolver.Resolve(new GroupResolutionInput(
             segment.RoadWidthM,
-            segment.WindSpeedMps,
-            segment.WindYawDegrees,
+            atmosphere.WindSpeedMps,
+            atmosphere.WindYawDegrees,
             riders
                 .Where(rider => rider.FinishTimeSeconds is null)
                 .Select(rider => new RaceRiderSnapshot(
@@ -654,9 +666,26 @@ public sealed class RaceSession
         };
     }
 
-    private static double BasePaceMps(RaceRouteSegment segment)
+    private bool IsClassifiedFlatSitIn(double remainingM) =>
+        scenario.ClassifiedStageType == ClassifiedStageType.Flat &&
+        remainingM > BunchSprintResolver.LaunchDistanceM;
+
+    private AtmosphereSample AtmosphereForPhysics(RaceRouteSegment segment, double remainingM)
     {
-        return Math.Max(4.0, 11.0 - (Math.Max(0.0, segment.Gradient) * 70.0));
+        if (!IsClassifiedFlatSitIn(remainingM))
+        {
+            return new AtmosphereSample(segment.Gradient, segment.WindSpeedMps, segment.WindYawDegrees);
+        }
+
+        return new AtmosphereSample(
+            Math.Min(segment.Gradient, ClassifiedFlatSitInMaxGradient),
+            Math.Min(segment.WindSpeedMps, ClassifiedFlatSitInMaxWindMps),
+            WindYawDegrees: 0.0);
+    }
+
+    private static double BasePaceMps(double gradient)
+    {
+        return Math.Max(4.0, 11.0 - (Math.Max(0.0, gradient) * 70.0));
     }
 
     private static double RealizedSpeed(
@@ -715,6 +744,11 @@ public sealed class RaceSession
 
         public double? FinishTimeSeconds { get; set; }
     }
+
+    private readonly record struct AtmosphereSample(
+        double Gradient,
+        double WindSpeedMps,
+        double WindYawDegrees);
 
     private sealed record StepSolve(
         double RealizedSpeedMps,

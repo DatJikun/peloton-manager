@@ -62,6 +62,39 @@ internal static class RaceScenarioFactory
 
     public static RaceScenario BunchSprintFinish()
     {
+        RaceDefinition definition = new(
+            "route.prototype.bunch-sprint",
+            1.225,
+            new[]
+            {
+                new RaceRouteSegment(
+                    "segment.flat-finish",
+                    lengthM: 2_500.0,
+                    gradient: 0.0,
+                    roadWidthM: 8.0,
+                    windSpeedMps: 0.5,
+                    windYawDegrees: 0.0),
+            });
+        return BunchFinish(definition, maximumDurationSeconds: 800);
+    }
+
+    public static RaceScenario BunchSprintFinishNoisyClassifiedFlat()
+    {
+        RaceRouteSegment[] segments = Enumerable.Range(0, 320)
+            .Select(index => new RaceRouteSegment(
+                $"segment.noisy.{index}",
+                lengthM: 25.0,
+                gradient: index % 7 == 0 ? 0.08 : (index % 3 == 0 ? 0.012 : 0.0),
+                roadWidthM: 6.5,
+                windSpeedMps: 7.0,
+                windYawDegrees: (index * 47) % 360))
+            .ToArray();
+        RaceDefinition definition = new("route.prototype.bunch-sprint-noisy", 1.225, segments);
+        return BunchFinish(definition, maximumDurationSeconds: 2_400);
+    }
+
+    private static RaceScenario BunchFinish(RaceDefinition definition, int maximumDurationSeconds)
+    {
         List<RaceRiderProfile> riders = new()
         {
             Profile(
@@ -99,19 +132,6 @@ internal static class RaceScenarioFactory
                 cdAM2: 0.30));
         }
 
-        RaceDefinition definition = new(
-            "route.prototype.bunch-sprint",
-            1.225,
-            new[]
-            {
-                new RaceRouteSegment(
-                    "segment.flat-finish",
-                    lengthM: 2_500.0,
-                    gradient: 0.0,
-                    roadWidthM: 8.0,
-                    windSpeedMps: 0.5,
-                    windYawDegrees: 0.0),
-            });
         RaceStartingPosition[] positions = riders
             .Select((rider, index) => new RaceStartingPosition(
                 rider.RiderId,
@@ -124,7 +144,7 @@ internal static class RaceScenarioFactory
             positions,
             Array.Empty<RaceCommand>(),
             initialSpeedMps: 11.0,
-            maximumDurationSeconds: 800,
+            maximumDurationSeconds,
             classifiedStageType: ClassifiedStageType.Flat);
     }
 
