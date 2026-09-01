@@ -38,8 +38,8 @@ public sealed class CareerWorldTourPhase5Tests
         Assert.Equal(25, world.Organizations.Count);
         Assert.Equal(18, world.Organizations.Count(organization =>
             string.Equals(organization.Division, "WorldTour", StringComparison.Ordinal)));
-        Assert.Equal(193, world.RiderCareers.Count);
-        Assert.Equal(193, world.RiderContracts.Count);
+        Assert.Equal(200, world.RiderCareers.Count);
+        Assert.Equal(200, world.RiderContracts.Count);
         Assert.True(world.CalendarEntries.Count(entry => entry.Kind == CalendarEntryKind.Race) > 36);
         Assert.Equal(36, world.OrganizationRaceEntries
             .Select(entry => entry.RaceContentId)
@@ -83,7 +83,7 @@ public sealed class CareerWorldTourPhase5Tests
         Assert.True(source.Execute(new SaveGameCommand(savePath)).Succeeded);
 
         WorldCheckpoint stored = new SqliteWorldSaveStore().Load(savePath);
-        Assert.Equal(193, stored.World.RiderCareers.Count);
+        Assert.Equal(200, stored.World.RiderCareers.Count);
 
         GameApplication loaded = TestApplication.Create();
         Assert.True(loaded.Execute(new LoadGameCommand(savePath)).Succeeded);

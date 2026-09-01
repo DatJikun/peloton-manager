@@ -108,9 +108,7 @@ public sealed class RiderRatingTests
             RiderRatingSet[] ratings = world.GetRiderCareersForOrganization(organization.Id)
                 .Select(career => RiderRatingQueries.FromPhysiology(career, career.PotentialOvr))
                 .ToArray();
-            int expectedCount = string.Equals(organization.Division, "WorldTour", StringComparison.Ordinal)
-                ? 8
-                : 7;
+            int expectedCount = 8;
             Assert.Equal(expectedCount, ratings.Length);
             ratings = ratings.Take(4).ToArray();
             bool hasLargeGap = false;

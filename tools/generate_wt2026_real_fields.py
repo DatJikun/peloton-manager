@@ -261,6 +261,7 @@ WILDCARD_RIDERS: dict[str, list[tuple]] = {
         ("support-3", "Hugo Houle", "CAN", 1990, "diesel", {"annualWage": 140_000}),
         ("support-4", "Krists Neilands", "LAT", 1994, "classics", {"annualWage": 130_000}),
         ("support-5", "Riley Sheehan", "USA", 2000, "neo", {"annualWage": 100_000}),
+        ("support-6", "Nick Schultz", "AUS", 1994, "gc", {"annualWage": 120_000}),
     ],
     "tudor": [
         ("leader", "Marc Hirschi", "SUI", 1998, "classics", {"criticalPowerW": 405, "peakPowerW": 1280, "annualWage": 800_000, "wageBand": "leader"}),
@@ -270,6 +271,7 @@ WILDCARD_RIDERS: dict[str, list[tuple]] = {
         ("support-3", "Marius Mayrhofer", "GER", 2000, "sprinter", {"annualWage": 130_000}),
         ("support-4", "Alberto Dainese", "ITA", 1998, "sprinter", {"annualWage": 140_000}),
         ("support-5", "Luc Wirtgen", "LUX", 1998, "gc", {"annualWage": 110_000}),
+        ("support-6", "Sebastian Molano", "COL", 1994, "sprinter", {"annualWage": 120_000}),
     ],
     "q36": [
         ("leader", "Matteo Sobrero", "ITA", 1997, "tt", {"criticalPowerW": 395, "annualWage": 450_000, "wageBand": "leader"}),
@@ -279,6 +281,7 @@ WILDCARD_RIDERS: dict[str, list[tuple]] = {
         ("support-3", "Kamil Gradek", "POL", 1990, "diesel", {"annualWage": 110_000}),
         ("support-4", "Rory Townsend", "IRL", 1995, "classics", {"annualWage": 110_000}),
         ("support-5", "David de la Cruz", "ESP", 1989, "gc", {"annualWage": 140_000}),
+        ("support-6", "Sjoerd Bax", "NED", 1996, "gc", {"annualWage": 120_000}),
     ],
     "totalenergies": [
         ("leader", "Mathieu Burgaudeau", "FRA", 1998, "classics", {"annualWage": 400_000, "wageBand": "leader"}),
@@ -288,6 +291,7 @@ WILDCARD_RIDERS: dict[str, list[tuple]] = {
         ("support-3", "Sandy Dujardin", "FRA", 1997, "sprinter", {"annualWage": 120_000}),
         ("support-4", "Fabien Grellier", "FRA", 1994, "diesel", {"annualWage": 110_000}),
         ("support-5", "Jordan Jegat", "FRA", 1999, "gc", {"annualWage": 100_000}),
+        ("support-6", "Pierre Latour", "FRA", 1993, "gc", {"annualWage": 140_000}),
     ],
     "cofidis": [
         ("leader", "Ion Izagirre", "ESP", 1989, "gc", {"criticalPowerW": 392, "annualWage": 500_000, "wageBand": "leader"}),
@@ -297,6 +301,7 @@ WILDCARD_RIDERS: dict[str, list[tuple]] = {
         ("support-3", "Axel Zingle", "FRA", 1998, "sprinter", {"annualWage": 150_000}),
         ("support-4", "Benjamin Thomas", "FRA", 1995, "tt", {"annualWage": 160_000}),
         ("support-5", "Guillaume Martin", "FRA", 1993, "gc", {"criticalPowerW": 400, "annualWage": 280_000, "wageBand": "leader"}),
+        ("support-6", "Jesús Herrada", "ESP", 1990, "gc", {"annualWage": 140_000}),
     ],
     "unibet": [
         ("leader", "Hartthijs de Vries", "NED", 1996, "gc", {"annualWage": 180_000, "wageBand": "leader"}),
@@ -306,6 +311,7 @@ WILDCARD_RIDERS: dict[str, list[tuple]] = {
         ("support-3", "Abram Stockman", "BEL", 1996, "diesel", {"annualWage": 90_000}),
         ("support-4", "Adne van Engelen", "NED", 1993, "gc", {"annualWage": 90_000}),
         ("support-5", "Kevin van Melsen", "BEL", 1987, "diesel", {"annualWage": 85_000}),
+        ("support-6", "Martijn Budding", "NED", 1995, "diesel", {"annualWage": 80_000}),
     ],
     "australia": [
         ("leader", "Luke Plapp", "AUS", 2000, "gc", {"criticalPowerW": 398, "annualWage": 250_000, "wageBand": "leader"}),
@@ -315,6 +321,7 @@ WILDCARD_RIDERS: dict[str, list[tuple]] = {
         ("support-3", "Jack Haig", "AUS", 1993, "gc", {"annualWage": 160_000}),
         ("support-4", "Jarrad Drizners", "AUS", 1999, "diesel", {"annualWage": 90_000}),
         ("support-5", "Patrick Eddy", "AUS", 2003, "sprinter", {"annualWage": 85_000}),
+        ("support-6", "Liam Slock", "AUS", 2000, "diesel", {"annualWage": 80_000}),
     ],
 }
 
