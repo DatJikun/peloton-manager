@@ -10,10 +10,10 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md` (D-049) landed. **D-050 landed:** New Game picks a WorldTour club; pre-season ticks 36 events and a designated leader per entered event. CdA Road/TT waits. Do not close §49.
+`RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md` (D-049) landed. **D-050 landed.** **Next: D-051** — desk / Skład / Finanse show world cash and D-044 offers (`CAREER_FINANCE_CONTRACTS_ON_SCREEN_v0.1.md`). CdA Road/TT waits. Do not close §49.
 
 ### Goal
-D-050 landed: pick club, pick WT events, pick a leader per event — so the year is not one rigid team. Godot opens **Nowa gra** (18 WT clubs), then **Plan sezonu**, then management on that world. Default `CreateWorld` still employs Alpecin for tests/soak. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
+D-051: wire **kasa i kontrakty** onto the career shell that D-050 already opens on a WorldTour world. Desk and Finanse read `ClubFinanceProjection` (euro). Skład offers annual wage + end day through existing D-044 commands. Default `CreateWorld` still employs Alpecin for tests/soak. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
 
 ### Status
 Owner (player) directed this on 2026-09-01. **D-049 and D-050 landed.** Classified Flat is a bunch sprint (sit-in, then last 250 m at peak power). Official WT starts are event-shaped (TDU 140, monuments 175, Grand Tours 176, other WT 154). After a stage the shell/CLI can show GC / points / KOM / youth / team. SimRunner `compare` puts prototype results next to 2025 analogues (not a script). Skeleton soak still uses the short proof circuit. SQLite SchemaVersion **9**.
@@ -44,7 +44,7 @@ Działa:
 - paczka Windows do ręcznego playtestu: `playtest/PelotonManager-playtest-windows.zip` (`playtest/CZYTAJ_MNIE.txt`).
 
 Właśnie budujemy:
-- kasa i kontrakty na tych samych ekranach co skład (oferta pensji/daty zapisuje się). CdA szosa/deska czeka.
+- D-051: kasa i kontrakty na biurku / składzie / finansach (oferta pensji/daty zapisuje się). CdA szosa/deska czeka.
 
 Jeszcze nie:
 - nie ma Career Hub — usunięty z repozytorium (D-048); biurko to powłoka `CareerShell.tscn`;
@@ -135,7 +135,7 @@ Baza 2026: 18 ekip męskiego WorldTour plus zaproszone ProTeamy / Australia w `s
 - [ ] Infinite career / season rollover / rider aging — later
 
 ## Next task
-Wire **kasa i kontrakty** to the existing Godot screens (desk/squad offer actually calls D-044 commands). Do not close §49. Do not rebuild Career Hub. Watch film stays off by default. Do not start aging, year-2 routes, sponsor market, or CdA in the same tree.
+Implement **D-051** (`CAREER_FINANCE_CONTRACTS_ON_SCREEN_v0.1.md`): Godot desk/squad/finance read `ClubFinance` / `ClubRoster` and call D-044 offer commands. Do not close §49. Do not rebuild Career Hub. Watch film stays off by default. Do not start aging, year-2 routes, sponsor market, or CdA in the same tree.
 
 ## Known blockers
 - None.
@@ -164,6 +164,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
+- `2026-09-01` — **D-051: kasa i kontrakty na ekranach.** Desk / Finanse show world euro cash; Skład offer writes D-044. Staff/sponsors/scouting/market stay drawings. Contract: `CAREER_FINANCE_CONTRACTS_ON_SCREEN_v0.1.md`.
 - `2026-09-01` — **D-050 landed (Composer):** New Game WT club pick (`ListNewGameClubs`, `CreateWorldCommand` employer), pre-season designated leader per event (`SetSeasonRaceLeaderCommand`), `OrganizationRaceEntry.DesignatedLeaderId`, SchemaVersion 9 / checksum v9. Godot opens MainMenu club picker (not auto-skeleton). SimRunner `day --employer`. Default Alpecin CreateWorld unchanged for soak/tests.
 - `2026-09-01` — **D-050: club pick, calendar entries, per-event leaders first.** Not one rigid team. Infinite career and aging later. Content stays data-only JSON packs (riders/routes/teams); physics code is the engine, not a Lua mod. CdA and look-catalog finance wait.
 - `2026-09-01` — **Player-facing Polish for cobbles is bruk (D-046).** The rating on the card is **Bruk**. Do not say „kocie łby” to the owner. English code stays `Cobbles`.

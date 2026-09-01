@@ -204,3 +204,11 @@ Owner lock 2026-09-01: the next playable slice is **not** CdA split, sponsor mar
 3. **Choose a designated leader for each entered event**, so the year is not one default captain on every start.
 
 Race-day prep may still override. Do not grow a 28-man roster, aging, season rollover, or infinite career in the same tree. Manager identity stays `ManagerCareer` (D-004): the club is a job, not a permanent skin. Watch film stays off by default. Do not rebuild Career Hub. **D-038:** same commands must work later for Continental / ProTeam and a 3-year UCI licence cycle; do not hard-code WorldTour as the only employer type. Contract: `CAREER_CLUB_CALENDAR_LEADERS_v0.1.md`.
+
+## D-051 — Club cash and contract offers on the career screens
+Owner lock 2026-09-01: D-050 is in. The next playable slice is **not** CdA, sponsor market, scouting, or aging. Wire the **existing** thin economy and D-044 offers to Godot:
+
+1. Desk and **Finanse** show `ClubFinanceProjection` in **euro** (kasa, title sponsor, daily sponsor vs wages, overdrawn) — not Beskid look-catalog złoty.
+2. **Skład** shows world wages/end days and a real offer (annual wage + inclusive end day) through `Begin/Set/Confirm/CancelContractNegotiationCommand`. Accept/reject stays the D-044 formula. Toast in Polish; do not print the hidden threshold.
+
+Staff / sponsors / scouting / market stay drawings. No fire/release, no transfer fee, no tenth GameState, no schema bump. Contract: `CAREER_FINANCE_CONTRACTS_ON_SCREEN_v0.1.md`.

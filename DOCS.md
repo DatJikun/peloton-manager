@@ -38,6 +38,7 @@
 | `TESTING_v0.1.md` | DRAFT | Test layers, golden scenarios, probes, invariants, soak and playtest gates |
 | `CAREER_WORLDTOUR_SLICE_v0.1.md` | DRAFT | Owner 2026-08-31 career slice: world–race bind, WT 2026 pack, contracts, no minigames |
 | `CAREER_CLUB_CALENDAR_LEADERS_v0.1.md` | DRAFT | D-050: New Game club pick, pre-season entries, per-event leaders |
+| `CAREER_FINANCE_CONTRACTS_ON_SCREEN_v0.1.md` | DRAFT | D-051: desk/squad/finance show world cash and D-044 contract offers |
 | `RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md` | DRAFT | D-049 bunch sprint; UCI-shaped fields; GC/points/KOM/youth/team jerseys; historical analogues |
 
 ## Read order for a new AI session
@@ -74,7 +75,7 @@ Not in code yet, though named in `DATA_MODEL_v0.1.md`: `OrganizationKnowledgeSto
 
 Remaining system design (do not treat as the next coding task unless `HANDOFF.md` says so):
 
-- **Next coding task:** kasa i kontrakty na ekranach Godota — see `HANDOFF.md`
+- **Next coding task:** D-051 kasa i kontrakty na ekranach Godota — `CAREER_FINANCE_CONTRACTS_ON_SCREEN_v0.1.md`
 - Training / development that grows physiology toward POT
 - Yearly course re-generation after 2026 (generator exists; season rollover does not)
 - Rider aging / infinite career season rollover
