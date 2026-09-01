@@ -17,24 +17,6 @@ internal static class TestApplication
         return ApplicationFactory.Create(ContentRoot);
     }
 
-    public static void AdvanceToRaceDue(GameApplication application)
-    {
-        ArgumentNullException.ThrowIfNull(application);
-        for (int day = 0; day < 32 && application.World is { IsRaceDue: false }; day++)
-        {
-            CommandResult advanced = application.Execute(new AdvanceDayCommand());
-            if (!advanced.Succeeded)
-            {
-                throw new InvalidOperationException(advanced.ReasonCode);
-            }
-        }
-
-        if (application.World is not { IsRaceDue: true })
-        {
-            throw new InvalidOperationException("Did not reach a race-due day.");
-        }
-    }
-
     public static string RunTenSeasons(long seed)
     {
         using TemporaryDirectory temp = new();
@@ -53,7 +35,7 @@ internal static class TestApplication
 
     private static void AssertReport(SkeletonRunReport report)
     {
-        if (report.Crashed || report.RaceCount != 30 || report.WorldDay != 120)
+        if (report.Crashed || report.RaceCount != 10 || report.WorldDay != 120)
         {
             throw new InvalidOperationException("Ten-season skeleton report violated its contract.");
         }

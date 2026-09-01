@@ -51,9 +51,6 @@ public sealed class RaceContentTests
         WorldRecipe recipe = new JsonScenarioCatalog(ContentRoot()).Resolve("scenario.peloton.skeleton");
 
         Assert.Equal("scenario.peloton.skeleton", recipe.ContentIdentity.ScenarioId);
-        Assert.Equal("Adam Wroński", recipe.Manager.Name);
-        Assert.Equal(3, recipe.Organizations.Count);
-        Assert.Equal(12, recipe.Riders.Count);
     }
 
     [Theory]

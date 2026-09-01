@@ -27,10 +27,10 @@ public sealed class CareerShellHostTests
         Assert.Equal(0, day.DayNumber);
         Assert.Equal(HubPrimaryActionIds.AdvanceDay, day.PrimaryAction);
         Assert.Equal("Advance Day", day.PrimaryLabel);
-        Assert.Equal("Adam Wroński", day.ManagerName);
-        Assert.Equal("Beskid–Vetter", day.EmployerName);
-        Assert.Contains(host.Calendar, entry => entry.Title == SkeletonCalendar.OpeningClassic);
-        Assert.Equal(3, host.Calendar.Count);
+        Assert.Equal("Skeleton Manager", day.ManagerName);
+        Assert.Equal("red", day.EmployerName);
+        Assert.Contains(host.Calendar, entry => entry.Title == "Skeleton race");
+        Assert.Single(host.Calendar);
         Assert.DoesNotContain(host.People, person => person.Name.Contains("OVR", StringComparison.Ordinal));
         Assert.NotEmpty(host.Organizations);
         Assert.False(host.Settings.WatchFilmEnabled);
@@ -61,9 +61,9 @@ public sealed class CareerShellHostTests
         Assert.Equal(GameState.RacePreparationFlow, host.State);
         Assert.Null(host.Day);
         RacePreparationProjection prep = Assert.IsType<RacePreparationProjection>(host.Preparation);
-        Assert.Equal(SkeletonCalendar.OpeningClassic, prep.Title);
+        Assert.Equal("Skeleton race", prep.Title);
         Assert.Equal(4, prep.Squad.Count);
-        Assert.Contains(prep.Squad, rider => host.RiderDisplayName(rider) == "Piotr Kowalczyk");
+        Assert.Contains(prep.Squad, rider => host.RiderDisplayName(rider) == "Alpha Leader");
     }
 
     [Fact]
@@ -80,19 +80,19 @@ public sealed class CareerShellHostTests
         Assert.Equal(GameState.RaceResultsFlow, host.State);
         Assert.Null(host.Watch);
         RaceResultProjection result = Assert.IsType<RaceResultProjection>(host.Result);
-        Assert.Equal("Opening Classic", result.Title);
+        Assert.Equal("Skeleton race", result.Title);
         Assert.Equal(BetaLeaderOriginId, result.WinnerLabel);
-        Assert.Equal("Marco Anconi", host.RiderDisplayName(result.WinnerId));
+        Assert.Equal("Beta Leader", host.RiderDisplayName(result.WinnerId));
         Assert.Equal(3, host.ResultTeams.Count);
         Assert.Contains(
             result.FinishOrder,
-            row => host.RiderDisplayName(row.RiderId) == "Dawid Rutka" && row.OrganizationName == "Beskid–Vetter");
+            row => host.RiderDisplayName(row.RiderId) == "Alpha Card" && row.OrganizationName == "red");
         Assert.Equal(12, host.VisibleResultTable.Count);
 
-        OrganizationNameProjection beskid = host.ResultTeams.Single(team => team.Name == "Beskid–Vetter");
-        host.SetResultTeamFilter(beskid.Id);
+        OrganizationNameProjection red = host.ResultTeams.Single(team => team.Name == "red");
+        host.SetResultTeamFilter(red.Id);
         Assert.Equal(4, host.VisibleResultTable.Count);
-        Assert.All(host.VisibleResultTable, row => Assert.Equal("Beskid–Vetter", row.OrganizationName));
+        Assert.All(host.VisibleResultTable, row => Assert.Equal("red", row.OrganizationName));
         host.SetResultTeamFilter(null);
         Assert.Equal(12, host.VisibleResultTable.Count);
 
@@ -122,7 +122,7 @@ public sealed class CareerShellHostTests
         Assert.True(reloaded.RunRace().Succeeded);
         Assert.Equal(GameState.RaceLive, reloaded.State);
         Assert.NotNull(reloaded.Watch);
-        Assert.Contains(reloaded.Watch!.Interpolated!.Riders, rider => rider.Name == "Piotr Kowalczyk");
+        Assert.Contains(reloaded.Watch!.Interpolated!.Riders, rider => rider.Name == "Alpha Leader");
     }
 
     [Fact]

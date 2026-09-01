@@ -11,45 +11,39 @@ namespace Peloton.Application.Tests;
 public sealed class CareerCalendarInboxTests
 {
     private const string PrototypeRaceScenarioId = "race-scenario.peloton.prototype-v0";
-    private static readonly int[] FirstSeasonRaceDays = { 4, 8, 12 };
-    private static readonly string[] FirstSeasonTitles =
-    {
-        SkeletonCalendar.OpeningClassic,
-        SkeletonCalendar.HillClassic,
-        SkeletonCalendar.SeasonFinale,
-    };
 
     [Fact]
-    public void NewWorldHasThreeScheduledRacesAndEmptyInbox()
+    public void NewWorldHasScheduledSkeletonRaceOnDayTwelveAndEmptyInbox()
     {
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 42)).Succeeded);
 
-        Assert.Equal(3, application.Calendar.Count);
-        Assert.Equal(FirstSeasonRaceDays, application.Calendar.Select(entry => entry.DayNumber).ToArray());
-        Assert.Equal(FirstSeasonTitles, application.Calendar.Select(entry => entry.Title).ToArray());
-        Assert.All(application.Calendar, entry =>
-        {
-            Assert.Equal("race", entry.Kind);
-            Assert.Equal("scheduled", entry.Status);
-            Assert.Null(entry.OfficialResult);
-        });
+        Assert.Single(application.Calendar);
+        CalendarEntryProjection entry = application.Calendar[0];
+        Assert.Equal(12, entry.DayNumber);
+        Assert.Equal("race", entry.Kind);
+        Assert.Equal("scheduled", entry.Status);
+        Assert.Equal("Skeleton race", entry.Title);
+        Assert.Null(entry.OfficialResult);
         Assert.Empty(application.Inbox);
     }
 
     [Fact]
-    public void FirstRaceDayMarksRaceDueInboxAndRejectsArchiveWhileBlockingAdvance()
+    public void TwelfthDayMarksRaceDueInboxAndRejectsArchiveWhileBlockingAdvance()
     {
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 42)).Succeeded);
-        TestApplication.AdvanceToRaceDue(application);
+        for (int day = 0; day < 12; day++)
+        {
+            Assert.True(application.Execute(new AdvanceDayCommand()).Succeeded, $"day {day + 1}");
+        }
 
-        CalendarEntryProjection entry = application.Calendar.Single(item => item.DayNumber == 4);
+        CalendarEntryProjection entry = Assert.Single(application.Calendar);
         Assert.Equal("due", entry.Status);
         InboxItemProjection inboxItem = Assert.Single(application.Inbox);
         Assert.Equal("race-due", inboxItem.Category);
         Assert.Equal("A race is due today.", inboxItem.Body);
-        Assert.Equal(4, inboxItem.DayNumber);
+        Assert.Equal(12, inboxItem.DayNumber);
         Assert.Equal($"calendar:{entry.Id.Value}:due", inboxItem.Identity);
         Assert.Equal(entry.Id, inboxItem.RelatedEntryId);
 
@@ -66,29 +60,31 @@ public sealed class CareerCalendarInboxTests
     {
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 42)).Succeeded);
-        TestApplication.AdvanceToRaceDue(application);
+        for (int day = 0; day < 12; day++)
+        {
+            Assert.True(application.Execute(new AdvanceDayCommand()).Succeeded);
+        }
 
-        WorldEntityId firstRaceEntryId = application.Calendar.Single(entry => entry.DayNumber == 4).Id;
+        WorldEntityId firstRaceEntryId = application.Calendar[0].Id;
         using TemporaryDirectory temp = new();
         CompleteRaceFlow(application, temp.Path);
 
+        Assert.Equal(2, application.Calendar.Count);
         CalendarEntryProjection completed = application.Calendar.Single(entry => entry.Id == firstRaceEntryId);
         Assert.Equal("completed", completed.Status);
         Assert.NotNull(completed.OfficialResult);
         Assert.StartsWith("Winner ", completed.OfficialResult, StringComparison.Ordinal);
-        CalendarEntryProjection upcoming = application.Calendar.Single(entry => entry.DayNumber == 8);
+        CalendarEntryProjection upcoming = application.Calendar.Single(entry => entry.DayNumber == 24);
         Assert.Equal("scheduled", upcoming.Status);
-        Assert.Equal(SkeletonCalendar.HillClassic, upcoming.Title);
+        Assert.Equal("Skeleton race", upcoming.Title);
         Assert.Null(upcoming.OfficialResult);
-        Assert.Contains(application.Calendar, entry => entry.DayNumber == 12);
 
         InboxItemProjection resultItem = Assert.Single(application.Inbox);
         Assert.Equal("race-result", resultItem.Category);
         Assert.Equal($"calendar:{firstRaceEntryId.Value}:result", resultItem.Identity);
         Assert.Contains(completed.OfficialResult, resultItem.Body, StringComparison.Ordinal);
-        Assert.Contains(SkeletonCalendar.OpeningClassic, resultItem.Body, StringComparison.Ordinal);
         Assert.True(application.Execute(new AdvanceDayCommand()).Succeeded);
-        Assert.Equal(5, application.World!.CurrentDate.DayNumber);
+        Assert.Equal(13, application.World!.CurrentDate.DayNumber);
     }
 
     [Fact]
@@ -96,7 +92,10 @@ public sealed class CareerCalendarInboxTests
     {
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 42)).Succeeded);
-        TestApplication.AdvanceToRaceDue(application);
+        for (int day = 0; day < 12; day++)
+        {
+            Assert.True(application.Execute(new AdvanceDayCommand()).Succeeded);
+        }
 
         using TemporaryDirectory temp = new();
         CompleteRaceFlow(application, temp.Path);
@@ -120,7 +119,10 @@ public sealed class CareerCalendarInboxTests
         string savePath = Path.Combine(temp.Path, "race-result.peloton");
         GameApplication source = TestApplication.Create();
         Assert.True(source.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 42)).Succeeded);
-        TestApplication.AdvanceToRaceDue(source);
+        for (int day = 0; day < 12; day++)
+        {
+            Assert.True(source.Execute(new AdvanceDayCommand()).Succeeded);
+        }
 
         CompleteRaceFlow(source, temp.Path);
         WorldEntityId calendarEntryId = source.Calendar[0].Id;
@@ -144,9 +146,12 @@ public sealed class CareerCalendarInboxTests
         string savePath = Path.Combine(temp.Path, "race-due.peloton");
         GameApplication source = TestApplication.Create();
         Assert.True(source.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 42)).Succeeded);
-        TestApplication.AdvanceToRaceDue(source);
+        for (int day = 0; day < 12; day++)
+        {
+            Assert.True(source.Execute(new AdvanceDayCommand()).Succeeded);
+        }
 
-        WorldEntityId calendarEntryId = source.Calendar.Single(entry => entry.DayNumber == 4).Id;
+        WorldEntityId calendarEntryId = source.Calendar[0].Id;
         string dueIdentity = Assert.Single(source.Inbox).Identity;
         Assert.True(source.Execute(new SaveGameCommand(savePath)).Succeeded);
 
@@ -163,7 +168,10 @@ public sealed class CareerCalendarInboxTests
     {
         GameApplication application = TestApplication.Create();
         Assert.True(application.Execute(new CreateWorldCommand("scenario.peloton.skeleton", 42)).Succeeded);
-        TestApplication.AdvanceToRaceDue(application);
+        for (int day = 0; day < 12; day++)
+        {
+            Assert.True(application.Execute(new AdvanceDayCommand()).Succeeded);
+        }
 
         string before = WorldChecksum.Compute(application.World!);
         _ = application.Calendar.ToArray();

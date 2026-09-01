@@ -23,16 +23,16 @@ public sealed class CareerHubHostTests
 
         Assert.True(host.Open(GateSeed).Succeeded);
         Assert.Equal(GameState.Management, host.State);
-        Assert.Equal("Beskid–Vetter", host.Day!.EmployerName);
-        Assert.Equal("Adam Wroński", host.Day.ManagerName);
+        Assert.Equal("red", host.Day!.EmployerName);
+        Assert.Equal("Skeleton Manager", host.Day.ManagerName);
         Assert.Equal(HubPrimaryActionIds.AdvanceDay, host.Day.PrimaryAction);
-        Assert.Equal(3, host.Calendar.Count);
+        Assert.Single(host.Calendar);
         Assert.Empty(host.Inbox);
         Assert.Null(host.Watch);
 
         Assert.True(host.AdvanceDay().Succeeded);
         Assert.Equal(1, host.Day!.DayNumber);
-        Assert.Equal(3, host.Day.DaysUntilNextRace);
+        Assert.Equal(11, host.Day.DaysUntilNextRace);
         Assert.DoesNotContain("KPI", host.Day.TodayNotes[0], StringComparison.OrdinalIgnoreCase);
     }
 
@@ -49,31 +49,31 @@ public sealed class CareerHubHostTests
         Assert.True(host.FollowPrimary().Succeeded);
         Assert.Equal(GameState.RacePreparationFlow, host.State);
         RacePreparationProjection prep = Assert.IsType<RacePreparationProjection>(host.Preparation);
-        Assert.Equal(SkeletonCalendar.OpeningClassic, prep.Title);
+        Assert.Equal("Skeleton race", prep.Title);
         Assert.Equal(4, prep.Squad.Count);
-        Assert.Contains(prep.Squad, rider => host.RiderDisplayName(rider) == "Piotr Kowalczyk");
+        Assert.Contains(prep.Squad, rider => host.RiderDisplayName(rider) == "Alpha Leader");
 
         Assert.False(host.Settings.WatchFilmEnabled);
         Assert.True(host.RunRace().Succeeded);
         Assert.Equal(GameState.RaceResultsFlow, host.State);
         Assert.Null(host.Watch);
         RaceResultProjection result = Assert.IsType<RaceResultProjection>(host.Result);
-        Assert.Equal("Opening Classic", result.Title);
+        Assert.Equal("Skeleton race", result.Title);
         Assert.Equal(BetaLeaderOriginId, result.WinnerLabel);
-        Assert.Equal("Marco Anconi", host.RiderDisplayName(result.WinnerId));
+        Assert.Equal("Beta Leader", host.RiderDisplayName(result.WinnerId));
         Assert.Contains(
             result.FinishOrder,
-            row => host.RiderDisplayName(row.RiderId) == "Dawid Rutka" && row.OrganizationName == "Beskid–Vetter");
-        Assert.Equal("Fala–Karpaty", result.FinishOrder[0].OrganizationName);
+            row => host.RiderDisplayName(row.RiderId) == "Alpha Card" && row.OrganizationName == "red");
+        Assert.Equal("blue", result.FinishOrder[0].OrganizationName);
         Assert.Equal(12, host.VisibleResultTable.Count);
 
-        OrganizationNameProjection beskid = host.ResultTeams.Single(team => team.Name == "Beskid–Vetter");
-        host.SetResultTeamFilter(beskid.Id);
-        Assert.Equal(beskid.Id, host.ResultTeamFilter);
+        OrganizationNameProjection red = host.ResultTeams.Single(team => team.Name == "red");
+        host.SetResultTeamFilter(red.Id);
+        Assert.Equal(red.Id, host.ResultTeamFilter);
         Assert.Equal(4, host.VisibleResultTable.Count);
-        Assert.All(host.VisibleResultTable, row => Assert.Equal("Beskid–Vetter", row.OrganizationName));
+        Assert.All(host.VisibleResultTable, row => Assert.Equal("red", row.OrganizationName));
         Assert.DoesNotContain(host.VisibleResultTable, row => row.Place == 1);
-        Assert.Contains(host.VisibleResultTable, row => host.RiderDisplayName(row.RiderId) == "Dawid Rutka");
+        Assert.Contains(host.VisibleResultTable, row => host.RiderDisplayName(row.RiderId) == "Alpha Card");
         host.SetResultTeamFilter(null);
         Assert.Null(host.ResultTeamFilter);
         Assert.Equal(12, host.VisibleResultTable.Count);
@@ -105,7 +105,7 @@ public sealed class CareerHubHostTests
         Assert.True(reloaded.RunRace().Succeeded);
         Assert.Equal(GameState.RaceLive, reloaded.State);
         Assert.NotNull(reloaded.Watch);
-        Assert.Contains(reloaded.Watch!.Interpolated!.Riders, rider => rider.Name == "Piotr Kowalczyk");
+        Assert.Contains(reloaded.Watch!.Interpolated!.Riders, rider => rider.Name == "Alpha Leader");
         Assert.All(reloaded.Watch.Interpolated.Riders, rider => Assert.False(string.IsNullOrWhiteSpace(rider.Name)));
     }
 
