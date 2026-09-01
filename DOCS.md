@@ -37,6 +37,7 @@
 | `SAVE_FORMAT_v0.1.md` | DRAFT | SQLite save contract, schema versions, migrations, content identity i recovery |
 | `TESTING_v0.1.md` | DRAFT | Test layers, golden scenarios, probes, invariants, soak and playtest gates |
 | `CAREER_WORLDTOUR_SLICE_v0.1.md` | DRAFT | Owner 2026-08-31 career slice: world–race bind, WT 2026 pack, contracts, no minigames |
+| `CAREER_CLUB_CALENDAR_LEADERS_v0.1.md` | DRAFT | D-050: New Game club pick, pre-season entries, per-event leaders |
 | `RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md` | DRAFT | D-049 bunch sprint; UCI-shaped fields; GC/points/KOM/youth/team jerseys; historical analogues |
 
 ## Read order for a new AI session
