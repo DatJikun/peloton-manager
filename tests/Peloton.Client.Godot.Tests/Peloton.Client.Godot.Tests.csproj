@@ -19,5 +19,6 @@
     <Compile Include="../../src/Peloton.Client.Godot/WatchRouteProfile.cs" Link="WatchRouteProfile.cs" />
     <Compile Include="../../src/Peloton.Client.Godot/CareerShellHost.cs" Link="CareerShellHost.cs" />
     <Compile Include="../../src/Peloton.Client.Godot/CareerLookCatalog.cs" Link="CareerLookCatalog.cs" />
+    <Compile Include="../../src/Peloton.Client.Godot/LookFormat.cs" Link="LookFormat.cs" />
   </ItemGroup>
 </Project>

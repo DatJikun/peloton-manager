@@ -271,8 +271,9 @@ public sealed class CareerShellHost
             return prepared;
         }
 
-        CommandResult raced = application.Execute(
-            new SimulateRaceCommand(RacePreparationDefaults.PrototypeScenarioId));
+        string raceScenarioId = application.World?.TryGetTodaysRaceContentId()
+            ?? RacePreparationDefaults.PrototypeScenarioId;
+        CommandResult raced = application.Execute(new SimulateRaceCommand(raceScenarioId));
         if (raced.Succeeded)
         {
             PruneResultTeamFilter();
@@ -290,7 +291,9 @@ public sealed class CareerShellHost
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(preraceAutosavePath) ?? ".");
-        Watch = new WatchRaceHost(application, preraceAutosavePath);
+        string raceScenarioId = application.World?.TryGetTodaysRaceContentId()
+            ?? RacePreparationDefaults.PrototypeScenarioId;
+        Watch = new WatchRaceHost(application, preraceAutosavePath, raceScenarioId);
         return Watch.StartWatch();
     }
 

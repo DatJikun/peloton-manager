@@ -199,6 +199,29 @@ public sealed class CareerShellHostTests
     }
 
     [Fact]
+    public void WorldTourRaceNextSimulatesWithTodaysRaceContentId()
+    {
+        using TemporaryDirectory temp = new();
+        CareerShellHost host = CreateHost(temp.Path);
+        Assert.True(host.OpenWorldTour("organization.wt2026.ef").Succeeded);
+        Assert.True(host.BeginPreSeasonPlanning().Succeeded);
+        Assert.True(host.ConfirmPreSeasonPlan().Succeeded);
+
+        for (int day = 0; day < 40 && host.Day is { RaceDueToday: false }; day++)
+        {
+            Assert.True(host.FollowPrimary().Succeeded);
+        }
+
+        Assert.True(host.Day!.RaceDueToday);
+        Assert.True(host.FollowPrimary().Succeeded);
+        Assert.Equal(GameState.RacePreparationFlow, host.State);
+        Assert.True(host.RunRace().Succeeded);
+        Assert.Equal(GameState.RaceResultsFlow, host.State);
+        Assert.NotNull(host.Result);
+        Assert.NotEmpty(host.Result!.FinishOrder);
+    }
+
+    [Fact]
     public void RaceNextSimulatesToResultsTableByDefault()
     {
         using TemporaryDirectory temp = new();

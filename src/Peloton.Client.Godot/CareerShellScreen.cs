@@ -31,12 +31,13 @@ public sealed partial class CareerShellScreen : Control
     private Control? shellRoot;
     private Label? dateNumber;
     private Label? dateWord;
-    private Label? dateMeta;
-    private Label? racePill;
+    private Label? dateDow;
+    private Label? dateFull;
+    private Control? yearPill;
+    private Control? racePill;
+    private HBoxContainer? pillsRow;
     private Label? employerName;
-    private Label? sidebarCrest;
-    private Label? sidebarSub;
-    private Label? yearPill;
+    private Control? sidebarCrestHost;
     private Button? cta;
     private Label? toast;
     private Control? content;
@@ -69,6 +70,15 @@ public sealed partial class CareerShellScreen : Control
         ColorRect paper = LookChrome.Block(LookChrome.Paper);
         paper.SetAnchorsPreset(LayoutPreset.FullRect);
         AddChild(paper);
+
+        ColorRect redBand = LookChrome.Block(LookChrome.Red);
+        redBand.SetAnchorsPreset(LayoutPreset.FullRect);
+        redBand.OffsetTop = 680;
+        redBand.OffsetBottom = -120;
+        redBand.RotationDegrees = -8;
+        redBand.MouseFilter = MouseFilterEnum.Ignore;
+        redBand.Modulate = new Color(1, 1, 1, 0.18f);
+        AddChild(redBand);
 
         ColorRect stripe = LookChrome.Block(LookChrome.Team);
         stripe.SetAnchorsPreset(LayoutPreset.FullRect);
@@ -127,55 +137,52 @@ public sealed partial class CareerShellScreen : Control
         column.OffsetTop = 18;
         column.OffsetRight = -14;
         column.OffsetBottom = -14;
-        column.AddThemeConstantOverride("separation", 4);
+        column.AddThemeConstantOverride("separation", 2);
         side.AddChild(column);
 
-        VBoxContainer crest = new();
-        crest.AddThemeConstantOverride("separation", 4);
-        Label club = LookChrome.Display("PELOTON", 13, LookChrome.TeamOn);
-        sidebarCrest = club;
-        Label sub = LookChrome.Body("PELOTON", 10, LookChrome.TeamOn, bold: true);
-        sidebarSub = sub;
-        sub.Modulate = new Color(1, 1, 1, 0.7f);
-        crest.AddChild(club);
-        crest.AddChild(sub);
-        column.AddChild(crest);
+        sidebarCrestHost = LookChrome.Crest("PELOTON", "PELOTON");
+        column.AddChild(sidebarCrestHost);
 
         ColorRect hair = LookChrome.Block(new Color(0, 0, 0, 0.28f));
         hair.CustomMinimumSize = new Vector2(0, 2);
         column.AddChild(hair);
 
-        AddNav(column, View.Desk, "Biurko");
-        AddNav(column, View.Squad, "Skład");
-        AddNav(column, View.Staff, "Sztab");
-        AddNav(column, View.Calendar, "Kalendarz");
+        VBoxContainer nav = new();
+        nav.AddThemeConstantOverride("separation", 2);
+        MarginContainer navPad = new();
+        navPad.AddThemeConstantOverride("margin_top", 14);
+        navPad.AddChild(nav);
+        column.AddChild(navPad);
 
-        Label manage = LookChrome.Body("ZARZĄDZANIE", 9, LookChrome.TeamOn, bold: true);
-        manage.Modulate = new Color(1, 1, 1, 0.6f);
-        column.AddChild(manage);
-        AddNav(column, View.Sponsors, "Sponsorzy");
-        AddNav(column, View.Finance, "Finanse");
-        AddNav(column, View.Scouting, "Skauting");
-        AddNav(column, View.Market, "Rynek transferowy");
-        AddNav(column, View.History, "Historia zespołu");
-        AddNav(column, View.Help, "Pomoc");
+        AddNav(nav, View.Desk, "home", "Biurko", 0);
+        AddNav(nav, View.Squad, "person", "Skład", 0);
+        AddNav(nav, View.Staff, "id-card", "Sztab", 0);
+        AddNav(nav, View.Calendar, "calendar", "Kalendarz", 0);
+
+        nav.AddChild(LookChrome.NavSection("ZARZĄDZANIE"));
+        AddNav(nav, View.Sponsors, "tag", "Sponsorzy", 0);
+        AddNav(nav, View.Finance, "wallet", "Finanse", 0);
+        AddNav(nav, View.Scouting, "magnifier", "Skauting", 0);
+        AddNav(nav, View.Market, "arrows-swap", "Rynek transferowy", 0);
+        AddNav(nav, View.History, "clock", "Historia zespołu", 0);
+        AddNav(nav, View.Help, "question", "Pomoc", 0);
 
         Control spacer = new();
         spacer.SizeFlagsVertical = SizeFlags.ExpandFill;
         column.AddChild(spacer);
 
-        Button settings = LookChrome.Ghost("Ustawienia", OpenSettings);
+        Button settings = LookChrome.NavItem("sliders", "Ustawienia", 0, false, OpenSettings);
         column.AddChild(settings);
 
-        Button manager = LookChrome.Ghost("Karta managera", () => Show(View.Manager));
+        Button manager = LookChrome.ManagerFoot("MN", "M. Nowak", "profil managera · kariera", () => Show(View.Manager));
         column.AddChild(manager);
 
         return side;
     }
 
-    private void AddNav(VBoxContainer column, View view, string label)
+    private void AddNav(VBoxContainer column, View view, string icon, string label, int badge)
     {
-        Button button = LookChrome.Ghost(label, () => Show(view));
+        Button button = LookChrome.NavItem(icon, label, badge, false, () => Show(view));
         nav[view] = button;
         column.AddChild(button);
     }
@@ -222,35 +229,38 @@ public sealed partial class CareerShellScreen : Control
         date.RotationDegrees = -1.2f;
         date.AddThemeConstantOverride("separation", 6);
         dateNumber = LookChrome.Display("1 STY", 26, LookChrome.TeamOn);
-        dateNumber.AddThemeStyleboxOverride("normal", LookChrome.Fill(LookChrome.Team, 10, 6));
-        ColorRect d1 = LookChrome.Block(LookChrome.Team);
-        d1.AddChild(dateNumber);
-        dateNumber.SetAnchorsPreset(LayoutPreset.FullRect);
-        d1.CustomMinimumSize = new Vector2(92, 42);
-        dateWord = LookChrome.Display("PN", 26, LookChrome.Paper);
-        ColorRect d2 = LookChrome.Block(LookChrome.Black);
-        d2.CustomMinimumSize = new Vector2(64, 42);
-        dateWord.SetAnchorsPreset(LayoutPreset.FullRect);
-        dateWord.HorizontalAlignment = HorizontalAlignment.Center;
-        dateWord.VerticalAlignment = VerticalAlignment.Center;
         dateNumber.HorizontalAlignment = HorizontalAlignment.Center;
         dateNumber.VerticalAlignment = VerticalAlignment.Center;
+        ColorRect d1 = LookChrome.Block(LookChrome.Team);
+        d1.CustomMinimumSize = new Vector2(92, 42);
+        d1.AddChild(dateNumber);
+        dateNumber.SetAnchorsPreset(LayoutPreset.FullRect);
+        dateWord = LookChrome.Display("PN", 26, LookChrome.Paper);
+        dateWord.HorizontalAlignment = HorizontalAlignment.Center;
+        dateWord.VerticalAlignment = VerticalAlignment.Center;
+        ColorRect d2 = LookChrome.Block(LookChrome.Black);
+        d2.CustomMinimumSize = new Vector2(64, 42);
         d2.AddChild(dateWord);
+        dateWord.SetAnchorsPreset(LayoutPreset.FullRect);
         date.AddChild(d1);
         date.AddChild(d2);
         VBoxContainer meta = new();
-        dateMeta = LookChrome.Body("Nowa gra", 12, LookChrome.Black, bold: true);
-        meta.AddChild(dateMeta);
+        meta.AddThemeConstantOverride("separation", 2);
+        dateDow = LookChrome.Body("Nowa gra", 14, LookChrome.Black, bold: true);
+        dateFull = LookChrome.Body(string.Empty, 12, LookChrome.Gray);
+        meta.AddChild(dateDow);
+        meta.AddChild(dateFull);
         date.AddChild(meta);
         top.AddChild(date);
 
-        yearPill = LookChrome.Body("Rok 2026", 13, LookChrome.Black, bold: true);
-        yearPill.AddThemeStyleboxOverride("normal", LookChrome.Fill(LookChrome.White, 14, 9));
-        top.AddChild(yearPill);
-
-        racePill = LookChrome.Body("WYŚCIG", 13, LookChrome.Black, bold: true);
-        racePill.AddThemeStyleboxOverride("normal", LookChrome.Fill(LookChrome.White, 14, 9));
-        top.AddChild(racePill);
+        HBoxContainer pills = new();
+        pills.AddThemeConstantOverride("separation", 8);
+        pillsRow = pills;
+        yearPill = LookChrome.Pill("ROK", "2026");
+        racePill = LookChrome.Pill("WYŚCIG", null);
+        pills.AddChild(yearPill);
+        pills.AddChild(racePill);
+        top.AddChild(pills);
 
         Control spacer = new();
         spacer.SizeFlagsHorizontal = SizeFlags.ExpandFill;
@@ -265,7 +275,7 @@ public sealed partial class CareerShellScreen : Control
         empCol.OffsetTop = 8;
         empCol.OffsetRight = -16;
         empCol.OffsetBottom = -8;
-        Label empLabel = LookChrome.Body("ZESPÓŁ", 11, LookChrome.Paper, bold: true);
+        Label empLabel = LookChrome.Meta("ZESPÓŁ", 11, LookChrome.Paper);
         empLabel.Modulate = new Color(1, 1, 1, 0.6f);
         employerName = LookChrome.Display("—", 22, LookChrome.Team);
         empCol.AddChild(empLabel);
@@ -486,7 +496,7 @@ public sealed partial class CareerShellScreen : Control
                 : CareerCalendarDates.FormatWeekdayShort(dayNumber);
         }
 
-        if (dateMeta is not null)
+        if (dateDow is not null && dateFull is not null)
         {
             string flow = host.State switch
             {
@@ -496,68 +506,39 @@ public sealed partial class CareerShellScreen : Control
             };
             if (host.State == GameState.MainMenu || host.State == GameState.PreSeasonPlanningFlow)
             {
-                dateMeta.Text = flow;
+                dateDow.Text = flow;
+                dateFull.Text = string.Empty;
             }
             else if (day is null)
             {
-                dateMeta.Text = host.IsWorldTourWorld ? "WorldTour" : "Szkielet świata";
+                dateDow.Text = host.IsWorldTourWorld ? "WorldTour" : "Szkielet świata";
+                dateFull.Text = string.Empty;
             }
             else
             {
-                string baseMeta = string.Create(
+                dateDow.Text = CareerCalendarDates.FormatWeekdayLong(dayNumber);
+                int week = ISOWeek.GetWeekOfYear(CareerCalendarDates.ToDate(dayNumber).ToDateTime(TimeOnly.MinValue));
+                dateFull.Text = string.Create(
                     CultureInfo.InvariantCulture,
-                    $"{CareerCalendarDates.FormatWeekdayLong(dayNumber)} · {CareerCalendarDates.FormatLong(dayNumber)}");
-                dateMeta.Text = string.IsNullOrEmpty(flow) ? baseMeta : $"{baseMeta} · {flow}";
+                    $"{CareerCalendarDates.FormatLong(dayNumber)} · tydzień {week}");
             }
         }
 
-        if (yearPill is not null)
-        {
-            int year = host.State == GameState.MainMenu
-                ? 2026
-                : CareerCalendarDates.ToDate(dayNumber).Year;
-            yearPill.Text = string.Create(CultureInfo.InvariantCulture, $"Rok {year}");
-        }
+        RebuildPills(day, dayNumber);
 
-        if (sidebarCrest is not null)
+        if (sidebarCrestHost is not null)
         {
-            sidebarCrest.Text = host.State == GameState.MainMenu
+            string club = host.State == GameState.MainMenu
                 ? "PELOTON"
                 : (host.EmployerName ?? "PELOTON").ToUpperInvariant();
-        }
-
-        if (sidebarSub is not null)
-        {
-            sidebarSub.Text = host.State switch
+            string sub = host.State switch
             {
                 GameState.MainMenu => "PELOTON",
                 _ when host.IsWorldTourWorld => "WORLDTOUR · 2026",
                 _ when host.State is not GameState.MainMenu => "SZKIELET · 2026",
                 _ => "PELOTON",
             };
-        }
-
-        if (racePill is not null)
-        {
-            if (day is null)
-            {
-                racePill.Text = "WYŚCIG";
-            }
-            else if (day.RaceDueToday)
-            {
-                racePill.Text = "WYŚCIG DZIŚ";
-            }
-            else if (day.DaysUntilNextRace > 0)
-            {
-                int nextDay = day.NextRaceDayNumber;
-                racePill.Text = string.Create(
-                    CultureInfo.InvariantCulture,
-                    $"{CareerCalendarDates.FormatSlab(nextDay)} · za {day.DaysUntilNextRace} dni");
-            }
-            else
-            {
-                racePill.Text = "BRAK WYŚCIGU";
-            }
+            LookChrome.UpdateCrest(sidebarCrestHost, club, sub);
         }
 
         if (employerName is not null)
@@ -589,32 +570,15 @@ public sealed partial class CareerShellScreen : Control
             (calendarYear, calendarMonth) = CareerCalendarDates.MonthFromDayNumber(day.DayNumber);
         }
 
-        if (nav.TryGetValue(View.Desk, out Button? deskNav))
-        {
-            deskNav.Text = host.Inbox.Count == 0
-                ? "Biurko"
-                : string.Create(CultureInfo.InvariantCulture, $"Biurko  {host.Inbox.Count}");
-        }
-
         foreach ((View view, Button button) in nav)
         {
-            bool active = view == current;
-            button.AddThemeColorOverride("font_color", active ? LookChrome.Paper : LookChrome.TeamOn);
-            button.AddThemeStyleboxOverride(
-                "normal",
-                active
-                    ? LookChrome.Fill(LookChrome.Black, 12, 12)
-                    : new StyleBoxFlat
-                    {
-                        BgColor = new Color(0, 0, 0, 0),
-                        ContentMarginLeft = 12,
-                        ContentMarginRight = 12,
-                        ContentMarginTop = 12,
-                        ContentMarginBottom = 12,
-                    });
+            (string icon, string label) = NavMeta(view);
+            int badge = view == View.Desk ? host.Inbox.Count : 0;
+            LookChrome.SetNavItem(button, icon, label, badge, view == current);
         }
 
         RebuildContent();
+        SyncContentHeight();
     }
 
     private void RebuildContent()
@@ -633,6 +597,12 @@ public sealed partial class CareerShellScreen : Control
         if (host.State == GameState.PreSeasonPlanningFlow)
         {
             BuildSeasonPlan();
+            return;
+        }
+
+        if (host.State == GameState.RaceResultsFlow && host.Result is not null)
+        {
+            BuildRaceResults();
             return;
         }
 
@@ -677,35 +647,110 @@ public sealed partial class CareerShellScreen : Control
         }
     }
 
-    private static VBoxContainer Panel(string title, Control body)
+    private static VBoxContainer Panel(
+        string title,
+        Control body,
+        string? linkText = null,
+        Action? onLink = null,
+        Control? rightAccessory = null,
+        bool expandVertical = false)
     {
         VBoxContainer stack = new();
         stack.AddThemeConstantOverride("separation", 0);
         stack.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        if (expandVertical)
+        {
+            stack.SizeFlagsVertical = SizeFlags.ExpandFill;
+        }
+
         PanelContainer card = LookChrome.Card();
+        card.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        if (expandVertical)
+        {
+            card.SizeFlagsVertical = SizeFlags.ExpandFill;
+        }
+
         VBoxContainer inner = new();
         inner.AddThemeConstantOverride("separation", 0);
-        ColorRect header = LookChrome.Block(LookChrome.Team);
-        header.CustomMinimumSize = new Vector2(0, 36);
-        Label head = LookChrome.Display(title, 12, LookChrome.TeamOn);
-        head.SetAnchorsPreset(LayoutPreset.FullRect);
-        head.OffsetLeft = 14;
-        head.VerticalAlignment = VerticalAlignment.Center;
-        header.AddChild(head);
-        inner.AddChild(header);
-        inner.AddChild(Pad(body));
+        inner.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        if (expandVertical)
+        {
+            inner.SizeFlagsVertical = SizeFlags.ExpandFill;
+        }
+
+        inner.AddChild(LookChrome.SectionBar(title, linkText, onLink, rightAccessory));
+        inner.AddChild(Pad(body, expandVertical));
         card.AddChild(inner);
         stack.AddChild(card);
         return stack;
     }
 
-    private static MarginContainer Pad(Control child)
+    private void SyncContentHeight()
+    {
+        if (content?.GetParent() is not ScrollContainer scroll)
+        {
+            return;
+        }
+
+        content.SizeFlagsVertical = SizeFlags.ExpandFill;
+        content.CustomMinimumSize = new Vector2(0, Mathf.Max(scroll.Size.Y, 0));
+    }
+
+    private void RebuildPills(CareerDayProjection? day, int dayNumber)
+    {
+        if (pillsRow is null)
+        {
+            return;
+        }
+
+        foreach (Node child in pillsRow.GetChildren())
+        {
+            child.QueueFree();
+        }
+
+        int year = host!.State == GameState.MainMenu
+            ? 2026
+            : CareerCalendarDates.ToDate(dayNumber).Year;
+        (string yearPrefix, string yearAccent) = LookFormat.YearPillParts(year);
+        yearPill = LookChrome.Pill(yearPrefix, yearAccent);
+        pillsRow.AddChild(yearPill);
+
+        string racePrefix;
+        string? raceAccent = null;
+        if (day is null)
+        {
+            racePrefix = "WYŚCIG";
+        }
+        else if (day.RaceDueToday)
+        {
+            racePrefix = "WYŚCIG DZIŚ";
+        }
+        else if (day.DaysUntilNextRace > 0)
+        {
+            (racePrefix, raceAccent) = LookFormat.RaceCountdownPill(day.DaysUntilNextRace);
+        }
+        else
+        {
+            racePrefix = "BRAK WYŚCIGU";
+        }
+
+        racePill = LookChrome.Pill(racePrefix, raceAccent);
+        pillsRow.AddChild(racePill);
+    }
+
+    private static MarginContainer Pad(Control child, bool expandVertical = false)
     {
         MarginContainer pad = new();
         pad.AddThemeConstantOverride("margin_left", 14);
         pad.AddThemeConstantOverride("margin_top", 12);
         pad.AddThemeConstantOverride("margin_right", 14);
         pad.AddThemeConstantOverride("margin_bottom", 12);
+        if (expandVertical)
+        {
+            pad.SizeFlagsVertical = SizeFlags.ExpandFill;
+            child.SizeFlagsVertical = SizeFlags.ExpandFill;
+        }
+
         pad.AddChild(child);
         return pad;
     }
@@ -737,6 +782,24 @@ public sealed partial class CareerShellScreen : Control
             "RIDER_NOT_FOUND" => "Nie znaleziono zawodnika.",
             "EMPLOYER_REQUIRED" => "Brak przypisanego klubu.",
             _ => code,
+        };
+    }
+
+    private static (string Icon, string Label) NavMeta(View view)
+    {
+        return view switch
+        {
+            View.Desk => ("home", "Biurko"),
+            View.Squad => ("person", "Skład"),
+            View.Staff => ("id-card", "Sztab"),
+            View.Calendar => ("calendar", "Kalendarz"),
+            View.Sponsors => ("tag", "Sponsorzy"),
+            View.Finance => ("wallet", "Finanse"),
+            View.Scouting => ("magnifier", "Skauting"),
+            View.Market => ("arrows-swap", "Rynek transferowy"),
+            View.History => ("clock", "Historia zespołu"),
+            View.Help => ("question", "Pomoc"),
+            _ => ("home", "Biurko"),
         };
     }
 
