@@ -6,6 +6,7 @@ using System.Linq;
 using Peloton.Application;
 using Peloton.Domain;
 using Peloton.Infrastructure;
+using Peloton.Simulation;
 using Peloton.Simulation.Race;
 
 namespace Peloton.SimRunner;
@@ -354,8 +355,14 @@ public static class CareerDayCommand
             string.Create(
                 CultureInfo.InvariantCulture,
                 $"calendar2027={calendar2027}"));
-        output.WriteLine("retired=0");
-        output.WriteLine("neo=0");
+        output.WriteLine(
+            string.Create(
+                CultureInfo.InvariantCulture,
+                $"retired={SeasonRolloverExecutor.LastRetiredCount}"));
+        output.WriteLine(
+            string.Create(
+                CultureInfo.InvariantCulture,
+                $"neo={SeasonRolloverExecutor.LastNeoCount}"));
     }
 
     private static string ResolveCurrentRaceContentId(GameApplication application) =>

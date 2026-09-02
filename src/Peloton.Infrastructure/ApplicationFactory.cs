@@ -15,6 +15,9 @@ public static class ApplicationFactory
     public static GameApplication Create(string contentRoot)
     {
         SeasonRolloverExecutor.AgingTick = SeasonAging.Apply;
+        SeasonRolloverExecutor.RetirementTick = SeasonRetirements.Apply;
+        SeasonRolloverExecutor.NeoProTick = SeasonNeoPros.Apply;
+        SeasonNeoPros.ContentRoot = contentRoot;
         SeasonRolloverExecutor.RegisterApplicator();
         return new GameApplication(
             new JsonScenarioCatalog(contentRoot),

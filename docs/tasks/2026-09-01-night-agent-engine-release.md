@@ -56,7 +56,7 @@ Co wylądowało (D-055, D-056 — które etapy, md, release), wynik `compare --s
 - [x] D-055 kod + sondy
 - [x] D-056 etap 1 (rollover, kursy i kalendarz 2027, schema 11)
 - [x] D-056 etap 2 (starzenie)
-- [ ] D-056 etap 3 (emerytury + neo-pro)
+- [x] D-056 etap 3 (emerytury + neo-pro)
 - [ ] D-056 etap 4 (kontrakty AI)
 - [ ] D-056 etap 5 (inbox)
 - [ ] D-056 etap 6 (`seasons --years 5`, sondy)

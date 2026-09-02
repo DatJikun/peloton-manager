@@ -10,6 +10,14 @@ public static class SeasonRolloverExecutor
 {
     public static Action<WorldState, int>? AgingTick { get; set; }
 
+    public static Func<WorldState, int, IReadOnlyList<RiderCareer>>? RetirementTick { get; set; }
+
+    public static Func<WorldState, int, IReadOnlyList<RiderCareer>, IReadOnlyList<RiderCareer>>? NeoProTick { get; set; }
+
+    public static int LastRetiredCount { get; private set; }
+
+    public static int LastNeoCount { get; private set; }
+
     public static void RegisterApplicator()
     {
         WorldState.SetSeasonRolloverApplicator(Apply);
@@ -18,6 +26,8 @@ public static class SeasonRolloverExecutor
     public static void Apply(WorldState world)
     {
         ArgumentNullException.ThrowIfNull(world);
+        LastRetiredCount = 0;
+        LastNeoCount = 0;
         if (world.RaceIdentities.Count == 0)
         {
             return;
@@ -27,8 +37,12 @@ public static class SeasonRolloverExecutor
         int dayOffset = world.CurrentDate.DayNumber;
 
         AgingTick?.Invoke(world, newSeasonYear);
+        IReadOnlyList<RiderCareer> retired = RetirementTick?.Invoke(world, newSeasonYear) ?? Array.Empty<RiderCareer>();
+        IReadOnlyList<RiderCareer> neo = NeoProTick?.Invoke(world, newSeasonYear, retired) ?? Array.Empty<RiderCareer>();
+        LastRetiredCount = retired.Count;
+        LastNeoCount = neo.Count;
 
-        foreach (RiderCareer career in world.RiderCareers)
+        foreach (RiderCareer career in world.RiderCareers.Where(career => !career.IsRetired))
         {
             career.ApplyWinterFormReset();
         }

@@ -126,7 +126,9 @@ public sealed class CareerSeasonRolloverStage1Tests
 
         AdvanceToDay(application, 364);
         application.World.AdvanceOneDay();
-        Assert.True(application.World.RiderCareers.All(career =>
+        Assert.True(application.World.RiderCareers
+            .Where(career => !career.IsRetired)
+            .All(career =>
             career.Form01 == 1.0 && career.Freshness01 == 1.0 && career.Fatigue01 == 0.0));
     }
 

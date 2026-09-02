@@ -244,8 +244,24 @@ public sealed class WorldState
 
     public IReadOnlyList<RiderCareer> GetRiderCareersForOrganization(WorldEntityId organizationId) =>
         RiderSquadOrder.OrderSquad(
-                riderCareers.Where(career => career.OrganizationId == organizationId))
+                riderCareers.Where(career => career.OrganizationId == organizationId && !career.IsRetired))
             .ToArray();
+
+    public int LivingRiderCount => riderCareers.Count(career => !career.IsRetired);
+
+    public void AddPerson(Person person)
+    {
+        ArgumentNullException.ThrowIfNull(person);
+        persons.Add(person);
+        persons.Sort((left, right) => left.Id.Value.CompareTo(right.Id.Value));
+    }
+
+    public void AddRiderCareer(RiderCareer career)
+    {
+        ArgumentNullException.ThrowIfNull(career);
+        riderCareers.Add(career);
+        riderCareers.Sort((left, right) => left.Id.Value.CompareTo(right.Id.Value));
+    }
 
     public bool IsCalendarRaceDue =>
         CurrentDate.DayNumber > 0 &&

@@ -69,6 +69,7 @@ public static class WorldChecksum
                 writer.Write(career.Fatigue01);
                 writer.Write(career.Loyalty01);
                 writer.Write(career.PotentialOvr);
+                writer.Write(career.IsRetired);
                 foreach (RiderCareerResult result in career.Results)
                 {
                     writer.Write(result.RaceContentId);

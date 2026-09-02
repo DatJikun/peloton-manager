@@ -27,7 +27,7 @@ This is an explicit prototype boundary, not an accepted simplification of the fu
 - `CreateWorld` materializes riders from `content/peloton.skeleton/skeleton-roster.json` (stable `OriginDefinitionId`s from the prototype pack).
 - Prep squad is the player employer's world roster (`RiderCareer.OrganizationId`; null = unattached).
 - SQLite `SchemaVersion` is **11** (D-056 stage 1 season rollover). Schema 1–10 saves may refuse to load.
-- World checksum label is `peloton-world-checksum-v9`.
+- World checksum label is `peloton-world-checksum-v11`.
 - `CalendarEntry.RaceContentId` stores the calendar race id (`race.wt2026.*` for WT; route template resolved via `DefaultRaceTemplateId`).
 
 Phase 1 out of scope for Godot: Career Hub UI is deleted (D-048). WT CreateWorld is landed in phase 5.
@@ -109,7 +109,7 @@ Remaining limits:
 - Classified Flat uses a bunch-sprint kick (last 250 m at `PeakPowerW`) after sitting in the pack. Feel probe seed `91234`: Philipsen place 1, Pogačar 135 on the flattest stored Flat; mountain probe still has Pogačar ahead of Philipsen.
 - Prototype stores **two** CdA numbers per rider (`CdARoadM2` / `CdATtM2`, D-055). Drafting still does `CdA_effective = CdA * shelter` with the stage-selected CdA. There is no sit-up-on-climb vs aero-tuck-on-descent switch. A third “mountain CdA” is not worth a rating — climbs are slow, gravity/W/kg dominate.
 - Prototype race session is sequential 1-second `RaceSession.Step` for every rider; wall-clock is CPU-fast, not real-time.
-- Yearly course re-generation after 2026: D-056 stage 1 rolls 2027 courses and calendar on New Year. Aging / neo-pro / AI contracts are later stages.
+- Yearly course re-generation after 2026: D-056 stages 1–3 roll 2027 courses/calendar, aging, retirements, and neo-pros on New Year. AI contracts / season inbox / `seasons` are later stages.
 - Jersey tables exist as after-stage queries (GC / points / KOM / youth / team). D-032 mid-race GC leadership stays deferred.
 - §49 still `NOT VERIFIED`.
 
@@ -178,7 +178,7 @@ Still missing (deferred): crosswind echelons, lead-out trains, incidents/mechani
 
 ## CdA Road vs TT (D-055 landed)
 
-Contract: `RACE_CDA_ROAD_TT_v0.1.md`. `PhysicsContractVersion` stays **2** (road stages keep the old road CdA). SQLite `SchemaVersion` **10** / checksum `peloton-world-checksum-v10`. Schema 1–9 saves may refuse to load.
+Contract: `RACE_CDA_ROAD_TT_v0.1.md`. `PhysicsContractVersion` stays **2** (road stages keep the old road CdA). SQLite `SchemaVersion` **10** / checksum `peloton-world-checksum-v10`. Schema 1–9 saves may refuse to load. (Superseded by D-056 schema 11 for new saves.)
 
 Landed:
 
@@ -206,4 +206,15 @@ Landed:
 - 2027 calendar entries (one per racing stage); organization race entries reset (entered, leader null); player pre-season reopens as „Plan sezonu 2027”.
 - Pre-season lists only current-season calendar rows (`DayNumber >= SeasonStartDayNumber`) so leftover 2026 skips do not steal 2027 dates.
 
-Not in this stage: aging physiology, retirements, neo-pros, AI contract cycle, season-summary inbox, SimRunner `seasons`.
+Not in stages 1–3: AI contract cycle, season-summary inbox, SimRunner `seasons`.
+
+## Season retirements and neo-pros (D-056 stage 3)
+
+Contract: `CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md` §4.3–§4.4.
+
+Landed:
+
+- Retirement on rollover: age ≥ 40, or age ≥ 35 with OVR < 60 and no active contract, or age ≥ 33 with no contract and no top-20 in the last two seasons (`SeasonStartDayNumber − 730`).
+- `RiderCareer.IsRetired`; retired riders detach, stay in history, never start.
+- One unattached neo-pro per retirement (age 19–21, neo physiology band, POT 65–90, seed `neo:{year}:{index}`), names from `content/peloton.wt-2026/names.json` (≥ 60 first / last per nationality group). Living cap 512. World living count does not shrink.
+- First 2026→2027 WT rollover on the D-057 452-rider pack retires the age-40+ riders (currently 14) and creates the same number of neos.

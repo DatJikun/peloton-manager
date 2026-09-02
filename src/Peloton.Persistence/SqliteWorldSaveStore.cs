@@ -325,7 +325,8 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         double Fatigue01,
         double Loyalty01,
         int PotentialOvr,
-        IReadOnlyList<RiderCareerResultDto>? Results = null)
+        IReadOnlyList<RiderCareerResultDto>? Results = null,
+        bool IsRetired = false)
     {
         public RiderCareer ToDomain() => new(
             Id,
@@ -351,7 +352,8 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
             Loyalty01,
             PotentialOvr,
             (Results ?? Array.Empty<RiderCareerResultDto>()).Select(result => result.ToDomain()),
-            CdATtM2);
+            CdATtM2,
+            IsRetired);
 
         public static RiderCareerDto FromDomain(RiderCareer career) => new(
             career.Id,
@@ -383,7 +385,8 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                     result.DayNumber,
                     result.Place,
                     result.DidNotFinish))
-                .ToArray());
+                .ToArray(),
+            career.IsRetired);
     }
 
     private sealed record RiderContractDto(

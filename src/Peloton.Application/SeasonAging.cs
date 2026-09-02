@@ -23,7 +23,7 @@ public static class SeasonAging
     {
         ArgumentNullException.ThrowIfNull(world);
         Dictionary<WorldEntityId, Person> personsById = world.Persons.ToDictionary(person => person.Id);
-        foreach (RiderCareer career in world.RiderCareers)
+        foreach (RiderCareer career in world.RiderCareers.Where(career => !career.IsRetired))
         {
             Person person = personsById[career.PersonId];
             int birthYear = person.BirthYear ??

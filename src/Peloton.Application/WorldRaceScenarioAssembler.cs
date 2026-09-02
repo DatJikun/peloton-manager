@@ -96,6 +96,7 @@ public static class WorldRaceScenarioAssembler
 
         RaceRiderProfile[] riders = world.RiderCareers
             .Where(career =>
+                !career.IsRetired &&
                 career.OrganizationId is WorldEntityId organizationId &&
                 enteredOrganizationIds.Contains(organizationId))
             .Select(career => ToRaceProfile(career))
@@ -106,7 +107,9 @@ public static class WorldRaceScenarioAssembler
         RaceStartingPosition[] startingPositions = BuildPositioningGrid(riders);
 
         RaceCommand[] commands = template.Commands
-            .Where(command => enteredOrganizationIds.Contains(raceTeamToOrganization[command.TeamId]))
+            .Where(command =>
+                enteredOrganizationIds.Contains(raceTeamToOrganization[command.TeamId]) &&
+                !careersByOrigin[command.RiderId].IsRetired)
             .Select(command => new RaceCommand(
                 command.SimulationSecond,
                 raceTeamToOrganization[command.TeamId],
@@ -115,7 +118,9 @@ public static class WorldRaceScenarioAssembler
             .ToArray();
 
         RaceTacticalPlan[] tacticalPlans = template.TacticalPlans
-            .Where(plan => enteredOrganizationIds.Contains(raceTeamToOrganization[plan.TeamId]))
+            .Where(plan =>
+                enteredOrganizationIds.Contains(raceTeamToOrganization[plan.TeamId]) &&
+                !careersByOrigin[plan.SupportRiderId].IsRetired)
             .Select(plan =>
             {
                 RaceTeamTemplate team = template.Teams[plan.TeamId];
