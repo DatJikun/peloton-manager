@@ -48,12 +48,12 @@
 - [x] Kalendarz
 - [x] Finanse (bez zmyślonej księgi/donuta — brak Query)
 - [x] Rynek
-- [ ] Plan sezonu / Nowa gra (dziedziczą chrome; osobnego przebiegu nie było)
-- [ ] Inbox / Ustawienia (Inbox na Biurku zrobiony; Ustawienia bez zmian)
+- [ ] Plan sezonu / Nowa gra (dziedziczą chrome; osobnego przebiegu pikseli nie było — zostaje na później, jeśli właściciel powie)
+- [ ] Inbox / Ustawienia (Inbox na Biurku zrobiony; Ustawienia = FILM WŁ/WYŁ, bez przebiegu HTML)
 - [x] zrzuty ekranów: `/opt/cursor/artifacts/godot-ui/after-*.png` (Godot 4.4.1 .NET na VM, Xvfb)
-- Przekazanie sesji: `docs/tasks/2026-09-02-session-handoff-main-agent.md`
-- [ ] gate + merge do `main` + CI zielone
-- [ ] `CODEBASE_MAP.md` wiersz Godota, `HANDOFF.md` jedna linia
+- [x] Przekazanie sesji: `docs/tasks/2026-09-02-session-handoff-main-agent.md`
+- [x] gate + merge do `main` + CI zielone (`85b4257`; `gh run` `33642782814` success)
+- [x] `CODEBASE_MAP.md` wiersz Godota, `HANDOFF.md` jedna linia (Recent owner decisions, 2026-09-02)
 
 Zrzuty źródłowe (2026-09-02, Godot 4.4.1 .NET na VM, fullscreen 1920×1200; HTML w Chrome headless 1600×900): `/opt/cursor/artifacts/godot-ui/godot-0*.png` vs `html-*.png`. Narzędzia: `/tmp/gshot.sh out.png` (zrzut ekranu Godota), `xdotool mousemove X Y click 1` (klik), sesja tmux `godot-shell`.
 
