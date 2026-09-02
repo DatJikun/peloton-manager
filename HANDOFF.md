@@ -10,10 +10,10 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md` (D-056) **landed** on SchemaVersion **11**. **Next:** owner Windows playtest pack (D-057/D-058 may still be open for roster/avatars polish). Do not close §49.
+`CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md` (D-056) **landed** on SchemaVersion **11**. **Next:** owner Windows playtest of GitHub Release `playtest-2026-09-02` — no new system. Do not close §49.
 
 ### Goal
-D-051 landed: desk / Skład / Finanse read `ClubFinanceProjection` (euro) and Skład writes D-044 contract offers. **D-052 landed:** 1 Jan 2026 dates, grouped upcoming races, month calendar, world inbox, employer crest, world market. **D-054 landed:** position is earned, pace comes from riders. **D-055 landed:** two CdA numbers; ITT is solo 60 s starts; TTT times the 4th rider. **Next:** D-056 season rollover. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
+D-051 landed: desk / Skład / Finanse read `ClubFinanceProjection` (euro) and Skład writes D-044 contract offers. **D-052 landed:** 1 Jan 2026 dates, grouped upcoming races, month calendar, world inbox, employer crest, world market. **D-054 landed:** position is earned, pace comes from riders. **D-055 landed:** two CdA numbers; ITT is solo 60 s starts; TTT times the 4th rider. **D-056 landed:** Advance Day crosses into 2027+ (aging, retirements, neo-pros, AI contracts, season inbox). **Next:** owner Windows playtest of GitHub Release `playtest-2026-09-02` — no new system. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
 
 ### Status
 Owner (player) directed this on 2026-09-01. **D-049, D-050, D-051, D-052, D-054, D-055, D-056, and D-057 landed.** Classified Flat is a bunch sprint (sit-in, then last 250 m at peak power). Official WT starts are event-shaped (TDU 140, monuments 175, Grand Tours 176, other WT 154). After a stage the shell/CLI can show GC / points / KOM / youth / team. SimRunner `compare` puts prototype results next to 2025 analogues (not a script). Skeleton soak still uses the short proof circuit. SQLite SchemaVersion **11**. Each rider stores `CdARoadM2` and `CdATtM2`; ITT/TTT stages use the TT value. Advance Day crosses 31 Dec 2026 into season 2027+ (courses, calendar, pre-season, aging, retirements, neo-pros, AI contract cycle, season inbox).
@@ -42,12 +42,14 @@ Działa:
 - cienka ekonomia: kasa, sponsor vs płace, notatka o debecie;
 - Godot: powłoka kariery (wygląd z HTML); daty od 1 stycznia 2026; herb to wybrany klub; biurko pokazuje max 5 całych wyścigów; kalendarz to siatka miesiąca; inbox ze świata; rynek to kolarze ze świata z filtrem klubu; sztab/sponsorzy/skauting jeszcze nie w świecie;
 - Advance Day przez 31 grudnia otwiera sezon **2027+** (nowe trasy i kalendarz, plan sezonu wraca, starzenie, emerytury, neo-pro, kontrakty AI, inbox sezonu);
+- ITT jedzie się solo (starty co 60 s); TTT liczy czas czwartego kolarza; każdy kolarz ma osobne CdA szosa / deska;
 - paczka Windows do ręcznego playtestu: GitHub Releases (tag `playtest-*`); nie commituj zipa do repo (D-053).
 
 Właśnie budujemy:
-- owner Windows playtest pack (D-053); D-057/D-058 polish if still open.
+- ręczny playtest właściciela paczki Windows (GitHub Release tag `playtest-2026-09-02`); bez nowego systemu.
 
 Jeszcze nie:
+- D-058 C# rider avatars (`Peloton.Avatars`) — osobna lista, nie ten slice;
 - nie ma Career Hub — usunięty z repozytorium (D-048); biurko to powłoka `CareerShell.tscn`;
 - wybór ósemki na konkretny wyścig to później (dziś startuje pierwszych 7/8 składu);
 - Watch Race **jest w grze**, ale **domyślnie wyłączony** — FILM: WŁ włącza oglądanie; nie mergujemy starych PR-ów radia/DS;
@@ -138,11 +140,11 @@ Baza 2026: 18 ekip męskiego WorldTour plus zaproszone ProTeamy / Australia w `s
 - [x] D-056 stage 1 — New Year rollover, 2027 courses/calendar/pre-season, SchemaVersion 11
 - [x] D-056 stage 2 — yearly aging tick (physiology, talentGate, BirthYear)
 - [x] D-056 stage 3 — retirements + neo-pros (`names.json`, living cap 512)
-- [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
+- [x] Avatar prototype (EXPERIMENT, placeholder art) — czeka na D-058 C# pipeline + wizualną ocenę właściciela
 - [x] D-056 season rollover (aging, retirements, neo-pros, AI contracts, inbox, `seasons --years 5`)
 
 ## Next task
-**Next:** owner Windows playtest pack. Do not close §49. Do not rebuild Career Hub. Watch film stays off by default.
+**Next:** owner Windows playtest of GitHub Release `playtest-2026-09-02`. No new system. Do not close §49. Do not rebuild Career Hub. Watch film stays off by default.
 
 ## Known blockers
 - None.
@@ -171,7 +173,9 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
-- `2026-09-02` — **D-056 stage 3 landed:** age-40 (and unattached decline) retirements; one neo-pro per retirement from `content/peloton.wt-2026/names.json`; living count does not shrink (cap 512); retired riders never start. AI contracts / inbox / `seasons` later. Contract: `CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md`.
+- `2026-09-02` — After D-056, **Next** is owner Windows playtest (GitHub Release `playtest-2026-09-02`). No new system this slice. D-058 C# avatars stay later. §49 stays `NOT VERIFIED`.
+- `2026-09-02` — **D-056 compile fix:** `RiderCareer.RetiredFromOrganizationId` is captured on `Retire()` (former club, then detach) so the season-summary inbox can count squad retirements. Schema 11 JSON round-trips the id. Five-season soak runs after the parallel test suite (`Category=Soak`); Application tests cap at two threads.
+- `2026-09-02` — **D-056 stage 3 landed:** age-40 (and unattached decline) retirements; one neo-pro per retirement from `content/peloton.wt-2026/names.json`; living count does not shrink (cap 512); retired riders never start. Contract: `CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md`.
 - `2026-09-02` — **D-057 landed:** 22 riders per WT club (452 total, wildcards stay 8); `wt2026-riders-source.csv` + `tools/build_wt2026_roster.py`; classics-star CP/durability bump (MvdP/Van Aert/Pedersen/Evenepoel); compare seed 91234 sprint/Hautacam winners unchanged.
 - `2026-09-02` — **D-056 landed:** infinite career rollover (stages 1–6): season year, aging, retirements, neo-pros, AI contract cycle, season inbox, `seasons --years 5`. SchemaVersion 11. Contract: `CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md`.
 - `2026-09-02` — **D-056 stages 1–2 landed:** New Year rollover to 2027 (courses, calendar, pre-season, winter form) plus yearly physiology aging (talentGate, ±0.006 variance). SchemaVersion 11.
@@ -329,7 +333,7 @@ src/Peloton.Client.Godot/project.godot
 - Nie ustawiaj Watch Race jako domyślnej ścieżki gry (D-043). Nie odbudowuj Career Hub (D-048). Nie merguj starych PR-ów radia/DS Watch na `main`.
 - Nie zostawiaj gotowej pracy na otwartym PR (D-045). Zielony gate → merge do `main` w tej samej sesji. Nie zlewaj stosu starych branchy jeden na drugi.
 - Nie mów właścicielowi „kocie łby”; polska nazwa statystyki to **bruk** (D-046). W kodzie zostaje `Cobbles`.
-- D-051 jest na ekranach. Nie zaczynaj rynku sponsorów, skautingu ani starzenia w tym samym drzewie co CdA. Nie zamykaj §49.
+- D-051 jest na ekranach. Nie zaczynaj rynku sponsorów ani skautingu w tym samym drzewie co awatary. Nie zamykaj §49.
 - Nie twórz osobnej ścieżki kariery dla Continental. Dywizja i 3-letnia licencja UCI to dane na `Organization` + scenariusz (`playerStartDivisions`); awansów nie kodujemy w D-050.
 - Nie przywracaj cap 12 na oficjalnym starcie WT. Feel probe seed `91234` pokazuje sprintera przed góralem na sklasyfikowanym płaskim; nie zamykaj §49.
 - Nie zapisuj OVR/POT/kasy/skautingu z `CareerLookCatalog` do World, SQLite ani Commandów. To nie true ability.
@@ -340,7 +344,7 @@ src/Peloton.Client.Godot/project.godot
 - Nie otwieraj nowego PR-a, jeśli poprzedni z tej sesji nie jest zmergowany albo zamknięty (D-045 / D-053).
 
 ## Handoff summary
-Milestone 0 still supplies the headless .NET 8 spine. The race prototype is the official result path: `PrototypeRaceEngine` plus `content/peloton.race-prototype`, Application commands `StartRaceCommand` / `AdvanceRaceCommand` / `RespondToRaceDecisionCommand` / `BeginRaceWatchCommand` / `AdvanceRaceWatchCommand` / `AbandonRaceLiveCommand`, and SimRunner `race`. A pending DecisionRequest stays in `RaceLive`. SimRunner `watch` and career `day --watch-from-prep` keep the D-033 supervising clock. Godot (`src/Peloton.Client.Godot`) presents the career shell (`CareerShell.tscn`, POC v3 chrome, desk queries, default simulate → result table, plus `CareerLookCatalog` for empty domains). Watch film is optional and **off by default** (D-043 / D-048). Career Hub UI is deleted. Renderer does not drive physics. Look-catalog OVR is not World; desk/squad/finance cash and contract offers are. The owner look drawing remains `peloton-manager-full-ui-poc-v3.html` (`HTML_UI_LAB.md`). After Simulate/Watch, `RaceResultProjection` and `RaceDebriefProjection` present the committed result without a second `RunBatch`. Spy OFF/ON must match checksum and finish order. `StubRaceEngine` is gone from production assemblies. SQLite `SchemaVersion` is **11**. Owner §49 remains `NOT VERIFIED`. `D-032` is deferred. D-049 bunch sprint / UCI fields / jerseys are in. D-050 New Game club pick / pre-season leaders are in. D-051 desk finance and squad offers are in. D-052 dates and HTML look are in. D-054 position/pace-setter/bruk are in. D-055 two CdA numbers + ITT/TTT path are in.
+Milestone 0 still supplies the headless .NET 8 spine. The race prototype is the official result path: `PrototypeRaceEngine` plus `content/peloton.race-prototype`, Application commands `StartRaceCommand` / `AdvanceRaceCommand` / `RespondToRaceDecisionCommand` / `BeginRaceWatchCommand` / `AdvanceRaceWatchCommand` / `AbandonRaceLiveCommand`, and SimRunner `race`. A pending DecisionRequest stays in `RaceLive`. SimRunner `watch` and career `day --watch-from-prep` keep the D-033 supervising clock. Godot (`src/Peloton.Client.Godot`) presents the career shell (`CareerShell.tscn`, POC v3 chrome, desk queries, default simulate → result table, plus `CareerLookCatalog` for empty domains). Watch film is optional and **off by default** (D-043 / D-048). Career Hub UI is deleted. Renderer does not drive physics. Look-catalog OVR is not World; desk/squad/finance cash and contract offers are. The owner look drawing remains `peloton-manager-full-ui-poc-v3.html` (`HTML_UI_LAB.md`). After Simulate/Watch, `RaceResultProjection` and `RaceDebriefProjection` present the committed result without a second `RunBatch`. Spy OFF/ON must match checksum and finish order. `StubRaceEngine` is gone from production assemblies. SQLite `SchemaVersion` is **11**. Owner §49 remains `NOT VERIFIED`. `D-032` is deferred. D-049 bunch sprint / UCI fields / jerseys are in. D-050 New Game club pick / pre-season leaders are in. D-051 desk finance and squad offers are in. D-052 dates and HTML look are in. D-054 position/pace-setter/bruk are in. D-055 two CdA numbers + ITT/TTT path are in. D-056 season rollover (aging, retirements, neo-pros, AI contracts, inbox, `seasons`) is in. D-057 22-rider WT pack is in.
 
 This tree joins that career loop onto `main` without dropping the HTML UI lab. The paragraph below preserves the pre-bootstrap design context and owner lessons; implementation status is given above and in `CODEBASE_MAP.md`.
 

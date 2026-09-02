@@ -14,11 +14,11 @@ This file is a navigation map, not implementation documentation. Design contract
 | `src/Peloton.Simulation/Race` | Physics, capability, groups/shelter, `RaceSession.Step`, chase decisions, Race Spy export, headless Watch clock and public motion projection. ITT 60 s reverse-GC starts (no shelter); TTT times the 4th rider (D-055). |
 | `src/Peloton.Simulation/Course` | Dense profile bricks, classifier, `CourseCatalogGenerator`, `CourseCompiler`, weather from seed. |
 | `src/Peloton.Application` | Canonical nine-state machine, Commands, prep/result/debrief projections, `RiderRatingQueries`, `CourseWorldBuilder`, prep checkpoint, save/content/race ports, world creation, RaceLive isolation, skeleton-season orchestration. |
-| `src/Peloton.Persistence` | SQLite schema version 11, verified candidate save, envelope identity, snapshot round trip (including course samples, stage times, `PotentialOvr`, `CdARoadM2` / `CdATtM2`, `SeasonYear`), integrity checks. |
+| `src/Peloton.Persistence` | SQLite schema version 11, verified candidate save, envelope identity, snapshot round trip (including course samples, stage times, `PotentialOvr`, `CdARoadM2` / `CdATtM2`, `SeasonYear`, `IsRetired`, `RetiredFromOrganizationId`), integrity checks. |
 | `src/Peloton.Content` | JSON pack loaders: skeleton and WT `scenarios` + `roster` + `organizations` + `calendar` + `race-identities`, and `racePrototypeScenarios` (route/tuning templates). |
 | `src/Peloton.Infrastructure` | Composition root connecting Application ports to Content, Persistence, and Simulation. |
 | `src/Peloton.Client.Godot` | Godot 4.4 .NET career shell + optional Watch Race. Presentation only: Commands + Queries. Main scene `CareerShell.tscn` copies POC v3 chrome. Desk uses `CareerCalendarDates`, grouped `SeasonEvents` / `UpcomingEvents`, month grid, world inbox (Polish), employer crest, `MarketRiders`, squad contract offers, default simulate → result table. Staff/sponsors/scouting stay `CareerLookCatalog`. Watch film off by default (D-043 / D-048). Career Hub deleted. |
-| `tools/Peloton.SimRunner` | Headless CLI: `run` for skeleton seasons, `race` for the prototype gate, `watch` for rate-controlled supervising-clock output, `day` for Hub, prep, calendar/inbox, result/debrief, and race-due flows. |
+| `tools/Peloton.SimRunner` | Headless CLI: `run` for skeleton seasons, `race` for the prototype gate, `watch` for rate-controlled supervising-clock output, `day` for Hub, prep, calendar/inbox, result/debrief, and race-due flows, `seasons` for five-year WT skip-races soaks (D-056). |
 
 Static content lives in `content/peloton.skeleton`, `content/peloton.wt-2026`, and `content/peloton.race-prototype`. `KNOWN_DIFFERENCE_FROM_CODE.md` records remaining prototype limits versus the accepted Race Engine contract.
 
@@ -61,8 +61,9 @@ Static content lives in `content/peloton.skeleton`, `content/peloton.wt-2026`, a
 | Course engine (D-047) | `Peloton.Simulation/Course/*`, `Peloton.Domain/CourseProfile.cs`, `content/peloton.wt-2026/race-identities.json`, `CourseWorldBuilder.cs` | 25 m samples, identity generator, calendar per stage, assembler compile | `CourseEngineTests`, `CourseEngineIntegrationTests` |
 | Career calendar | `Peloton.Domain/CalendarEntry.cs`, `Peloton.Application/CareerCalendarInbox.cs` | stored entries + derived status | Application tests |
 | Career inbox query | `Peloton.Application/CareerCalendarInbox.cs`, `ArchiveInboxItemCommand` | rebuilt race-due + race-result items; dismiss lock on race-due | Application tests |
+| Season rollover (D-056) | `Peloton.Simulation/SeasonRolloverExecutor.cs`, `Peloton.Application/SeasonAging.cs`, `SeasonRetirements.cs`, `SeasonNeoPros.cs`, `SeasonAiContracts.cs`, `SeasonInboxSupport.cs`, `tools/Peloton.SimRunner/CareerSeasonsCommand.cs` | `CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md`; SchemaVersion 11; `seasons --years 5` | `CareerSeason*` tests |
 | AI managers | Not implemented | `AI_MANAGER_SYSTEM_v0.2.md` | Not implemented |
-| Save / SQLite | `Peloton.Persistence` | `SAVE_FORMAT_v0.1.md` | Persistence + Application tests |
+| Save / SQLite | `Peloton.Persistence` | `SAVE_FORMAT_v0.1.md`; SchemaVersion 11 | Persistence + Application tests |
 | Career scenarios | `content/peloton.skeleton`, `JsonScenarioCatalog.cs` | `CONTENT_FORMAT_v0.1.md` | Application tests |
 | Rules modules | `Peloton.Rules`, scenario JSON | `RULESETS_v0.1.md` | Application + Architecture tests |
 
