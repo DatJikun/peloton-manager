@@ -26,7 +26,7 @@ This is an explicit prototype boundary, not an accepted simplification of the fu
 - `RiderCareer.Id` is the official race `RiderId`; `LastRace` finish order and `RiderCareerResult` history use those world IDs.
 - `CreateWorld` materializes riders from `content/peloton.skeleton/skeleton-roster.json` (stable `OriginDefinitionId`s from the prototype pack).
 - Prep squad is the player employer's world roster (`RiderCareer.OrganizationId`; null = unattached).
-- SQLite `SchemaVersion` is **9** (D-050 designated leaders). Schema 1–8 saves may refuse to load.
+- SQLite `SchemaVersion` is **10** (D-055 CdA road vs TT). Schema 1–9 saves may refuse to load.
 - World checksum label is `peloton-world-checksum-v9`.
 - `CalendarEntry.RaceContentId` stores the calendar race id (`race.wt2026.*` for WT; route template resolved via `DefaultRaceTemplateId`).
 
@@ -107,7 +107,7 @@ Remaining limits:
 
 - Official WT start lists are **event-shaped (D-049)**: Grand Tours 176, monuments 175, TDU 140, other WT 154. Still a prototype, not a licensed 28-man roster.
 - Classified Flat uses a bunch-sprint kick (last 250 m at `PeakPowerW`) after sitting in the pack. Feel probe seed `91234`: Philipsen place 1, Pogačar 135 on the flattest stored Flat; mountain probe still has Pogačar ahead of Philipsen.
-- Prototype stores **one** `CdAM2` per rider. The accepted engine wants `CdARoad` and `CdATT` (`RACE_ENGINE_DESIGN_v0.2.md` §6–7). Drafting still does `CdA_effective = CdA * shelter`. There is no sit-up-on-climb vs aero-tuck-on-TT switch. Owner asked 2026-09-01; that split is the next aero honesty, not this D-049 tree. A third “mountain CdA” is not worth a rating — climbs are slow, gravity/W/kg dominate.
+- Prototype stores **two** CdA numbers per rider (`CdARoadM2` / `CdATtM2`, D-055). Drafting still does `CdA_effective = CdA * shelter` with the stage-selected CdA. There is no sit-up-on-climb vs aero-tuck-on-descent switch. A third “mountain CdA” is not worth a rating — climbs are slow, gravity/W/kg dominate.
 - Prototype race session is sequential 1-second `RaceSession.Step` for every rider; wall-clock is CPU-fast, not real-time.
 - No yearly re-generation after season 2026 in play yet (generator exists; Advance Day does not roll new seasons).
 - Jersey tables exist as after-stage queries (GC / points / KOM / youth / team). D-032 mid-race GC leadership stays deferred.
@@ -174,4 +174,21 @@ Probes at seed `91234`: TdF stage 1 sprint, TDU stage 6 sprinter, Hautacam GC, d
 
 At seed `91234` the strict probe would still fail on roster numbers, not physics: van der Poel `rider.wt2026.alpecin.leader` has CP **430 W**, `lowIntensityDurability` **0.90**, 75 kg, CdA **0.285**; Evenepoel `rider.wt2026.redbull.leader` has CP **425 W**, durability **0.94**, **61 kg**, CdA **0.25**. Over a flat 250 km cobbled classic those inputs favour the light GC rider; engine constants stay at contract baseline (table above). Sim outcome: Evenepoel (super-gc) wins; van der Poel ~13th; GC riders fill the top 10.
 
-Still missing (deferred): crosswind echelons, lead-out trains, incidents/mechanicals, D-032 GC leadership, CdA Road/TT (D-055).
+Still missing (deferred): crosswind echelons, lead-out trains, incidents/mechanicals, D-032 GC leadership.
+
+## CdA Road vs TT (D-055 landed)
+
+Contract: `RACE_CDA_ROAD_TT_v0.1.md`. `PhysicsContractVersion` stays **2** (road stages keep the old road CdA). SQLite `SchemaVersion` **10** / checksum `peloton-world-checksum-v10`. Schema 1–9 saves may refuse to load.
+
+Landed:
+
+- `RiderCareer` stores `CdARoadM2` and `CdATtM2`. `CdAM2` remains a getter alias for the road value so older call sites do not silently pick TT aero.
+- Content JSON keys `cdARoadM2` / `cdATtM2`. Loader `CdAJson.Resolve` still accepts legacy `cdAM2` and fills **both** numbers (third-party packs). Shipped packs (`peloton.wt-2026`, skeleton, race-prototype) use the two keys. WT TT factor by archetype: tt 0.68, super-gc 0.72, gc 0.76, classics/diesel/super-domestique 0.80, sprinter 0.84, neo 0.82. Named pins in the 2026 pack: Ganna `cdATtM2=0.1564`, Evenepoel `0.1574` (lowest two).
+- `RaceRiderProfile` carries both; the assembler selects TT CdA on classified ITT/TTT stages and road CdA everywhere else. One CdA per stage; no mid-stage switch.
+- **ITT:** reverse current GC (or reverse `RiderId` when there is no GC); start every 60 s; no shelter; no pace-setter; each rider holds `effectiveCriticalPowerW × 1.0`; finish time is `simSecond − StartSecond` (clock time must not rank the first starter). Empty commands / tactical plans. Max duration grows by `(n − 1) × 60`.
+- **TTT:** TT CdA; team groups; pace of the 4th-fastest sustainable rider; team time is the 4th rider across the line.
+- **TT rating** uses `cdATtM2`. Aero score range for TT is `Score(-cdA, -0.34, -0.155)` so specialists do not saturate (Evenepoel TT ≥ 90 and ≥ Pogačar).
+
+Deferred from this tree: aero tuck on descents, TT pacing optimizer (`RACE_ENGINE_DESIGN_v0.2.md` §32), equipment/wheels, crosswind echelons.
+
+Road probes from D-054 (TdF s1, TDU, Hautacam, Roubaix engine probe) must stay unchanged. The strict Roubaix classics win remains skipped until D-057 roster calibration.

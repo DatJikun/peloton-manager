@@ -105,7 +105,13 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
                     .OrderBy(mapping => mapping.OrganizationId, StringComparer.Ordinal)
                     .ToArray();
                 RiderDefinition[] riders = roster.Riders
-                    .Select(rider => new RiderDefinition(
+                    .Select(rider =>
+                    {
+                        (double road, double timeTrial) = CdAJson.Resolve(
+                            rider.CdARoadM2,
+                            rider.CdATtM2,
+                            rider.CdAM2);
+                        return new RiderDefinition(
                         rider.Id,
                         rider.Name,
                         rider.OrganizationId,
@@ -117,7 +123,8 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
                         rider.HighIntensityDurability,
                         rider.BodyMassKg,
                         rider.SystemMassKg,
-                        rider.CdAM2,
+                        road,
+                        timeTrial,
                         rider.BaseCrr,
                         rider.Positioning,
                         rider.Handling,
@@ -127,7 +134,8 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
                         rider.Loyalty01 ?? 0.5,
                         rider.Nationality,
                         rider.BirthYear,
-                        rider.PotentialOvr))
+                        rider.PotentialOvr);
+                    })
                     .OrderBy(rider => rider.Id, StringComparer.Ordinal)
                     .ToArray();
                 ManagerDefinition manager = new(roster.Manager.Name, roster.Manager.OrganizationId);
@@ -472,13 +480,15 @@ public sealed class JsonScenarioCatalog : IScenarioCatalog
         double HighIntensityDurability,
         double BodyMassKg,
         double SystemMassKg,
-        double CdAM2,
         double BaseCrr,
         double Positioning,
         double Handling,
         double TacticalAwareness,
         int AnnualWage,
         int ContractEndDay,
+        double? CdAM2 = null,
+        double? CdARoadM2 = null,
+        double? CdATtM2 = null,
         double? Loyalty01 = null,
         string? Nationality = null,
         int? BirthYear = null,

@@ -106,6 +106,31 @@ public static class ClassificationQueries
             team.Take(10).ToArray());
     }
 
+    public static IReadOnlyList<WorldEntityId> FullGcOrderBestFirst(
+        WorldState world,
+        string raceContentId)
+    {
+        ArgumentNullException.ThrowIfNull(world);
+        ArgumentException.ThrowIfNullOrWhiteSpace(raceContentId);
+        RiderStageTime[] times = world.RiderStageTimes
+            .Where(time => string.Equals(time.RaceContentId, raceContentId, StringComparison.Ordinal))
+            .ToArray();
+        int[] stages = times.Select(time => time.StageIndex).Distinct().OrderBy(index => index).ToArray();
+        if (stages.Length == 0)
+        {
+            return Array.Empty<WorldEntityId>();
+        }
+
+        Dictionary<WorldEntityId, RiderCareer> careers = world.RiderCareers.ToDictionary(career => career.Id);
+        Dictionary<WorldEntityId, Person> persons = world.Persons.ToDictionary(person => person.Id);
+        Dictionary<WorldEntityId, Organization> organizations = world.Organizations.ToDictionary(
+            organization => organization.Id);
+        return BuildGc(times, stages, careers, persons, organizations)
+            .Where(standing => standing.RiderId is not null)
+            .Select(standing => standing.RiderId!.Value)
+            .ToArray();
+    }
+
     public static string FormatJerseyLine(ClassificationProjection projection)
     {
         ArgumentNullException.ThrowIfNull(projection);

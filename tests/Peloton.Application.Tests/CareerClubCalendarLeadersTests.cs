@@ -201,7 +201,7 @@ public sealed class CareerClubCalendarLeadersTests
         Assert.True(source.Execute(new SaveGameCommand(savePath)).Succeeded);
 
         WorldCheckpoint stored = new SqliteWorldSaveStore().Load(savePath);
-        Assert.Equal("9", SqliteWorldSaveStore.SchemaVersion.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        Assert.Equal("10", SqliteWorldSaveStore.SchemaVersion.ToString(System.Globalization.CultureInfo.InvariantCulture));
         OrganizationRaceEntry storedEntry = stored.World.OrganizationRaceEntries.Single(
             raceEntry => raceEntry.OrganizationId == employerId &&
                          string.Equals(raceEntry.RaceContentId, RoubaixRaceContentId, StringComparison.Ordinal));

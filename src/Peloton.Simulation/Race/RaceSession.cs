@@ -57,10 +57,12 @@ public sealed class RaceSession
             .ToDictionary(position => position.RiderId);
         riders = scenario.Riders
             .OrderBy(profile => profile.RiderId.Value)
-            .Select(profile => new RiderRuntime(
-                profile,
-                positions[profile.RiderId].DistanceM,
-                scenario.InitialSpeedMps))
+            .Select(profile =>
+            {
+                RaceStartingPosition position = positions[profile.RiderId];
+                double speedMps = position.StartSecond > 0 ? 0.0 : scenario.InitialSpeedMps;
+                return new RiderRuntime(profile, position.DistanceM, speedMps, position.StartSecond);
+            })
             .ToArray();
         ResolveGroups();
     }
@@ -132,7 +134,7 @@ public sealed class RaceSession
         Dictionary<WorldEntityId, StepSolve> solves = new();
         foreach (RiderRuntime rider in riders.OrderBy(rider => rider.Profile.RiderId.Value))
         {
-            if (rider.FinishTimeSeconds is not null)
+            if (rider.FinishTimeSeconds is not null || simulationSecond < rider.StartSecond)
             {
                 continue;
             }
@@ -238,7 +240,7 @@ public sealed class RaceSession
                 double withinStepSeconds = solve.RealizedSpeedMps <= 0.0
                     ? StepSeconds
                     : Math.Clamp(remainingAtStartM / solve.RealizedSpeedMps, 0.0, StepSeconds);
-                rider.FinishTimeSeconds = simulationSecond + withinStepSeconds;
+                rider.FinishTimeSeconds = simulationSecond + withinStepSeconds - rider.StartSecond;
             }
         }
 
@@ -335,6 +337,11 @@ public sealed class RaceSession
 
     private void ApplyBunchSprintIntents()
     {
+        if (IsIndividualTimeTrial || IsTeamTimeTrial)
+        {
+            return;
+        }
+
         RiderRuntime[] unfinished = riders
             .Where(rider => rider.FinishTimeSeconds is null)
             .ToArray();
@@ -388,6 +395,10 @@ public sealed class RaceSession
 
     private bool DetectDecision()
     {
+        if (IsIndividualTimeTrial || IsTeamTimeTrial)
+        {
+            return false;
+        }
         int planIndex = Enumerable.Range(0, scenario.TacticalPlans.Count)
             .FirstOrDefault(
                 index => !evaluatedTacticalPlans.Contains(index) &&
@@ -535,6 +546,18 @@ public sealed class RaceSession
                      .OrderBy(grouping => grouping.Key))
         {
             RiderRuntime pacingReference = ResolvePacingReferenceRider(group);
+            if (IsIndividualTimeTrial)
+            {
+                targets.Add(group.Key, CriticalPowerFrontSpeedMps(pacingReference));
+                continue;
+            }
+
+            if (IsTeamTimeTrial)
+            {
+                targets.Add(group.Key, TeamTimeTrialTargetMps(group));
+                continue;
+            }
+
             RaceRouteSegment segment = scenario.Definition.SegmentAt(pacingReference.DistanceM);
             double remainingM = scenario.Definition.TotalLengthM - pacingReference.DistanceM;
             AtmosphereSample atmosphere = AtmosphereForPhysics(segment);
@@ -685,6 +708,11 @@ public sealed class RaceSession
 
     private void ApplyPositionDrift(Dictionary<WorldEntityId, StepSolve> solves)
     {
+        if (IsIndividualTimeTrial)
+        {
+            return;
+        }
+
         RiderRuntime[] unfinished = riders
             .Where(rider => rider.FinishTimeSeconds is null)
             .ToArray();
@@ -792,6 +820,18 @@ public sealed class RaceSession
 
     private void ResolveGroups()
     {
+        if (IsIndividualTimeTrial)
+        {
+            ResolveIndividualTimeTrialGroups();
+            return;
+        }
+
+        if (IsTeamTimeTrial)
+        {
+            ResolveTeamTimeTrialGroups();
+            return;
+        }
+
         RiderRuntime? leader = riders
             .Where(rider => rider.FinishTimeSeconds is null)
             .OrderByDescending(rider => rider.DistanceM)
@@ -835,6 +875,91 @@ public sealed class RaceSession
             RecordPressureGap(rider, position, resolution);
         }
     }
+
+    private void ResolveIndividualTimeTrialGroups()
+    {
+        int groupId = 1;
+        foreach (RiderRuntime rider in riders.OrderBy(item => item.Profile.RiderId.Value))
+        {
+            if (rider.FinishTimeSeconds is not null || simulationSecond < rider.StartSecond)
+            {
+                continue;
+            }
+
+            rider.GroupId = groupId++;
+            rider.PositionSlot = 0;
+            rider.ShelterMultiplier = 1.0;
+        }
+    }
+
+    private void ResolveTeamTimeTrialGroups()
+    {
+        int groupId = 1;
+        foreach (IGrouping<WorldEntityId, RiderRuntime> team in riders
+                     .Where(rider => rider.FinishTimeSeconds is null)
+                     .GroupBy(rider => rider.Profile.OrganizationId)
+                     .OrderBy(group => group.Key.Value))
+        {
+            RiderRuntime[] members = team
+                .OrderByDescending(rider => rider.DistanceM)
+                .ThenBy(rider => rider.Profile.RiderId.Value)
+                .ToArray();
+            RaceRouteSegment segment = scenario.Definition.SegmentAt(members[0].DistanceM);
+            AtmosphereSample atmosphere = AtmosphereForPhysics(segment);
+            GroupResolution resolution = PositionAndGroupResolver.Resolve(new GroupResolutionInput(
+                segment.RoadWidthM,
+                atmosphere.WindSpeedMps,
+                atmosphere.WindYawDegrees,
+                members
+                    .Select(rider => new RaceRiderSnapshot(
+                        rider.Profile.RiderId,
+                        rider.DistanceM,
+                        rider.SpeedMps,
+                        rider.Profile.Positioning))
+                    .ToArray()));
+            foreach (ResolvedRaceRiderPosition position in resolution.Riders)
+            {
+                RiderRuntime rider = riders.Single(item => item.Profile.RiderId == position.RiderId);
+                rider.GroupId = groupId;
+                rider.PositionSlot = position.PositionSlot;
+                rider.ShelterMultiplier = position.ShelterMultiplier;
+            }
+
+            groupId++;
+        }
+    }
+
+    private double CriticalPowerFrontSpeedMps(RiderRuntime rider)
+    {
+        RaceRouteSegment segment = scenario.Definition.SegmentAt(rider.DistanceM);
+        AtmosphereSample atmosphere = AtmosphereForPhysics(segment);
+        CapabilityResult capability = CapabilitySolver.Evaluate(
+            rider.Profile,
+            rider.Physiology,
+            rider.Profile.CriticalPowerW,
+            StepSeconds);
+        return MaxSustainableFrontSpeedMps(
+            rider.Profile,
+            segment,
+            atmosphere,
+            capability.EffectiveCriticalPowerW);
+    }
+
+    private double TeamTimeTrialTargetMps(IGrouping<int, RiderRuntime> group)
+    {
+        double[] speeds = group
+            .Select(CriticalPowerFrontSpeedMps)
+            .OrderByDescending(speed => speed)
+            .ToArray();
+        int fourthIndex = Math.Min(3, speeds.Length - 1);
+        return speeds[fourthIndex];
+    }
+
+    private bool IsIndividualTimeTrial =>
+        scenario.ClassifiedStageType == ClassifiedStageType.IndividualTimeTrial;
+
+    private bool IsTeamTimeTrial =>
+        scenario.ClassifiedStageType == ClassifiedStageType.TeamTimeTrial;
 
     private void RecordPressureGap(
         RiderRuntime rider,
@@ -907,9 +1032,35 @@ public sealed class RaceSession
                 rider.MaximumGapDuringPressureM,
                 rider.LostShelterTransitions,
                 rider.GroupId))
-            .OrderBy(rider => rider.FinishTimeSeconds)
-            .ThenBy(rider => rider.RiderId.Value)
             .ToArray();
+        if (IsTeamTimeTrial)
+        {
+            Dictionary<WorldEntityId, double> teamTimes = riders
+                .GroupBy(rider => rider.Profile.OrganizationId)
+                .ToDictionary(
+                    team => team.Key,
+                    team =>
+                    {
+                        double[] times = team
+                            .Select(rider => rider.FinishTimeSeconds!.Value)
+                            .OrderBy(time => time)
+                            .ToArray();
+                        int fourthIndex = Math.Min(3, times.Length - 1);
+                        return times[fourthIndex];
+                    });
+            metrics = metrics
+                .OrderBy(metric => teamTimes[metric.OrganizationId])
+                .ThenBy(metric => metric.FinishTimeSeconds)
+                .ThenBy(metric => metric.RiderId.Value)
+                .ToArray();
+        }
+        else
+        {
+            metrics = metrics
+                .OrderBy(metric => metric.FinishTimeSeconds)
+                .ThenBy(metric => metric.RiderId.Value)
+                .ToArray();
+        }
         WorldEntityId[] finishOrder = metrics.Select(metric => metric.RiderId).ToArray();
         Dictionary<WorldEntityId, double> teamEnergyJ = metrics
             .GroupBy(metric => metric.OrganizationId)
@@ -941,6 +1092,11 @@ public sealed class RaceSession
         RouteSurface surface,
         double handling)
     {
+        if (IsIndividualTimeTrial)
+        {
+            return 1.0;
+        }
+
         double shelter = shelterMultiplier;
         if (IsClassifiedFlatSitIn(remainingM))
         {
@@ -1065,15 +1221,18 @@ public sealed class RaceSession
 
     private sealed class RiderRuntime
     {
-        public RiderRuntime(RaceRiderProfile profile, double distanceM, double speedMps)
+        public RiderRuntime(RaceRiderProfile profile, double distanceM, double speedMps, int startSecond = 0)
         {
             Profile = profile;
             DistanceM = distanceM;
             SpeedMps = speedMps;
             Physiology = RiderPhysiologyState.Fresh(profile);
+            StartSecond = startSecond;
         }
 
         public RaceRiderProfile Profile { get; }
+
+        public int StartSecond { get; }
 
         public double DistanceM { get; set; }
 

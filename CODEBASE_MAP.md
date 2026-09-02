@@ -11,10 +11,10 @@ This file is a navigation map, not implementation documentation. Design contract
 | `src/Peloton.Domain` | World root, stable IDs, people, `RiderCareer` (+ `PotentialOvr`), `RiderContract`, `CourseProfile`, `RiderStageTime`, ManagerCareer, Employment, Organization, DecisionAuthority, AccessContext, `CalendarEntry` (+ stage/course ids), content/rules identity, DecisionTrace / Spy sinks. |
 | `src/Peloton.Rules` | Stable rules-module identity and deterministic aggregate identity. No full legal engine yet. |
 | `src/Peloton.Simulation` | Versioned seed derivation, isolated deterministic RNG, whole-world day scheduler, checksum, `PrototypeRaceEngine`, `Course/` generator + compiler. |
-| `src/Peloton.Simulation/Race` | Physics, capability, groups/shelter, `RaceSession.Step`, chase decisions, Race Spy export, headless Watch clock and public motion projection. |
+| `src/Peloton.Simulation/Race` | Physics, capability, groups/shelter, `RaceSession.Step`, chase decisions, Race Spy export, headless Watch clock and public motion projection. ITT 60 s reverse-GC starts (no shelter); TTT times the 4th rider (D-055). |
 | `src/Peloton.Simulation/Course` | Dense profile bricks, classifier, `CourseCatalogGenerator`, `CourseCompiler`, weather from seed. |
 | `src/Peloton.Application` | Canonical nine-state machine, Commands, prep/result/debrief projections, `RiderRatingQueries`, `CourseWorldBuilder`, prep checkpoint, save/content/race ports, world creation, RaceLive isolation, skeleton-season orchestration. |
-| `src/Peloton.Persistence` | SQLite schema version 9, verified candidate save, envelope identity, snapshot round trip (including course samples, stage times, `PotentialOvr`), integrity checks. |
+| `src/Peloton.Persistence` | SQLite schema version 10, verified candidate save, envelope identity, snapshot round trip (including course samples, stage times, `PotentialOvr`, `CdARoadM2` / `CdATtM2`), integrity checks. |
 | `src/Peloton.Content` | JSON pack loaders: skeleton and WT `scenarios` + `roster` + `organizations` + `calendar` + `race-identities`, and `racePrototypeScenarios` (route/tuning templates). |
 | `src/Peloton.Infrastructure` | Composition root connecting Application ports to Content, Persistence, and Simulation. |
 | `src/Peloton.Client.Godot` | Godot 4.4 .NET career shell + optional Watch Race. Presentation only: Commands + Queries. Main scene `CareerShell.tscn` copies POC v3 chrome. Desk uses `CareerCalendarDates`, grouped `SeasonEvents` / `UpcomingEvents`, month grid, world inbox (Polish), employer crest, `MarketRiders`, squad contract offers, default simulate → result table. Staff/sponsors/scouting stay `CareerLookCatalog`. Watch film off by default (D-043 / D-048). Career Hub deleted. |
@@ -40,7 +40,7 @@ Static content lives in `content/peloton.skeleton`, `content/peloton.wt-2026`, a
 | World time / scheduler | `Peloton.Simulation/DeterministicScheduler.cs` | `ARCHITECTURE.md`, determinism contract | Simulation + Application tests |
 | GameState / Commands | `Peloton.Application` | `GAME_STATES_v0.1.md` | Application tests |
 | Identity / manager spine | `Peloton.Domain` | `DATA_MODEL_v0.1.md` | Domain + Persistence tests |
-| Race engine | `Peloton.Simulation/Race/PrototypeRaceEngine.cs`, `RaceSession.cs` | `RACE_ENGINE_DESIGN_v0.2.md`; limits in `KNOWN_DIFFERENCE_FROM_CODE.md` | `RacePhysicalProofTests`, Application race tests |
+| Race engine | `Peloton.Simulation/Race/PrototypeRaceEngine.cs`, `RaceSession.cs` | `RACE_ENGINE_DESIGN_v0.2.md`; D-054 position/pace; D-055 ITT/TTT CdA path; limits in `KNOWN_DIFFERENCE_FROM_CODE.md` | `RacePhysicalProofTests`, `TimeTrialSessionTests`, Application race tests |
 | Race Spy | `Peloton.Simulation/Race/RaceSpy.cs`, `Peloton.Domain/DecisionTracing.cs` | `RACE_SPY_DEBUGGING_v0.1.md` | `RaceDecisionAndSpyTests` |
 | World Spy | `Peloton.Domain/DecisionTracing.cs` | `WORLD_SPY_AND_DECISION_TRACING_v0.1.md` | Race Spy tests (first specialization) |
 | Race content | `Peloton.Content/JsonRacePrototypeCatalog.cs`, `content/peloton.race-prototype` | `CONTENT_FORMAT_v0.1.md` | `RaceContentTests` |

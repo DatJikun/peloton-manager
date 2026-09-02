@@ -30,7 +30,6 @@
       "highIntensityDurability": 0.86,
       "bodyMassKg": 68.0,
       "systemMassKg": 8.0,
-      "cdAM2": 0.29,
       "baseCrr": 0.004,
       "positioning": 0.86,
       "handling": 0.8,
@@ -38,7 +37,9 @@
       "annualWage": 280000,
       "contractEndDay": 10000,
       "loyalty01": 0.8,
-      "potentialOvr": 88
+      "potentialOvr": 88,
+      "cdARoadM2": 0.29,
+      "cdATtM2": 0.232
     },
     {
       "id": "rider.race-prototype.alpha-support-1",
@@ -52,14 +53,15 @@
       "highIntensityDurability": 0.8,
       "bodyMassKg": 72.0,
       "systemMassKg": 8.0,
-      "cdAM2": 0.31,
       "baseCrr": 0.004,
       "positioning": 0.78,
       "handling": 0.76,
       "tacticalAwareness": 0.75,
       "annualWage": 160000,
       "contractEndDay": 10000,
-      "potentialOvr": 82
+      "potentialOvr": 82,
+      "cdARoadM2": 0.31,
+      "cdATtM2": 0.248
     },
     {
       "id": "rider.race-prototype.alpha-support-2",
@@ -73,14 +75,15 @@
       "highIntensityDurability": 0.76,
       "bodyMassKg": 74.0,
       "systemMassKg": 8.0,
-      "cdAM2": 0.32,
       "baseCrr": 0.0042,
       "positioning": 0.72,
       "handling": 0.72,
       "tacticalAwareness": 0.7,
       "annualWage": 110000,
       "contractEndDay": 10000,
-      "potentialOvr": 78
+      "potentialOvr": 78,
+      "cdARoadM2": 0.32,
+      "cdATtM2": 0.256
     },
     {
       "id": "rider.race-prototype.alpha-card",
@@ -94,14 +97,15 @@
       "highIntensityDurability": 0.83,
       "bodyMassKg": 66.0,
       "systemMassKg": 8.0,
-      "cdAM2": 0.28,
       "baseCrr": 0.0039,
       "positioning": 0.82,
       "handling": 0.81,
       "tacticalAwareness": 0.86,
       "annualWage": 90000,
       "contractEndDay": 10000,
-      "potentialOvr": 85
+      "potentialOvr": 85,
+      "cdARoadM2": 0.28,
+      "cdATtM2": 0.224
     },
     {
       "id": "rider.race-prototype.beta-leader",
@@ -115,14 +119,15 @@
       "highIntensityDurability": 0.9,
       "bodyMassKg": 61.0,
       "systemMassKg": 8.0,
-      "cdAM2": 0.27,
       "baseCrr": 0.0038,
       "positioning": 0.88,
       "handling": 0.83,
       "tacticalAwareness": 0.89,
       "annualWage": 280000,
       "contractEndDay": 10000,
-      "potentialOvr": 88
+      "potentialOvr": 88,
+      "cdARoadM2": 0.27,
+      "cdATtM2": 0.216
     },
     {
       "id": "rider.race-prototype.beta-support-1",
@@ -136,14 +141,15 @@
       "highIntensityDurability": 0.81,
       "bodyMassKg": 69.0,
       "systemMassKg": 8.0,
-      "cdAM2": 0.3,
       "baseCrr": 0.004,
       "positioning": 0.79,
       "handling": 0.78,
       "tacticalAwareness": 0.8,
       "annualWage": 160000,
       "contractEndDay": 10000,
-      "potentialOvr": 82
+      "potentialOvr": 82,
+      "cdARoadM2": 0.3,
+      "cdATtM2": 0.24
     },
     {
       "id": "rider.race-prototype.beta-support-2",
@@ -157,14 +163,15 @@
       "highIntensityDurability": 0.78,
       "bodyMassKg": 71.0,
       "systemMassKg": 8.0,
-      "cdAM2": 0.31,
       "baseCrr": 0.0041,
       "positioning": 0.74,
       "handling": 0.74,
       "tacticalAwareness": 0.76,
       "annualWage": 110000,
       "contractEndDay": 10000,
-      "potentialOvr": 78
+      "potentialOvr": 78,
+      "cdARoadM2": 0.31,
+      "cdATtM2": 0.248
     },
     {
       "id": "rider.race-prototype.beta-card",
@@ -178,14 +185,15 @@
       "highIntensityDurability": 0.85,
       "bodyMassKg": 64.0,
       "systemMassKg": 8.0,
-      "cdAM2": 0.28,
       "baseCrr": 0.0039,
       "positioning": 0.84,
       "handling": 0.82,
       "tacticalAwareness": 0.87,
       "annualWage": 90000,
       "contractEndDay": 10000,
-      "potentialOvr": 85
+      "potentialOvr": 85,
+      "cdARoadM2": 0.28,
+      "cdATtM2": 0.224
     },
     {
       "id": "rider.race-prototype.gamma-leader",
@@ -199,14 +207,15 @@
       "highIntensityDurability": 0.84,
       "bodyMassKg": 76.0,
       "systemMassKg": 8.0,
-      "cdAM2": 0.32,
       "baseCrr": 0.0041,
       "positioning": 0.83,
       "handling": 0.79,
       "tacticalAwareness": 0.82,
       "annualWage": 280000,
       "contractEndDay": 10000,
-      "potentialOvr": 88
+      "potentialOvr": 88,
+      "cdARoadM2": 0.32,
+      "cdATtM2": 0.256
     },
     {
       "id": "rider.race-prototype.gamma-support-1",
@@ -220,14 +229,15 @@
       "highIntensityDurability": 0.79,
       "bodyMassKg": 75.0,
       "systemMassKg": 8.0,
-      "cdAM2": 0.32,
       "baseCrr": 0.0042,
       "positioning": 0.76,
       "handling": 0.75,
       "tacticalAwareness": 0.74,
       "annualWage": 160000,
       "contractEndDay": 10000,
-      "potentialOvr": 82
+      "potentialOvr": 82,
+      "cdARoadM2": 0.32,
+      "cdATtM2": 0.256
     },
     {
       "id": "rider.race-prototype.gamma-support-2",
@@ -241,14 +251,15 @@
       "highIntensityDurability": 0.74,
       "bodyMassKg": 77.0,
       "systemMassKg": 8.0,
-      "cdAM2": 0.33,
       "baseCrr": 0.0043,
       "positioning": 0.68,
       "handling": 0.7,
       "tacticalAwareness": 0.69,
       "annualWage": 110000,
       "contractEndDay": 10000,
-      "potentialOvr": 78
+      "potentialOvr": 78,
+      "cdARoadM2": 0.33,
+      "cdATtM2": 0.264
     },
     {
       "id": "rider.race-prototype.gamma-card",
@@ -262,14 +273,15 @@
       "highIntensityDurability": 0.82,
       "bodyMassKg": 70.0,
       "systemMassKg": 8.0,
-      "cdAM2": 0.3,
       "baseCrr": 0.004,
       "positioning": 0.81,
       "handling": 0.8,
       "tacticalAwareness": 0.85,
       "annualWage": 90000,
       "contractEndDay": 10000,
-      "potentialOvr": 85
+      "potentialOvr": 85,
+      "cdARoadM2": 0.3,
+      "cdATtM2": 0.24
     }
   ]
 }

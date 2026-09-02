@@ -223,7 +223,7 @@ public sealed class CareerWorldTourPhase7Tests
         Assert.True(source.Execute(new SaveGameCommand(savePath)).Succeeded);
 
         WorldCheckpoint stored = new SqliteWorldSaveStore().Load(savePath);
-        Assert.Equal("9", SqliteWorldSaveStore.SchemaVersion.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        Assert.Equal("10", SqliteWorldSaveStore.SchemaVersion.ToString(System.Globalization.CultureInfo.InvariantCulture));
 
         GameApplication loaded = TestApplication.Create();
         Assert.True(loaded.Execute(new LoadGameCommand(savePath)).Succeeded);

@@ -35,7 +35,8 @@ public sealed class RiderCareer
         double fatigue01 = 0.0,
         double loyalty01 = 0.5,
         int potentialOvr = 70,
-        IEnumerable<RiderCareerResult>? results = null)
+        IEnumerable<RiderCareerResult>? results = null,
+        double? cdATtM2 = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(originDefinitionId);
         RequireUnitInterval(form01, nameof(form01));
@@ -59,7 +60,11 @@ public sealed class RiderCareer
         HighIntensityDurability = highIntensityDurability;
         BodyMassKg = bodyMassKg;
         SystemMassKg = systemMassKg;
-        CdAM2 = cdAM2;
+        RequirePositive(cdAM2, nameof(cdAM2));
+        double timeTrialCdA = cdATtM2 ?? cdAM2;
+        RequirePositive(timeTrialCdA, nameof(cdATtM2));
+        CdARoadM2 = cdAM2;
+        CdATtM2 = timeTrialCdA;
         BaseCrr = baseCrr;
         Positioning = positioning;
         Handling = handling;
@@ -102,7 +107,11 @@ public sealed class RiderCareer
 
     public double SystemMassKg { get; }
 
-    public double CdAM2 { get; }
+    public double CdARoadM2 { get; }
+
+    public double CdATtM2 { get; }
+
+    public double CdAM2 => CdARoadM2;
 
     public double BaseCrr { get; }
 
@@ -163,6 +172,14 @@ public sealed class RiderCareer
     private static void RequireUnitInterval(double value, string parameterName)
     {
         if (!double.IsFinite(value) || value < 0.0 || value > 1.0)
+        {
+            throw new ArgumentOutOfRangeException(parameterName);
+        }
+    }
+
+    private static void RequirePositive(double value, string parameterName)
+    {
+        if (!double.IsFinite(value) || value <= 0.0)
         {
             throw new ArgumentOutOfRangeException(parameterName);
         }

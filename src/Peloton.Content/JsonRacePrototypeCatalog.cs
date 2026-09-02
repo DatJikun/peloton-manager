@@ -360,7 +360,12 @@ public sealed class JsonRacePrototypeCatalog : IRaceScenarioCatalog
             ValidateRange(rider.HighIntensityDurability, 0, 1, path, $"{riderPath}.highIntensityDurability");
             ValidateRange(rider.BodyMassKg, 35, 120, path, $"{riderPath}.bodyMassKg");
             ValidateRange(rider.SystemMassKg, 5, 20, path, $"{riderPath}.systemMassKg");
-            ValidateRange(rider.CdAM2, 0.15, 0.60, path, $"{riderPath}.cdAM2");
+            (double roadCdA, double timeTrialCdA) = CdAJson.Resolve(
+                rider.CdARoadM2,
+                rider.CdATtM2,
+                rider.CdAM2);
+            ValidateRange(roadCdA, 0.15, 0.60, path, $"{riderPath}.cdARoadM2");
+            ValidateRange(timeTrialCdA, 0.15, 0.60, path, $"{riderPath}.cdATtM2");
             ValidateRange(rider.BaseCrr, 0.001, 0.020, path, $"{riderPath}.baseCrr");
             ValidateRange(rider.Positioning, 0, 1, path, $"{riderPath}.positioning");
             ValidateRange(rider.Handling, 0, 1, path, $"{riderPath}.handling");
@@ -490,7 +495,13 @@ public sealed class JsonRacePrototypeCatalog : IRaceScenarioCatalog
                 segment.WindYawDegrees)).ToArray());
         RaceRiderProfile[] riders = validated.Riders.Values
             .OrderBy(rider => rider.Id, StringComparer.Ordinal)
-            .Select(rider => new RaceRiderProfile(
+            .Select(rider =>
+            {
+                (double roadCdA, double timeTrialCdA) = CdAJson.Resolve(
+                    rider.CdARoadM2,
+                    rider.CdATtM2,
+                    rider.CdAM2);
+                return new RaceRiderProfile(
                 riderIds[rider.Id!],
                 teamIds[rider.TeamId!],
                 rider.CriticalPowerW,
@@ -501,12 +512,14 @@ public sealed class JsonRacePrototypeCatalog : IRaceScenarioCatalog
                 rider.HighIntensityDurability,
                 rider.BodyMassKg,
                 rider.SystemMassKg,
-                rider.CdAM2,
+                roadCdA,
                 rider.BaseCrr,
                 rider.Positioning,
                 rider.Handling,
                 rider.TacticalAwareness,
-                rider.Id!))
+                rider.Id!,
+                timeTrialCdA);
+            })
             .ToArray();
         IReadOnlyList<string> startingOrder = source.StartingOrder!;
         RaceStartingPosition[] startingPositions = startingOrder
@@ -754,11 +767,13 @@ public sealed class JsonRacePrototypeCatalog : IRaceScenarioCatalog
         double HighIntensityDurability,
         double BodyMassKg,
         double SystemMassKg,
-        double CdAM2,
         double BaseCrr,
         double Positioning,
         double Handling,
-        double TacticalAwareness);
+        double TacticalAwareness,
+        double? CdAM2 = null,
+        double? CdARoadM2 = null,
+        double? CdATtM2 = null);
 
     private sealed record CommandDocument(
         int SimulationSecond,

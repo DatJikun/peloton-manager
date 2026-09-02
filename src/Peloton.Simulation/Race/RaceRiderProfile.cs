@@ -21,7 +21,9 @@ public sealed class RaceRiderProfile
         double positioning,
         double handling,
         double tacticalAwareness,
-        string contentId = "")
+        string contentId = "",
+        double? cdATtM2 = null,
+        bool timeTrialStage = false)
     {
         ArgumentNullException.ThrowIfNull(contentId);
         RequirePositive(criticalPowerW, nameof(criticalPowerW));
@@ -33,6 +35,8 @@ public sealed class RaceRiderProfile
         RequirePositive(bodyMassKg, nameof(bodyMassKg));
         RequireNonNegative(systemMassKg, nameof(systemMassKg));
         RequirePositive(cdAM2, nameof(cdAM2));
+        double timeTrialCdA = cdATtM2 ?? cdAM2;
+        RequirePositive(timeTrialCdA, nameof(cdATtM2));
         RequirePositive(baseCrr, nameof(baseCrr));
         RequireUnitInterval(positioning, nameof(positioning));
         RequireUnitInterval(handling, nameof(handling));
@@ -54,7 +58,9 @@ public sealed class RaceRiderProfile
         HighIntensityDurability = highIntensityDurability;
         BodyMassKg = bodyMassKg;
         SystemMassKg = systemMassKg;
-        CdAM2 = cdAM2;
+        CdARoadM2 = cdAM2;
+        CdATtM2 = timeTrialCdA;
+        CdAM2 = timeTrialStage ? timeTrialCdA : cdAM2;
         BaseCrr = baseCrr;
         Positioning = positioning;
         Handling = handling;
@@ -85,6 +91,10 @@ public sealed class RaceRiderProfile
     public double SystemMassKg { get; }
 
     public double TotalMassKg => BodyMassKg + SystemMassKg;
+
+    public double CdARoadM2 { get; }
+
+    public double CdATtM2 { get; }
 
     public double CdAM2 { get; }
 

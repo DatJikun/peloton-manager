@@ -53,7 +53,7 @@ Co wylądowało (D-055, D-056 — które etapy, md, release), wynik `compare --s
 §49 zamykać; Watch Race rozbudowywać; Career Hub; sponsorzy; zwalnianie managera; skauting; zmiana stałych D-054 „żeby ITT lepiej wyszło”; merge z padającymi testami; `new Random()`; przepisywanie historii Gita.
 
 ## Postęp (wypełnia agent nocny)
-- [ ] D-055 kod + sondy
+- [x] D-055 kod + sondy
 - [ ] D-056 etap 1 (rollover, kursy i kalendarz 2027, schema 11)
 - [ ] D-056 etap 2 (starzenie)
 - [ ] D-056 etap 3 (emerytury + neo-pro)

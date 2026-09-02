@@ -57,7 +57,7 @@ public sealed class RaceContentTests
     [InlineData("criticalPowerW")]
     [InlineData("wPrimeCapacityJ")]
     [InlineData("bodyMassKg")]
-    [InlineData("cdAM2")]
+    [InlineData("cdARoadM2")]
     [InlineData("baseCrr")]
     public void OutOfRangeRiderValueIsRejectedWithStableIssueCode(string field)
     {

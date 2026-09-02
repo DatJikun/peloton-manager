@@ -199,8 +199,21 @@ public static class WorldRaceScenarioAssembler
             .OrderByDescending(career => career.Positioning)
             .ThenBy(career => career.Id.Value)
             .ToArray();
-        RaceRiderProfile[] riders = starters.Select(career => ToRaceProfile(career)).ToArray();
-        RaceStartingPosition[] startingPositions = BuildPositioningGrid(riders);
+        bool timeTrialStage = classifiedStageType is ClassifiedStageType.IndividualTimeTrial
+            or ClassifiedStageType.TeamTimeTrial;
+        RaceRiderProfile[] riders = starters
+            .Select(career => ToRaceProfile(career, timeTrialStage))
+            .ToArray();
+        RaceStartingPosition[] startingPositions;
+        if (classifiedStageType == ClassifiedStageType.IndividualTimeTrial)
+        {
+            startingPositions = BuildIttStartOrder(world, raceContentId, riders);
+            maximumDurationSeconds += Math.Max(0, riders.Length - 1) * 60;
+        }
+        else
+        {
+            startingPositions = BuildPositioningGrid(riders);
+        }
 
         HashSet<WorldEntityId> starterIds = starters.Select(career => career.Id).ToHashSet();
         Dictionary<string, WorldEntityId> raceTeamToOrganization = world.Organizations
@@ -209,7 +222,7 @@ public static class WorldRaceScenarioAssembler
                 organization => organization.OriginDefinitionId,
                 organization => organization.Id,
                 StringComparer.Ordinal);
-        RaceCommand[] commands = generatedCourse
+        RaceCommand[] commands = generatedCourse || timeTrialStage
             ? Array.Empty<RaceCommand>()
             : template.Commands
                 .Where(command =>
@@ -231,44 +244,47 @@ public static class WorldRaceScenarioAssembler
             .Select(career => career.OrganizationId!.Value)
             .ToHashSet();
         List<RaceTacticalPlan> tacticalPlans = new();
-        foreach (WorldEntityId organizationId in organizationsWithStarters.OrderBy(id => id.Value))
+        if (!timeTrialStage)
         {
-            RiderCareer[] orgRiders = world.GetRiderCareersForOrganization(organizationId)
-                .Where(career => starterIds.Contains(career.Id))
-                .ToArray();
-            if (orgRiders.Length == 0)
+            foreach (WorldEntityId organizationId in organizationsWithStarters.OrderBy(id => id.Value))
             {
-                continue;
-            }
+                RiderCareer[] orgRiders = world.GetRiderCareersForOrganization(organizationId)
+                    .Where(career => starterIds.Contains(career.Id))
+                    .ToArray();
+                if (orgRiders.Length == 0)
+                {
+                    continue;
+                }
 
-            WorldEntityId leaderId = orgRiders[0].Id;
-            WorldEntityId supportId = orgRiders.Length > 1 ? orgRiders[1].Id : orgRiders[0].Id;
-            RaceObjective objective = RaceObjective.StageWin;
-            RaceBriefingKind briefingKind = RaceBriefingKind.Chase;
-            if (playerOrganizationId is not null &&
-                playerStrategy is not null &&
-                organizationId == playerOrganizationId.Value)
-            {
-                leaderId = playerStrategy.LeaderId;
-                supportId = playerStrategy.SupportId;
-                objective = playerStrategy.Objective;
-                briefingKind = playerStrategy.BriefingKind;
-            }
+                WorldEntityId leaderId = orgRiders[0].Id;
+                WorldEntityId supportId = orgRiders.Length > 1 ? orgRiders[1].Id : orgRiders[0].Id;
+                RaceObjective objective = RaceObjective.StageWin;
+                RaceBriefingKind briefingKind = RaceBriefingKind.Chase;
+                if (playerOrganizationId is not null &&
+                    playerStrategy is not null &&
+                    organizationId == playerOrganizationId.Value)
+                {
+                    leaderId = playerStrategy.LeaderId;
+                    supportId = playerStrategy.SupportId;
+                    objective = playerStrategy.Objective;
+                    briefingKind = playerStrategy.BriefingKind;
+                }
 
-            tacticalPlans.Add(new RaceTacticalPlan(
-                0,
-                supportId,
-                new TeamRaceObservation(
-                    organizationId,
-                    humanAuthorityId,
+                tacticalPlans.Add(new RaceTacticalPlan(
                     0,
-                    VisibleSplit: false,
-                    RacePositionBand.Front,
-                    RaceResourceEstimate.Strong,
-                    RaceThreatEstimate.Low,
-                    objective,
-                    RaceInformationConfidence.Medium),
-                new RaceBriefing(briefingKind, ConsultManager: false)));
+                    supportId,
+                    new TeamRaceObservation(
+                        organizationId,
+                        humanAuthorityId,
+                        0,
+                        VisibleSplit: false,
+                        RacePositionBand.Front,
+                        RaceResourceEstimate.Strong,
+                        RaceThreatEstimate.Low,
+                        objective,
+                        RaceInformationConfidence.Medium),
+                    new RaceBriefing(briefingKind, ConsultManager: false)));
+            }
         }
 
         return new RaceScenario(
@@ -320,6 +336,39 @@ public static class WorldRaceScenarioAssembler
         return identity.InviteOrganizationIds.ToHashSet(StringComparer.Ordinal);
     }
 
+    private static RaceStartingPosition[] BuildIttStartOrder(
+        WorldState world,
+        string raceContentId,
+        IReadOnlyList<RaceRiderProfile> riders)
+    {
+        HashSet<WorldEntityId> starterIds = riders.Select(rider => rider.RiderId).ToHashSet();
+        WorldEntityId[] gcOrder = ClassificationQueries.FullGcOrderBestFirst(world, raceContentId)
+            .Where(starterIds.Contains)
+            .ToArray();
+        List<WorldEntityId> startOrder;
+        if (gcOrder.Length == 0)
+        {
+            startOrder = riders
+                .Select(rider => rider.RiderId)
+                .OrderByDescending(id => id.Value)
+                .ToList();
+        }
+        else
+        {
+            HashSet<WorldEntityId> inGc = gcOrder.ToHashSet();
+            startOrder = riders
+                .Select(rider => rider.RiderId)
+                .Where(id => !inGc.Contains(id))
+                .OrderByDescending(id => id.Value)
+                .Concat(gcOrder.Reverse())
+                .ToList();
+        }
+
+        return startOrder
+            .Select((id, index) => new RaceStartingPosition(id, distanceM: 0.0, startSecond: index * 60))
+            .ToArray();
+    }
+
     private static RaceStartingPosition[] BuildPositioningGrid(IReadOnlyList<RaceRiderProfile> riders) =>
         riders
             .Select((rider, index) => new RaceStartingPosition(
@@ -327,7 +376,7 @@ public static class WorldRaceScenarioAssembler
                 (riders.Count - 1 - index) * RaceTuning.SlotSpacingM))
             .ToArray();
 
-    public static RaceRiderProfile ToRaceProfile(RiderCareer career)
+    public static RaceRiderProfile ToRaceProfile(RiderCareer career, bool timeTrialStage = false)
     {
         double readiness = career.ComputeReadiness();
         double criticalPowerW = career.CriticalPowerW * readiness;
@@ -343,11 +392,13 @@ public static class WorldRaceScenarioAssembler
             career.HighIntensityDurability,
             career.BodyMassKg,
             career.SystemMassKg,
-            career.CdAM2,
+            career.CdARoadM2,
             career.BaseCrr,
             career.Positioning,
             career.Handling,
             career.TacticalAwareness,
-            career.OriginDefinitionId);
+            career.OriginDefinitionId,
+            career.CdATtM2,
+            timeTrialStage);
     }
 }

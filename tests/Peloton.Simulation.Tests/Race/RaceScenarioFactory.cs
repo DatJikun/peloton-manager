@@ -157,7 +157,9 @@ internal static class RaceScenarioFactory
         double durability,
         double positioning = 0.7,
         double massKg = 70.0,
-        double cdAM2 = 0.31)
+        double cdAM2 = 0.31,
+        double? cdATtM2 = null,
+        bool timeTrialStage = false)
     {
         return new RaceRiderProfile(
             new WorldEntityId(riderId),
@@ -174,7 +176,9 @@ internal static class RaceScenarioFactory
             baseCrr: 0.004,
             positioning,
             handling: 0.7,
-            tacticalAwareness: 0.7);
+            tacticalAwareness: 0.7,
+            cdATtM2: cdATtM2,
+            timeTrialStage: timeTrialStage);
     }
 
     public static RaceScenario DraftingPosition()

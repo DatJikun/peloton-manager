@@ -39,6 +39,7 @@ public sealed record RiderDefinition(
     double BodyMassKg,
     double SystemMassKg,
     double CdAM2,
+    double CdATtM2,
     double BaseCrr,
     double Positioning,
     double Handling,

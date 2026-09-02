@@ -41,6 +41,9 @@
 | `CAREER_FINANCE_CONTRACTS_ON_SCREEN_v0.1.md` | DRAFT | D-051: desk/squad/finance show world cash and D-044 contract offers |
 | `CAREER_SHELL_DATES_AND_LOOK_v0.1.md` | DRAFT | D-052: 1 Jan 2026 dates, grouped races, HTML calendar/look repair |
 | `RACE_FEEL_FIELDS_AND_CLASSIFICATIONS_v0.1.md` | DRAFT | D-049 bunch sprint; UCI-shaped fields; GC/points/KOM/youth/team jerseys; historical analogues |
+| `RACE_FEEL_POSITION_AND_SELECTION_v0.1.md` | DRAFT | D-054: position is earned; pace-setter; cobble bruk |
+| `RACE_CDA_ROAD_TT_v0.1.md` | DRAFT | D-055: CdA road vs TT; ITT 60 s starts; TTT 4th rider |
+| `CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md` | DRAFT | D-056: infinite career, aging, neo-pro, AI contract cycle |
 
 ## Read order for a new AI session
 
@@ -70,16 +73,15 @@ These DRAFT contracts exist and still await owner REVIEW. They are not a reason 
 2. `CONTENT_FORMAT_v0.1.md`, `RULESETS_v0.1.md`, `SAVE_FORMAT_v0.1.md`, `TESTING_v0.1.md`
 3. `RACE_ENGINE_DESIGN_v0.2.md` — REVIEW; official results already use `PrototypeRaceEngine` below this contract
 
-Already in code (thin versus those contracts): Milestone 0 spine, nine GameStates, SQLite SchemaVersion 9, skeleton Advance Day with form tick and club cash, prototype race bound to world `RiderCareer` rows, pre-season entry + per-event leaders (D-050), rider contracts and thin negotiation, results filter by any organization, derived 1–99 ratings (D-046), dense WT courses + calendar-per-stage (D-047), `scenario.peloton.wt-2026` CreateWorld, CLI desk/inbox/prep/Simulate, Godot career shell (`CareerShell.tscn`) for New Game club pick / season plan / Advance Day / Race next / simulate / results, desk/squad/finance world cash and D-044 offers (D-051). Official race play path is Simulate then Results (D-043); Watch film is optional and off by default. Career Hub UI is deleted (D-048). See `HANDOFF.md`.
+Already in code (thin versus those contracts): Milestone 0 spine, nine GameStates, SQLite SchemaVersion 10, skeleton Advance Day with form tick and club cash, prototype race bound to world `RiderCareer` rows, pre-season entry + per-event leaders (D-050), rider contracts and thin negotiation, results filter by any organization, derived 1–99 ratings (D-046), dense WT courses + calendar-per-stage (D-047), position/pace-setter/bruk (D-054), two CdA numbers + ITT/TTT path (D-055), `scenario.peloton.wt-2026` CreateWorld, CLI desk/inbox/prep/Simulate, Godot career shell (`CareerShell.tscn`) for New Game club pick / season plan / Advance Day / Race next / simulate / results, desk/squad/finance world cash and D-044 offers (D-051). Official race play path is Simulate then Results (D-043); Watch film is optional and off by default. Career Hub UI is deleted (D-048). See `HANDOFF.md`.
 
 Not in code yet, though named in `DATA_MODEL_v0.1.md`: `OrganizationKnowledgeStore`, `PersonalKnowledge`, `RecruitmentCase`. AI managers, dynamic sponsor market, training, and a full legal rules engine are not implemented.
 
 Remaining system design (do not treat as the next coding task unless `HANDOFF.md` says so):
 
-- **Next coding task:** CdA Road vs TT — do not close §49
+- **Next coding task:** D-056 season rollover / aging / neo-pro — do not close §49
 - Training / development that grows physiology toward POT
-- Yearly course re-generation after 2026 (generator exists; season rollover does not)
-- Rider aging / infinite career season rollover
+- Yearly course re-generation after 2026 (generator exists; Advance Day does not yet roll new seasons)
 - Recruitment / AI managers / dynamic sponsor market
 
 Do not close the owner §49 fun gate with automations. Do not rebuild Career Hub. Watch film stays optional and off by default.

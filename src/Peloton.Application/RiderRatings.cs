@@ -24,11 +24,12 @@ public static class RiderRatingQueries
             career.LowIntensityDurability,
             career.HighIntensityDurability,
             career.BodyMassKg,
-            career.CdAM2,
+            career.CdARoadM2,
             career.BaseCrr,
             career.Positioning,
             career.Handling,
-            potentialOvr);
+            potentialOvr,
+            career.CdATtM2);
 
     public static RiderRatingSet FromPhysiology(
         double criticalPowerW,
@@ -41,10 +42,12 @@ public static class RiderRatingQueries
         double baseCrr,
         double positioning,
         double handling,
-        int potentialOvr)
+        int potentialOvr,
+        double? cdATtM2 = null)
     {
         double cpPerKg = criticalPowerW / bodyMassKg;
         double pmaxPerKg = peakPowerW / bodyMassKg;
+        double timeTrialCdA = cdATtM2 ?? cdAM2;
 
         int climb = ClampRating((int)Math.Round(
             0.55 * Score(cpPerKg, 4.80, 6.55) +
@@ -66,7 +69,7 @@ public static class RiderRatingQueries
 
         int timeTrial = ClampRating((int)Math.Round(
             0.45 * Score(criticalPowerW, 350, 440) +
-            0.40 * Score(-cdAM2, -0.34, -0.22) +
+            0.40 * Score(-timeTrialCdA, -0.34, -0.155) +
             0.15 * Score(-baseCrr, -0.0055, -0.0034)));
 
         int sprint = ClampRating((int)Math.Round(

@@ -38,18 +38,22 @@ public sealed record RaceCommand
 
 public sealed record RaceStartingPosition
 {
-    public RaceStartingPosition(WorldEntityId riderId, double distanceM)
+    public RaceStartingPosition(WorldEntityId riderId, double distanceM, int startSecond = 0)
     {
         if (!double.IsFinite(distanceM) || distanceM < 0.0)
         {
             throw new ArgumentOutOfRangeException(nameof(distanceM));
         }
 
+        ArgumentOutOfRangeException.ThrowIfNegative(startSecond);
         RiderId = riderId;
         DistanceM = distanceM;
+        StartSecond = startSecond;
     }
 
     public WorldEntityId RiderId { get; }
 
     public double DistanceM { get; }
+
+    public int StartSecond { get; }
 }

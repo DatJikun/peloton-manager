@@ -1471,7 +1471,9 @@ public sealed class GameApplication
                         definition.BaseCrr,
                         definition.Positioning,
                         definition.Handling,
-                        definition.PotentialOvr ?? 70))));
+                        definition.PotentialOvr ?? 70,
+                        definition.CdATtM2)),
+                cdATtM2: definition.CdATtM2));
             RiderCareer createdCareer = riderCareers[^1];
             RiderRatingSet ratings = RiderRatingQueries.FromPhysiology(createdCareer, createdCareer.PotentialOvr);
             createdCareer.EnsurePotentialOvrAtLeast(ratings.Ovr);

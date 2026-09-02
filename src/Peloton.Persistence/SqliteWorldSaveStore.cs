@@ -13,7 +13,7 @@ namespace Peloton.Persistence;
 
 public sealed class SqliteWorldSaveStore : IWorldSaveStore
 {
-    public const int SchemaVersion = 9;
+    public const int SchemaVersion = 10;
 
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
 
@@ -314,7 +314,8 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         double HighIntensityDurability,
         double BodyMassKg,
         double SystemMassKg,
-        double CdAM2,
+        double CdARoadM2,
+        double CdATtM2,
         double BaseCrr,
         double Positioning,
         double Handling,
@@ -339,7 +340,7 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
             HighIntensityDurability,
             BodyMassKg,
             SystemMassKg,
-            CdAM2,
+            CdARoadM2,
             BaseCrr,
             Positioning,
             Handling,
@@ -349,7 +350,8 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
             Fatigue01,
             Loyalty01,
             PotentialOvr,
-            (Results ?? Array.Empty<RiderCareerResultDto>()).Select(result => result.ToDomain()));
+            (Results ?? Array.Empty<RiderCareerResultDto>()).Select(result => result.ToDomain()),
+            CdATtM2);
 
         public static RiderCareerDto FromDomain(RiderCareer career) => new(
             career.Id,
@@ -364,7 +366,8 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
             career.HighIntensityDurability,
             career.BodyMassKg,
             career.SystemMassKg,
-            career.CdAM2,
+            career.CdARoadM2,
+            career.CdATtM2,
             career.BaseCrr,
             career.Positioning,
             career.Handling,
