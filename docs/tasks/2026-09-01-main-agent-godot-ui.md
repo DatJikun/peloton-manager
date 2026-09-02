@@ -41,16 +41,17 @@
 ## Postęp (wypełnia agent główny)
 - [x] D-054: przegląd raportu Composera, gate, merge do `main`, CI zielone (`900b280`)
 - [x] gap list (tabela poniżej)
-- [ ] LookChrome / theme
-- [ ] Biurko
-- [ ] Skład
-- [ ] Wynik
-- [ ] Kalendarz
-- [ ] Finanse
-- [ ] Rynek
-- [ ] Plan sezonu / Nowa gra
-- [ ] Inbox / Ustawienia
-- [ ] zrzuty ekranów (lub uczciwa notatka, że render na VM niemożliwy)
+- [x] LookChrome / theme (skala HTML, stretch canvas_items, Pill, SectionBar, Table, NavItem, Crest, ManagerFoot)
+- [x] Biurko
+- [x] Skład
+- [x] Wynik (+ naprawa SimulateRace na WT: dzisiejszy wyścig zamiast id prototypu)
+- [x] Kalendarz
+- [x] Finanse (bez zmyślonej księgi/donuta — brak Query)
+- [x] Rynek
+- [ ] Plan sezonu / Nowa gra (dziedziczą chrome; osobnego przebiegu nie było)
+- [ ] Inbox / Ustawienia (Inbox na Biurku zrobiony; Ustawienia bez zmian)
+- [x] zrzuty ekranów: `/opt/cursor/artifacts/godot-ui/after-*.png` (Godot 4.4.1 .NET na VM, Xvfb)
+- Przekazanie sesji: `docs/tasks/2026-09-02-session-handoff-main-agent.md`
 - [ ] gate + merge do `main` + CI zielone
 - [ ] `CODEBASE_MAP.md` wiersz Godota, `HANDOFF.md` jedna linia
 
