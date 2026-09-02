@@ -170,6 +170,6 @@ Final tuning constants (`RaceTuning`):
 | `CobblePositioningBase` | 0.21 |
 | `CobblePositioningHandlingWeight` | 0.91 |
 
-Probes at seed `91234`: TdF stage 1 sprint, TDU stage 6 sprinter, Hautacam GC, determinism/spy neutrality, positioning + cobble + drift unit tests pass. **Roubaix probe still fails** at seed `91234` after §3.3 drift fix and contract-baseline §5.1 constants (two ±40% tuning passes did not pass the probe). Sim top 5: Evenepoel (super-gc), Pogačar (super-gc), Vingegaard (super-gc), Ganna (tt), Yates (gc) — van der Poel outside top 10; ahead of neither Evenepoel nor Vingegaard. Next lever within band: raise `CobbleCrrDelta` toward +40% (0.0252) with drift fix in place.
+Probes at seed `91234`: TdF stage 1 sprint, TDU stage 6 sprinter, Hautacam GC, determinism/spy neutrality, positioning + cobble + drift unit tests pass. **Roubaix probe still fails** at seed `91234` after §3.3 drift fix and contract-baseline §5.1 constants (two ±40% tuning passes did not pass the probe). Sim top 10: Evenepoel (super-gc), Pogačar (super-gc), Vingegaard (super-gc), Ganna (tt), Yates (gc), Roglič (gc), EF gc, Ineos gc, Ineos support (gc), Decathlon gc — van der Poel **13th**; ahead of neither Evenepoel nor Vingegaard. Next lever within band: raise `CobbleCrrDelta` toward +40% (0.0252) with drift fix in place.
 
 Still missing (deferred): crosswind echelons, lead-out trains, incidents/mechanicals, D-032 GC leadership, CdA Road/TT (D-055).
