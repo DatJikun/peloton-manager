@@ -117,7 +117,15 @@ On `RouteSurface.Cobble` segments, in addition to the existing `EffectiveCrr(bas
 2. **Vibration / re-acceleration cost.** Required power is multiplied by `1 + CobbleSurgeCost · (1 − Handling)` with `CobbleSurgeCost = 0.22` (a 0.82 handler pays +4 %, a 0.93 handler +1.5 %). This is §33 “higher acceleration variance” collapsed into a deterministic per-second cost; keep it as one constant in `RaceTuning`.
 3. Both apply to the setter’s own front cost in §4.2, so a poor handler is also a worse pace-setter on cobbles.
 
-No incident probability, no mechanicals, no equipment in this slice (deferred, §33 / §50).
+### 5.1 Amendment (2026-09-01, after the first implementation pass)
+Items 1–2 alone leave Roubaix to light GC riders: with cobbles as “a bit more Crr”, a 61 kg rider with 425 W and CdA 0.25 is physically the fastest thing on the flat. Real sectors are different in three ways the model must carry (all §33 items: *increased effective Crr, positioning difficulty, higher acceleration variance*):
+
+1. **Realistic cobble Crr.** `RouteSurface.Cobble` delta becomes **0.018** (was 0.0085) and the handling factor becomes `(1.60 − 1.00 · Handling)` (line choice: crown vs gutter). Rolling power then dominates aero on a sector (~200 W at 45 km/h), so **absolute watts** matter more than CdA there.
+2. **Almost no draft on the stones.** Shelter multiplier on `Cobble` segments is `max(shelterCobble, 0.85)` — riders string out; nobody sits at 0.62.
+3. **Sector surges.** Every transition asphalt→cobble and cobble→asphalt of the group’s reference rider (the rider used for pacing in §4.2) starts a **surge**: for `CobbleSurgeSeconds = 12` the group target speed is `+ CobbleSurgeSpeedMps = 2.5` above the §4.2 target. Each rider realizes it through `CapabilitySolver` at the 1-second step — so `PeakPowerW` and remaining `W′` cap who can follow, and `W′` is spent. Roubaix has ~30 sectors → ~60 surges; riders with small `W′` / low `PeakPowerW` (light GC) lose the wheel repeatedly and, with item 2, cannot hide afterwards. Surges are deterministic (from route geometry), never RNG.
+4. **Durability.** No change: `CapabilitySolver` already degrades CP with `LowIntensityWorkJ`; classics archetypes carry higher `LowIntensityDurability` in the pack, which now matters over 250 km with surges.
+
+The tuning band for these four constants is **±40 %**; the `Handling` in the CobbleClassic positioning scale already added by the implementation stays. Still no incident probability, no mechanicals, no equipment (deferred, §33 / §50). Roubaix probe stays as written in §6 (Pogačar in the top 5 is acceptable and realistic; Evenepoel/Vingegaard ahead of van der Poel is not).
 
 ## 6. Probes (tests that must pass; feel guards, not fun proof)
 

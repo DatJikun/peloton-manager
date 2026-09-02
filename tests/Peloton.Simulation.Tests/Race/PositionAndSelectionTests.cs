@@ -78,6 +78,8 @@ public sealed class PositionAndSelectionTests
         double lowHandlingShelter = PositionScoreResolver.CobbleShelterMultiplier(shelter, 0.80);
         Assert.True(highHandlingShelter > shelter);
         Assert.True(lowHandlingShelter > highHandlingShelter);
+        Assert.Equal(RaceTuning.CobbleShelterFloor, PositionScoreResolver.EffectiveCobbleShelter(shelter, 0.93));
+        Assert.Equal(RaceTuning.CobbleShelterFloor, PositionScoreResolver.EffectiveCobbleShelter(shelter, 0.80));
 
         double highHandlingSurge = PositionScoreResolver.CobbleSurgeMultiplier(0.93);
         double lowHandlingSurge = PositionScoreResolver.CobbleSurgeMultiplier(0.80);
@@ -146,9 +148,10 @@ public sealed class PositionAndSelectionTests
 
     private static RequiredPowerBreakdown RequiredPowerAtCobbleSpeed(RaceRiderProfile profile, double speedMps)
     {
-        double shelter = PositionScoreResolver.CobbleShelterMultiplier(0.62, profile.Handling);
+        double shelter = PositionScoreResolver.EffectiveCobbleShelter(0.62, profile.Handling);
         double surge = PositionScoreResolver.CobbleSurgeMultiplier(profile.Handling);
-        double crr = profile.BaseCrr + (0.0085 * (1.35 - (0.50 * profile.Handling)));
+        double crr = profile.BaseCrr + (RaceTuning.CobbleCrrDelta *
+            (RaceTuning.CobbleCrrHandlingIntercept - (RaceTuning.CobbleCrrHandlingSlope * profile.Handling)));
         RequiredPowerBreakdown demand = RequiredPowerSolver.Calculate(new RequiredPowerInput(
             speedMps,
             0.0,

@@ -36,6 +36,8 @@ public sealed class RaceSession
     private readonly IWorldSpySink spySink;
     private readonly List<RaceCommand> resolvedCommands = new();
     private readonly HashSet<int> evaluatedTacticalPlans = new();
+    private readonly bool routeHasCobble;
+    private readonly Dictionary<WorldEntityId, int> pacingReferenceSurgeUntilSecond = new();
     private int simulationSecond;
     private int maximumGroupCount = 1;
     private int decisionCount;
@@ -48,6 +50,8 @@ public sealed class RaceSession
         ArgumentNullException.ThrowIfNull(spySink);
         this.scenario = scenario;
         this.spySink = spySink;
+        routeHasCobble = scenario.Definition.Segments
+            .Any(segment => segment.Surface == RouteSurface.Cobble);
         Seed = seed;
         Dictionary<WorldEntityId, RaceStartingPosition> positions = scenario.StartingPositions
             .ToDictionary(position => position.RiderId);
@@ -531,9 +535,26 @@ public sealed class RaceSession
             double remainingM = scenario.Definition.TotalLengthM - pacingReference.DistanceM;
             AtmosphereSample atmosphere = AtmosphereForPhysics(segment);
             double basePaceMps = BasePaceMps(atmosphere.Gradient);
+            if (routeHasCobble)
+            {
+                double projectedToM = pacingReference.DistanceM +
+                    (Math.Max(0.0, pacingReference.SpeedMps) * StepSeconds);
+                if (CrossedAsphaltCobbleTransition(pacingReference.DistanceM, projectedToM))
+                {
+                    pacingReferenceSurgeUntilSecond[pacingReference.Profile.RiderId] =
+                        simulationSecond + RaceTuning.CobbleSurgeSeconds;
+                }
+            }
+
             double selectiveTargetMps = IsSelectiveZone(segment, remainingM)
                 ? SelectiveGroupTargetMps(group, segment, atmosphere, remainingM)
                 : basePaceMps;
+            if (routeHasCobble &&
+                pacingReferenceSurgeUntilSecond.TryGetValue(pacingReference.Profile.RiderId, out int surgeUntil) &&
+                simulationSecond < surgeUntil)
+            {
+                selectiveTargetMps += RaceTuning.CobbleSurgeSpeedMps;
+            }
             double target = group.Max(rider =>
             {
                 double riderRemainingM = scenario.Definition.TotalLengthM - rider.DistanceM;
@@ -917,11 +938,55 @@ public sealed class RaceSession
 
         if (surface == RouteSurface.Cobble)
         {
-            shelter = PositionScoreResolver.CobbleShelterMultiplier(shelter, handling);
+            shelter = PositionScoreResolver.EffectiveCobbleShelter(shelter, handling);
         }
 
         return shelter;
     }
+
+    private bool CrossedAsphaltCobbleTransition(double fromDistanceM, double toDistanceM)
+    {
+        if (Math.Abs(toDistanceM - fromDistanceM) < 1e-9)
+        {
+            return false;
+        }
+
+        double minM = Math.Min(fromDistanceM, toDistanceM);
+        double maxM = Math.Max(fromDistanceM, toDistanceM);
+        List<RouteSurface> surfaces = new()
+        {
+            scenario.Definition.SegmentAt(minM).Surface,
+        };
+        double cumulativeM = 0.0;
+        foreach (RaceRouteSegment segment in scenario.Definition.Segments)
+        {
+            cumulativeM += segment.LengthM;
+            if (cumulativeM > minM && cumulativeM < maxM)
+            {
+                surfaces.Add(scenario.Definition.SegmentAt(cumulativeM + 1e-6).Surface);
+            }
+        }
+
+        RouteSurface endSurface = scenario.Definition.SegmentAt(maxM).Surface;
+        if (surfaces[^1] != endSurface)
+        {
+            surfaces.Add(endSurface);
+        }
+
+        for (int index = 1; index < surfaces.Count; index++)
+        {
+            if (IsAsphaltCobbleTransition(surfaces[index - 1], surfaces[index]))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsAsphaltCobbleTransition(RouteSurface from, RouteSurface to) =>
+        (from == RouteSurface.Asphalt && to == RouteSurface.Cobble) ||
+        (from == RouteSurface.Cobble && to == RouteSurface.Asphalt);
 
     private static double CobbleSurgeMultiplier(
         RouteSurface surface,
@@ -1052,10 +1117,16 @@ public sealed class RaceSession
             RouteSurface.Asphalt => 0.0,
             RouteSurface.WhiteRoad => 0.0025,
             RouteSurface.Gravel => 0.0050,
-            RouteSurface.Cobble => 0.0085,
+            RouteSurface.Cobble => RaceTuning.CobbleCrrDelta,
             _ => 0.0,
         };
 
-        return baseCrr + (surfaceDelta * (1.35 - (0.50 * handling)));
+        if (surface != RouteSurface.Cobble)
+        {
+            return baseCrr + (surfaceDelta * (1.35 - (0.50 * handling)));
+        }
+
+        return baseCrr + (surfaceDelta * (RaceTuning.CobbleCrrHandlingIntercept -
+                                          (RaceTuning.CobbleCrrHandlingSlope * handling)));
     }
 }

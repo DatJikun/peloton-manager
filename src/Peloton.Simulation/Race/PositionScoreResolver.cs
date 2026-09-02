@@ -69,6 +69,9 @@ public static class PositionScoreResolver
     public static double CobbleShelterMultiplier(double shelter, double handling) =>
         1.0 - ((1.0 - shelter) * (0.25 + (0.75 * handling)));
 
+    public static double EffectiveCobbleShelter(double shelter, double handling) =>
+        Math.Max(CobbleShelterMultiplier(shelter, handling), RaceTuning.CobbleShelterFloor);
+
     public static double CobbleSurgeMultiplier(double handling) =>
         1.0 + (RaceTuning.CobbleSurgeCost * (1.0 - handling));
 }

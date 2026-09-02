@@ -24,6 +24,18 @@ public static class RaceTuning
 
     public const double CobbleSurgeCost = 0.286;
 
+    public const double CobbleCrrDelta = 0.018;
+
+    public const double CobbleCrrHandlingIntercept = 1.60;
+
+    public const double CobbleCrrHandlingSlope = 1.00;
+
+    public const double CobbleShelterFloor = 0.85;
+
+    public const int CobbleSurgeSeconds = 12;
+
+    public const double CobbleSurgeSpeedMps = 2.5;
+
     public const double LaunchSprintIntentBonus = 0.50;
 
     public const double AttackIntentBonus = 0.40;
