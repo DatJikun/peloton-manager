@@ -120,7 +120,7 @@ internal static partial class CareerProjectionQueries
             .ToDictionary(organization => organization.Id);
 
         return world.RiderCareers
-            .Where(career => career.OrganizationId != employerId)
+            .Where(career => !career.IsRetired && career.OrganizationId != employerId)
             .Select(career =>
             {
                 Person person = personsById[career.PersonId];
@@ -176,6 +176,26 @@ internal static partial class CareerProjectionQueries
         }
 
         List<InboxItemProjection> results = new();
+        if (access.CurrentOrganizationId is WorldEntityId employerId)
+        {
+            if (world.SeasonSummaryInboxYear is int seasonYear &&
+                !string.IsNullOrWhiteSpace(world.SeasonSummaryInboxBody))
+            {
+                string identity = SeasonInboxSupport.FormatSeasonSummaryIdentity(seasonYear);
+                if (!world.IsInboxItemDismissed(identity))
+                {
+                    results.Add(new InboxItemProjection(
+                        identity,
+                        "season-summary",
+                        world.SeasonSummaryInboxBody,
+                        world.SeasonStartDayNumber,
+                        null));
+                }
+            }
+
+            results.AddRange(SeasonInboxSupport.BuildContractExpiryWarnings(world, employerId));
+        }
+
         foreach (CalendarEntry entry in world.CalendarEntries)
         {
             if (entry.OfficialResult is not null && !entry.ResultAcknowledged)

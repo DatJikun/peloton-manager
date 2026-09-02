@@ -573,7 +573,10 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         int SeasonYear = 2026,
         int SeasonStartDayNumber = 0,
         IReadOnlyList<RaceIdentityConstraints>? RaceIdentities = null,
-        IReadOnlyList<CalendarRaceDetail>? CalendarRaceDetails = null)
+        IReadOnlyList<CalendarRaceDetail>? CalendarRaceDetails = null,
+        IReadOnlyList<string>? DismissedInboxIdentities = null,
+        string? SeasonSummaryInboxBody = null,
+        int? SeasonSummaryInboxYear = null)
     {
         public static WorldSnapshotDto FromDomain(WorldState world)
         {
@@ -640,7 +643,10 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                 world.SeasonYear,
                 world.SeasonStartDayNumber,
                 world.RaceIdentities.ToArray(),
-                world.CalendarRaceDetails.ToArray());
+                world.CalendarRaceDetails.ToArray(),
+                world.DismissedInboxIdentities.ToArray(),
+                world.SeasonSummaryInboxBody,
+                world.SeasonSummaryInboxYear);
         }
 
         public WorldState ToDomain()
@@ -681,7 +687,10 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                 SeasonYear > 0 ? SeasonYear : 2026,
                 SeasonStartDayNumber,
                 RaceIdentities ?? Array.Empty<RaceIdentityConstraints>(),
-                CalendarRaceDetails ?? Array.Empty<CalendarRaceDetail>());
+                CalendarRaceDetails ?? Array.Empty<CalendarRaceDetail>(),
+                DismissedInboxIdentities ?? Array.Empty<string>(),
+                SeasonSummaryInboxBody,
+                SeasonSummaryInboxYear);
         }
     }
 }

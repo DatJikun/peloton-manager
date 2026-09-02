@@ -144,6 +144,13 @@ public static class WorldChecksum
             writer.Write(world.FinancialYearDays);
             writer.Write(world.SeasonYear);
             writer.Write(world.SeasonStartDayNumber);
+            writer.Write(world.SeasonSummaryInboxYear ?? 0);
+            writer.Write(world.SeasonSummaryInboxBody ?? string.Empty);
+            foreach (string identity in world.DismissedInboxIdentities.OrderBy(item => item, StringComparer.Ordinal))
+            {
+                writer.Write(identity);
+            }
+
             writer.Write(world.LastCompletedRaceDay);
             writer.Write(world.GeneratePeriodicRaces);
             writer.Write(world.LastDayNotes.Count);

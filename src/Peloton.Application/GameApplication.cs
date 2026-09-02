@@ -1246,6 +1246,17 @@ public sealed class GameApplication
             return CommandResult.Success;
         }
 
+        if (string.Equals(item.Category, "season-summary", StringComparison.Ordinal) ||
+            string.Equals(item.Category, "contract-expiry", StringComparison.Ordinal))
+        {
+            if (!World.DismissInboxItem(command.Identity))
+            {
+                return CommandResult.Reject("INBOX_ITEM_NOT_FOUND");
+            }
+
+            return CommandResult.Success;
+        }
+
         return CommandResult.Reject("INBOX_ITEM_NOT_FOUND");
     }
 

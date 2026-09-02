@@ -45,6 +45,9 @@ public sealed class WorldState
     private readonly List<RiderStageTime> riderStageTimes;
     private readonly List<RaceIdentityConstraints> raceIdentities;
     private readonly List<CalendarRaceDetail> calendarRaceDetails;
+    private readonly List<string> dismissedInboxIdentities;
+    private string? seasonSummaryInboxBody;
+    private int? seasonSummaryInboxYear;
     private static Action<WorldState>? seasonRolloverApplicator;
     private bool pendingSeasonRollover;
 
@@ -78,7 +81,10 @@ public sealed class WorldState
         int seasonYear = 2026,
         int seasonStartDayNumber = 0,
         IEnumerable<RaceIdentityConstraints>? raceIdentities = null,
-        IEnumerable<CalendarRaceDetail>? calendarRaceDetails = null)
+        IEnumerable<CalendarRaceDetail>? calendarRaceDetails = null,
+        IEnumerable<string>? dismissedInboxIdentities = null,
+        string? seasonSummaryInboxBody = null,
+        int? seasonSummaryInboxYear = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(worldId);
         ArgumentNullException.ThrowIfNull(contentIdentity);
@@ -137,6 +143,11 @@ public sealed class WorldState
             .OrderBy(detail => detail.StartDayNumber)
             .ThenBy(detail => detail.Id, StringComparer.Ordinal)
             .ToList();
+        this.dismissedInboxIdentities = (dismissedInboxIdentities ?? Array.Empty<string>())
+            .OrderBy(identity => identity, StringComparer.Ordinal)
+            .ToList();
+        this.seasonSummaryInboxBody = seasonSummaryInboxBody;
+        this.seasonSummaryInboxYear = seasonSummaryInboxYear;
     }
 
     public static void SetSeasonRolloverApplicator(Action<WorldState> applicator) =>
@@ -202,7 +213,41 @@ public sealed class WorldState
 
     public IReadOnlyList<CalendarRaceDetail> CalendarRaceDetails => calendarRaceDetails;
 
+    public IReadOnlyList<string> DismissedInboxIdentities => dismissedInboxIdentities;
+
+    public string? SeasonSummaryInboxBody => seasonSummaryInboxBody;
+
+    public int? SeasonSummaryInboxYear => seasonSummaryInboxYear;
+
     public bool SeasonRolloverOccurred { get; private set; }
+
+    public void SetSeasonSummaryInbox(int seasonYear, string body)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(body);
+        seasonSummaryInboxYear = seasonYear;
+        seasonSummaryInboxBody = body;
+        dismissedInboxIdentities.RemoveAll(
+            identity => identity.StartsWith("season-summary:", StringComparison.Ordinal));
+    }
+
+    public bool DismissInboxItem(string identity)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(identity);
+        if (dismissedInboxIdentities.Contains(identity))
+        {
+            return false;
+        }
+
+        dismissedInboxIdentities.Add(identity);
+        dismissedInboxIdentities.Sort(StringComparer.Ordinal);
+        return true;
+    }
+
+    public bool IsInboxItemDismissed(string identity)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(identity);
+        return dismissedInboxIdentities.Contains(identity);
+    }
 
     public CourseProfile? TryGetCourseProfile(WorldEntityId courseProfileId) =>
         courseProfiles.FirstOrDefault(profile => profile.CourseProfileId == courseProfileId);
@@ -522,6 +567,11 @@ public sealed class WorldState
 
             RiderCareer? career = TryGetRiderCareer(contract.RiderCareerId);
             if (career is null || career.OrganizationId != contract.OrganizationId)
+            {
+                continue;
+            }
+
+            if (TryGetActiveContract(career.Id) is not null)
             {
                 continue;
             }
