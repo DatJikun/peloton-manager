@@ -14,6 +14,10 @@ public static class SeasonRolloverExecutor
 
     public static Func<WorldState, int, IReadOnlyList<RiderCareer>, IReadOnlyList<RiderCareer>>? NeoProTick { get; set; }
 
+    public static Action<WorldState, int>? ContractTick { get; set; }
+
+    public static Action<WorldState, int>? SeasonSummaryTick { get; set; }
+
     public static int LastRetiredCount { get; private set; }
 
     public static int LastNeoCount { get; private set; }
@@ -41,6 +45,9 @@ public static class SeasonRolloverExecutor
         IReadOnlyList<RiderCareer> neo = NeoProTick?.Invoke(world, newSeasonYear, retired) ?? Array.Empty<RiderCareer>();
         LastRetiredCount = retired.Count;
         LastNeoCount = neo.Count;
+
+        ContractTick?.Invoke(world, newSeasonYear);
+        SeasonSummaryTick?.Invoke(world, world.SeasonYear);
 
         foreach (RiderCareer career in world.RiderCareers.Where(career => !career.IsRetired))
         {

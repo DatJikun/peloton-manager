@@ -17,7 +17,10 @@ public static class ApplicationFactory
         SeasonRolloverExecutor.AgingTick = SeasonAging.Apply;
         SeasonRolloverExecutor.RetirementTick = SeasonRetirements.Apply;
         SeasonRolloverExecutor.NeoProTick = SeasonNeoPros.Apply;
+        SeasonRolloverExecutor.ContractTick = SeasonAiContracts.Apply;
+        SeasonRolloverExecutor.SeasonSummaryTick = SeasonInboxSupport.PublishSeasonSummary;
         SeasonNeoPros.ContentRoot = contentRoot;
+        RiderMetadataCatalog.ContentRoot = contentRoot;
         SeasonRolloverExecutor.RegisterApplicator();
         return new GameApplication(
             new JsonScenarioCatalog(contentRoot),
