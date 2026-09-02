@@ -39,8 +39,8 @@
 - Watch nadal WYŁ domyślnie; katalog wyglądu nadal oznaczony jako niedziałający.
 
 ## Postęp (wypełnia agent główny)
-- [ ] D-054: przegląd raportu Composera, gate, merge do `main`, CI zielone
-- [ ] gap list (tabela poniżej)
+- [x] D-054: przegląd raportu Composera, gate, merge do `main`, CI zielone (`900b280`)
+- [x] gap list (tabela poniżej)
 - [ ] LookChrome / theme
 - [ ] Biurko
 - [ ] Skład
@@ -54,6 +54,18 @@
 - [ ] gate + merge do `main` + CI zielone
 - [ ] `CODEBASE_MAP.md` wiersz Godota, `HANDOFF.md` jedna linia
 
+Zrzuty źródłowe (2026-09-02, Godot 4.4.1 .NET na VM, fullscreen 1920×1200; HTML w Chrome headless 1600×900): `/opt/cursor/artifacts/godot-ui/godot-0*.png` vs `html-*.png`. Narzędzia: `/tmp/gshot.sh out.png` (zrzut ekranu Godota), `xdotool mousemove X Y click 1` (klik), sesja tmux `godot-shell`.
+
 | Ekran | HTML v3 | Godot dziś | Zmiana |
 |---|---|---|---|
-| | | | |
+| Szyna boczna | Herb (kwadrat z ukośnym podziałem) + nazwa klubu Anton + „PROTEAM · 2026” meta; pozycje nawigacji **z ikonami** (20 px stroke), wyrównane do lewej, aktywna = czarne tło; „ZARZĄDZANIE” jako meta 9 px, wersaliki, rozstrzelone; na dole „Ustawienia” z ikoną + **karta managera** (inicjały w ramce, „M. Nowak”, „profil managera · kariera”) | Sam tekst klubu, brak herbu; pozycje wyśrodkowane bez ikon; „Ustawienia”/„Karta managera” jako gołe napisy | `LookChrome.NavItem(icon, text, badge, active)`, `LookIcons` rysowane w `_Draw` (11 ikon), `Crest(club)`, `ManagerFoot(name)`; wyrównanie do lewej, padding 10/12 |
+| Nagłówek dnia | „11 MAR” Anton na niebieskim + „ŚR” Anton na czarnym; obok „Środa / 11 marca 2026 · tydzień 11”; pigułki „ROK 2026”, „WYŚCIG ZA 1 DZIEŃ” — 2 px ramka, bold 13 px, **wersaliki, rozstrzelone**, liczba na niebiesko | Pigułki małe, normalna wielkość liter, bez rozstrzelenia; data dnia jako zwykły tekst | `LookChrome.Pill(text, accentPart)` z FontVariation `SpacingGlyph`; większe fonty (Anton 26, meta 10) |
+| Pasek sekcji (niebieski) | Meta 10 px bold, wersaliki, rozstrzelone + **link po prawej** („PEŁNY KALENDARZ ›”) | Anton mały; link jako osobny pełnoszerokościowy przycisk wewnątrz karty | `SectionBar(title, linkText?, onLink?)`; usunąć przyciski „pełny kalendarz ›” z treści kart |
+| Tabele (Skład, Rynek, ostatnie wyniki) | Płaska tabela: nagłówek szary meta 10 px wersaliki z strzałką sortowania (niebieska), wiersze ~34 px z linią włoskową, liczby bold w kolumnie kluczowej, wyrównanie liczb do prawej/środka, wybrany wiersz **czarny** z jasnym tekstem, chipy statusu | Każdy wiersz to obramowana karta z awatarem, ~80 px; nagłówki kolumn jako obramowane przyciski — ciężko i mało wierszy na ekranie | `LookChrome.Table(columns, rows, selectedIndex, onSort, onSelect)` na `GridContainer`; usunąć awatary z listy (zostają na karcie zawodnika); mini „micro” podpis (kraj) pod nazwiskiem |
+| Biurko | Lista wyścigów: **czarny chip daty** („CZW 12.03”) + nazwa bold + meta wersaliki („1.PRO · 177 KM · JUTRO”) + mini-profil trasy; panel Wyścig: tytuł Anton 30 px + kategoria niebieska, rząd meta (DATA / DYSTANS / TRASA), wykres profilu, wiersze POGODA / SKŁAD, chipy; Inbox: numerowane wiersze, pilne w czerwonej ramce, data po prawej | Data jako zwykły tekst, brak chipa i profilu; panel Wyścig: tytuł + chip „scheduled” + pełnoszerokościowy przycisk; Inbox „Brak spraw” | `DateChip(date)`, meta pod nazwą, `LookCharts` mini-profil (już jest w Watch — użyć); panel Wyścig: rząd meta + przycisk „OTWÓRZ WYŚCIG ›” jako pigułka, nie belka; puste Inbox jako pusty stan w stylu HTML |
+| Skład – karta zawodnika | Awatar 110×130, nazwisko Anton 30 px, meta „POL · 27 LAT · PUNCHEUR”, tabela OVR/POT, Forma, Wartość; **dwie kolumny pasków** (Góry/Sprint/Bruk/Regeneracja | Pagórki/TT/Wytrzymałość/Forma); ramka KONTRAKT z 4 polami meta; przyciski NEGOCJUJ (niebieski) / ZWOLNIJ (czerwony) | Awatar OK, nazwisko OK, statystyki jako lista kv w jednej kolumnie, brak pasków | `Stat` w dwóch kolumnach; ramka kontraktu w `Frame(Paper)`; przyciski jako `Solid` z wersalikami |
+| Finanse | 3 panele: BUDŻET (kwota Anton 34 px + „WOLNE ŚRODKI · 2026” + linie szczegółów), WYDATKI (donut + legenda), KSIĘGA OPERACJI (tabela, kwoty zielone/czerwone, wyrównane do prawej) | Jeden panel z listą kv; 80 % ekranu puste | Układ 2 kolumny: BUDŻET (kasa Anton + kv) i KASA TYGODNIA (sponsor/dzień, płace/dzień, bilans dnia — te dane już są); niżej tabela ostatnich operacji jeśli Query je ma; kwoty +zielone/−czerwone; donut tylko jeśli są kategorie — nie zmyślać |
+| Kalendarz | Nagłówki dni **czarne** z białym meta; wpisy wyścigów jako wypełnione chipy (niebieski 1.WT, czarny Monument) z dwoma liniami; dziś = niebieska ramka; dni sąsiednich miesięcy przygaszone; panel Wyścig z profilem i „NAJLEPIEJ PASUJĄCY ZAWODNICY” | Bardzo blisko: nagłówki dni jasne, wpis czarny bez kategorii, dziś jako szare tło | Nagłówki dni czarne; chip wyścigu z kategorią (kolor po klasie); dziś niebieska ramka 3 px |
+| Rynek | Tabela płaska (jak Skład) + karta „ZAWODNIK” z ramką „SYTUACJA TRANSFEROWA” (4 pola meta) + przyciski | Karty-wiersze z awatarami, filtr klubu jako szeroki OptionButton | Ta sama `Table`; filtr jako pigułka-dropdown po prawej w pasku sekcji |
+| Tło | Kilka geometrycznych pasm (niebieskie, czerwone, żółte, przygaszone) | Jedno niebieskie pasmo pod kątem | Zostawić jedno pasmo, ale w dwóch tonach (niebieski + przygaszony czerwony pas), nie ruszać więcej |
+| Typografia | Body 14 px, meta 10 px bold wersaliki `letter-spacing .12em`, Anton dla liczb i tytułów | Body ~12 px, brak wersalików/rozstrzelenia | Skala w `LookChrome`: `Body 14`, `Meta 10`, `Title 30`, `Number 26`; `FontVariation.SpacingGlyph` dla meta |
