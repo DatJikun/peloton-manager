@@ -535,6 +535,33 @@ public sealed class GameApplication
         return CommandResult.Success;
     }
 
+    public CommandResult ExecuteCalendarDaySkippingRaces()
+    {
+        if (World is null ||
+            State is not (GameState.Management or GameState.PreSeasonPlanningFlow))
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        if (State == GameState.PreSeasonPlanningFlow)
+        {
+            return CommandResult.Reject("PRE_SEASON_PENDING");
+        }
+
+        DeterministicScheduler.AdvanceDay(World);
+        if (World.SeasonRolloverOccurred)
+        {
+            CommandResult planning = Execute(new BeginPreSeasonPlanningCommand());
+            if (!planning.Succeeded)
+            {
+                return planning;
+            }
+        }
+
+        World.CaptureDayNotes(GetAccessContext());
+        return CommandResult.Success;
+    }
+
     public CommandResult Execute(SaveGameCommand command)
     {
         ArgumentNullException.ThrowIfNull(command);
@@ -1448,12 +1475,14 @@ public sealed class GameApplication
             WorldEntityId riderCareerId = allocator.Allocate();
             WorldEntityId contractId = allocator.Allocate();
             WorldEntityId organizationId = organizationIds[definition.OrganizationId];
+            int birthYear = definition.BirthYear ??
+                SeasonAging.DeriveBirthYear(seed, definition.Id);
             persons.Add(new Person(
                 personId,
                 definition.Name,
                 definition.Id,
                 definition.Nationality,
-                definition.BirthYear));
+                birthYear));
             riderCareers.Add(new RiderCareer(
                 riderCareerId,
                 personId,

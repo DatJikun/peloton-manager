@@ -38,4 +38,9 @@ public sealed class DeterministicRng
         value = (value ^ (value >> 27)) * 0x94D049BB133111EBUL;
         return value ^ (value >> 31);
     }
+
+    public double NextUnitInterval() => NextUInt64() / (double)ulong.MaxValue;
+
+    public double NextSignedAmplitude(double amplitude) =>
+        ((NextUnitInterval() * 2.0) - 1.0) * amplitude;
 }

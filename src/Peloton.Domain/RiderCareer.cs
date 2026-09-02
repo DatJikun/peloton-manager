@@ -91,17 +91,17 @@ public sealed class RiderCareer
 
     public string OriginDefinitionId { get; }
 
-    public double CriticalPowerW { get; }
+    public double CriticalPowerW { get; private set; }
 
-    public double WPrimeCapacityJ { get; }
+    public double WPrimeCapacityJ { get; private set; }
 
-    public double PeakPowerW { get; }
+    public double PeakPowerW { get; private set; }
 
     public double WPrimeRecoveryJPerSecond { get; }
 
-    public double LowIntensityDurability { get; }
+    public double LowIntensityDurability { get; private set; }
 
-    public double HighIntensityDurability { get; }
+    public double HighIntensityDurability { get; private set; }
 
     public double BodyMassKg { get; }
 
@@ -115,11 +115,11 @@ public sealed class RiderCareer
 
     public double BaseCrr { get; }
 
-    public double Positioning { get; }
+    public double Positioning { get; private set; }
 
-    public double Handling { get; }
+    public double Handling { get; private set; }
 
-    public double TacticalAwareness { get; }
+    public double TacticalAwareness { get; private set; }
 
     public double Form01 { get; private set; }
 
@@ -154,6 +154,34 @@ public sealed class RiderCareer
         Form01 = 1.0;
         Freshness01 = 1.0;
         Fatigue01 = 0.0;
+    }
+
+    public void ApplyAgingPhysiology(
+        double criticalPowerW,
+        double wPrimeCapacityJ,
+        double peakPowerW,
+        double lowIntensityDurability,
+        double highIntensityDurability,
+        double positioning,
+        double handling,
+        double tacticalAwareness)
+    {
+        RequirePositive(criticalPowerW, nameof(criticalPowerW));
+        RequirePositive(wPrimeCapacityJ, nameof(wPrimeCapacityJ));
+        RequirePositive(peakPowerW, nameof(peakPowerW));
+        RequireUnitInterval(lowIntensityDurability, nameof(lowIntensityDurability));
+        RequireUnitInterval(highIntensityDurability, nameof(highIntensityDurability));
+        RequireUnitInterval(positioning, nameof(positioning));
+        RequireUnitInterval(handling, nameof(handling));
+        RequireUnitInterval(tacticalAwareness, nameof(tacticalAwareness));
+        CriticalPowerW = criticalPowerW;
+        WPrimeCapacityJ = wPrimeCapacityJ;
+        PeakPowerW = peakPowerW;
+        LowIntensityDurability = lowIntensityDurability;
+        HighIntensityDurability = highIntensityDurability;
+        Positioning = positioning;
+        Handling = handling;
+        TacticalAwareness = tacticalAwareness;
     }
 
     public void ApplyRaceLoad()

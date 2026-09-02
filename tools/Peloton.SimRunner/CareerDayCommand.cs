@@ -205,7 +205,10 @@ public static class CareerDayCommand
                     EnsurePlayerSkipsRacesForLongSoak(application);
                 }
 
-                CommandResult advanced = application.Execute(new AdvanceDayCommand());
+                CommandResult advanced = options.Days >= 365 &&
+                    string.Equals(options.ScenarioId, "scenario.peloton.wt-2026", StringComparison.Ordinal)
+                    ? application.ExecuteCalendarDaySkippingRaces()
+                    : application.Execute(new AdvanceDayCommand());
                 if (!advanced.Succeeded &&
                     options.ThroughRaces &&
                     string.Equals(advanced.ReasonCode, "RACE_DAY_PENDING", StringComparison.Ordinal))

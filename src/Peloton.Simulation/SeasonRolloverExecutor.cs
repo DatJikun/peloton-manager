@@ -8,6 +8,8 @@ namespace Peloton.Simulation;
 
 public static class SeasonRolloverExecutor
 {
+    public static Action<WorldState, int>? AgingTick { get; set; }
+
     public static void RegisterApplicator()
     {
         WorldState.SetSeasonRolloverApplicator(Apply);
@@ -23,6 +25,8 @@ public static class SeasonRolloverExecutor
 
         int newSeasonYear = world.SeasonYear + 1;
         int dayOffset = world.CurrentDate.DayNumber;
+
+        AgingTick?.Invoke(world, newSeasonYear);
 
         foreach (RiderCareer career in world.RiderCareers)
         {
