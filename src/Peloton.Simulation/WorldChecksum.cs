@@ -70,6 +70,7 @@ public static class WorldChecksum
                 writer.Write(career.Loyalty01);
                 writer.Write(career.PotentialOvr);
                 writer.Write(career.IsRetired);
+                writer.Write(career.RetiredFromOrganizationId?.Value ?? 0);
                 foreach (RiderCareerResult result in career.Results)
                 {
                     writer.Write(result.RaceContentId);

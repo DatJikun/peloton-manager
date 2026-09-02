@@ -41,6 +41,7 @@ public sealed class CareerSeasonRetirementTests
         RiderCareer career = world.RiderCareers.Single(item => item.PersonId == morkov.Id);
         Assert.True(career.IsRetired);
         Assert.Null(career.OrganizationId);
+        Assert.NotNull(career.RetiredFromOrganizationId);
         Assert.True(SeasonRolloverExecutor.LastRetiredCount >= 1);
         Assert.Equal(SeasonRolloverExecutor.LastRetiredCount, SeasonRolloverExecutor.LastNeoCount);
     }

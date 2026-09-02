@@ -2,9 +2,6 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Peloton.Application;
-using Peloton.Domain;
-using Peloton.Simulation;
 using Peloton.SimRunner;
 using Xunit;
 
@@ -19,64 +16,25 @@ public sealed class CareerSeasonsSoakTests
     [Fact]
     public void FiveSeasonsAdvanceDeterministicallyWithRetirementsAndNeoPros()
     {
-        (string checksumFirst, string checksumLast, int totalRetired, int totalNeo) = RunFiveSeasons();
-        Assert.True(totalRetired >= 1, $"totalRetired={totalRetired}");
-        Assert.True(totalNeo >= 1, $"totalNeo={totalNeo}");
-        Assert.NotEqual(checksumFirst, checksumLast);
-    }
-
-    private static (string FirstChecksum, string LastChecksum, int TotalRetired, int TotalNeo) RunFiveSeasons()
-    {
-        GameApplication application = TestApplication.Create();
-        Assert.True(application.Execute(new CreateWorldCommand(WtScenarioId, GateSeed, UaeOriginId)).Succeeded);
-        Assert.True(application.Execute(new BeginPreSeasonPlanningCommand()).Succeeded);
-        foreach (PreSeasonRaceEntryProjection race in application.PreSeasonPlanning!.Races)
-        {
-            Assert.True(application.Execute(new SetSeasonRaceEntryCommand(race.RaceContentId, Entered: false)).Succeeded);
-        }
-
-        Assert.True(application.Execute(new ConfirmPreSeasonPlanCommand()).Succeeded);
-        WorldState world = application.World!;
-        string[] checksums = new string[5];
-        int totalRetired = 0;
-        int totalNeo = 0;
-        for (int season = 0; season < 5; season++)
-        {
-            int targetDay = checked((season + 1) * world.FinancialYearDays);
-            while (world.CurrentDate.DayNumber < targetDay)
-            {
-                if (application.State == GameState.PreSeasonPlanningFlow)
-                {
-                    CareerDayCommand.EnsurePlayerSkipsRacesForLongSoak(application);
-                }
-
-                int previousSeasonYear = world.SeasonYear;
-                Assert.True(application.ExecuteCalendarDaySkippingRaces().Succeeded);
-                if (world.SeasonYear > previousSeasonYear)
-                {
-                    totalRetired += SeasonRolloverExecutor.LastRetiredCount;
-                    totalNeo += SeasonRolloverExecutor.LastNeoCount;
-                }
-            }
-
-            checksums[season] = WorldChecksum.Compute(world);
-        }
-
-        return (checksums[0], checksums[^1], totalRetired, totalNeo);
-    }
-
-    [Fact]
-    public void SimRunnerSeasonsCommandFinishesDeterministically()
-    {
-        string output = RunSimRunnerSeasons();
+        string output = RunSimRunnerSeasons(yearCount: 5);
         Assert.Contains("season=2026", output);
         Assert.Contains("season=2030", output);
         Assert.Contains("crashed=false", output);
         Assert.Contains("retired=", output);
         Assert.Contains("neo=", output);
+        string[] seasonLines = output
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(line => line.StartsWith("season=", StringComparison.Ordinal))
+            .ToArray();
+        Assert.Equal(5, seasonLines.Length);
+        string firstChecksum = ChecksumFromSeasonLine(seasonLines[0]);
+        string lastChecksum = ChecksumFromSeasonLine(seasonLines[^1]);
+        Assert.NotEqual(firstChecksum, lastChecksum);
+        Assert.True(RetiredCountFromSeasonLine(seasonLines[^1]) >= 1);
+        Assert.True(NeoCountFromSeasonLine(seasonLines[^1]) >= 1);
     }
 
-    private static string RunSimRunnerSeasons()
+    private static string RunSimRunnerSeasons(int yearCount)
     {
         using StringWriter output = new();
         using StringWriter error = new();
@@ -86,7 +44,7 @@ public sealed class CareerSeasonsSoakTests
                 "--scenario",
                 WtScenarioId,
                 "--years",
-                "5",
+                yearCount.ToString(CultureInfo.InvariantCulture),
                 "--seed",
                 GateSeed.ToString(CultureInfo.InvariantCulture),
                 "--employer",
@@ -99,5 +57,31 @@ public sealed class CareerSeasonsSoakTests
         Assert.Equal(0, exitCode);
         Assert.True(string.IsNullOrWhiteSpace(error.ToString()));
         return output.ToString();
+    }
+
+    private static string ChecksumFromSeasonLine(string line)
+    {
+        const string marker = "checksum=";
+        int start = line.IndexOf(marker, StringComparison.Ordinal);
+        Assert.True(start >= 0, line);
+        int valueStart = start + marker.Length;
+        int valueEnd = line.IndexOf(' ', valueStart);
+        return valueEnd < 0 ? line[valueStart..] : line[valueStart..valueEnd];
+    }
+
+    private static int RetiredCountFromSeasonLine(string line) =>
+        FieldIntFromSeasonLine(line, "retired=");
+
+    private static int NeoCountFromSeasonLine(string line) =>
+        FieldIntFromSeasonLine(line, "neo=");
+
+    private static int FieldIntFromSeasonLine(string line, string marker)
+    {
+        int start = line.IndexOf(marker, StringComparison.Ordinal);
+        Assert.True(start >= 0, line);
+        int valueStart = start + marker.Length;
+        int valueEnd = line.IndexOf(' ', valueStart);
+        string raw = valueEnd < 0 ? line[valueStart..] : line[valueStart..valueEnd];
+        return int.Parse(raw, CultureInfo.InvariantCulture);
     }
 }

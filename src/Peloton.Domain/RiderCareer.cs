@@ -37,7 +37,8 @@ public sealed class RiderCareer
         int potentialOvr = 70,
         IEnumerable<RiderCareerResult>? results = null,
         double? cdATtM2 = null,
-        bool isRetired = false)
+        bool isRetired = false,
+        WorldEntityId? retiredFromOrganizationId = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(originDefinitionId);
         RequireUnitInterval(form01, nameof(form01));
@@ -76,6 +77,7 @@ public sealed class RiderCareer
         Loyalty01 = loyalty01;
         PotentialOvr = potentialOvr;
         IsRetired = isRetired;
+        RetiredFromOrganizationId = retiredFromOrganizationId;
         this.results = (results ?? Array.Empty<RiderCareerResult>()).ToList();
     }
 
@@ -89,9 +91,17 @@ public sealed class RiderCareer
 
     public bool IsRetired { get; private set; }
 
+    public WorldEntityId? RetiredFromOrganizationId { get; private set; }
+
     public void Retire()
     {
+        if (IsRetired)
+        {
+            return;
+        }
+
         IsRetired = true;
+        RetiredFromOrganizationId = OrganizationId;
         DetachFromClub();
     }
 
