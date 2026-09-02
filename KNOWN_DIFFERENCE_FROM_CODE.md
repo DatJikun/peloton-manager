@@ -26,7 +26,7 @@ This is an explicit prototype boundary, not an accepted simplification of the fu
 - `RiderCareer.Id` is the official race `RiderId`; `LastRace` finish order and `RiderCareerResult` history use those world IDs.
 - `CreateWorld` materializes riders from `content/peloton.skeleton/skeleton-roster.json` (stable `OriginDefinitionId`s from the prototype pack).
 - Prep squad is the player employer's world roster (`RiderCareer.OrganizationId`; null = unattached).
-- SQLite `SchemaVersion` is **11** (D-056 stage 1 season rollover). Schema 1–10 saves may refuse to load.
+- SQLite `SchemaVersion` is **11** (D-056 season rollover). Schema 1–10 saves may refuse to load.
 - World checksum label is `peloton-world-checksum-v11`.
 - `CalendarEntry.RaceContentId` stores the calendar race id (`race.wt2026.*` for WT; route template resolved via `DefaultRaceTemplateId`).
 
@@ -193,20 +193,41 @@ Deferred from this tree: aero tuck on descents, TT pacing optimizer (`RACE_ENGIN
 
 Road probes from D-054 (TdF s1, TDU, Hautacam, Roubaix engine probe) must stay unchanged. The strict Roubaix classics win remains **skipped** after D-057 roster depth: Evenepoel still wins the engine probe on current numbers; do not retune D-054 constants to fake a classics winner.
 
-## Season rollover stage 1 (D-056 partial)
+## Season rollover (D-056 landed)
 
-Contract: `CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md`. SQLite `SchemaVersion` **11** / checksum `peloton-world-checksum-v11`.
+Contract: `CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md`. SQLite `SchemaVersion` **11** / checksum `peloton-world-checksum-v11`. Stages 1–6 are on `main`.
 
 Landed:
 
 - `WorldState.SeasonYear` (2026 at CreateWorld) and `SeasonStartDayNumber`.
 - Rollover inside `AdvanceOneDay` after the date increment, before finance/contract ticks, when the day number is a multiple of 365 (WT worlds only). Skeleton soak (`FinancialYearDays` ≠ 365 or no race identities) does not roll.
+- Order in code: aging → retirements → neo-pros → AI contracts → season-summary inbox → winter form → 2027 courses/calendar/entries.
 - Winter form reset (`Form01=1`, `Freshness01=1`, `Fatigue01=0`).
 - 2027 `CourseProfile`s from `CourseCatalogGenerator.GenerateSeason`; 2026 profiles kept.
 - 2027 calendar entries (one per racing stage); organization race entries reset (entered, leader null); player pre-season reopens as „Plan sezonu 2027”.
 - Pre-season lists only current-season calendar rows (`DayNumber >= SeasonStartDayNumber`) so leftover 2026 skips do not steal 2027 dates.
 
-Not in stage 1 alone: aging, retirements, neo-pros, AI contracts, inbox (see sections below).
+### Final aging constants (code = `SeasonAging`)
+
+Copied from the landed tick, not a second table to retune:
+
+```text
+growth(age) = age ≤ 22: +0.030 | 23–25: +0.018 | 26–28: +0.006 | 29–31: 0.000 | 32–34: −0.012 | 35–37: −0.025 | ≥ 38: −0.040
+talentGate  = age ≤ 28: clamp((PotentialOvr − currentOvr) / 15, 0.2, 1.0); decline years 1.0
+variance    = ±0.006 from seed label aging:{seasonYear}:{riderId}
+CP, W′, Pmax ×= 1 + (growth + variance) · talentGate
+LowIntensityDurability  = +0.010/yr until 30, −0.010/yr after 33 (clamp 0–1)
+HighIntensityDurability = −0.005/yr after 31 (clamp 0–1)
+Positioning / Handling / TacticalAwareness += 0.010/yr until 30 (cap 0.98)
+BodyMassKg, CdARoadM2, CdATtM2 unchanged
+BirthYear at CreateWorld when missing: uniform age 20–34, seed birth-year:{riderOriginId}
+```
+
+Known differences vs the DRAFT contract (do not “fix” without an owner ask):
+
+- AI club order is **squad size then `OrganizationId`** (contract text said `OrganizationId` only).
+- Neo-pros use a generic neo physiology band and the retired rider’s nationality for the name pick; they do not draw an archetype from “club needs”.
+- `talentGate` also scales the ±0.006 variance on growth years.
 
 ## Season retirements and neo-pros (D-056 stage 3)
 

@@ -10,10 +10,10 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md` (D-056) **landed** on SchemaVersion **11**. **Next:** owner Windows playtest pack (D-058 C# avatars still open). Do not close §49.
+`CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md` (D-056) **landed** on SchemaVersion **11**. **Next:** owner Windows playtest of GitHub Release `playtest-2026-09-02` — no new system. Do not close §49.
 
 ### Goal
-D-051 landed: desk / Skład / Finanse read `ClubFinanceProjection` (euro) and Skład writes D-044 contract offers. **D-052 landed:** 1 Jan 2026 dates, grouped upcoming races, month calendar, world inbox, employer crest, world market. **D-054 landed:** position is earned, pace comes from riders. **D-055 landed:** two CdA numbers; ITT is solo 60 s starts; TTT times the 4th rider. **D-056 landed:** Advance Day crosses into 2027+ (aging, retirements, neo-pros, AI contracts, season inbox). **Next:** owner Windows playtest pack; D-058 C# avatars if still open. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
+D-051 landed: desk / Skład / Finanse read `ClubFinanceProjection` (euro) and Skład writes D-044 contract offers. **D-052 landed:** 1 Jan 2026 dates, grouped upcoming races, month calendar, world inbox, employer crest, world market. **D-054 landed:** position is earned, pace comes from riders. **D-055 landed:** two CdA numbers; ITT is solo 60 s starts; TTT times the 4th rider. **D-056 landed:** Advance Day crosses into 2027+ (aging, retirements, neo-pros, AI contracts, season inbox). **Next:** owner Windows playtest of GitHub Release `playtest-2026-09-02` — no new system. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
 
 ### Status
 Owner (player) directed this on 2026-09-01. **D-049, D-050, D-051, D-052, D-054, D-055, D-056, and D-057 landed.** Classified Flat is a bunch sprint (sit-in, then last 250 m at peak power). Official WT starts are event-shaped (TDU 140, monuments 175, Grand Tours 176, other WT 154). After a stage the shell/CLI can show GC / points / KOM / youth / team. SimRunner `compare` puts prototype results next to 2025 analogues (not a script). Skeleton soak still uses the short proof circuit. SQLite SchemaVersion **11**. Each rider stores `CdARoadM2` and `CdATtM2`; ITT/TTT stages use the TT value. Advance Day crosses 31 Dec 2026 into season 2027+ (courses, calendar, pre-season, aging, retirements, neo-pros, AI contract cycle, season inbox).
@@ -46,9 +46,10 @@ Działa:
 - paczka Windows do ręcznego playtestu: GitHub Releases (tag `playtest-*`); nie commituj zipa do repo (D-053).
 
 Właśnie budujemy:
-- owner Windows playtest pack (D-053); D-058 C# rider avatars if still open.
+- ręczny playtest właściciela paczki Windows (GitHub Release tag `playtest-2026-09-02`); bez nowego systemu.
 
 Jeszcze nie:
+- D-058 C# rider avatars (`Peloton.Avatars`) — osobna lista, nie ten slice;
 - nie ma Career Hub — usunięty z repozytorium (D-048); biurko to powłoka `CareerShell.tscn`;
 - wybór ósemki na konkretny wyścig to później (dziś startuje pierwszych 7/8 składu);
 - Watch Race **jest w grze**, ale **domyślnie wyłączony** — FILM: WŁ włącza oglądanie; nie mergujemy starych PR-ów radia/DS;
@@ -143,7 +144,7 @@ Baza 2026: 18 ekip męskiego WorldTour plus zaproszone ProTeamy / Australia w `s
 - [x] D-056 season rollover (aging, retirements, neo-pros, AI contracts, inbox, `seasons --years 5`)
 
 ## Next task
-**Next:** owner Windows playtest pack. Do not close §49. Do not rebuild Career Hub. Watch film stays off by default.
+**Next:** owner Windows playtest of GitHub Release `playtest-2026-09-02`. No new system. Do not close §49. Do not rebuild Career Hub. Watch film stays off by default.
 
 ## Known blockers
 - None.
@@ -172,6 +173,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
+- `2026-09-02` — After D-056, **Next** is owner Windows playtest (GitHub Release `playtest-2026-09-02`). No new system this slice. D-058 C# avatars stay later. §49 stays `NOT VERIFIED`.
 - `2026-09-02` — **D-056 compile fix:** `RiderCareer.RetiredFromOrganizationId` is captured on `Retire()` (former club, then detach) so the season-summary inbox can count squad retirements. Schema 11 JSON round-trips the id. Five-season soak runs after the parallel test suite (`Category=Soak`); Application tests cap at two threads.
 - `2026-09-02` — **D-056 stage 3 landed:** age-40 (and unattached decline) retirements; one neo-pro per retirement from `content/peloton.wt-2026/names.json`; living count does not shrink (cap 512); retired riders never start. Contract: `CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md`.
 - `2026-09-02` — **D-057 landed:** 22 riders per WT club (452 total, wildcards stay 8); `wt2026-riders-source.csv` + `tools/build_wt2026_roster.py`; classics-star CP/durability bump (MvdP/Van Aert/Pedersen/Evenepoel); compare seed 91234 sprint/Hautacam winners unchanged.

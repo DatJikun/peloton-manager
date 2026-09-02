@@ -79,7 +79,8 @@ Not in code yet, though named in `DATA_MODEL_v0.1.md`: `OrganizationKnowledgeSto
 
 Remaining system design (do not treat as the next coding task unless `HANDOFF.md` says so):
 
-- **Next coding task:** D-058 C# avatar pipeline (`src/Peloton.Avatars`) — do not close §49
+- **Next coding task:** none — owner Windows playtest of GitHub Release `playtest-2026-09-02`. Do not close §49.
+- D-058 C# avatar pipeline (`src/Peloton.Avatars`) — later, not this slice
 - Training / development that grows physiology toward POT
 - Recruitment / AI managers / dynamic sponsor market
 

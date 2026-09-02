@@ -63,7 +63,7 @@ Static content lives in `content/peloton.skeleton`, `content/peloton.wt-2026`, a
 | Career inbox query | `Peloton.Application/CareerCalendarInbox.cs`, `ArchiveInboxItemCommand` | rebuilt race-due + race-result items; dismiss lock on race-due | Application tests |
 | Season rollover (D-056) | `Peloton.Simulation/SeasonRolloverExecutor.cs`, `Peloton.Application/SeasonAging.cs`, `SeasonRetirements.cs`, `SeasonNeoPros.cs`, `SeasonAiContracts.cs`, `SeasonInboxSupport.cs`, `tools/Peloton.SimRunner/CareerSeasonsCommand.cs` | `CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md`; SchemaVersion 11; `seasons --years 5` | `CareerSeason*` tests |
 | AI managers | Not implemented | `AI_MANAGER_SYSTEM_v0.2.md` | Not implemented |
-| Save / SQLite | `Peloton.Persistence` | `SAVE_FORMAT_v0.1.md` | Persistence + Application tests |
+| Save / SQLite | `Peloton.Persistence` | `SAVE_FORMAT_v0.1.md`; SchemaVersion 11 | Persistence + Application tests |
 | Career scenarios | `content/peloton.skeleton`, `JsonScenarioCatalog.cs` | `CONTENT_FORMAT_v0.1.md` | Application tests |
 | Rules modules | `Peloton.Rules`, scenario JSON | `RULESETS_v0.1.md` | Application + Architecture tests |
 
