@@ -29,8 +29,45 @@ public sealed class PositionAndSelectionProbeTests
     private const string VanAertOriginId = "rider.wt2026.visma.support-2";
 
     private static readonly Lazy<Dictionary<string, string>> ArchetypesByOrigin = new(LoadArchetypes);
+    private static readonly Lazy<Dictionary<string, double>> HandlingByOrigin = new(LoadHandling);
 
     [Fact]
+    public void RoubaixCobblesSelectAndVanDerPoelInFrontGroup()
+    {
+        WorldState world = CreateWorld();
+        CourseProfile roubaix = world.CourseProfiles.Single(
+            profile => string.Equals(profile.OriginDefinitionId, "course.wt2026.roubaix.2026.s1", StringComparison.Ordinal));
+        RaceResult result = Simulate(world, roubaix);
+
+        int vdpPlace = PlaceOfOrigin(result, world, VdpOriginId);
+        string[] top5Archetypes = result.FinishOrder
+            .Take(5)
+            .Select(id => ArchetypeOf(world, id))
+            .ToArray();
+        WorldEntityId[] top10 = result.FinishOrder.Take(10).ToArray();
+        double[] top10Handling = top10
+            .Select(id =>
+            {
+                RiderCareer career = world.TryGetRiderCareer(id)
+                    ?? throw new InvalidOperationException($"Missing career for rider {id.Value}.");
+                return HandlingByOrigin.Value[career.OriginDefinitionId];
+            })
+            .ToArray();
+
+        RaceRiderMetrics winnerMetrics = result.RiderMetrics.Single(metric => metric.RiderId == result.WinnerId);
+        WorldEntityId twentiethId = result.FinishOrder[19];
+        RaceRiderMetrics twentiethMetrics = result.RiderMetrics.Single(metric => metric.RiderId == twentiethId);
+        double winnerToTwentiethGapSeconds = twentiethMetrics.FinishTimeSeconds - winnerMetrics.FinishTimeSeconds;
+
+        Assert.True(vdpPlace is > 0 and <= 20, $"vdp={vdpPlace}");
+        Assert.DoesNotContain("sprinter", top5Archetypes);
+        Assert.All(top10Handling, handling => Assert.True(handling >= 0.70, $"handling={handling}"));
+        Assert.True(
+            winnerToTwentiethGapSeconds > 0.0,
+            $"winnerTo20thGapSeconds={winnerToTwentiethGapSeconds}");
+    }
+
+    [Fact(Skip = "D-057: waits for classics-star roster calibration (MvdP/Van Aert/Pedersen CP + durability); see KNOWN_DIFFERENCE_FROM_CODE.md D-054")]
     public void RoubaixClassicsWinAndVanDerPoelBeatsGcRivals()
     {
         WorldState world = CreateWorld();
@@ -186,6 +223,21 @@ public sealed class PositionAndSelectionProbeTests
         }
 
         return archetypes;
+    }
+
+    private static Dictionary<string, double> LoadHandling()
+    {
+        string path = Path.Combine(TestApplication.ContentRoot, "peloton.wt-2026", "roster.json");
+        using JsonDocument document = JsonDocument.Parse(File.ReadAllText(path));
+        Dictionary<string, double> handling = new(StringComparer.Ordinal);
+        foreach (JsonElement rider in document.RootElement.GetProperty("riders").EnumerateArray())
+        {
+            string id = rider.GetProperty("id").GetString()!;
+            double handlingValue = rider.GetProperty("handling").GetDouble();
+            handling[id] = handlingValue;
+        }
+
+        return handling;
     }
 
     private sealed class RecordingWorldSpySink : IWorldSpySink

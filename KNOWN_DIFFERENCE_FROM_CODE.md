@@ -170,6 +170,8 @@ Final tuning constants (`RaceTuning`):
 | `CobblePositioningBase` | 0.21 |
 | `CobblePositioningHandlingWeight` | 0.91 |
 
-Probes at seed `91234`: TdF stage 1 sprint, TDU stage 6 sprinter, Hautacam GC, determinism/spy neutrality, positioning + cobble + drift unit tests pass. **Roubaix probe still fails** at seed `91234` after §3.3 drift fix and contract-baseline §5.1 constants (two ±40% tuning passes did not pass the probe). Sim top 10: Evenepoel (super-gc), Pogačar (super-gc), Vingegaard (super-gc), Ganna (tt), Yates (gc), Roglič (gc), EF gc, Ineos gc, Ineos support (gc), Decathlon gc — van der Poel **13th**; ahead of neither Evenepoel nor Vingegaard. Next lever within band: raise `CobbleCrrDelta` toward +40% (0.0252) with drift fix in place.
+Probes at seed `91234`: TdF stage 1 sprint, TDU stage 6 sprinter, Hautacam GC, determinism/spy neutrality, positioning + cobble + drift unit tests pass. **Roubaix engine probe** (`RoubaixCobblesSelectAndVanDerPoelInFrontGroup`) passes: van der Poel ≤ 20th, no sprinter in top 5, top-10 handling ≥ 0.70, winner-to-20th finish-time gap > 0 s. **Strict Roubaix classics probe** (`RoubaixClassicsWinAndVanDerPoelBeatsGcRivals`) is **skipped** pending **D-057** roster calibration — do not tune engine constants to fake a classics winner.
+
+At seed `91234` the strict probe would still fail on roster numbers, not physics: van der Poel `rider.wt2026.alpecin.leader` has CP **430 W**, `lowIntensityDurability` **0.90**, 75 kg, CdA **0.285**; Evenepoel `rider.wt2026.redbull.leader` has CP **425 W**, durability **0.94**, **61 kg**, CdA **0.25**. Over a flat 250 km cobbled classic those inputs favour the light GC rider; engine constants stay at contract baseline (table above). Sim outcome: Evenepoel (super-gc) wins; van der Poel ~13th; GC riders fill the top 10.
 
 Still missing (deferred): crosswind echelons, lead-out trains, incidents/mechanicals, D-032 GC leadership, CdA Road/TT (D-055).
