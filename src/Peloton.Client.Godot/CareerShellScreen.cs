@@ -600,6 +600,12 @@ public sealed partial class CareerShellScreen : Control
             return;
         }
 
+        if (host.State == GameState.RaceResultsFlow && host.Result is not null)
+        {
+            BuildRaceResults();
+            return;
+        }
+
         switch (current)
         {
             case View.Desk:
