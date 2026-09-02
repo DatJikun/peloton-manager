@@ -14,6 +14,7 @@ public sealed class CareerSeasonsSoakTests
     private const long GateSeed = 91234;
 
     [Fact]
+    [Trait("Category", "Soak")]
     public void FiveSeasonsAdvanceDeterministicallyWithRetirementsAndNeoPros()
     {
         string output = RunSimRunnerSeasons(yearCount: 5);
