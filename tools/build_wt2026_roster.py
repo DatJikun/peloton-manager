@@ -136,8 +136,13 @@ def wage_band_for(role: str, archetype: str) -> str:
     return ROLE_WAGE_BAND.get(role, "domestique")
 
 
+# D-055 named pins: Ganna 0.1564 / Evenepoel 0.1574 stay the two lowest TT CdA.
+EVENEPOL_TT_CDA_FLOOR = 0.1575
+
+
 def tt_cda(road: float, archetype: str) -> float:
-    return round(road * TT_CDA_FACTOR.get(archetype, 0.80), 4)
+    value = round(road * TT_CDA_FACTOR.get(archetype, 0.80), 4)
+    return max(value, EVENEPOL_TT_CDA_FLOOR)
 
 
 def vary_contract_end(rider_id: str, wage_band: str, annual_wage: int) -> int:
