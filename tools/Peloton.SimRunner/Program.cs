@@ -14,6 +14,7 @@ public static class Program
         + "\n       peloton-sim race --scenario <id> --seed <n> [--trace-json <path>] [--trace-markdown <path>] [--content-root <path>]"
         + "\n       peloton-sim watch --scenario <id> --seed <n> [--rate <1|2|5|20>] [--trace-markdown <path>] [--content-root <path>]"
         + "\n       peloton-sim day --scenario <id> --seed <n> --days <n> [--employer <organization.wt2026.*>] [--through-races] [--follow-hub] [--simulate-from-prep] [--through-results] [--watch-from-prep] [--rate <1|2|5|20>] [--content-root <path>]"
+        + "\n       peloton-sim seasons --scenario <id> --years <n> --seed <n> [--employer <organization.wt2026.*>] [--content-root <path>]"
         + "\n       peloton-sim compare --scenario <id> --seed <n> [--content-root <path>]";
 
     public static int Main(string[] args)
@@ -33,9 +34,10 @@ public static class Program
                  !string.Equals(args[0], "race", StringComparison.Ordinal) &&
                  !string.Equals(args[0], "watch", StringComparison.Ordinal) &&
                  !string.Equals(args[0], "day", StringComparison.Ordinal) &&
+                 !string.Equals(args[0], "seasons", StringComparison.Ordinal) &&
                  !string.Equals(args[0], "compare", StringComparison.Ordinal)))
             {
-                throw new ArgumentException("The first argument must be 'run', 'race', 'watch', 'day', or 'compare'.", nameof(args));
+                throw new ArgumentException("The first argument must be 'run', 'race', 'watch', 'day', 'seasons', or 'compare'.", nameof(args));
             }
 
             if (string.Equals(args[0], "run", StringComparison.Ordinal))
@@ -46,6 +48,11 @@ public static class Program
             if (string.Equals(args[0], "day", StringComparison.Ordinal))
             {
                 return CareerDayCommand.Execute(CareerDayOptions.Parse(args), output, error);
+            }
+
+            if (string.Equals(args[0], "seasons", StringComparison.Ordinal))
+            {
+                return CareerSeasonsCommand.Execute(CareerSeasonsOptions.Parse(args), output, error);
             }
 
             if (string.Equals(args[0], "compare", StringComparison.Ordinal))

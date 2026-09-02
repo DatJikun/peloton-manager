@@ -62,12 +62,9 @@ public sealed class CareerSeasonRetirementTests
         Assert.Equal(expectedRetirements, SeasonRolloverExecutor.LastNeoCount);
         Assert.Equal(livingBefore + expectedRetirements, world.RiderCareers.Count);
         Assert.Equal(expectedRetirements, world.RiderCareers.Count(career => career.IsRetired));
-        Assert.Equal(
-            expectedRetirements,
-            world.RiderCareers.Count(career =>
-                career.OriginDefinitionId.StartsWith("rider.generated.2027.", StringComparison.Ordinal) &&
-                career.OrganizationId is null &&
-                !career.IsRetired));
+        Assert.Equal(SeasonRolloverExecutor.LastNeoCount, world.RiderCareers.Count(career =>
+            career.OriginDefinitionId.StartsWith("rider.generated.2027.", StringComparison.Ordinal) &&
+            !career.IsRetired));
     }
 
     [Fact]

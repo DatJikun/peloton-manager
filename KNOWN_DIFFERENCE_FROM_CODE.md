@@ -109,7 +109,7 @@ Remaining limits:
 - Classified Flat uses a bunch-sprint kick (last 250 m at `PeakPowerW`) after sitting in the pack. Feel probe seed `91234`: Philipsen place 1, Pogačar 135 on the flattest stored Flat; mountain probe still has Pogačar ahead of Philipsen.
 - Prototype stores **two** CdA numbers per rider (`CdARoadM2` / `CdATtM2`, D-055). Drafting still does `CdA_effective = CdA * shelter` with the stage-selected CdA. There is no sit-up-on-climb vs aero-tuck-on-descent switch. A third “mountain CdA” is not worth a rating — climbs are slow, gravity/W/kg dominate.
 - Prototype race session is sequential 1-second `RaceSession.Step` for every rider; wall-clock is CPU-fast, not real-time.
-- Yearly course re-generation after 2026: D-056 stages 1–3 roll 2027 courses/calendar, aging, retirements, and neo-pros on New Year. AI contracts / season inbox / `seasons` are later stages.
+- Yearly course re-generation after 2026: D-056 rolls 2027+ courses/calendar, aging, retirements, neo-pros, AI contract cycle, season inbox, and SimRunner `seasons` on New Year.
 - Jersey tables exist as after-stage queries (GC / points / KOM / youth / team). D-032 mid-race GC leadership stays deferred.
 - §49 still `NOT VERIFIED`.
 
@@ -206,7 +206,7 @@ Landed:
 - 2027 calendar entries (one per racing stage); organization race entries reset (entered, leader null); player pre-season reopens as „Plan sezonu 2027”.
 - Pre-season lists only current-season calendar rows (`DayNumber >= SeasonStartDayNumber`) so leftover 2026 skips do not steal 2027 dates.
 
-Not in stages 1–3: AI contract cycle, season-summary inbox, SimRunner `seasons`.
+Not in stage 1 alone: aging, retirements, neo-pros, AI contracts, inbox (see sections below).
 
 ## Season retirements and neo-pros (D-056 stage 3)
 
@@ -218,3 +218,17 @@ Landed:
 - `RiderCareer.IsRetired`; retired riders detach, stay in history, never start.
 - One unattached neo-pro per retirement (age 19–21, neo physiology band, POT 65–90, seed `neo:{year}:{index}`), names from `content/peloton.wt-2026/names.json` (≥ 60 first / last per nationality group). Living cap 512. World living count does not shrink.
 - First 2026→2027 WT rollover on the D-057 452-rider pack retires the age-40+ riders (currently 14) and creates the same number of neos.
+
+## AI contract cycle and season inbox (D-056 stages 4–5)
+
+Contract: `CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md` §5–§7.
+
+Landed:
+
+- `SeasonAiContracts` on rollover (after neo-pros): deterministic order by squad size then `OrganizationId`; player employer skipped. Renew expiring contracts when age < 35 and (top 8 by last-season points or age ≤ 25); wage `max(current, min(1.6×current, WageBands cap))`; extension +2 years (+1 if age ≥ 32). Sign unattached riders until ≥ 8 (`WageBands` floor; 1-year deal, 2 if age ≤ 24). No firing.
+- `WageBands` + `RiderMetadataCatalog` (archetype / wageBand from `roster.json`).
+- Polish season-summary inbox (`season-summary:{year}`) after rollover; dismissible. Contract-expiry warnings at 60 and 30 days (`contract-expiry:…`). `WorldState.DismissedInboxIdentities` persisted in schema 11.
+
+## SimRunner seasons (D-056 stage 6)
+
+- `peloton-sim seasons --scenario scenario.peloton.wt-2026 --years 5 --seed 91234 --employer organization.wt2026.uae` — five seasons, player skips races, prints per-season checksum / riders / retired / neo / oldest age / top-3 OVR. Deterministic across runs.

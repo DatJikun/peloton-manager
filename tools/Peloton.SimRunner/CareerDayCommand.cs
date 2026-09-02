@@ -305,7 +305,7 @@ public static class CareerDayCommand
         return 0;
     }
 
-    private static void EnsurePlayerSkipsRacesForLongSoak(GameApplication application)
+    public static void EnsurePlayerSkipsRacesForLongSoak(GameApplication application)
     {
         if (application.State == GameState.Management)
         {

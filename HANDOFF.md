@@ -10,13 +10,13 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md` (D-056) **stages 1–3** landed on SchemaVersion **11**. **Next:** AI contract cycle, season inbox, `seasons --years 5`. Do not close §49.
+`CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md` (D-056) **landed** on SchemaVersion **11**. **Next:** owner Windows playtest pack (D-057/D-058 may still be open for roster/avatars polish). Do not close §49.
 
 ### Goal
 D-051 landed: desk / Skład / Finanse read `ClubFinanceProjection` (euro) and Skład writes D-044 contract offers. **D-052 landed:** 1 Jan 2026 dates, grouped upcoming races, month calendar, world inbox, employer crest, world market. **D-054 landed:** position is earned, pace comes from riders. **D-055 landed:** two CdA numbers; ITT is solo 60 s starts; TTT times the 4th rider. **Next:** D-056 season rollover. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
 
 ### Status
-Owner (player) directed this on 2026-09-01. **D-049, D-050, D-051, D-052, D-054, D-055, D-056 stages 1–3, and D-057 landed.** Classified Flat is a bunch sprint (sit-in, then last 250 m at peak power). Official WT starts are event-shaped (TDU 140, monuments 175, Grand Tours 176, other WT 154). After a stage the shell/CLI can show GC / points / KOM / youth / team. SimRunner `compare` puts prototype results next to 2025 analogues (not a script). Skeleton soak still uses the short proof circuit. SQLite SchemaVersion **11**. Each rider stores `CdARoadM2` and `CdATtM2`; ITT/TTT stages use the TT value. Advance Day crosses 31 Dec 2026 into season 2027 (new courses + calendar + pre-season + aging + retirements + neo-pros; AI contracts still later D-056 stages).
+Owner (player) directed this on 2026-09-01. **D-049, D-050, D-051, D-052, D-054, D-055, D-056, and D-057 landed.** Classified Flat is a bunch sprint (sit-in, then last 250 m at peak power). Official WT starts are event-shaped (TDU 140, monuments 175, Grand Tours 176, other WT 154). After a stage the shell/CLI can show GC / points / KOM / youth / team. SimRunner `compare` puts prototype results next to 2025 analogues (not a script). Skeleton soak still uses the short proof circuit. SQLite SchemaVersion **11**. Each rider stores `CdARoadM2` and `CdATtM2`; ITT/TTT stages use the TT value. Advance Day crosses 31 Dec 2026 into season 2027+ (courses, calendar, pre-season, aging, retirements, neo-pros, AI contract cycle, season inbox).
 
 Feel probe seed `91234`: Philipsen 1 vs Pogačar 135 on the flattest stored Flat; Pogačar 8 vs Philipsen 133 on the biggest mountain. TDU starts 140. §49 stays open.
 
@@ -41,11 +41,11 @@ Działa:
 - po etapie widać koszulki: GC / punkty / góry / młodzież / drużynowa (tabela, nie polityka DS w trakcie etapu);
 - cienka ekonomia: kasa, sponsor vs płace, notatka o debecie;
 - Godot: powłoka kariery (wygląd z HTML); daty od 1 stycznia 2026; herb to wybrany klub; biurko pokazuje max 5 całych wyścigów; kalendarz to siatka miesiąca; inbox ze świata; rynek to kolarze ze świata z filtrem klubu; sztab/sponsorzy/skauting jeszcze nie w świecie;
-- Advance Day przez 31 grudnia otwiera sezon **2027** (nowe trasy i kalendarz, plan sezonu wraca, starzenie, emerytury, neo-pro; kontrakty AI jeszcze nie);
+- Advance Day przez 31 grudnia otwiera sezon **2027+** (nowe trasy i kalendarz, plan sezonu wraca, starzenie, emerytury, neo-pro, kontrakty AI, inbox sezonu);
 - paczka Windows do ręcznego playtestu: GitHub Releases (tag `playtest-*`); nie commituj zipa do repo (D-053).
 
 Właśnie budujemy:
-- D-056 dalsze etapy: cykl kontraktów AI, inbox sezonu, `seasons --years 5`.
+- owner Windows playtest pack (D-053); D-057/D-058 polish if still open.
 
 Jeszcze nie:
 - nie ma Career Hub — usunięty z repozytorium (D-048); biurko to powłoka `CareerShell.tscn`;
@@ -139,10 +139,10 @@ Baza 2026: 18 ekip męskiego WorldTour plus zaproszone ProTeamy / Australia w `s
 - [x] D-056 stage 2 — yearly aging tick (physiology, talentGate, BirthYear)
 - [x] D-056 stage 3 — retirements + neo-pros (`names.json`, living cap 512)
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
-- [ ] D-056 remaining — AI contract cycle, season inbox, `seasons --years 5`
+- [x] D-056 season rollover (aging, retirements, neo-pros, AI contracts, inbox, `seasons --years 5`)
 
 ## Next task
-**D-056 remaining stages** (AI contract cycle, Polish season inbox, `seasons --years 5`). Do not close §49. Do not rebuild Career Hub. Watch film stays off by default.
+**Next:** owner Windows playtest pack. Do not close §49. Do not rebuild Career Hub. Watch film stays off by default.
 
 ## Known blockers
 - None.
@@ -173,7 +173,8 @@ dostał powiadomienie.
 ## Recent owner decisions
 - `2026-09-02` — **D-056 stage 3 landed:** age-40 (and unattached decline) retirements; one neo-pro per retirement from `content/peloton.wt-2026/names.json`; living count does not shrink (cap 512); retired riders never start. AI contracts / inbox / `seasons` later. Contract: `CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md`.
 - `2026-09-02` — **D-057 landed:** 22 riders per WT club (452 total, wildcards stay 8); `wt2026-riders-source.csv` + `tools/build_wt2026_roster.py`; classics-star CP/durability bump (MvdP/Van Aert/Pedersen/Evenepoel); compare seed 91234 sprint/Hautacam winners unchanged.
-- `2026-09-02` — **D-056 stages 1–2 landed:** New Year rollover to 2027 (courses, calendar, pre-season, winter form) plus yearly physiology aging (talentGate, ±0.006 variance). SchemaVersion 11. Retirements / neo-pro / AI contracts later. Contract: `CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md`.
+- `2026-09-02` — **D-056 landed:** infinite career rollover (stages 1–6): season year, aging, retirements, neo-pros, AI contract cycle, season inbox, `seasons --years 5`. SchemaVersion 11. Contract: `CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md`.
+- `2026-09-02` — **D-056 stages 1–2 landed:** New Year rollover to 2027 (courses, calendar, pre-season, winter form) plus yearly physiology aging (talentGate, ±0.006 variance). SchemaVersion 11.
 - `2026-09-02` — **D-055 landed:** `CdARoadM2` / `CdATtM2` on `RiderCareer` and race profiles; SQLite SchemaVersion 10 / checksum v10; ITT 60 s reverse-GC starts with no shelter; TTT times the 4th rider; TT rating uses TT aero. Road probes from D-054 unchanged. Contract: `RACE_CDA_ROAD_TT_v0.1.md`.
 - `2026-09-01` — **D-053: repo hygiene (owner agreed to the review list).** (1) GitHub Actions `gate` runs the HANDOFF gate on every push to `main` / PR; a red `gate` on `main` is a blocker. (2) The Windows playtest zip is **no longer committed**; `playtest-windows` workflow builds it from `tools/pack-windows-playtest.sh` and publishes a GitHub Release when a `playtest-*` tag is pushed. (3) All 12 stale PRs (#13–#16 core loop already on `main`; #20/#26 avatar look proposals — branches kept for the deferred avatar decision; #21 archive; #24/#25/#36 Watch film/radio — D-043; #31 Career Hub zip — D-048; #34 docs already on `main`) were closed without merge. Feel order after hygiene: bruk in the engine → sprint one-team top 5 → CdA Road/TT.
 - `2026-09-01` — **D-052 landed (Composer):** `CareerCalendarDates` (1 Jan 2026 epoch); grouped `SeasonEventProjection` / `UpcomingEvents` / `MarketRiders`; Polish inbox; Godot desk/calendar/rynek/squad crest/dates per `CAREER_SHELL_DATES_AND_LOOK_v0.1.md`.
@@ -304,7 +305,8 @@ dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.
 dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --through-races
 dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --simulate-from-prep
 dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.skeleton --seed 91234 --days 13 --simulate-from-prep --through-results
-dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.wt-2026 --seed 91234 --days 1 --employer organization.wt2026.uae
+dotnet run --project tools/Peloton.SimRunner -- day --scenario scenario.peloton.wt-2026 --seed 91234 --days 400 --employer organization.wt2026.uae
+dotnet run --project tools/Peloton.SimRunner -- seasons --scenario scenario.peloton.wt-2026 --years 5 --seed 91234 --employer organization.wt2026.uae
 ```
 
 Godot career shell (Godot 4.4 .NET, not required for headless tests). Main scene is `CareerShell.tscn`. Default race day is simulate → results; film is a setting:
