@@ -72,7 +72,7 @@ public sealed class CdARoadTtTests
         RiderCareer before = source.World!.RiderCareers.Single(
             career => string.Equals(career.OriginDefinitionId, "rider.wt2026.redbull.leader", StringComparison.Ordinal));
         Assert.True(source.Execute(new SaveGameCommand(savePath)).Succeeded);
-        Assert.Equal(10, SqliteWorldSaveStore.SchemaVersion);
+        Assert.Equal(11, SqliteWorldSaveStore.SchemaVersion);
 
         GameApplication loaded = TestApplication.Create();
         Assert.True(loaded.Execute(new LoadGameCommand(savePath)).Succeeded);

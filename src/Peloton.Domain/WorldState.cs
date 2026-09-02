@@ -43,6 +43,10 @@ public sealed class WorldState
     private readonly List<RiderCareer> ridersExpiredThisAdvance = new();
     private readonly List<CourseProfile> courseProfiles;
     private readonly List<RiderStageTime> riderStageTimes;
+    private readonly List<RaceIdentityConstraints> raceIdentities;
+    private readonly List<CalendarRaceDetail> calendarRaceDetails;
+    private static Action<WorldState>? seasonRolloverApplicator;
+    private bool pendingSeasonRollover;
 
     public WorldState(
         string worldId,
@@ -70,7 +74,11 @@ public sealed class WorldState
         IEnumerable<CourseProfile>? courseProfiles = null,
         IEnumerable<RiderStageTime>? riderStageTimes = null,
         bool generatePeriodicRaces = true,
-        int? financialYearDays = null)
+        int? financialYearDays = null,
+        int seasonYear = 2026,
+        int seasonStartDayNumber = 0,
+        IEnumerable<RaceIdentityConstraints>? raceIdentities = null,
+        IEnumerable<CalendarRaceDetail>? calendarRaceDetails = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(worldId);
         ArgumentNullException.ThrowIfNull(contentIdentity);
@@ -120,7 +128,19 @@ public sealed class WorldState
             .ToList();
         GeneratePeriodicRaces = generatePeriodicRaces;
         FinancialYearDays = financialYearDays ?? (generatePeriodicRaces ? calendarPeriodDays : 365);
+        SeasonYear = seasonYear;
+        SeasonStartDayNumber = seasonStartDayNumber;
+        this.raceIdentities = (raceIdentities ?? Array.Empty<RaceIdentityConstraints>())
+            .OrderBy(identity => identity.RaceContentId, StringComparer.Ordinal)
+            .ToList();
+        this.calendarRaceDetails = (calendarRaceDetails ?? Array.Empty<CalendarRaceDetail>())
+            .OrderBy(detail => detail.StartDayNumber)
+            .ThenBy(detail => detail.Id, StringComparer.Ordinal)
+            .ToList();
     }
+
+    public static void SetSeasonRolloverApplicator(Action<WorldState> applicator) =>
+        seasonRolloverApplicator = applicator ?? throw new ArgumentNullException(nameof(applicator));
 
     public string WorldId { get; }
 
@@ -173,6 +193,16 @@ public sealed class WorldState
     public bool GeneratePeriodicRaces { get; }
 
     public int FinancialYearDays { get; }
+
+    public int SeasonYear { get; private set; }
+
+    public int SeasonStartDayNumber { get; private set; }
+
+    public IReadOnlyList<RaceIdentityConstraints> RaceIdentities => raceIdentities;
+
+    public IReadOnlyList<CalendarRaceDetail> CalendarRaceDetails => calendarRaceDetails;
+
+    public bool SeasonRolloverOccurred { get; private set; }
 
     public CourseProfile? TryGetCourseProfile(WorldEntityId courseProfileId) =>
         courseProfiles.FirstOrDefault(profile => profile.CourseProfileId == courseProfileId);
@@ -321,11 +351,30 @@ public sealed class WorldState
 
     public int DaysUntilNextRace => NextRaceDayNumber - CurrentDate.DayNumber;
 
+    public bool IsCurrentSeasonCalendarEntry(CalendarEntry entry)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        return entry.DayNumber >= SeasonStartDayNumber;
+    }
+
     public WorldEntityId AllocateEntityId() => entityIdAllocator.Allocate();
 
     public void AdvanceOneDay()
     {
+        AdvanceDayThroughDateIncrement();
+        if (pendingSeasonRollover)
+        {
+            seasonRolloverApplicator?.Invoke(this);
+            pendingSeasonRollover = false;
+        }
+
+        AdvanceDayFinanceAndContracts();
+    }
+
+    internal void AdvanceDayThroughDateIncrement()
+    {
         ridersExpiredThisAdvance.Clear();
+        SeasonRolloverOccurred = false;
 
         foreach (Organization organization in organizations)
         {
@@ -337,9 +386,82 @@ public sealed class WorldState
             career.ApplyRestTick();
         }
 
+        int previousDayNumber = CurrentDate.DayNumber;
         CurrentDate = CurrentDate.NextDay();
+        pendingSeasonRollover = ShouldPerformSeasonRollover(previousDayNumber);
+    }
+
+    internal void AdvanceDayFinanceAndContracts()
+    {
         ExpireContracts();
         ApplyFinanceTick();
+    }
+
+    public void AddCourseProfiles(IEnumerable<CourseProfile> profiles)
+    {
+        ArgumentNullException.ThrowIfNull(profiles);
+        courseProfiles.AddRange(profiles);
+        courseProfiles.Sort((left, right) => left.CourseProfileId.Value.CompareTo(right.CourseProfileId.Value));
+    }
+
+    public void AddCalendarEntries(IEnumerable<CalendarEntry> entries)
+    {
+        ArgumentNullException.ThrowIfNull(entries);
+        calendarEntries.AddRange(entries);
+        calendarEntries.Sort(CompareCalendarEntries);
+    }
+
+    public void ResetOrganizationRaceEntriesForNewSeason()
+    {
+        Dictionary<string, RaceIdentityConstraints> identitiesByRace = raceIdentities
+            .ToDictionary(identity => identity.RaceContentId, StringComparer.Ordinal);
+        HashSet<string> raceContentIds = raceIdentities
+            .Select(identity => identity.RaceContentId)
+            .ToHashSet(StringComparer.Ordinal);
+
+        organizationRaceEntries.RemoveAll(
+            entry => raceContentIds.Contains(entry.RaceContentId));
+
+        foreach (Organization organization in organizations)
+        {
+            foreach (string raceContentId in raceContentIds.OrderBy(id => id, StringComparer.Ordinal))
+            {
+                bool entered = true;
+                if (identitiesByRace.TryGetValue(raceContentId, out RaceIdentityConstraints? identity) &&
+                    identity.InviteOrganizationIds is { Count: > 0 } invites)
+                {
+                    entered = invites.Contains(organization.OriginDefinitionId, StringComparer.Ordinal);
+                }
+
+                organizationRaceEntries.Add(new OrganizationRaceEntry(
+                    organization.Id,
+                    raceContentId,
+                    entered,
+                    DesignatedLeaderId: null));
+            }
+        }
+
+        organizationRaceEntries.Sort(CompareOrganizationRaceEntries);
+    }
+
+    public void CompleteSeasonRollover(int newSeasonYear, int newSeasonStartDayNumber)
+    {
+        SeasonYear = newSeasonYear;
+        SeasonStartDayNumber = newSeasonStartDayNumber;
+        SeasonRolloverOccurred = true;
+    }
+
+    private bool ShouldPerformSeasonRollover(int previousDayNumber)
+    {
+        if (FinancialYearDays != 365 || raceIdentities.Count == 0)
+        {
+            return false;
+        }
+
+        int newDayNumber = CurrentDate.DayNumber;
+        return previousDayNumber > 0 &&
+               newDayNumber > 0 &&
+               newDayNumber % FinancialYearDays == 0;
     }
 
     private void ApplyFinanceTick()

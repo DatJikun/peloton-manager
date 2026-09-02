@@ -184,6 +184,12 @@ public static class CareerDayCommand
             return 1;
         }
 
+        if (options.Days >= 365 &&
+            string.Equals(options.ScenarioId, "scenario.peloton.wt-2026", StringComparison.Ordinal))
+        {
+            EnsurePlayerSkipsRacesForLongSoak(application);
+        }
+
         WriteHub(output, application);
         string autosaveDirectory = Path.Combine(
             Path.GetTempPath(),
@@ -192,6 +198,13 @@ public static class CareerDayCommand
         {
             for (int day = 0; day < options.Days; day++)
             {
+                if (application.State == GameState.PreSeasonPlanningFlow &&
+                    options.Days >= 365 &&
+                    string.Equals(options.ScenarioId, "scenario.peloton.wt-2026", StringComparison.Ordinal))
+                {
+                    EnsurePlayerSkipsRacesForLongSoak(application);
+                }
+
                 CommandResult advanced = application.Execute(new AdvanceDayCommand());
                 if (!advanced.Succeeded &&
                     options.ThroughRaces &&
@@ -283,8 +296,63 @@ public static class CareerDayCommand
             }
         }
 
+        WriteSeasonSummary(output, application);
         output.WriteLine("crashed=false");
         return 0;
+    }
+
+    private static void EnsurePlayerSkipsRacesForLongSoak(GameApplication application)
+    {
+        if (application.State == GameState.Management)
+        {
+            CommandResult begin = application.Execute(new BeginPreSeasonPlanningCommand());
+            if (!begin.Succeeded)
+            {
+                return;
+            }
+        }
+
+        if (application.State != GameState.PreSeasonPlanningFlow || application.PreSeasonPlanning is null)
+        {
+            return;
+        }
+
+        foreach (PreSeasonRaceEntryProjection race in application.PreSeasonPlanning.Races)
+        {
+            application.Execute(new SetSeasonRaceEntryCommand(race.RaceContentId, Entered: false));
+        }
+
+        application.Execute(new ConfirmPreSeasonPlanCommand());
+    }
+
+    private static void WriteSeasonSummary(TextWriter output, GameApplication application)
+    {
+        WorldState? world = application.World;
+        if (world is null)
+        {
+            return;
+        }
+
+        output.WriteLine(
+            string.Create(
+                CultureInfo.InvariantCulture,
+                $"season={world.SeasonYear}"));
+        int courses2027 = world.CourseProfiles.Count(profile => profile.SeasonYear == 2027);
+        int calendar2027 = world.CalendarEntries.Count(
+            entry => entry.Kind == CalendarEntryKind.Race &&
+                     entry.CourseProfileId is WorldEntityId profileId &&
+                     world.TryGetCourseProfile(profileId) is CourseProfile profile &&
+                     profile.SeasonYear == 2027);
+        output.WriteLine(
+            string.Create(
+                CultureInfo.InvariantCulture,
+                $"courses2027={courses2027}"));
+        output.WriteLine(
+            string.Create(
+                CultureInfo.InvariantCulture,
+                $"calendar2027={calendar2027}"));
+        output.WriteLine("retired=0");
+        output.WriteLine("neo=0");
     }
 
     private static string ResolveCurrentRaceContentId(GameApplication application) =>

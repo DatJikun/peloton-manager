@@ -90,7 +90,10 @@ public sealed class GameApplication
             Dictionary<WorldEntityId, Person> personsById = World.Persons
                 .ToDictionary(person => person.Id);
             PreSeasonRaceEntryProjection[] races = World.CalendarEntries
-                .Where(entry => entry.Kind == CalendarEntryKind.Race && entry.OfficialResult is null)
+                .Where(entry =>
+                    entry.Kind == CalendarEntryKind.Race &&
+                    entry.OfficialResult is null &&
+                    World.IsCurrentSeasonCalendarEntry(entry))
                 .OrderBy(entry => entry.DayNumber)
                 .ThenBy(entry => entry.Id.Value)
                 .GroupBy(entry => entry.RaceContentId ?? RacePreparationDefaults.PrototypeScenarioId, StringComparer.Ordinal)
@@ -126,7 +129,7 @@ public sealed class GameApplication
                 .OrderBy(race => race.DayNumber)
                 .ThenBy(race => race.RaceContentId, StringComparer.Ordinal)
                 .ToArray();
-            return new PreSeasonPlanningProjection(races);
+            return new PreSeasonPlanningProjection(races, World.SeasonYear);
         }
     }
 
@@ -200,7 +203,8 @@ public sealed class GameApplication
                 World.LastDayNotes,
                 World.RaceCount,
                 primaryAction,
-                primaryLabel);
+                primaryLabel,
+                World.SeasonYear);
         }
     }
 
@@ -518,6 +522,15 @@ public sealed class GameApplication
         }
 
         DeterministicScheduler.AdvanceDay(World);
+        if (World.SeasonRolloverOccurred)
+        {
+            CommandResult planning = Execute(new BeginPreSeasonPlanningCommand());
+            if (!planning.Succeeded)
+            {
+                return planning;
+            }
+        }
+
         World.CaptureDayNotes(GetAccessContext());
         return CommandResult.Success;
     }
@@ -614,7 +627,9 @@ public sealed class GameApplication
         Dictionary<string, WorldEntityId?> leaders = new(StringComparer.Ordinal);
         foreach (CalendarEntry entry in World.CalendarEntries)
         {
-            if (entry.Kind != CalendarEntryKind.Race || entry.OfficialResult is not null)
+            if (entry.Kind != CalendarEntryKind.Race ||
+                entry.OfficialResult is not null ||
+                !World.IsCurrentSeasonCalendarEntry(entry))
             {
                 continue;
             }
@@ -1578,7 +1593,29 @@ public sealed class GameApplication
             riderContracts: riderContracts,
             courseProfiles: courseProfiles,
             generatePeriodicRaces: recipe.GeneratePeriodicRaces,
-            financialYearDays: financialYearDays);
+            financialYearDays: financialYearDays,
+            seasonYear: 2026,
+            seasonStartDayNumber: 0,
+            raceIdentities: recipe.RaceIdentities,
+            calendarRaceDetails: BuildCalendarRaceDetails(recipe));
+    }
+
+    private static CalendarRaceDetail[] BuildCalendarRaceDetails(WorldRecipe recipe)
+    {
+        if (recipe.RaceIdentities.Count == 0)
+        {
+            return Array.Empty<CalendarRaceDetail>();
+        }
+
+        return recipe.CalendarRaces
+            .Select(race => new CalendarRaceDetail(
+                race.Id,
+                race.Name,
+                race.Country,
+                race.Kind,
+                race.DayNumber,
+                race.EndDayNumber >= 0 ? race.EndDayNumber : race.DayNumber))
+            .ToArray();
     }
 
     private static int ReadCalendarPeriodDays(WorldRecipe recipe)

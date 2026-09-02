@@ -13,7 +13,7 @@ namespace Peloton.Persistence;
 
 public sealed class SqliteWorldSaveStore : IWorldSaveStore
 {
-    public const int SchemaVersion = 10;
+    public const int SchemaVersion = 11;
 
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
 
@@ -566,7 +566,11 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
         IReadOnlyList<CourseProfileDto>? CourseProfiles = null,
         IReadOnlyList<RiderStageTimeDto>? RiderStageTimes = null,
         bool GeneratePeriodicRaces = true,
-        int FinancialYearDays = 365)
+        int FinancialYearDays = 365,
+        int SeasonYear = 2026,
+        int SeasonStartDayNumber = 0,
+        IReadOnlyList<RaceIdentityConstraints>? RaceIdentities = null,
+        IReadOnlyList<CalendarRaceDetail>? CalendarRaceDetails = null)
     {
         public static WorldSnapshotDto FromDomain(WorldState world)
         {
@@ -629,7 +633,11 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                 world.CourseProfiles.Select(CourseProfileDto.FromDomain).ToArray(),
                 world.RiderStageTimes.Select(RiderStageTimeDto.FromDomain).ToArray(),
                 world.GeneratePeriodicRaces,
-                world.FinancialYearDays);
+                world.FinancialYearDays,
+                world.SeasonYear,
+                world.SeasonStartDayNumber,
+                world.RaceIdentities.ToArray(),
+                world.CalendarRaceDetails.ToArray());
         }
 
         public WorldState ToDomain()
@@ -666,7 +674,11 @@ public sealed class SqliteWorldSaveStore : IWorldSaveStore
                 (RiderStageTimes ?? Array.Empty<RiderStageTimeDto>())
                     .Select(time => time.ToDomain()),
                 GeneratePeriodicRaces,
-                FinancialYearDays > 0 ? FinancialYearDays : (GeneratePeriodicRaces ? (CalendarPeriodDays > 0 ? CalendarPeriodDays : 12) : 365));
+                FinancialYearDays > 0 ? FinancialYearDays : (GeneratePeriodicRaces ? (CalendarPeriodDays > 0 ? CalendarPeriodDays : 12) : 365),
+                SeasonYear > 0 ? SeasonYear : 2026,
+                SeasonStartDayNumber,
+                RaceIdentities ?? Array.Empty<RaceIdentityConstraints>(),
+                CalendarRaceDetails ?? Array.Empty<CalendarRaceDetail>());
         }
     }
 }

@@ -12,7 +12,8 @@ public sealed record PreSeasonRaceEntryProjection(
     string? DesignatedLeaderName);
 
 public sealed record PreSeasonPlanningProjection(
-    IReadOnlyList<PreSeasonRaceEntryProjection> Races);
+    IReadOnlyList<PreSeasonRaceEntryProjection> Races,
+    int SeasonYear);
 
 internal sealed record PreSeasonPlanningDraft(
     Dictionary<string, bool> EntriesByRaceContentId,

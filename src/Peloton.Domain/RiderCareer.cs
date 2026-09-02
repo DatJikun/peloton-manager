@@ -149,6 +149,13 @@ public sealed class RiderCareer
         Form01 = Clamp01(Form01 + (0.05 * (0.90 - Form01)));
     }
 
+    public void ApplyWinterFormReset()
+    {
+        Form01 = 1.0;
+        Freshness01 = 1.0;
+        Fatigue01 = 0.0;
+    }
+
     public void ApplyRaceLoad()
     {
         Fatigue01 = Clamp01(Fatigue01 + 0.30);

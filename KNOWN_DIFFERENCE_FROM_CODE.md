@@ -26,7 +26,7 @@ This is an explicit prototype boundary, not an accepted simplification of the fu
 - `RiderCareer.Id` is the official race `RiderId`; `LastRace` finish order and `RiderCareerResult` history use those world IDs.
 - `CreateWorld` materializes riders from `content/peloton.skeleton/skeleton-roster.json` (stable `OriginDefinitionId`s from the prototype pack).
 - Prep squad is the player employer's world roster (`RiderCareer.OrganizationId`; null = unattached).
-- SQLite `SchemaVersion` is **10** (D-055 CdA road vs TT). Schema 1–9 saves may refuse to load.
+- SQLite `SchemaVersion` is **11** (D-056 stage 1 season rollover). Schema 1–10 saves may refuse to load.
 - World checksum label is `peloton-world-checksum-v9`.
 - `CalendarEntry.RaceContentId` stores the calendar race id (`race.wt2026.*` for WT; route template resolved via `DefaultRaceTemplateId`).
 
@@ -109,7 +109,7 @@ Remaining limits:
 - Classified Flat uses a bunch-sprint kick (last 250 m at `PeakPowerW`) after sitting in the pack. Feel probe seed `91234`: Philipsen place 1, Pogačar 135 on the flattest stored Flat; mountain probe still has Pogačar ahead of Philipsen.
 - Prototype stores **two** CdA numbers per rider (`CdARoadM2` / `CdATtM2`, D-055). Drafting still does `CdA_effective = CdA * shelter` with the stage-selected CdA. There is no sit-up-on-climb vs aero-tuck-on-descent switch. A third “mountain CdA” is not worth a rating — climbs are slow, gravity/W/kg dominate.
 - Prototype race session is sequential 1-second `RaceSession.Step` for every rider; wall-clock is CPU-fast, not real-time.
-- No yearly re-generation after season 2026 in play yet (generator exists; Advance Day does not roll new seasons).
+- Yearly course re-generation after 2026: D-056 stage 1 rolls 2027 courses and calendar on New Year. Aging / neo-pro / AI contracts are later stages.
 - Jersey tables exist as after-stage queries (GC / points / KOM / youth / team). D-032 mid-race GC leadership stays deferred.
 - §49 still `NOT VERIFIED`.
 
@@ -192,3 +192,18 @@ Landed:
 Deferred from this tree: aero tuck on descents, TT pacing optimizer (`RACE_ENGINE_DESIGN_v0.2.md` §32), equipment/wheels, crosswind echelons.
 
 Road probes from D-054 (TdF s1, TDU, Hautacam, Roubaix engine probe) must stay unchanged. The strict Roubaix classics win remains skipped until D-057 roster calibration.
+
+## Season rollover stage 1 (D-056 partial)
+
+Contract: `CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md`. SQLite `SchemaVersion` **11** / checksum `peloton-world-checksum-v11`.
+
+Landed:
+
+- `WorldState.SeasonYear` (2026 at CreateWorld) and `SeasonStartDayNumber`.
+- Rollover inside `AdvanceOneDay` after the date increment, before finance/contract ticks, when the day number is a multiple of 365 (WT worlds only). Skeleton soak (`FinancialYearDays` ≠ 365 or no race identities) does not roll.
+- Winter form reset (`Form01=1`, `Freshness01=1`, `Fatigue01=0`).
+- 2027 `CourseProfile`s from `CourseCatalogGenerator.GenerateSeason`; 2026 profiles kept.
+- 2027 calendar entries (one per racing stage); organization race entries reset (entered, leader null); player pre-season reopens as „Plan sezonu 2027”.
+- Pre-season lists only current-season calendar rows (`DayNumber >= SeasonStartDayNumber`) so leftover 2026 skips do not steal 2027 dates.
+
+Not in this stage: aging physiology, retirements, neo-pros, AI contract cycle, season-summary inbox, SimRunner `seasons`.

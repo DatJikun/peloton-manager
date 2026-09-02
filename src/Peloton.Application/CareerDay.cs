@@ -53,7 +53,8 @@ public sealed record CareerDayProjection(
     IReadOnlyList<string> TodayNotes,
     int RaceCount,
     string PrimaryAction,
-    string PrimaryLabel);
+    string PrimaryLabel,
+    int SeasonYear);
 
 public sealed record PersonNameProjection(WorldEntityId Id, string Name);
 

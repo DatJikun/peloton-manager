@@ -54,7 +54,7 @@ Co wylądowało (D-055, D-056 — które etapy, md, release), wynik `compare --s
 
 ## Postęp (wypełnia agent nocny)
 - [x] D-055 kod + sondy
-- [ ] D-056 etap 1 (rollover, kursy i kalendarz 2027, schema 11)
+- [x] D-056 etap 1 (rollover, kursy i kalendarz 2027, schema 11)
 - [ ] D-056 etap 2 (starzenie)
 - [ ] D-056 etap 3 (emerytury + neo-pro)
 - [ ] D-056 etap 4 (kontrakty AI)
