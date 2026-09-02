@@ -145,7 +145,7 @@ Landed in `Peloton.Simulation/Race`:
 - **Position drift** after each step (`DriftMps`, `SlotSpacingM`, intent/finale bonuses via `PositionScoreResolver`).
 - **Start grid** ordered by `Positioning` in `WorldRaceScenarioAssembler` (WT + skeleton paths; SimRunner `race`/`watch` fixture unchanged).
 - **Pace-setter** in selective zones: max sustainable front speed at shelter 1.0 (`MaxSustainableFrontSpeedMps`), group target `max(BasePace, setterSpeed)`.
-- **Cobble bruk**: shelter `1 − (1 − shelter)·(0.25 + 0.75·Handling)`; required-power surge `1 + CobbleSurgeCost·(1 − Handling)`.
+- **Cobble bruk (§5 + §5.1):** shelter `max(1 − (1 − shelter)·(0.25 + 0.75·Handling), 0.85)` on `Cobble`; required-power surge `1 + CobbleSurgeCost·(1 − Handling)`; `EffectiveCrr` cobble delta **0.018** with handling factor `(1.60 − 1.00·Handling)`; sector surges on asphalt↔cobble transitions of each group's pacing reference (`+CobbleSurgeSpeedMps` for `CobbleSurgeSeconds`, path-scanned per step).
 - **CobbleClassic positioning scale** (§33 extension): effective positioning `Positioning · (CobblePositioningBase + CobblePositioningHandlingWeight · Handling)` on `CobbleClassic` stages so low-handling riders lose slots on cobbled races.
 
 Final tuning constants (`RaceTuning`):
@@ -158,12 +158,18 @@ Final tuning constants (`RaceTuning`):
 | `TempoFactorFinale` | 1.00 |
 | `TempoFactorOutsideFinale` | 0.92 |
 | `CobbleSurgeCost` | 0.286 |
+| `CobbleCrrDelta` | 0.018 |
+| `CobbleCrrHandlingIntercept` | 1.60 |
+| `CobbleCrrHandlingSlope` | 1.00 |
+| `CobbleShelterFloor` | 0.85 |
+| `CobbleSurgeSeconds` | 12 |
+| `CobbleSurgeSpeedMps` | 2.5 |
 | Intent bonuses | 0.50 / 0.40 / 0.40 / −0.30 |
 | `SprintFinaleBonus` | 0.25 |
 | `SprintFinaleDistanceM` | 3_000 |
 | `CobblePositioningBase` | 0.21 |
 | `CobblePositioningHandlingWeight` | 0.91 |
 
-Probes at seed `91234`: TdF stage 1 sprint, TDU stage 6 sprinter, Hautacam GC, determinism/spy neutrality, positioning + cobble unit tests pass. **Roubaix probe still fails** at seed `91234`: GC riders retain W/kg and durability advantages that exceed the ±30% bruk tuning band; van der Poel finishes well behind Evenepoel/Vingegaard despite classics sometimes appearing in the top 10.
+Probes at seed `91234`: TdF stage 1 sprint, TDU stage 6 sprinter, Hautacam GC, determinism/spy neutrality, positioning + cobble unit tests pass. **Roubaix probe still fails** at seed `91234` after §5.1 (contract baseline constants; three ±40% tuning passes did not pass the probe). Sim top 10: Evenepoel (super-gc), Pogačar (super-gc), Vingegaard (super-gc), Ballerini (classics), Syritsa (sprinter), Decathlon classics, Israel classics, Soudal gc, Uno-X gc, Red Bull gc — van der Poel ~38th, ahead of neither Evenepoel nor Vingegaard. Next lever within band: raise `CobbleCrrDelta` toward +40% (0.0252) so cobble sectors weight absolute watts more; best tuning pass moved van der Poel to ~28th but still short of probe.
 
 Still missing (deferred): crosswind echelons, lead-out trains, incidents/mechanicals, D-032 GC leadership, CdA Road/TT (D-055).
