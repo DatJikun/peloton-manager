@@ -191,7 +191,7 @@ Landed:
 
 Deferred from this tree: aero tuck on descents, TT pacing optimizer (`RACE_ENGINE_DESIGN_v0.2.md` §32), equipment/wheels, crosswind echelons.
 
-Road probes from D-054 (TdF s1, TDU, Hautacam, Roubaix engine probe) must stay unchanged. The strict Roubaix classics win remains skipped until D-057 roster calibration.
+Road probes from D-054 (TdF s1, TDU, Hautacam, Roubaix engine probe) must stay unchanged. The strict Roubaix classics win remains **skipped** after D-057 roster depth: Evenepoel still wins the engine probe on current numbers; do not retune D-054 constants to fake a classics winner.
 
 ## Season rollover stage 1 (D-056 partial)
 
@@ -215,7 +215,7 @@ Contract: `CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md` §4.3–§4.4.
 Landed:
 
 - Retirement on rollover: age ≥ 40, or age ≥ 35 with OVR < 60 and no active contract, or age ≥ 33 with no contract and no top-20 in the last two seasons (`SeasonStartDayNumber − 730`).
-- `RiderCareer.IsRetired`; retired riders detach, stay in history, never start.
+- `RiderCareer.IsRetired` plus `RetiredFromOrganizationId` (club at retirement, then detach); retired riders stay in history, never start.
 - One unattached neo-pro per retirement (age 19–21, neo physiology band, POT 65–90, seed `neo:{year}:{index}`), names from `content/peloton.wt-2026/names.json` (≥ 60 first / last per nationality group). Living cap 512. World living count does not shrink.
 - First 2026→2027 WT rollover on the D-057 452-rider pack retires the age-40+ riders (currently 14) and creates the same number of neos.
 
@@ -227,7 +227,7 @@ Landed:
 
 - `SeasonAiContracts` on rollover (after neo-pros): deterministic order by squad size then `OrganizationId`; player employer skipped. Renew expiring contracts when age < 35 and (top 8 by last-season points or age ≤ 25); wage `max(current, min(1.6×current, WageBands cap))`; extension +2 years (+1 if age ≥ 32). Sign unattached riders until ≥ 8 (`WageBands` floor; 1-year deal, 2 if age ≤ 24). No firing.
 - `WageBands` + `RiderMetadataCatalog` (archetype / wageBand from `roster.json`).
-- Polish season-summary inbox (`season-summary:{year}`) after rollover; dismissible. Contract-expiry warnings at 60 and 30 days (`contract-expiry:…`). `WorldState.DismissedInboxIdentities` persisted in schema 11.
+- Polish season-summary inbox (`season-summary:{year}`) after rollover; squad retirement count uses `RetiredFromOrganizationId`. Dismissible. Contract-expiry warnings at 60 and 30 days (`contract-expiry:…`). `WorldState.DismissedInboxIdentities` persisted in schema 11.
 
 ## SimRunner seasons (D-056 stage 6)
 

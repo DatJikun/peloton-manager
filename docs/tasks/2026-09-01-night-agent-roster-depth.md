@@ -36,9 +36,9 @@ Dziś każdy klub ma **8 kolarzy** (200 w świecie). Manager ze składem 8 osób
 Zmieniać istniejących 200 wpisów liczbowo (poza punktem 4b); ruszać silnik, assembler, schema, Godot; dodawać kluby; „kocie łby” (po polsku **bruk**); fabrykować statystyki mocy jako „prawdziwe” (to pasma estimated — D-038); przekraczać 512.
 
 ## Postęp (wypełnia agent)
-- [ ] CSV źródłowy (18 × 22 + wildcardy)
-- [ ] `tools/build_wt2026_roster.py`
-- [ ] `roster.json` wygenerowany, ≤ 512, budżety OK
-- [ ] testy rozszerzone i zielone
+- [x] CSV źródłowy (18 × 22 + wildcardy)
+- [x] `tools/build_wt2026_roster.py`
+- [x] `roster.json` wygenerowany, ≤ 512, budżety OK
+- [x] testy rozszerzone i zielone
 - [x] gate + merge do `main` + CI
-- [ ] README paczki, linia w HANDOFF, raport
+- [x] README paczki, linia w HANDOFF, raport

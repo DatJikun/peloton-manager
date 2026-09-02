@@ -57,12 +57,12 @@ Co wylądowało (D-055, D-056 — które etapy, md, release), wynik `compare --s
 - [x] D-056 etap 1 (rollover, kursy i kalendarz 2027, schema 11)
 - [x] D-056 etap 2 (starzenie)
 - [x] D-056 etap 3 (emerytury + neo-pro)
-- [ ] D-056 etap 4 (kontrakty AI)
-- [ ] D-056 etap 5 (inbox)
-- [ ] D-056 etap 6 (`seasons --years 5`, sondy)
-- [ ] gate lokalny zielony
-- [ ] merge do `main`, CI zielone
-- [ ] md zaktualizowane
+- [x] D-056 etap 4 (kontrakty AI)
+- [x] D-056 etap 5 (inbox)
+- [x] D-056 etap 6 (`seasons --years 5`, sondy)
+- [x] gate lokalny zielony
+- [x] merge do `main`, CI zielone
+- [x] md zaktualizowane
 - [ ] tag `playtest-2026-09-02`, Release istnieje
 - [ ] zip usunięty z drzewa, `CZYTAJ_MNIE.txt` odświeżony
 - [ ] raport w czacie
