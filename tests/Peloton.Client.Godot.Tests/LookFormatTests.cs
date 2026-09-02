@@ -24,8 +24,14 @@ public sealed class LookFormatTests
     public void YearPillSplitsPrefixAndAccent()
     {
         (string prefix, string accent) = LookFormat.YearPillParts(2026);
-        Assert.Equal("ROK", prefix);
+        Assert.Equal("ROK ", prefix);
         Assert.Equal("2026", accent);
+    }
+
+    [Fact]
+    public void DateChipLabelUsesWeekdayAndDdMm()
+    {
+        Assert.Equal("CZW 01.01", LookFormat.DateChipLabel(0));
     }
 
     [Fact]

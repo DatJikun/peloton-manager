@@ -16,7 +16,9 @@ internal sealed record TableColumn(
     string SortKey,
     TableAlign Align = TableAlign.Left,
     bool Key = false,
-    float MinWidth = 0);
+    float MinWidth = 0,
+    bool Expand = false,
+    bool DisplayFont = false);
 
 internal sealed record TableCell(string Text, string? Micro = null, string? ChipText = null, string? ChipKind = null);
 
@@ -33,6 +35,7 @@ internal static class LookChrome
     public static readonly Color Team = new("2050c8");
     public static readonly Color TeamOn = new("f3ede1");
     public static readonly Color SelectedMicro = new("aaa69a");
+    public static readonly Color FinanceGreen = new("1f8a3a");
 
     private const float MetaSpacingEm = 0.12f;
 
@@ -145,7 +148,7 @@ internal static class LookChrome
 
         HBoxContainer row = new();
         row.MouseFilter = Control.MouseFilterEnum.Ignore;
-        row.AddThemeConstantOverride("separation", 0);
+        row.AddThemeConstantOverride("separation", 4);
         row.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         row.OffsetLeft = 14;
         row.OffsetRight = -14;
@@ -156,11 +159,14 @@ internal static class LookChrome
         {
             if (!string.IsNullOrWhiteSpace(text))
             {
-                Label prefix = Meta(text.Trim(), 13, Black);
+                Label prefix = Meta(text, 13, Black);
                 prefix.VerticalAlignment = VerticalAlignment.Center;
                 row.AddChild(prefix);
             }
 
+            Control gap = new() { CustomMinimumSize = new Vector2(6, 0) };
+            gap.MouseFilter = Control.MouseFilterEnum.Ignore;
+            row.AddChild(gap);
             Label accent = Meta(accentPart, 13, Team);
             accent.VerticalAlignment = VerticalAlignment.Center;
             row.AddChild(accent);
@@ -438,12 +444,13 @@ internal static class LookChrome
         string sortKey,
         int sortDir,
         Action<string>? onSort,
-        Action<int>? onSelect)
+        Action<int>? onSelect,
+        Func<int, bool>? highlightRow = null)
     {
         ScrollContainer scroll = new();
         scroll.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         scroll.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
-        scroll.HorizontalScrollMode = ScrollContainer.ScrollMode.Auto;
+        scroll.HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled;
         scroll.VerticalScrollMode = ScrollContainer.ScrollMode.Auto;
 
         GridContainer grid = new()
@@ -466,15 +473,7 @@ internal static class LookChrome
                     ? Control.CursorShape.Arrow
                     : Control.CursorShape.PointingHand,
             };
-            head.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-            if (column.MinWidth > 0)
-            {
-                head.CustomMinimumSize = new Vector2(column.MinWidth, 34);
-            }
-            else
-            {
-                head.CustomMinimumSize = new Vector2(0, 34);
-            }
+            ApplyTableColumnSizing(head, column, 34);
 
             StyleBoxFlat headStyle = TableHeadBox(sorted);
             head.AddThemeStyleboxOverride("normal", headStyle);
@@ -510,21 +509,15 @@ internal static class LookChrome
         {
             TableRow row = rows[rowIndex];
             bool selected = rowIndex == selectedIndex;
-            Color fg = selected ? Paper : Black;
+            bool highlighted = highlightRow?.Invoke(rowIndex) ?? false;
+            Color fg = selected ? Paper : highlighted ? Team : Black;
             Color microColor = selected ? SelectedMicro : Gray;
             for (int columnIndex = 0; columnIndex < columns.Count; columnIndex++)
             {
                 TableColumn column = columns[columnIndex];
                 TableCell cell = columnIndex < row.Cells.Count ? row.Cells[columnIndex] : new TableCell("—");
-                PanelContainer cellPanel = TableCellPanel(selected, rowIndex, onSelect);
-                if (column.MinWidth > 0)
-                {
-                    cellPanel.CustomMinimumSize = new Vector2(column.MinWidth, 34);
-                }
-                else
-                {
-                    cellPanel.CustomMinimumSize = new Vector2(0, 34);
-                }
+                PanelContainer cellPanel = TableCellPanel(selected, highlighted, rowIndex, onSelect);
+                ApplyTableColumnSizing(cellPanel, column, 34);
 
                 if (!string.IsNullOrEmpty(cell.ChipText))
                 {
@@ -543,11 +536,13 @@ internal static class LookChrome
                 stack.AddThemeConstantOverride("separation", 0);
                 stack.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
                 MarginContainer pad = new();
-                pad.AddThemeConstantOverride("margin_left", 8);
-                pad.AddThemeConstantOverride("margin_right", 8);
-                pad.AddThemeConstantOverride("margin_top", cell.Micro is null ? 8 : 5);
-                pad.AddThemeConstantOverride("margin_bottom", 6);
-                Label main = Body(cell.Text, 13, fg, bold: column.Key);
+                pad.AddThemeConstantOverride("margin_left", 4);
+                pad.AddThemeConstantOverride("margin_right", 4);
+                pad.AddThemeConstantOverride("margin_top", cell.Micro is null ? 7 : 4);
+                pad.AddThemeConstantOverride("margin_bottom", 5);
+                Label main = column.DisplayFont
+                    ? Display(cell.Text, 14, fg)
+                    : Body(cell.Text, 13, fg, bold: column.Key);
                 main.HorizontalAlignment = column.Align switch
                 {
                     TableAlign.Center => HorizontalAlignment.Center,
@@ -568,6 +563,9 @@ internal static class LookChrome
             }
         }
 
+        const float rowHeight = 34f;
+        grid.CustomMinimumSize = new Vector2(0, rowHeight * (rows.Count + 1));
+        scroll.CustomMinimumSize = new Vector2(0, Math.Min(560, rowHeight * (rows.Count + 1)));
         scroll.AddChild(grid);
         return scroll;
     }
@@ -1000,7 +998,120 @@ internal static class LookChrome
         };
     }
 
-    private static PanelContainer TableCellPanel(bool selected, int rowIndex, Action<int>? onSelect)
+    public static HBoxContainer DetailLine(string label, string value)
+    {
+        HBoxContainer row = new();
+        row.AddThemeConstantOverride("separation", 10);
+        row.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        Label left = Meta(label, 10, Gray);
+        Label right = Meta(value, 10, Black);
+        right.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        row.AddChild(left);
+        row.AddChild(right);
+        return row;
+    }
+
+    public static HBoxContainer SignedKv(string label, long amountEur)
+    {
+        HBoxContainer row = new();
+        row.AddThemeConstantOverride("separation", 10);
+        Label left = Meta(label, 10, Gray);
+        left.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        Color valueColor = amountEur > 0 ? FinanceGreen : amountEur < 0 ? Red : Black;
+        Label right = Body(CareerLookCatalog.SignedEuro(amountEur), 14, valueColor, bold: true);
+        right.HorizontalAlignment = HorizontalAlignment.Right;
+        row.AddChild(left);
+        row.AddChild(right);
+        return row;
+    }
+
+    public static PanelContainer DateChip(string text, bool inverted = false)
+    {
+        PanelContainer chip = new();
+        Color bg = inverted ? Paper : Black;
+        Color fg = inverted ? Black : Paper;
+        chip.AddThemeStyleboxOverride("panel", new StyleBoxFlat
+        {
+            BgColor = bg,
+            BorderColor = Black,
+            BorderWidthLeft = 2,
+            BorderWidthTop = 2,
+            BorderWidthRight = 2,
+            BorderWidthBottom = 2,
+            ContentMarginLeft = 10,
+            ContentMarginRight = 10,
+            ContentMarginTop = 6,
+            ContentMarginBottom = 6,
+        });
+        Label label = Display(text.ToUpperInvariant(), 13, fg);
+        label.HorizontalAlignment = HorizontalAlignment.Center;
+        label.VerticalAlignment = VerticalAlignment.Center;
+        chip.AddChild(label);
+        return chip;
+    }
+
+    public static PanelContainer RankChip(string text, bool mine)
+    {
+        PanelContainer chip = new();
+        chip.AddThemeStyleboxOverride("panel", ChipBox(mine ? Black : Paper));
+        Label label = Display(text, 14, mine ? Paper : Black);
+        label.HorizontalAlignment = HorizontalAlignment.Center;
+        label.VerticalAlignment = VerticalAlignment.Center;
+        label.CustomMinimumSize = new Vector2(28, 28);
+        chip.AddChild(label);
+        return chip;
+    }
+
+    public static PanelContainer InboxRow(string number, string subject, string date, bool urgent)
+    {
+        PanelContainer panel = new();
+        StyleBoxFlat box = new()
+        {
+            BgColor = Paper,
+            BorderColor = urgent ? Red : Hair,
+            BorderWidthLeft = urgent ? 2 : 0,
+            BorderWidthTop = urgent ? 2 : 0,
+            BorderWidthRight = urgent ? 2 : 0,
+            BorderWidthBottom = 1,
+            ContentMarginLeft = 14,
+            ContentMarginRight = 14,
+            ContentMarginTop = 10,
+            ContentMarginBottom = 10,
+        };
+        panel.AddThemeStyleboxOverride("panel", box);
+        HBoxContainer row = new();
+        row.AddThemeConstantOverride("separation", 10);
+        Label num = Meta(number, 10, Team);
+        num.CustomMinimumSize = new Vector2(20, 0);
+        Label subj = Body(subject, 14, Black, bold: true);
+        subj.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        subj.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+        Label when = Meta(date, 10, Gray);
+        row.AddChild(num);
+        row.AddChild(subj);
+        row.AddChild(when);
+        panel.AddChild(row);
+        return panel;
+    }
+
+    private static void ApplyTableColumnSizing(Control control, TableColumn column, float height)
+    {
+        control.SizeFlagsHorizontal = column.Expand
+            ? Control.SizeFlags.ExpandFill
+            : Control.SizeFlags.ShrinkCenter;
+        float width = column.Expand ? 0 : Math.Max(column.MinWidth, 0);
+        control.CustomMinimumSize = new Vector2(width, height);
+        if (column.Expand)
+        {
+            control.SizeFlagsStretchRatio = 2;
+        }
+    }
+
+    private static PanelContainer TableCellPanel(
+        bool selected,
+        bool highlighted,
+        int rowIndex,
+        Action<int>? onSelect)
     {
         PanelContainer panel = new();
         panel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
@@ -1014,6 +1125,12 @@ internal static class LookChrome
             ContentMarginTop = 0,
             ContentMarginBottom = 0,
         };
+        if (highlighted && !selected)
+        {
+            box.BorderWidthLeft = 3;
+            box.BorderColor = Team;
+        }
+
         panel.AddThemeStyleboxOverride("panel", box);
         if (onSelect is not null)
         {
