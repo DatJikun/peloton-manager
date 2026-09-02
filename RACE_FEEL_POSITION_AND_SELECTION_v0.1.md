@@ -63,6 +63,7 @@ rider.DistanceM    += delta
 ```
 
 - Drift is a bunch reorder, not propulsion: it does **not** change `SpeedMps`, `EnergySpentJ`, or physiology.
+- **Drift is never a free tow (amendment 2026-09-01).** Forward drift (`delta > 0`) is allowed only for a rider who was **not power-limited in this step** (`realizablePowerW ≥ requiredPowerW`, i.e. he held the desired speed with capacity to spare). A rider who fell short of the group speed this step may drift **backward only** (`delta ≤ 0`). Without this rule a rider dropped on a surge is pulled back into the draft for nothing and selection cannot happen. Unit test: a rider whose realizable power is below the group requirement on a cobble segment leaves the group within 60 steps despite drift; an identical rider with enough power stays.
 - Drift may never push a rider more than `GroupSplitGapM − 0.1` behind the rider ahead (no artificial splits) and never ahead of the group leader’s `DistanceM`.
 - Apply drift before the next step’s physics so slot → shelter → required power uses the new order.
 - `PositionAndGroupResolver` continues to assign `PositionSlot` / shelter from `DistanceM` order. The drift is what makes `Positioning` matter; the resolver does not need a second ordering rule.

@@ -206,9 +206,9 @@ public sealed class SimRunnerContractTests
         Assert.Equal(0, rateTwenty.ExitCode);
         Assert.Equal(ParseTextKey(rateOne.Output, "winner"), ParseTextKey(rateTwenty.Output, "winner"));
         Assert.Equal(ParseTextKey(rateOne.Output, "checksum"), ParseTextKey(rateTwenty.Output, "checksum"));
-        Assert.Equal("1006", ParseTextKey(rateOne.Output, "winner"));
+        Assert.Equal("1002", ParseTextKey(rateOne.Output, "winner"));
         Assert.Equal(
-            "D9F2FB98498D89E0595ACF89BA31C5A3CB87500C92CC3C5871088968BDE2ABD4", // D-054 PhysicsContractVersion 2 pace-setter
+            "528D5C6C2D7356A34ACE57FABDC4CE087BCA8DCF899C91E7758CA8E7D05EE157", // D-054 §3.3 no free forward drift
             ParseTextKey(rateOne.Output, "checksum"));
         Assert.True(ParseKey(rateOne.Output, "watchSecond") > ParseKey(rateTwenty.Output, "watchSecond"));
         Assert.Contains("paused=true", rateOne.Output, StringComparison.Ordinal);
@@ -345,13 +345,13 @@ public sealed class SimRunnerContractTests
         string stdout = output.ToString().Replace("\r\n", "\n", StringComparison.Ordinal);
         Assert.Equal(0, exitCode);
         Assert.Contains("state=RaceResultsFlow", stdout, StringComparison.Ordinal);
-        Assert.Contains("winner=20", stdout, StringComparison.Ordinal); // D-054 positioning start grid
+        Assert.Contains("winner=8", stdout, StringComparison.Ordinal); // D-054 §3.3 no free forward drift
         Assert.Contains("result=title=Skeleton race", stdout, StringComparison.Ordinal);
-        Assert.Contains("winnerLabel=rider.race-prototype.beta-leader", stdout, StringComparison.Ordinal);
+        Assert.Contains("winnerLabel=rider.race-prototype.alpha-leader", stdout, StringComparison.Ordinal);
         Assert.Contains("routeId=race-route.peloton.synthetic-proof-v0", stdout, StringComparison.Ordinal);
-        Assert.Contains("finishOrder=rider.race-prototype.beta-leader", stdout, StringComparison.Ordinal);
+        Assert.Contains("finishOrder=rider.race-prototype.alpha-leader", stdout, StringComparison.Ordinal);
         Assert.Contains("state=RaceDebriefFlow", stdout, StringComparison.Ordinal);
-        Assert.Contains("debrief=objective=StageWin notes=Oficjalny zwycięzca: rider.race-prototype.beta-leader.", stdout, StringComparison.Ordinal);
+        Assert.Contains("debrief=objective=StageWin notes=Oficjalny zwycięzca: rider.race-prototype.alpha-leader.", stdout, StringComparison.Ordinal);
         Assert.DoesNotContain("Widoczny rozjazd", stdout, StringComparison.Ordinal);
         Assert.DoesNotContain("LeaderPositionBand", stdout, StringComparison.Ordinal);
         Assert.DoesNotContain("ResourceEstimate", stdout, StringComparison.Ordinal);
@@ -398,8 +398,8 @@ public sealed class SimRunnerContractTests
         Assert.Contains("paused=true", stdout, StringComparison.Ordinal);
         Assert.Contains("state=RaceResultsFlow", stdout, StringComparison.Ordinal);
         Assert.Contains("result=title=Skeleton race", stdout, StringComparison.Ordinal);
-        Assert.Contains("winner=20", stdout, StringComparison.Ordinal); // D-054 positioning start grid
-        Assert.Contains("winnerLabel=rider.race-prototype.beta-leader", stdout, StringComparison.Ordinal);
+        Assert.Contains("winner=8", stdout, StringComparison.Ordinal); // D-054 §3.3 no free forward drift
+        Assert.Contains("winnerLabel=rider.race-prototype.alpha-leader", stdout, StringComparison.Ordinal);
         Assert.DoesNotContain("state=RaceDebriefFlow", stdout, StringComparison.Ordinal);
         Assert.DoesNotContain("Widoczny rozjazd", stdout, StringComparison.Ordinal);
         Assert.DoesNotContain("WPrime", stdout, StringComparison.OrdinalIgnoreCase);
@@ -419,7 +419,7 @@ public sealed class SimRunnerContractTests
         Assert.Equal(0, rateTwenty.ExitCode);
         Assert.Equal(ParseTextKey(rateOne.Output, "winner"), ParseTextKey(rateTwenty.Output, "winner"));
         Assert.Equal(ParseTextKey(rateOne.Output, "checksum"), ParseTextKey(rateTwenty.Output, "checksum"));
-        Assert.Equal("20", ParseTextKey(rateOne.Output, "winner")); // D-054 positioning start grid
+        Assert.Equal("8", ParseTextKey(rateOne.Output, "winner")); // D-054 §3.3 no free forward drift
         Assert.Equal(
             ParseTextKey(rateOne.Output, "result"),
             ParseTextKey(rateTwenty.Output, "result"));
@@ -457,7 +457,7 @@ public sealed class SimRunnerContractTests
         Assert.Equal(0, exitCode);
         Assert.Contains("prep=title=Skeleton race", stdout, StringComparison.Ordinal);
         Assert.Contains("state=RaceResultsFlow", stdout, StringComparison.Ordinal);
-        Assert.Contains("winner=20", stdout, StringComparison.Ordinal); // D-054 positioning start grid
+        Assert.Contains("winner=8", stdout, StringComparison.Ordinal); // D-054 §3.3 no free forward drift
         Assert.DoesNotContain("state=RaceLive", stdout, StringComparison.Ordinal);
         Assert.True(string.IsNullOrWhiteSpace(error.ToString()));
     }
@@ -487,7 +487,7 @@ public sealed class SimRunnerContractTests
         string stdout = output.ToString();
         Assert.Equal(0, exitCode);
         Assert.Contains("crashed=false", stdout, StringComparison.Ordinal);
-        Assert.Contains("calendar=day=12 kind=race status=completed title=Skeleton race result=Winner 20", stdout, StringComparison.Ordinal);
+        Assert.Contains("calendar=day=12 kind=race status=completed title=Skeleton race result=Winner 8", stdout, StringComparison.Ordinal);
         Assert.Contains("category=race-result", stdout, StringComparison.Ordinal);
         Assert.Contains("day=13", stdout, StringComparison.Ordinal);
         Assert.DoesNotContain("stopped=RACE_DAY_PENDING", stdout, StringComparison.Ordinal);
@@ -500,8 +500,8 @@ public sealed class SimRunnerContractTests
         RacePrototypeReport report = Execute(RacePrototypeCommand.CanonicalScenarioId, GateSeed);
 
         Assert.False(report.Crashed);
-        Assert.Equal("1006", report.Winner); // D-054 PhysicsContractVersion 2 pace-setter
-        Assert.Equal("D9F2FB98498D89E0595ACF89BA31C5A3CB87500C92CC3C5871088968BDE2ABD4", report.Checksum);
+        Assert.Equal("1002", report.Winner); // D-054 §3.3 no free forward drift
+        Assert.Equal("528D5C6C2D7356A34ACE57FABDC4CE087BCA8DCF899C91E7758CA8E7D05EE157", report.Checksum);
     }
 
     [Fact]

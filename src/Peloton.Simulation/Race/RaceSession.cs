@@ -208,6 +208,8 @@ public sealed class RaceSession
                 segment.Surface);
             solves.Add(rider.Profile.RiderId, new StepSolve(
                 realizedSpeedMps,
+                desiredSpeedMps,
+                demand.TotalPowerW,
                 capability.RealizablePowerW,
                 capability.EffectiveCriticalPowerW,
                 capability.NextState));
@@ -241,7 +243,7 @@ public sealed class RaceSession
         }
 
         simulationSecond++;
-        ApplyPositionDrift();
+        ApplyPositionDrift(solves);
         ExpireIntents();
         if (riders.All(rider => rider.FinishTimeSeconds is not null))
         {
@@ -300,6 +302,8 @@ public sealed class RaceSession
 
         return new StepSolve(
             realizedSpeedMps,
+            targetSpeedMps,
+            rider.Profile.PeakPowerW,
             capability.RealizablePowerW,
             capability.EffectiveCriticalPowerW,
             capability.NextState);
@@ -679,7 +683,7 @@ public sealed class RaceSession
             scenario.ClassifiedStageType);
     }
 
-    private void ApplyPositionDrift()
+    private void ApplyPositionDrift(Dictionary<WorldEntityId, StepSolve> solves)
     {
         RiderRuntime[] unfinished = riders
             .Where(rider => rider.FinishTimeSeconds is null)
@@ -717,16 +721,23 @@ public sealed class RaceSession
             double maxGapBehindAheadM = RaceTuning.GroupSplitGapM - 0.1;
             foreach (RiderRuntime rider in orderedByScore.OrderBy(item => item.Profile.RiderId.Value))
             {
+                bool powerLimited = solves.ContainsKey(rider.Profile.RiderId) &&
+                    solves[rider.Profile.RiderId].PowerLimited;
                 int slotTarget = slotTargets[rider.Profile.RiderId];
                 double targetDistanceM = leaderDistanceM - (slotTarget * RaceTuning.SlotSpacingM);
                 double delta = Math.Clamp(targetDistanceM - rider.DistanceM, -maxDriftM, maxDriftM);
+                if (powerLimited)
+                {
+                    delta = Math.Min(delta, 0.0);
+                }
+
                 double newDistanceM = rider.DistanceM + delta;
                 newDistanceM = Math.Min(newDistanceM, leaderDistanceM);
                 RiderRuntime? riderAhead = orderedByScore
                     .Where(item => slotTargets[item.Profile.RiderId] < slotTarget)
                     .OrderByDescending(item => slotTargets[item.Profile.RiderId])
                     .FirstOrDefault();
-                if (riderAhead is not null)
+                if (riderAhead is not null && !powerLimited)
                 {
                     double minimumDistanceM = riderAhead.DistanceM - maxGapBehindAheadM;
                     newDistanceM = Math.Max(newDistanceM, minimumDistanceM);
@@ -1100,9 +1111,16 @@ public sealed class RaceSession
 
     private sealed record StepSolve(
         double RealizedSpeedMps,
+        double DesiredSpeedMps,
+        double RequiredPowerW,
         double RealizablePowerW,
         double EffectiveCriticalPowerW,
-        RiderPhysiologyState NextPhysiology);
+        RiderPhysiologyState NextPhysiology)
+    {
+        public bool PowerLimited =>
+            RealizablePowerW + 1e-6 < RequiredPowerW ||
+            RealizedSpeedMps + 1e-6 < DesiredSpeedMps;
+    }
 
     private sealed record PendingDecisionContext(
         RaceTacticalPlan Plan,

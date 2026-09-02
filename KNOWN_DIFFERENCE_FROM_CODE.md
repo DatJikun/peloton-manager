@@ -142,7 +142,7 @@ Contract: `RACE_FEEL_POSITION_AND_SELECTION_v0.1.md`. `PhysicsContractVersion` i
 
 Landed in `Peloton.Simulation/Race`:
 
-- **Position drift** after each step (`DriftMps`, `SlotSpacingM`, intent/finale bonuses via `PositionScoreResolver`).
+- **Position drift** after each step (`DriftMps`, `SlotSpacingM`, intent/finale bonuses via `PositionScoreResolver`). **§3.3 amendment:** forward drift (`delta > 0`) only when the rider was not power-limited this step (`realizablePowerW ≥ requiredPowerW` / `realizedSpeed ≥ desiredSpeed`); power-limited riders may drift backward only, and the gap floor clamp does not pull them forward.
 - **Start grid** ordered by `Positioning` in `WorldRaceScenarioAssembler` (WT + skeleton paths; SimRunner `race`/`watch` fixture unchanged).
 - **Pace-setter** in selective zones: max sustainable front speed at shelter 1.0 (`MaxSustainableFrontSpeedMps`), group target `max(BasePace, setterSpeed)`.
 - **Cobble bruk (§5 + §5.1):** shelter `max(1 − (1 − shelter)·(0.25 + 0.75·Handling), 0.85)` on `Cobble`; required-power surge `1 + CobbleSurgeCost·(1 − Handling)`; `EffectiveCrr` cobble delta **0.018** with handling factor `(1.60 − 1.00·Handling)`; sector surges on asphalt↔cobble transitions of each group's pacing reference (`+CobbleSurgeSpeedMps` for `CobbleSurgeSeconds`, path-scanned per step).
@@ -170,6 +170,6 @@ Final tuning constants (`RaceTuning`):
 | `CobblePositioningBase` | 0.21 |
 | `CobblePositioningHandlingWeight` | 0.91 |
 
-Probes at seed `91234`: TdF stage 1 sprint, TDU stage 6 sprinter, Hautacam GC, determinism/spy neutrality, positioning + cobble unit tests pass. **Roubaix probe still fails** at seed `91234` after §5.1 (contract baseline constants; three ±40% tuning passes did not pass the probe). Sim top 10: Evenepoel (super-gc), Pogačar (super-gc), Vingegaard (super-gc), Ballerini (classics), Syritsa (sprinter), Decathlon classics, Israel classics, Soudal gc, Uno-X gc, Red Bull gc — van der Poel ~38th, ahead of neither Evenepoel nor Vingegaard. Next lever within band: raise `CobbleCrrDelta` toward +40% (0.0252) so cobble sectors weight absolute watts more; best tuning pass moved van der Poel to ~28th but still short of probe.
+Probes at seed `91234`: TdF stage 1 sprint, TDU stage 6 sprinter, Hautacam GC, determinism/spy neutrality, positioning + cobble + drift unit tests pass. **Roubaix probe still fails** at seed `91234` after §3.3 drift fix and contract-baseline §5.1 constants (two ±40% tuning passes did not pass the probe). Sim top 5: Evenepoel (super-gc), Pogačar (super-gc), Vingegaard (super-gc), Ganna (tt), Yates (gc) — van der Poel outside top 10; ahead of neither Evenepoel nor Vingegaard. Next lever within band: raise `CobbleCrrDelta` toward +40% (0.0252) with drift fix in place.
 
 Still missing (deferred): crosswind echelons, lead-out trains, incidents/mechanicals, D-032 GC leadership, CdA Road/TT (D-055).

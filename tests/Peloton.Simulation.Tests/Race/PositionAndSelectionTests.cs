@@ -71,6 +71,105 @@ public sealed class PositionAndSelectionTests
     }
 
     [Fact]
+    public void PowerLimitedRiderLeavesCobbleGroupWhileMatchedRiderStays()
+    {
+        RaceRiderProfile leader = CobblePairProfile(801, 901, criticalPowerW: 480.0);
+        RaceRiderProfile weakFollower = CobblePairProfile(
+            802,
+            902,
+            criticalPowerW: 180.0,
+            handling: 0.72,
+            wPrimeCapacityJ: 3_000.0);
+        RaceRiderProfile strongFollower = CobblePairProfile(803, 903, criticalPowerW: 480.0);
+
+        double gapAfterSteps = GapAfterCobbleSteps(leader, weakFollower);
+        Assert.True(
+            gapAfterSteps > RaceTuning.GroupSplitGapM,
+            $"weak follower gap={gapAfterSteps}");
+
+        double matchedGapAfterSteps = GapAfterCobbleSteps(leader, strongFollower);
+        Assert.True(
+            matchedGapAfterSteps <= RaceTuning.GroupSplitGapM,
+            $"strong follower gap={matchedGapAfterSteps}");
+    }
+
+    private static double GapAfterCobbleSteps(RaceRiderProfile leader, RaceRiderProfile follower)
+    {
+        RaceDefinition definition = new(
+            "route.cobble.drift",
+            1.225,
+            new[]
+            {
+                new RaceRouteSegment(
+                    "segment.cobble",
+                    lengthM: 5_000.0,
+                    gradient: 0.04,
+                    roadWidthM: 6.0,
+                    windSpeedMps: 0.0,
+                    windYawDegrees: 0.0,
+                    surface: RouteSurface.Cobble),
+            });
+        RaceStartingPosition[] positions =
+        {
+            new(leader.RiderId, 100.0),
+            new(follower.RiderId, 100.0 - RaceTuning.SlotSpacingM),
+        };
+        RaceScenario scenario = new(
+            "race.cobble.drift",
+            definition,
+            new[] { leader, follower },
+            positions,
+            new[]
+            {
+                new RaceCommand(
+                    simulationSecond: 0,
+                    leader.OrganizationId,
+                    leader.RiderId,
+                    RaceCommandKind.ForcePace),
+            },
+            initialSpeedMps: 11.0,
+            maximumDurationSeconds: 1_000,
+            classifiedStageType: ClassifiedStageType.CobbleClassic);
+        PrototypeRaceEngine engine = new();
+        RaceSession session = engine.CreateSession(scenario, 88);
+        for (int step = 0; step < 60 && !session.IsCompleted; step++)
+        {
+            RaceStepResult result = session.Step();
+            if (result.Status == RaceStepStatus.DecisionRequired)
+            {
+                throw new Xunit.Sdk.XunitException("Unexpected decision request.");
+            }
+        }
+
+        RiderRuntimeState leaderState = Find(session, leader.RiderId);
+        RiderRuntimeState followerState = Find(session, follower.RiderId);
+        return leaderState.DistanceM - followerState.DistanceM;
+    }
+
+    private static RaceRiderProfile CobblePairProfile(
+        long riderId,
+        long organizationId,
+        double criticalPowerW,
+        double handling = 0.82,
+        double wPrimeCapacityJ = 24_000.0) =>
+        new(
+            new WorldEntityId(riderId),
+            new WorldEntityId(organizationId),
+            criticalPowerW,
+            wPrimeCapacityJ,
+            peakPowerW: 1_100.0,
+            wPrimeRecoveryJPerSecond: 40.0,
+            lowIntensityDurability: 0.85,
+            highIntensityDurability: 0.85,
+            bodyMassKg: 72.0,
+            systemMassKg: 8.0,
+            cdAM2: 0.30,
+            baseCrr: 0.004,
+            positioning: 0.75,
+            handling,
+            tacticalAwareness: 0.75);
+
+    [Fact]
     public void CobbleShelterAndSurgePenalizeLowHandling()
     {
         const double shelter = 0.62;
