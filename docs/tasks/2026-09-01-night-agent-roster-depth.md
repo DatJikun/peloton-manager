@@ -40,5 +40,5 @@ Zmieniać istniejących 200 wpisów liczbowo (poza punktem 4b); ruszać silnik, 
 - [ ] `tools/build_wt2026_roster.py`
 - [ ] `roster.json` wygenerowany, ≤ 512, budżety OK
 - [ ] testy rozszerzone i zielone
-- [ ] gate + merge do `main` + CI
+- [x] gate + merge do `main` + CI
 - [ ] README paczki, linia w HANDOFF, raport

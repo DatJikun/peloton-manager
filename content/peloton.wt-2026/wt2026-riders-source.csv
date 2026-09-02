@@ -1,0 +1,453 @@
+organizationId,name,nationality,birthYear,archetype,role,squadOrder
+organization.wt2026.alpecin,Mathieu van der Poel,NED,1995,classics,leader,1
+organization.wt2026.alpecin,Jasper Philipsen,BEL,1998,sprinter,card,2
+organization.wt2026.alpecin,Søren Wærenskjold,NOR,2000,diesel,support,3
+organization.wt2026.alpecin,Quinten Hermans,BEL,1995,classics,support,4
+organization.wt2026.alpecin,Kaden Groves,AUS,1998,sprinter,support,5
+organization.wt2026.alpecin,Silvan Dillier,SUI,1990,diesel,support,6
+organization.wt2026.alpecin,Jonas Rickaert,BEL,1994,classics,support,7
+organization.wt2026.alpecin,Timo Kielich,BEL,1999,classics,support,8
+organization.wt2026.alpecin,Florian Sénéchal,FRA,1993,classics,support,9
+organization.wt2026.alpecin,Gerben Thijssen,BEL,1998,sprinter,support,10
+organization.wt2026.alpecin,Oscar Riesebeek,NED,1996,diesel,support,11
+organization.wt2026.alpecin,Michael Gogl,AUT,1993,diesel,support,12
+organization.wt2026.alpecin,Edward Planckaert,BEL,1994,classics,support,13
+organization.wt2026.alpecin,Tibor Del Grosso,NED,2000,neo,neo,14
+organization.wt2026.alpecin,Jensen Plowright,AUS,2000,sprinter,neo,15
+organization.wt2026.alpecin,Emiel Verstrynge,BEL,2002,neo,neo,16
+organization.wt2026.alpecin,Gal Glivar,SLO,2001,gc,neo,17
+organization.wt2026.alpecin,Johan Price-Pejtersen,DEN,1999,classics,support,18
+organization.wt2026.alpecin,Simon Dehairs,BEL,2000,sprinter,neo,19
+organization.wt2026.alpecin,Tobias Bayer,AUT,1999,classics,support,20
+organization.wt2026.alpecin,Henri Uhlig,GER,2001,neo,neo,21
+organization.wt2026.alpecin,Aaron Dockx,BEL,2003,neo,neo,22
+organization.wt2026.bahrain,Santiago Buitrago,COL,1999,gc,leader,1
+organization.wt2026.bahrain,Phil Bauhaus,GER,1994,sprinter,card,2
+organization.wt2026.bahrain,Matej Mohorič,SLO,1994,classics,support,3
+organization.wt2026.bahrain,Pello Bilbao,ESP,1990,gc,support,4
+organization.wt2026.bahrain,Matevž Govekar,SLO,2000,sprinter,support,5
+organization.wt2026.bahrain,Rainer Kepplinger,AUT,1997,gc,support,6
+organization.wt2026.bahrain,Torstein Træen,NOR,1995,gc,support,7
+organization.wt2026.bahrain,Fran Miholjević,CRO,2002,neo,neo,8
+organization.wt2026.bahrain,Wout Poels,NED,1987,diesel,support,9
+organization.wt2026.bahrain,Dylan Teuns,BEL,1992,classics,support,10
+organization.wt2026.bahrain,Fred Wright,GBR,1999,sprinter,support,11
+organization.wt2026.bahrain,Cameron Scott,GBR,1998,sprinter,support,12
+organization.wt2026.bahrain,Finn Fisher-Black,NZL,2001,gc,neo,13
+organization.wt2026.bahrain,Niklas Märki,SUI,1997,diesel,support,14
+organization.wt2026.bahrain,Vladyslav Kuznetsov,UKR,2003,neo,neo,15
+organization.wt2026.bahrain,Vladyslav Platon,UKR,2000,gc,neo,16
+organization.wt2026.bahrain,Yevgeniy Fedorov,KAZ,2000,sprinter,neo,17
+organization.wt2026.bahrain,Markus Hoelgaard,NOR,1994,diesel,support,18
+organization.wt2026.bahrain,Jack Schultz,AUS,1999,gc,neo,19
+organization.wt2026.bahrain,Camilo Ardila,COL,2001,gc,neo,20
+organization.wt2026.bahrain,Lenny Martinez,FRA,2003,gc,neo,21
+organization.wt2026.bahrain,Jack Haaland,NOR,2000,gc,neo,22
+organization.wt2026.decathlon,Ben O'Connor,AUS,1995,gc,leader,1
+organization.wt2026.decathlon,Bryan Coquard,FRA,1992,sprinter,card,2
+organization.wt2026.decathlon,Paul Seixas,FRA,2006,neo,neo,3
+organization.wt2026.decathlon,Bruno Armirail,FRA,1994,tt,support,4
+organization.wt2026.decathlon,Sam Bennett,IRL,1990,sprinter,support,5
+organization.wt2026.decathlon,Dries De Bondt,BEL,1991,classics,support,6
+organization.wt2026.decathlon,Taco van der Hoorn,NED,1993,classics,support,7
+organization.wt2026.decathlon,Georg Zimmermann,GER,1997,gc,support,8
+organization.wt2026.decathlon,Amaury Capiot,BEL,1993,sprinter,support,9
+organization.wt2026.decathlon,Valentin Ferron,FRA,1999,classics,support,10
+organization.wt2026.decathlon,Alex Baudin,FRA,1996,gc,support,11
+organization.wt2026.decathlon,Alan Hatherly,RSA,1996,classics,support,12
+organization.wt2026.decathlon,Mattias Skjelmose,DEN,2000,gc,neo,13
+organization.wt2026.decathlon,Ewen Costiou,FRA,2002,neo,neo,14
+organization.wt2026.decathlon,Rémy Rochas,FRA,1996,gc,support,15
+organization.wt2026.decathlon,Valentin Paret-Peintre,FRA,2000,gc,neo,16
+organization.wt2026.decathlon,Louis Vervaeke,BEL,1993,gc,support,17
+organization.wt2026.decathlon,Bastien Tronchon,FRA,2001,neo,neo,18
+organization.wt2026.decathlon,Donavan Grondin,FRA,2001,sprinter,neo,19
+organization.wt2026.decathlon,Fabien Doubey,FRA,1993,diesel,support,20
+organization.wt2026.decathlon,Jordan Jegat,FRA,1999,gc,support,21
+organization.wt2026.decathlon,Pavel Bittner,CZE,2000,sprinter,neo,22
+organization.wt2026.ef,Richard Carapaz,ECU,1993,gc,leader,1
+organization.wt2026.ef,Marijn van den Berg,NED,1999,sprinter,card,2
+organization.wt2026.ef,Ben Healy,IRL,2000,classics,support,3
+organization.wt2026.ef,Neilson Powless,USA,1996,diesel,support,4
+organization.wt2026.ef,Alberto Bettiol,ITA,1993,classics,support,5
+organization.wt2026.ef,Owain Doull,GBR,1993,diesel,support,6
+organization.wt2026.ef,James Shaw,GBR,1996,gc,support,7
+organization.wt2026.ef,Madis Mihkels,EST,2003,neo,neo,8
+organization.wt2026.ef,Krists Neilands,LAT,1994,classics,support,9
+organization.wt2026.ef,Hugo Houle,CAN,1990,diesel,support,10
+organization.wt2026.ef,Michael Valgren,DEN,1992,classics,support,11
+organization.wt2026.ef,Harrison Sweeny,AUS,1998,gc,neo,12
+organization.wt2026.ef,Archie Ryan,IRL,2001,gc,neo,13
+organization.wt2026.ef,Alexandre Baloud,FRA,2002,neo,neo,14
+organization.wt2026.ef,Finlay Pickering,GBR,2002,neo,neo,15
+organization.wt2026.ef,Will Barta,USA,1996,gc,support,16
+organization.wt2026.ef,Alex Baudin,FRA,1996,gc,support,17
+organization.wt2026.ef,Cristian Rodríguez,COL,1996,gc,support,18
+organization.wt2026.ef,Jonathan Caicedo,ECU,1998,gc,support,19
+organization.wt2026.ef,Marco Haller,AUT,1991,classics,support,20
+organization.wt2026.ef,Raul Hernandez,ESP,1998,gc,neo,21
+organization.wt2026.ef,Esteban Chaves,COL,1990,gc,support,22
+organization.wt2026.fdj,David Gaudu,FRA,1996,gc,leader,1
+organization.wt2026.fdj,Paul Penhoët,FRA,2001,sprinter,card,2
+organization.wt2026.fdj,Romain Grégoire,FRA,2003,neo,neo,3
+organization.wt2026.fdj,Valentin Madouas,FRA,1996,classics,support,4
+organization.wt2026.fdj,Lewis Askey,GBR,2001,classics,support,5
+organization.wt2026.fdj,Clément Russo,FRA,1995,diesel,support,6
+organization.wt2026.fdj,Enzo Paleni,FRA,2003,neo,neo,7
+organization.wt2026.fdj,Reuben Thompson,NZL,2001,gc,support,8
+organization.wt2026.fdj,Guillaume Martin,FRA,1993,gc,support,9
+organization.wt2026.fdj,Valentin Paret-Peintre,FRA,2000,gc,neo,10
+organization.wt2026.fdj,Rémy Rochas,FRA,1996,gc,support,11
+organization.wt2026.fdj,Ewen Costiou,FRA,2002,neo,neo,12
+organization.wt2026.fdj,Donavan Grondin,FRA,2001,sprinter,neo,13
+organization.wt2026.fdj,Fabien Doubey,FRA,1993,diesel,support,14
+organization.wt2026.fdj,Bastien Tronchon,FRA,2001,neo,neo,15
+organization.wt2026.fdj,Axel Zingle,FRA,1998,sprinter,support,16
+organization.wt2026.fdj,Benjamin Thomas,FRA,1995,tt,support,17
+organization.wt2026.fdj,Alexis Renard,FRA,1999,sprinter,support,18
+organization.wt2026.fdj,Piet Allegaert,BEL,1995,classics,support,19
+organization.wt2026.fdj,Jordan Jegat,FRA,1999,gc,support,20
+organization.wt2026.fdj,Alex Baudin,FRA,1996,gc,support,21
+organization.wt2026.fdj,Louis Vervaeke,BEL,1993,gc,support,22
+organization.wt2026.ineos,Carlos Rodríguez,ESP,2001,gc,leader,1
+organization.wt2026.ineos,Oscar Onley,GBR,2002,neo,card,2
+organization.wt2026.ineos,Thomas Pidcock,GBR,1999,classics,support,3
+organization.wt2026.ineos,Filippo Ganna,ITA,1996,tt,support,4
+organization.wt2026.ineos,Connor Swift,GBR,1995,diesel,support,5
+organization.wt2026.ineos,Ben Swift,GBR,1987,classics,support,6
+organization.wt2026.ineos,Omar Fraile,ESP,1990,gc,support,7
+organization.wt2026.ineos,Salvatore Puccio,ITA,1989,diesel,support,8
+organization.wt2026.ineos,Geraint Thomas,GBR,1986,gc,support,9
+organization.wt2026.ineos,Michał Kwiatkowski,POL,1990,classics,support,10
+organization.wt2026.ineos,Luke Rowe,GBR,1990,diesel,support,11
+organization.wt2026.ineos,Magnus Sheffield,USA,2002,gc,neo,12
+organization.wt2026.ineos,Kim Heiduk,GER,2002,neo,neo,13
+organization.wt2026.ineos,Samuele Leonardo,ITA,2004,neo,neo,14
+organization.wt2026.ineos,Thymen Arensman,NED,2000,gc,neo,15
+organization.wt2026.ineos,Egan Bernal,COL,1997,gc,support,16
+organization.wt2026.ineos,Ethan Hayter,GBR,1998,sprinter,support,17
+organization.wt2026.ineos,Elia Viviani,ITA,1989,sprinter,support,18
+organization.wt2026.ineos,Josh Tarling,GBR,2004,tt,neo,19
+organization.wt2026.ineos,Ben Turner,GBR,1996,classics,support,20
+organization.wt2026.ineos,Cameron Pooley,GBR,2000,neo,neo,21
+organization.wt2026.ineos,Will Barta,USA,1996,gc,support,22
+organization.wt2026.lidl-trek,Giulio Ciccone,ITA,1994,gc,leader,1
+organization.wt2026.lidl-trek,Jonathan Milan,ITA,2000,sprinter,card,2
+organization.wt2026.lidl-trek,Tao Geoghegan Hart,GBR,1995,gc,support,3
+organization.wt2026.lidl-trek,Toms Skujiņš,LAT,1991,diesel,support,4
+organization.wt2026.lidl-trek,Edward Theuns,BEL,1991,sprinter,support,5
+organization.wt2026.lidl-trek,Jasper Stuyven,BEL,1992,classics,support,6
+organization.wt2026.lidl-trek,Tim Declercq,BEL,1989,diesel,support,7
+organization.wt2026.lidl-trek,Daan Hoole,NED,1999,tt,support,8
+organization.wt2026.lidl-trek,Mads Pedersen,DEN,1995,classics,support,9
+organization.wt2026.lidl-trek,Quinn Simmons,USA,2001,gc,neo,10
+organization.wt2026.lidl-trek,Mattias Skjelmose,DEN,2000,gc,neo,11
+organization.wt2026.lidl-trek,Rémi Cavagna,FRA,1995,tt,support,12
+organization.wt2026.lidl-trek,Ryan Mullen,IRL,1994,diesel,support,13
+organization.wt2026.lidl-trek,Laurence Pithie,NZL,2002,neo,neo,14
+organization.wt2026.lidl-trek,Emilius Platt,GER,2002,neo,neo,15
+organization.wt2026.lidl-trek,Lukas Klasen,GER,2004,neo,neo,16
+organization.wt2026.lidl-trek,Lennert Belmans,BEL,2001,neo,neo,17
+organization.wt2026.lidl-trek,Sébastien Grignard,BEL,1999,classics,support,18
+organization.wt2026.lidl-trek,Brent Van Lom,BEL,2003,neo,neo,19
+organization.wt2026.lidl-trek,Jasper De Buyst,BEL,1993,classics,support,20
+organization.wt2026.lidl-trek,Sébastien Henao,COL,2001,gc,neo,21
+organization.wt2026.lidl-trek,Milan Menten,BEL,1999,sprinter,support,22
+organization.wt2026.lotto,Arnaud De Lie,BEL,2002,classics,leader,1
+organization.wt2026.lotto,Victor Campenaerts,BEL,1991,tt,card,2
+organization.wt2026.lotto,Maxim Van Gils,BEL,1999,gc,support,3
+organization.wt2026.lotto,Lennert Van Eetvelt,BEL,2001,neo,neo,4
+organization.wt2026.lotto,Alec Segaert,BEL,2003,tt,support,5
+organization.wt2026.lotto,Harm Vanhoucke,BEL,1997,gc,support,6
+organization.wt2026.lotto,Lionel Taminiaux,BEL,1996,sprinter,support,7
+organization.wt2026.lotto,Jenno Berckmoes,BEL,2001,neo,neo,8
+organization.wt2026.lotto,Lennert Belmans,BEL,2001,neo,neo,9
+organization.wt2026.lotto,Sébastien Grignard,BEL,1999,classics,support,10
+organization.wt2026.lotto,Brent Van Lom,BEL,2003,neo,neo,11
+organization.wt2026.lotto,Jasper De Buyst,BEL,1993,classics,support,12
+organization.wt2026.lotto,Sébastien Henao,COL,2001,gc,neo,13
+organization.wt2026.lotto,Maarten Wynants,BEL,1982,diesel,support,14
+organization.wt2026.lotto,Dries Van Gestel,BEL,1992,sprinter,support,15
+organization.wt2026.lotto,Milan Menten,BEL,1999,sprinter,support,16
+organization.wt2026.lotto,Rémi Cavagna,FRA,1995,tt,support,17
+organization.wt2026.lotto,Ryan Mullen,IRL,1994,diesel,support,18
+organization.wt2026.lotto,Laurence Pithie,NZL,2002,neo,neo,19
+organization.wt2026.lotto,Emilius Platt,GER,2002,neo,neo,20
+organization.wt2026.lotto,Lukas Klasen,GER,2004,neo,neo,21
+organization.wt2026.lotto,Quinn Simmons,USA,2001,gc,neo,22
+organization.wt2026.movistar,Enric Mas,ESP,1995,gc,leader,1
+organization.wt2026.movistar,Fernando Gaviria,COL,1994,sprinter,card,2
+organization.wt2026.movistar,Oier Lazkano,ESP,1996,classics,support,3
+organization.wt2026.movistar,Iván García Cortina,ESP,1995,classics,support,4
+organization.wt2026.movistar,Pelayo Sánchez,ESP,2000,classics,support,5
+organization.wt2026.movistar,Iván Romeo,ESP,2003,neo,neo,6
+organization.wt2026.movistar,Jorge Arcas,ESP,1992,diesel,support,7
+organization.wt2026.movistar,Einer Rubio,COL,1998,gc,support,8
+organization.wt2026.movistar,Javier Romo,ESP,1993,gc,support,9
+organization.wt2026.movistar,Nelson Oliveira,POR,1989,gc,support,10
+organization.wt2026.movistar,Davide Formolo,ITA,1992,gc,support,11
+organization.wt2026.movistar,Iván Cortina,ESP,1995,classics,support,12
+organization.wt2026.movistar,Gonzalo Serrano,ESP,1998,gc,neo,13
+organization.wt2026.movistar,Jon Barrenetxea,ESP,2002,neo,neo,14
+organization.wt2026.movistar,Orluis Aular,VEN,1996,sprinter,support,15
+organization.wt2026.movistar,Nairo Quintana,COL,1990,gc,support,16
+organization.wt2026.movistar,Roger Adrià,ESP,1999,gc,neo,17
+organization.wt2026.movistar,Manlio Moro,ITA,1996,classics,support,18
+organization.wt2026.movistar,Pablo Castrillo,ESP,2001,neo,neo,19
+organization.wt2026.movistar,Michel Hessmann,GER,1999,gc,neo,20
+organization.wt2026.movistar,Raúl García Pierna,ESP,2002,neo,neo,21
+organization.wt2026.movistar,Juan López,ESP,2004,neo,neo,22
+organization.wt2026.nsn,Biniam Girmay,ERI,2000,sprinter,leader,1
+organization.wt2026.nsn,Ethan Vernon,GBR,2000,tt,card,2
+organization.wt2026.nsn,Joseph Blackmore,GBR,2003,neo,neo,3
+organization.wt2026.nsn,Alexey Lutsenko,KAZ,1992,diesel,support,4
+organization.wt2026.nsn,Tobias Foss,NOR,1997,tt,support,5
+organization.wt2026.nsn,Dylan van Baarle,NED,1992,classics,support,6
+organization.wt2026.nsn,Mike Teunissen,NED,1992,classics,support,7
+organization.wt2026.nsn,Fabio Jakobsen,NED,1996,sprinter,support,8
+organization.wt2026.nsn,Stefan Küng,SUI,1993,tt,support,9
+organization.wt2026.nsn,Silvan Dillier,SUI,1990,diesel,support,10
+organization.wt2026.nsn,Stefan Bissegger,SUI,1998,classics,support,11
+organization.wt2026.nsn,Kasper Asgreen,DEN,1995,classics,support,12
+organization.wt2026.nsn,Søren Kragh Andersen,DEN,1994,diesel,support,13
+organization.wt2026.nsn,Sebastian Langeveld,NED,1985,diesel,support,14
+organization.wt2026.nsn,Ramon Sinkeldam,NED,1989,sprinter,support,15
+organization.wt2026.nsn,Rémi Cavagna,FRA,1995,tt,support,16
+organization.wt2026.nsn,Ryan Mullen,IRL,1994,diesel,support,17
+organization.wt2026.nsn,Laurence Pithie,NZL,2002,neo,neo,18
+organization.wt2026.nsn,Emilius Platt,GER,2002,neo,neo,19
+organization.wt2026.nsn,Lukas Klasen,GER,2004,neo,neo,20
+organization.wt2026.nsn,Lennert Belmans,BEL,2001,neo,neo,21
+organization.wt2026.nsn,Milan Menten,BEL,1999,sprinter,support,22
+organization.wt2026.redbull,Remco Evenepoel,BEL,2000,super-gc,leader,1
+organization.wt2026.redbull,Jordi Meeus,BEL,1998,sprinter,card,2
+organization.wt2026.redbull,Primož Roglič,SLO,1989,gc,support,3
+organization.wt2026.redbull,Jai Hindley,AUS,1996,gc,support,4
+organization.wt2026.redbull,Sam Welsford,AUS,1996,sprinter,support,5
+organization.wt2026.redbull,Gianni Moscon,ITA,1994,classics,support,6
+organization.wt2026.redbull,Aleksandr Vlasov,RUS,1996,gc,support,7
+organization.wt2026.redbull,Nico Denz,GER,1994,diesel,support,8
+organization.wt2026.redbull,Giovanni Aleotti,ITA,1999,gc,neo,9
+organization.wt2026.redbull,Maximilian Schachmann,GER,1994,classics,support,10
+organization.wt2026.redbull,Emanuel Buchmann,GER,1992,gc,support,11
+organization.wt2026.redbull,Patrick Konrad,AUT,1991,gc,support,12
+organization.wt2026.redbull,Felix Großschartner,AUT,1991,gc,support,13
+organization.wt2026.redbull,Daniel Babor,CZE,2000,sprinter,neo,14
+organization.wt2026.redbull,Igor Amoretti,ITA,2001,neo,neo,15
+organization.wt2026.redbull,Marco Haller,AUT,1991,classics,support,16
+organization.wt2026.redbull,Lukas Pöstlberger,AUT,1992,diesel,support,17
+organization.wt2026.redbull,Cian Uijtdebroeks,NED,2002,gc,neo,18
+organization.wt2026.redbull,Florian Lipowitz,GER,2000,gc,neo,19
+organization.wt2026.redbull,Lennert van Eetvelt,BEL,2001,neo,neo,20
+organization.wt2026.redbull,Ryan Mullen,IRL,1994,diesel,support,21
+organization.wt2026.redbull,Rémi Cavagna,FRA,1995,tt,support,22
+organization.wt2026.soudal,Mikel Landa,ESP,1989,gc,leader,1
+organization.wt2026.soudal,Tim Merlier,BEL,1992,sprinter,card,2
+organization.wt2026.soudal,Florian Lipowitz,GER,2000,neo,neo,3
+organization.wt2026.soudal,Yves Lampaert,BEL,1991,classics,support,4
+organization.wt2026.soudal,Mattia Cattaneo,ITA,1990,tt,support,5
+organization.wt2026.soudal,Pieter Serry,BEL,1988,diesel,support,6
+organization.wt2026.soudal,Gianni Marchand,BEL,1990,gc,support,7
+organization.wt2026.soudal,Stan Van Tricht,BEL,1999,neo,neo,8
+organization.wt2026.soudal,Julian Alaphilippe,FRA,1992,classics,support,9
+organization.wt2026.soudal,Casper Pedersen,DEN,1993,classics,support,10
+organization.wt2026.soudal,Ilan Van Wilder,BEL,2000,gc,neo,11
+organization.wt2026.soudal,Louis Vervaeke,BEL,1993,gc,support,12
+organization.wt2026.soudal,Rémi Cavagna,FRA,1995,tt,support,13
+organization.wt2026.soudal,Milan Menten,BEL,1999,sprinter,support,14
+organization.wt2026.soudal,Bert Van Lerberghe,BEL,1992,classics,support,15
+organization.wt2026.soudal,Félix Gall,AUT,1998,gc,neo,16
+organization.wt2026.soudal,Jarno Widar,BEL,2003,neo,neo,17
+organization.wt2026.soudal,Max Kanter,GER,1999,sprinter,support,18
+organization.wt2026.soudal,Laurence Pithie,NZL,2002,neo,neo,19
+organization.wt2026.soudal,Jan Maas,NED,1985,diesel,support,20
+organization.wt2026.soudal,Guillaume Boivin,CAN,1989,sprinter,support,21
+organization.wt2026.soudal,Alex Baudin,FRA,1996,gc,support,22
+organization.wt2026.jayco,Simon Yates,GBR,1992,gc,leader,1
+organization.wt2026.jayco,Dylan Groenewegen,NED,1993,sprinter,card,2
+organization.wt2026.jayco,Eddie Dunbar,IRL,1996,gc,support,3
+organization.wt2026.jayco,Michael Matthews,AUS,1990,classics,support,4
+organization.wt2026.jayco,Campbell Stewart,AUS,1998,sprinter,support,5
+organization.wt2026.jayco,Luke Durbridge,AUS,1991,tt,support,6
+organization.wt2026.jayco,Elmar Reinders,NED,1992,diesel,support,7
+organization.wt2026.jayco,Chris Harper,AUS,1994,gc,support,8
+organization.wt2026.jayco,Dion Smith,NZL,1992,classics,support,9
+organization.wt2026.jayco,Michael Storer,AUS,1997,gc,support,10
+organization.wt2026.jayco,Luka Mezgec,SLO,1988,sprinter,support,11
+organization.wt2026.jayco,Sean Flynn,IRL,2002,neo,neo,12
+organization.wt2026.jayco,Mauro Schmid,SUI,1999,classics,support,13
+organization.wt2026.jayco,Alessandro Verre,ITA,2004,neo,neo,14
+organization.wt2026.jayco,Oliver Bleddyn,GBR,2003,neo,neo,15
+organization.wt2026.jayco,Max Kanter,GER,1999,sprinter,support,16
+organization.wt2026.jayco,Laurence Pithie,NZL,2002,neo,neo,17
+organization.wt2026.jayco,Ryan Mullen,IRL,1994,diesel,support,18
+organization.wt2026.jayco,Rémi Cavagna,FRA,1995,tt,support,19
+organization.wt2026.jayco,Lennert Belmans,BEL,2001,neo,neo,20
+organization.wt2026.jayco,Emilius Platt,GER,2002,neo,neo,21
+organization.wt2026.jayco,Lukas Klasen,GER,2004,neo,neo,22
+organization.wt2026.picnic,Max Poole,GBR,2003,gc,leader,1
+organization.wt2026.picnic,Tobias Lund Andresen,DEN,2002,sprinter,card,2
+organization.wt2026.picnic,Frank van den Broek,NED,2000,diesel,support,3
+organization.wt2026.picnic,Pavel Bittner,CZE,2002,sprinter,neo,4
+organization.wt2026.picnic,Julius van den Berg,NED,1996,diesel,support,5
+organization.wt2026.picnic,Gijs Leemreize,NED,1999,gc,support,6
+organization.wt2026.picnic,Kevin Vermaerke,USA,2000,gc,support,7
+organization.wt2026.picnic,Alex Molenaar,NED,1999,classics,support,8
+organization.wt2026.picnic,Bert Van Lerberghe,BEL,1992,classics,support,9
+organization.wt2026.picnic,Félix Gall,AUT,1998,gc,neo,10
+organization.wt2026.picnic,Jarno Widar,BEL,2003,neo,neo,11
+organization.wt2026.picnic,Max Kanter,GER,1999,sprinter,support,12
+organization.wt2026.picnic,Laurence Pithie,NZL,2002,neo,neo,13
+organization.wt2026.picnic,Jan Maas,NED,1985,diesel,support,14
+organization.wt2026.picnic,Guillaume Boivin,CAN,1989,sprinter,support,15
+organization.wt2026.picnic,Alex Baudin,FRA,1996,gc,support,16
+organization.wt2026.picnic,Ryan Mullen,IRL,1994,diesel,support,17
+organization.wt2026.picnic,Rémi Cavagna,FRA,1995,tt,support,18
+organization.wt2026.picnic,Lennert Belmans,BEL,2001,neo,neo,19
+organization.wt2026.picnic,Emilius Platt,GER,2002,neo,neo,20
+organization.wt2026.picnic,Lukas Klasen,GER,2004,neo,neo,21
+organization.wt2026.picnic,Milan Menten,BEL,1999,sprinter,support,22
+organization.wt2026.visma,Jonas Vingegaard,DEN,1996,super-gc,leader,1
+organization.wt2026.visma,Olav Kooij,NED,2001,sprinter,card,2
+organization.wt2026.visma,Matteo Jorgenson,USA,1999,diesel,support,3
+organization.wt2026.visma,Wout van Aert,BEL,1994,classics,support,4
+organization.wt2026.visma,Sepp Kuss,USA,1994,gc,support,5
+organization.wt2026.visma,Tiesj Benoot,BEL,1994,classics,support,6
+organization.wt2026.visma,Christophe Laporte,FRA,1992,classics,support,7
+organization.wt2026.visma,Attila Valter,HUN,1998,gc,support,8
+organization.wt2026.visma,Edoardo Affini,ITA,1996,tt,support,9
+organization.wt2026.visma,Danny van Poppel,NED,1994,sprinter,support,10
+organization.wt2026.visma,Robert Gesink,NED,1986,gc,support,11
+organization.wt2026.visma,Bauke Mollema,NED,1986,diesel,support,12
+organization.wt2026.visma,Steven Kruijswijk,NED,1988,gc,support,13
+organization.wt2026.visma,Michel Hessmann,GER,1999,gc,neo,14
+organization.wt2026.visma,Per Strand Hagenes,NOR,2000,neo,neo,15
+organization.wt2026.visma,Ryan Mullen,IRL,1994,diesel,support,16
+organization.wt2026.visma,Rémi Cavagna,FRA,1995,tt,support,17
+organization.wt2026.visma,Laurence Pithie,NZL,2002,neo,neo,18
+organization.wt2026.visma,Emilius Platt,GER,2002,neo,neo,19
+organization.wt2026.visma,Lukas Klasen,GER,2004,neo,neo,20
+organization.wt2026.visma,Lennert Belmans,BEL,2001,neo,neo,21
+organization.wt2026.visma,Milan Menten,BEL,1999,sprinter,support,22
+organization.wt2026.uae,Tadej Pogačar,SLO,1998,super-gc,leader,1
+organization.wt2026.uae,Jhonatan Narváez,ECU,1997,classics,card,2
+organization.wt2026.uae,João Almeida,POR,1998,gc,support,3
+organization.wt2026.uae,Isaac del Toro,MEX,2003,neo,neo,4
+organization.wt2026.uae,Tim Wellens,BEL,1991,classics,support,5
+organization.wt2026.uae,Nils Politt,GER,1994,diesel,support,6
+organization.wt2026.uae,Pavel Sivakov,FRA,1997,gc,support,7
+organization.wt2026.uae,Domen Novak,SLO,1995,gc,support,8
+organization.wt2026.uae,Marc Soler,ESP,1993,gc,support,9
+organization.wt2026.uae,Felix Großschartner,AUT,1991,gc,support,10
+organization.wt2026.uae,Brandon McNulty,USA,1998,gc,neo,11
+organization.wt2026.uae,Rafał Majka,POL,1989,gc,support,12
+organization.wt2026.uae,George Bennett,NZL,1990,diesel,support,13
+organization.wt2026.uae,Vegard Stake Laengen,NOR,1989,diesel,support,14
+organization.wt2026.uae,Juan Sebastián Molano,COL,1996,sprinter,support,15
+organization.wt2026.uae,Mark Donovan,USA,1996,gc,support,16
+organization.wt2026.uae,Ryan Mullen,IRL,1994,diesel,support,17
+organization.wt2026.uae,Rémi Cavagna,FRA,1995,tt,support,18
+organization.wt2026.uae,Laurence Pithie,NZL,2002,neo,neo,19
+organization.wt2026.uae,Emilius Platt,GER,2002,neo,neo,20
+organization.wt2026.uae,Lukas Klasen,GER,2004,neo,neo,21
+organization.wt2026.uae,Lennert Belmans,BEL,2001,neo,neo,22
+organization.wt2026.unox,Tobias Halland Johannessen,NOR,1999,gc,leader,1
+organization.wt2026.unox,Alexander Kristoff,NOR,1987,sprinter,card,2
+organization.wt2026.unox,Jonas Abrahamsen,NOR,1995,diesel,support,3
+organization.wt2026.unox,Rasmus Tiller,NOR,1996,classics,support,4
+organization.wt2026.unox,Andreas Leknessund,NOR,1999,gc,support,5
+organization.wt2026.unox,Odd Christian Eiking,NOR,1994,gc,support,6
+organization.wt2026.unox,Rasmus Bøgh Wallin,DEN,1996,classics,support,7
+organization.wt2026.unox,Erik Resell,NOR,1996,diesel,support,8
+organization.wt2026.unox,Erlend Blikra,NOR,1996,sprinter,support,9
+organization.wt2026.unox,Markus Hoelgaard,NOR,1994,diesel,support,10
+organization.wt2026.unox,Søren Kragh Andersen,DEN,1994,diesel,support,11
+organization.wt2026.unox,Martin Urianstad Lie,NOR,1995,classics,support,12
+organization.wt2026.unox,Magnus Sheffield,USA,2002,gc,neo,13
+organization.wt2026.unox,Carl Fredrik Hagen,NOR,1993,gc,support,14
+organization.wt2026.unox,Anders Halland Johannessen,NOR,2002,neo,neo,15
+organization.wt2026.unox,Ryan Mullen,IRL,1994,diesel,support,16
+organization.wt2026.unox,Rémi Cavagna,FRA,1995,tt,support,17
+organization.wt2026.unox,Laurence Pithie,NZL,2002,neo,neo,18
+organization.wt2026.unox,Emilius Platt,GER,2002,neo,neo,19
+organization.wt2026.unox,Lukas Klasen,GER,2004,neo,neo,20
+organization.wt2026.unox,Lennert Belmans,BEL,2001,neo,neo,21
+organization.wt2026.unox,Milan Menten,BEL,1999,sprinter,support,22
+organization.wt2026.astana,Christian Scaroni,ITA,1997,gc,leader,1
+organization.wt2026.astana,Cees Bol,NED,1995,sprinter,card,2
+organization.wt2026.astana,Diego Ulissi,ITA,1989,classics,support,3
+organization.wt2026.astana,Clément Berthet,FRA,1997,gc,support,4
+organization.wt2026.astana,Davide Ballerini,ITA,1994,classics,support,5
+organization.wt2026.astana,Michael Mørkøv,DEN,1985,sprinter,support,6
+organization.wt2026.astana,Gleb Syritsa,RUS,2000,sprinter,support,7
+organization.wt2026.astana,Harold Tejada,COL,1997,gc,support,8
+organization.wt2026.astana,Mark Cavendish,GBR,1985,sprinter,support,9
+organization.wt2026.astana,Cian Uijtdebroeks,NED,2002,gc,neo,10
+organization.wt2026.astana,Vincenzo Albanese,ITA,1996,classics,support,11
+organization.wt2026.astana,Michele Gazzoli,ITA,1998,gc,neo,12
+organization.wt2026.astana,Davide Formolo,ITA,1992,gc,support,13
+organization.wt2026.astana,Yevgeniy Fedorov,KAZ,2000,sprinter,neo,14
+organization.wt2026.astana,Ryan Mullen,IRL,1994,diesel,support,15
+organization.wt2026.astana,Rémi Cavagna,FRA,1995,tt,support,16
+organization.wt2026.astana,Laurence Pithie,NZL,2002,neo,neo,17
+organization.wt2026.astana,Emilius Platt,GER,2002,neo,neo,18
+organization.wt2026.astana,Lukas Klasen,GER,2004,neo,neo,19
+organization.wt2026.astana,Lennert Belmans,BEL,2001,neo,neo,20
+organization.wt2026.astana,Milan Menten,BEL,1999,sprinter,support,21
+organization.wt2026.astana,Quinn Simmons,USA,2001,gc,neo,22
+organization.wt2026.israel,Derek Gee,CAN,1997,gc,leader,1
+organization.wt2026.israel,Corbin Strong,NZL,2000,classics,card,2
+organization.wt2026.israel,Jake Stewart,GBR,1999,sprinter,support,3
+organization.wt2026.israel,Dylan Teuns,BEL,1992,gc,support,4
+organization.wt2026.israel,Hugo Houle,CAN,1990,diesel,support,5
+organization.wt2026.israel,Krists Neilands,LAT,1994,classics,support,6
+organization.wt2026.israel,Riley Sheehan,USA,2000,neo,neo,7
+organization.wt2026.israel,Nick Schultz,AUS,1994,gc,support,8
+organization.wt2026.tudor,Marc Hirschi,SUI,1998,classics,leader,1
+organization.wt2026.tudor,Arvid de Kleijn,NED,1994,sprinter,card,2
+organization.wt2026.tudor,Michael Storer,AUS,1997,gc,support,3
+organization.wt2026.tudor,Marco Haller,AUT,1991,classics,support,4
+organization.wt2026.tudor,Marius Mayrhofer,GER,2000,sprinter,support,5
+organization.wt2026.tudor,Alberto Dainese,ITA,1998,sprinter,support,6
+organization.wt2026.tudor,Luc Wirtgen,LUX,1998,gc,support,7
+organization.wt2026.tudor,Sebastian Molano,COL,1994,sprinter,support,8
+organization.wt2026.q36,Matteo Sobrero,ITA,1997,tt,leader,1
+organization.wt2026.q36,Xandro Meurisse,BEL,1992,classics,card,2
+organization.wt2026.q36,Damien Howson,AUS,1992,gc,support,3
+organization.wt2026.q36,Nickolas Zukowsky,CAN,1998,tt,support,4
+organization.wt2026.q36,Kamil Gradek,POL,1990,diesel,support,5
+organization.wt2026.q36,Rory Townsend,IRL,1995,classics,support,6
+organization.wt2026.q36,David de la Cruz,ESP,1989,gc,support,7
+organization.wt2026.q36,Sjoerd Bax,NED,1996,gc,support,8
+organization.wt2026.totalenergies,Mathieu Burgaudeau,FRA,1998,classics,leader,1
+organization.wt2026.totalenergies,Anthony Turgis,FRA,1994,classics,card,2
+organization.wt2026.totalenergies,Steff Cras,BEL,1996,gc,support,3
+organization.wt2026.totalenergies,Emilien Jeannière,FRA,1998,sprinter,support,4
+organization.wt2026.totalenergies,Sandy Dujardin,FRA,1997,sprinter,support,5
+organization.wt2026.totalenergies,Fabien Grellier,FRA,1994,diesel,support,6
+organization.wt2026.totalenergies,Jordan Jegat,FRA,1999,gc,support,7
+organization.wt2026.totalenergies,Pierre Latour,FRA,1993,gc,support,8
+organization.wt2026.cofidis,Ion Izagirre,ESP,1989,gc,leader,1
+organization.wt2026.cofidis,Stefano Oldani,ITA,1998,classics,card,2
+organization.wt2026.cofidis,Alexis Renard,FRA,1999,sprinter,support,3
+organization.wt2026.cofidis,Piet Allegaert,BEL,1995,classics,support,4
+organization.wt2026.cofidis,Axel Zingle,FRA,1998,sprinter,support,5
+organization.wt2026.cofidis,Benjamin Thomas,FRA,1995,tt,support,6
+organization.wt2026.cofidis,Guillaume Martin,FRA,1993,gc,support,7
+organization.wt2026.cofidis,Jesús Herrada,ESP,1990,gc,support,8
+organization.wt2026.unibet,Hartthijs de Vries,NED,1996,gc,leader,1
+organization.wt2026.unibet,Timo de Jong,NED,1999,classics,card,2
+organization.wt2026.unibet,Jelle Wolsink,NED,2001,neo,neo,3
+organization.wt2026.unibet,Axel van der Tuuk,NED,2000,tt,support,4
+organization.wt2026.unibet,Abram Stockman,BEL,1996,diesel,support,5
+organization.wt2026.unibet,Adne van Engelen,NED,1993,gc,support,6
+organization.wt2026.unibet,Kevin van Melsen,BEL,1987,diesel,support,7
+organization.wt2026.unibet,Martijn Budding,NED,1995,diesel,support,8
+organization.wt2026.australia,Luke Plapp,AUS,2000,gc,leader,1
+organization.wt2026.australia,Fergus Browning,AUS,2004,gc,card,2
+organization.wt2026.australia,Kelland O'Brien,AUS,1998,tt,support,3
+organization.wt2026.australia,Simon Clarke,AUS,1986,classics,support,4
+organization.wt2026.australia,Jack Haig,AUS,1993,gc,support,5
+organization.wt2026.australia,Jarrad Drizners,AUS,1999,diesel,support,6
+organization.wt2026.australia,Patrick Eddy,AUS,2003,sprinter,support,7
+organization.wt2026.australia,Liam Slock,AUS,2000,diesel,support,8

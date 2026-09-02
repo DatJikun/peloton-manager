@@ -76,7 +76,7 @@ Alpecin example: van der Poel €4.0M, Philipsen €1.2M, Wærenskjold €320k, 
 
 ## Prototype limits
 
-- Official start lists are **event-shaped (D-049)**: Grand Tours 22×8=176, monuments 25×7=175, TDU 20×7=140, other WT 22×7=154. Each WT org has 8 riders (`.leader` `.card` `.support-1`…`.support-6`); extras are estimated. Wildcard ProTeams / Australia national start invited events only.
+- Official start lists are **event-shaped (D-049)**: Grand Tours 22×8=176, monuments 25×7=175, TDU 20×7=140, other WT 22×7=154. Each WT org has **22 riders** (D-057 depth; first 7/8 in squad order start races). Wildcard ProTeams / Australia national start invited events only.
 - Prototype race session is sequential 1-second `RaceSession.Step`; wall-clock is CPU-fast, not real-time.
 - `GeneratePeriodicRaces` is false: the season is the 36 content calendar races only.
 - Evenepoel 2026 is **Red Bull** (`.leader`); Roglič is Red Bull `.support-1`; Landa leads Soudal.
@@ -84,3 +84,19 @@ Alpecin example: van der Poel €4.0M, Philipsen €1.2M, Wærenskjold €320k, 
 Division `WorldTour` and `licenceYearsRemaining` exist so a 3-year cycle and lower tiers can be added later. Living promotion/relegation is not in this pack.
 
 Women's WorldTour is out of this pack.
+
+## Roster depth (D-057)
+
+| What | Value |
+|---|---|
+| WT clubs | 18 × 22 riders = 396 |
+| Wildcards | 7 × 8 riders = 56 |
+| Total | **452** (≤ 512 catalog cap) |
+| Source | `wt2026-riders-source.csv` (real 2026 names / transfers; late-2025 + announcements) |
+| Generator | `tools/build_wt2026_roster.py` (deterministic hash physiology + wage bands from this README) |
+| Slot riders | Original 200 `.leader` / `.card` / `.support-*` ids keep numeric fields (D-054 probes) except classics-star calibration below |
+| Depth ids | `rider.wt2026.<club>.<slug>` |
+
+**Classics-star overrides (estimated, above band):** Mathieu van der Poel CP 455 W, durability 0.96/0.92; Wout van Aert CP 458 W, 0.95/0.91; Mads Pedersen (Lidl–Trek depth) CP 448 W, 0.94/0.90; Remco Evenepoel `lowIntensityDurability` 0.90. Default `classics` archetype generator durability 0.86 → 0.90.
+
+**Example wage totals vs `estimatedBudgetEur` (Alpecin):** €10.09M wages / €18M budget. Support wages drop to band floor before any org budget is raised.

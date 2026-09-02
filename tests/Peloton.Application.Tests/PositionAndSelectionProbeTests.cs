@@ -67,7 +67,7 @@ public sealed class PositionAndSelectionProbeTests
             $"winnerTo20thGapSeconds={winnerToTwentiethGapSeconds}");
     }
 
-    [Fact(Skip = "D-057: waits for classics-star roster calibration (MvdP/Van Aert/Pedersen CP + durability); see KNOWN_DIFFERENCE_FROM_CODE.md D-054")]
+    [Fact(Skip = "D-057: Roubaix winner remains super-gc (Evenepoel) after classics-star CP bump; engine unchanged — top5 super-gc|super-gc|super-gc|tt|gc at seed 91234")]
     public void RoubaixClassicsWinAndVanDerPoelBeatsGcRivals()
     {
         WorldState world = CreateWorld();

@@ -49,6 +49,7 @@ Właśnie budujemy:
 
 Jeszcze nie:
 - nie ma Career Hub — usunięty z repozytorium (D-048); biurko to powłoka `CareerShell.tscn`;
+- wybór ósemki na konkretny wyścig to później (dziś startuje pierwszych 7/8 składu);
 - Watch Race **jest w grze**, ale **domyślnie wyłączony** — FILM: WŁ włącza oglądanie; nie mergujemy starych PR-ów radia/DS;
 - nie ma scoutingu, dynamicznego rynku sponsorów ani AI managerów w świecie (ekrany Godota pokazują tylko katalog wyglądu);
 - §49 nie jest zaliczone — to ręczny playtest właściciela.
@@ -169,6 +170,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
+- `2026-09-02` — **D-057 landed:** 22 riders per WT club (452 total, wildcards stay 8); `wt2026-riders-source.csv` + `tools/build_wt2026_roster.py`; classics-star CP/durability bump (MvdP/Van Aert/Pedersen/Evenepoel); compare seed 91234 sprint/Hautacam winners unchanged.
 - `2026-09-02` — **D-056 stages 1–2 landed:** New Year rollover to 2027 (courses, calendar, pre-season, winter form) plus yearly physiology aging (talentGate, ±0.006 variance). SchemaVersion 11. Retirements / neo-pro / AI contracts later. Contract: `CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md`.
 - `2026-09-02` — **D-055 landed:** `CdARoadM2` / `CdATtM2` on `RiderCareer` and race profiles; SQLite SchemaVersion 10 / checksum v10; ITT 60 s reverse-GC starts with no shelter; TTT times the 4th rider; TT rating uses TT aero. Road probes from D-054 unchanged. Contract: `RACE_CDA_ROAD_TT_v0.1.md`.
 - `2026-09-01` — **D-053: repo hygiene (owner agreed to the review list).** (1) GitHub Actions `gate` runs the HANDOFF gate on every push to `main` / PR; a red `gate` on `main` is a blocker. (2) The Windows playtest zip is **no longer committed**; `playtest-windows` workflow builds it from `tools/pack-windows-playtest.sh` and publishes a GitHub Release when a `playtest-*` tag is pushed. (3) All 12 stale PRs (#13–#16 core loop already on `main`; #20/#26 avatar look proposals — branches kept for the deferred avatar decision; #21 archive; #24/#25/#36 Watch film/radio — D-043; #31 Career Hub zip — D-048; #34 docs already on `main`) were closed without merge. Feel order after hygiene: bruk in the engine → sprint one-team top 5 → CdA Road/TT.
