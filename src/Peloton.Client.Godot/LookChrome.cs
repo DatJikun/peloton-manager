@@ -140,40 +140,39 @@ internal static class LookChrome
 
     public static Control Pill(string text, string? accentPart = null)
     {
-        HBoxContainer pill = new();
-        pill.AddThemeConstantOverride("separation", 0);
+        PanelContainer pill = new();
         pill.AddThemeStyleboxOverride("panel", PillBox());
-        pill.CustomMinimumSize = new Vector2(0, 36);
 
-        if (string.IsNullOrEmpty(accentPart) || !text.Contains(accentPart, StringComparison.Ordinal))
+        HBoxContainer row = new();
+        row.MouseFilter = Control.MouseFilterEnum.Ignore;
+        row.AddThemeConstantOverride("separation", 0);
+        row.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        row.OffsetLeft = 14;
+        row.OffsetRight = -14;
+        row.OffsetTop = 9;
+        row.OffsetBottom = -9;
+
+        if (!string.IsNullOrEmpty(accentPart))
+        {
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                Label prefix = Meta(text.Trim(), 13, Black);
+                prefix.VerticalAlignment = VerticalAlignment.Center;
+                row.AddChild(prefix);
+            }
+
+            Label accent = Meta(accentPart, 13, Team);
+            accent.VerticalAlignment = VerticalAlignment.Center;
+            row.AddChild(accent);
+        }
+        else
         {
             Label whole = Meta(text, 13, Black);
             whole.VerticalAlignment = VerticalAlignment.Center;
-            MarginContainer pad = PillPadding(whole);
-            pill.AddChild(pad);
-            return pill;
+            row.AddChild(whole);
         }
 
-        int index = text.IndexOf(accentPart, StringComparison.Ordinal);
-        string before = text[..index];
-        string after = text[(index + accentPart.Length)..];
-        if (!string.IsNullOrEmpty(before))
-        {
-            Label prefix = Meta(before, 13, Black);
-            prefix.VerticalAlignment = VerticalAlignment.Center;
-            pill.AddChild(PillPadding(prefix));
-        }
-
-        Label accent = Meta(accentPart, 13, Team);
-        accent.VerticalAlignment = VerticalAlignment.Center;
-        pill.AddChild(PillPadding(accent));
-        if (!string.IsNullOrEmpty(after))
-        {
-            Label suffix = Meta(after, 13, Black);
-            suffix.VerticalAlignment = VerticalAlignment.Center;
-            pill.AddChild(PillPadding(suffix));
-        }
-
+        pill.AddChild(row);
         return pill;
     }
 
@@ -336,16 +335,21 @@ internal static class LookChrome
             button.AddThemeFontOverride("font", bodyBold);
         }
 
-        button.AddThemeFontSizeOverride("font_size", 15);
+        button.AddThemeFontSizeOverride("font_size", 13);
         button.Text = string.Empty;
+        button.CustomMinimumSize = new Vector2(0, 38);
 
         HBoxContainer row = new();
         row.MouseFilter = Control.MouseFilterEnum.Ignore;
         row.AddThemeConstantOverride("separation", 12);
         row.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        row.OffsetLeft = 10;
+        row.OffsetRight = -10;
+        row.OffsetTop = 9;
+        row.OffsetBottom = -9;
         LookIcon icon = new() { IconKey = iconKey, IconColor = fg };
         row.AddChild(icon);
-        Label label = Body(text, 15, fg, bold: true);
+        Label label = Body(text, 13, fg, bold: true);
         label.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         label.VerticalAlignment = VerticalAlignment.Center;
         row.AddChild(label);
@@ -363,11 +367,17 @@ internal static class LookChrome
         return button;
     }
 
-    public static Label NavSection(string text)
+    public static Control NavSection(string text)
     {
+        MarginContainer wrap = new();
+        wrap.AddThemeConstantOverride("margin_left", 4);
+        wrap.AddThemeConstantOverride("margin_top", 16);
+        wrap.AddThemeConstantOverride("margin_right", 4);
+        wrap.AddThemeConstantOverride("margin_bottom", 6);
         Label label = Meta(text, 9, TeamOn);
         label.Modulate = new Color(1, 1, 1, 0.45f);
-        return label;
+        wrap.AddChild(label);
+        return wrap;
     }
 
     public static Button ManagerFoot(string initials, string name, string subtitle, Action onPressed)
@@ -379,6 +389,8 @@ internal static class LookChrome
             Alignment = HorizontalAlignment.Left,
         };
         button.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        button.SizeFlagsVertical = Control.SizeFlags.ShrinkCenter;
+        button.CustomMinimumSize = new Vector2(0, 54);
         button.Text = string.Empty;
         StyleBoxFlat idle = new()
         {
@@ -386,7 +398,7 @@ internal static class LookChrome
             ContentMarginLeft = 0,
             ContentMarginRight = 0,
             ContentMarginTop = 12,
-            ContentMarginBottom = 0,
+            ContentMarginBottom = 12,
             BorderWidthTop = 2,
             BorderColor = new Color(0, 0, 0, 0.28f),
         };
@@ -410,6 +422,7 @@ internal static class LookChrome
         text.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         text.AddChild(Body(name, 12, TeamOn, bold: true));
         Label role = Body(subtitle, 11, TeamOn);
+        role.AddThemeFontSizeOverride("font_size", 11);
         role.Modulate = new Color(1, 1, 1, 0.55f);
         text.AddChild(role);
         row.AddChild(text);
@@ -743,14 +756,17 @@ internal static class LookChrome
     {
         value = Math.Clamp(value, 0, 100);
         HBoxContainer row = new();
+        row.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         row.AddThemeConstantOverride("separation", 7);
         Label name = Body(label, 11, Black, bold: true);
         name.CustomMinimumSize = new Vector2(88, 0);
         row.AddChild(name);
 
         PanelContainer track = new();
-        track.CustomMinimumSize = new Vector2(0, 9);
+        track.ClipContents = true;
+        track.CustomMinimumSize = new Vector2(80, 10);
         track.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+        track.SizeFlagsVertical = Control.SizeFlags.ShrinkCenter;
         track.AddThemeStyleboxOverride("panel", StatTrackBox());
         ColorRect fill = Block(Team);
         fill.SetAnchorsPreset(Control.LayoutPreset.LeftWide);
@@ -901,8 +917,8 @@ internal static class LookChrome
             BorderWidthTop = 2,
             BorderWidthRight = 2,
             BorderWidthBottom = 2,
-            ContentMarginLeft = 10,
-            ContentMarginRight = 10,
+            ContentMarginLeft = 0,
+            ContentMarginRight = 0,
             ContentMarginTop = 0,
             ContentMarginBottom = 0,
         };
@@ -963,10 +979,10 @@ internal static class LookChrome
             BorderWidthTop = 2,
             BorderWidthRight = 2,
             BorderWidthBottom = 2,
-            ContentMarginLeft = 10,
-            ContentMarginRight = 12,
-            ContentMarginTop = 10,
-            ContentMarginBottom = 10,
+            ContentMarginLeft = 0,
+            ContentMarginRight = 0,
+            ContentMarginTop = 0,
+            ContentMarginBottom = 0,
         };
     }
 
@@ -1021,7 +1037,7 @@ internal static class LookChrome
     {
         return new StyleBoxFlat
         {
-            BgColor = Paper,
+            BgColor = Hair,
             BorderColor = Black,
             BorderWidthLeft = 2,
             BorderWidthTop = 2,

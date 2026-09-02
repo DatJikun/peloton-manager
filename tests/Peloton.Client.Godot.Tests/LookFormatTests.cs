@@ -7,17 +7,25 @@ public sealed class LookFormatTests
     [Fact]
     public void RaceCountdownPillUsesSingularDayLabel()
     {
-        (string text, string? accent) = LookFormat.RaceCountdownPill(1);
-        Assert.Equal("WYŚCIG ZA 1 DZIEŃ", text);
+        (string prefix, string? accent) = LookFormat.RaceCountdownPill(1);
+        Assert.Equal("WYŚCIG ZA ", prefix);
         Assert.Equal("1 DZIEŃ", accent);
     }
 
     [Fact]
     public void RaceCountdownPillUsesPluralDayLabel()
     {
-        (string text, string? accent) = LookFormat.RaceCountdownPill(5);
-        Assert.Equal("WYŚCIG ZA 5 DNI", text);
+        (string prefix, string? accent) = LookFormat.RaceCountdownPill(5);
+        Assert.Equal("WYŚCIG ZA ", prefix);
         Assert.Equal("5 DNI", accent);
+    }
+
+    [Fact]
+    public void YearPillSplitsPrefixAndAccent()
+    {
+        (string prefix, string accent) = LookFormat.YearPillParts(2026);
+        Assert.Equal("ROK", prefix);
+        Assert.Equal("2026", accent);
     }
 
     [Fact]

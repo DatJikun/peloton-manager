@@ -147,18 +147,25 @@ public sealed partial class CareerShellScreen : Control
         hair.CustomMinimumSize = new Vector2(0, 2);
         column.AddChild(hair);
 
-        AddNav(column, View.Desk, "home", "Biurko", 0);
-        AddNav(column, View.Squad, "person", "Skład", 0);
-        AddNav(column, View.Staff, "id-card", "Sztab", 0);
-        AddNav(column, View.Calendar, "calendar", "Kalendarz", 0);
+        VBoxContainer nav = new();
+        nav.AddThemeConstantOverride("separation", 2);
+        MarginContainer navPad = new();
+        navPad.AddThemeConstantOverride("margin_top", 14);
+        navPad.AddChild(nav);
+        column.AddChild(navPad);
 
-        column.AddChild(LookChrome.NavSection("ZARZĄDZANIE"));
-        AddNav(column, View.Sponsors, "tag", "Sponsorzy", 0);
-        AddNav(column, View.Finance, "wallet", "Finanse", 0);
-        AddNav(column, View.Scouting, "magnifier", "Skauting", 0);
-        AddNav(column, View.Market, "arrows-swap", "Rynek transferowy", 0);
-        AddNav(column, View.History, "clock", "Historia zespołu", 0);
-        AddNav(column, View.Help, "question", "Pomoc", 0);
+        AddNav(nav, View.Desk, "home", "Biurko", 0);
+        AddNav(nav, View.Squad, "person", "Skład", 0);
+        AddNav(nav, View.Staff, "id-card", "Sztab", 0);
+        AddNav(nav, View.Calendar, "calendar", "Kalendarz", 0);
+
+        nav.AddChild(LookChrome.NavSection("ZARZĄDZANIE"));
+        AddNav(nav, View.Sponsors, "tag", "Sponsorzy", 0);
+        AddNav(nav, View.Finance, "wallet", "Finanse", 0);
+        AddNav(nav, View.Scouting, "magnifier", "Skauting", 0);
+        AddNav(nav, View.Market, "arrows-swap", "Rynek transferowy", 0);
+        AddNav(nav, View.History, "clock", "Historia zespołu", 0);
+        AddNav(nav, View.Help, "question", "Pomoc", 0);
 
         Control spacer = new();
         spacer.SizeFlagsVertical = SizeFlags.ExpandFill;
@@ -249,7 +256,7 @@ public sealed partial class CareerShellScreen : Control
         HBoxContainer pills = new();
         pills.AddThemeConstantOverride("separation", 8);
         pillsRow = pills;
-        yearPill = LookChrome.Pill("ROK ", "2026");
+        yearPill = LookChrome.Pill("ROK", "2026");
         racePill = LookChrome.Pill("WYŚCIG", null);
         pills.AddChild(yearPill);
         pills.AddChild(racePill);
@@ -571,6 +578,7 @@ public sealed partial class CareerShellScreen : Control
         }
 
         RebuildContent();
+        SyncContentHeight();
     }
 
     private void RebuildContent()
@@ -633,19 +641,53 @@ public sealed partial class CareerShellScreen : Control
         }
     }
 
-    private static VBoxContainer Panel(string title, Control body, string? linkText = null, Action? onLink = null, Control? rightAccessory = null)
+    private static VBoxContainer Panel(
+        string title,
+        Control body,
+        string? linkText = null,
+        Action? onLink = null,
+        Control? rightAccessory = null,
+        bool expandVertical = false)
     {
         VBoxContainer stack = new();
         stack.AddThemeConstantOverride("separation", 0);
         stack.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        if (expandVertical)
+        {
+            stack.SizeFlagsVertical = SizeFlags.ExpandFill;
+        }
+
         PanelContainer card = LookChrome.Card();
+        card.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        if (expandVertical)
+        {
+            card.SizeFlagsVertical = SizeFlags.ExpandFill;
+        }
+
         VBoxContainer inner = new();
         inner.AddThemeConstantOverride("separation", 0);
+        inner.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        if (expandVertical)
+        {
+            inner.SizeFlagsVertical = SizeFlags.ExpandFill;
+        }
+
         inner.AddChild(LookChrome.SectionBar(title, linkText, onLink, rightAccessory));
-        inner.AddChild(Pad(body));
+        inner.AddChild(Pad(body, expandVertical));
         card.AddChild(inner);
         stack.AddChild(card);
         return stack;
+    }
+
+    private void SyncContentHeight()
+    {
+        if (content?.GetParent() is not ScrollContainer scroll)
+        {
+            return;
+        }
+
+        content.SizeFlagsVertical = SizeFlags.ExpandFill;
+        content.CustomMinimumSize = new Vector2(0, Mathf.Max(scroll.Size.Y, 0));
     }
 
     private void RebuildPills(CareerDayProjection? day, int dayNumber)
@@ -663,39 +705,46 @@ public sealed partial class CareerShellScreen : Control
         int year = host!.State == GameState.MainMenu
             ? 2026
             : CareerCalendarDates.ToDate(dayNumber).Year;
-        yearPill = LookChrome.Pill("ROK ", year.ToString(CultureInfo.InvariantCulture));
+        (string yearPrefix, string yearAccent) = LookFormat.YearPillParts(year);
+        yearPill = LookChrome.Pill(yearPrefix, yearAccent);
         pillsRow.AddChild(yearPill);
 
-        string raceText;
+        string racePrefix;
         string? raceAccent = null;
         if (day is null)
         {
-            raceText = "WYŚCIG";
+            racePrefix = "WYŚCIG";
         }
         else if (day.RaceDueToday)
         {
-            raceText = "WYŚCIG DZIŚ";
+            racePrefix = "WYŚCIG DZIŚ";
         }
         else if (day.DaysUntilNextRace > 0)
         {
-            (raceText, raceAccent) = LookFormat.RaceCountdownPill(day.DaysUntilNextRace);
+            (racePrefix, raceAccent) = LookFormat.RaceCountdownPill(day.DaysUntilNextRace);
         }
         else
         {
-            raceText = "BRAK WYŚCIGU";
+            racePrefix = "BRAK WYŚCIGU";
         }
 
-        racePill = LookChrome.Pill(raceText, raceAccent);
+        racePill = LookChrome.Pill(racePrefix, raceAccent);
         pillsRow.AddChild(racePill);
     }
 
-    private static MarginContainer Pad(Control child)
+    private static MarginContainer Pad(Control child, bool expandVertical = false)
     {
         MarginContainer pad = new();
         pad.AddThemeConstantOverride("margin_left", 14);
         pad.AddThemeConstantOverride("margin_top", 12);
         pad.AddThemeConstantOverride("margin_right", 14);
         pad.AddThemeConstantOverride("margin_bottom", 12);
+        if (expandVertical)
+        {
+            pad.SizeFlagsVertical = SizeFlags.ExpandFill;
+            child.SizeFlagsVertical = SizeFlags.ExpandFill;
+        }
+
         pad.AddChild(child);
         return pad;
     }

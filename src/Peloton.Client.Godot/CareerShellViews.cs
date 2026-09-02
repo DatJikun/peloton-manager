@@ -540,7 +540,8 @@ public sealed partial class CareerShellScreen
     private void BuildSquad()
     {
         HBoxContainer grid = Row();
-        VBoxContainer table = Panel("KADRA", BuildSquadTable());
+        grid.SizeFlagsVertical = SizeFlags.ExpandFill;
+        VBoxContainer table = Panel("KADRA", BuildSquadTable(), expandVertical: true);
         table.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         table.SizeFlagsStretchRatio = 7;
         VBoxContainer card = Panel("KARTA ZAWODNIKA", BuildWorldRiderCard());
@@ -605,11 +606,13 @@ public sealed partial class CareerShellScreen
         stats.AddThemeConstantOverride("v_separation", 7);
         stats.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         VBoxContainer leftStats = new();
+        leftStats.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         leftStats.AddThemeConstantOverride("separation", 7);
         leftStats.AddChild(LookChrome.Stat("Góry", rider.Climb));
         leftStats.AddChild(LookChrome.Stat("Sprint", rider.Sprint));
         leftStats.AddChild(LookChrome.Stat("Bruk", rider.Cobbles));
         VBoxContainer rightStats = new();
+        rightStats.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         rightStats.AddThemeConstantOverride("separation", 7);
         rightStats.AddChild(LookChrome.Stat("Pagórki", rider.Hills));
         rightStats.AddChild(LookChrome.Stat("TT", rider.TimeTrial));
@@ -666,7 +669,7 @@ public sealed partial class CareerShellScreen
             }, LookChrome.Team, LookChrome.TeamOn, compact: true));
         }
 
-        VBoxContainer actions = new();
+        HBoxContainer actions = new();
         actions.AddThemeConstantOverride("separation", 8);
         actions.AddChild(LookChrome.Solid(isNegotiating ? "Anuluj" : "Negocjuj kontrakt", () =>
         {
@@ -770,7 +773,6 @@ public sealed partial class CareerShellScreen
                 selectedRiderId = captured.RiderCareerId.Value;
                 RebuildContent();
             });
-        table.CustomMinimumSize = new Vector2(0, 420);
         box.AddChild(table);
         return box;
     }
@@ -1329,7 +1331,8 @@ public sealed partial class CareerShellScreen
         filterWrap.AddChild(clubFilter);
 
         HBoxContainer grid = Row();
-        VBoxContainer table = Panel("DOSTĘPNI ZAWODNICY", BuildMarketTable(riders), rightAccessory: filterWrap);
+        grid.SizeFlagsVertical = SizeFlags.ExpandFill;
+        VBoxContainer table = Panel("DOSTĘPNI ZAWODNICY", BuildMarketTable(riders), rightAccessory: filterWrap, expandVertical: true);
         table.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         table.SizeFlagsStretchRatio = 8;
         VBoxContainer marketCard = Panel("ZAWODNIK", BuildMarketCard());
@@ -1405,7 +1408,6 @@ public sealed partial class CareerShellScreen
                 negotiating = false;
                 RebuildContent();
             });
-        table.CustomMinimumSize = new Vector2(0, 420);
         box.AddChild(table);
         return box;
     }
@@ -1458,11 +1460,13 @@ public sealed partial class CareerShellScreen
         stats.AddThemeConstantOverride("v_separation", 7);
         stats.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         VBoxContainer leftStats = new();
+        leftStats.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         leftStats.AddThemeConstantOverride("separation", 7);
         leftStats.AddChild(LookChrome.Stat("Góry", row.Climb));
         leftStats.AddChild(LookChrome.Stat("Sprint", row.Sprint));
         leftStats.AddChild(LookChrome.Stat("Bruk", row.Cobbles));
         VBoxContainer rightStats = new();
+        rightStats.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
         rightStats.AddThemeConstantOverride("separation", 7);
         rightStats.AddChild(LookChrome.Stat("Pagórki", row.Hills));
         rightStats.AddChild(LookChrome.Stat("TT", row.TimeTrial));
