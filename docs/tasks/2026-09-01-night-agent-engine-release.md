@@ -63,6 +63,6 @@ Co wylądowało (D-055, D-056 — które etapy, md, release), wynik `compare --s
 - [x] gate lokalny zielony
 - [x] merge do `main`, CI zielone
 - [x] md zaktualizowane
-- [ ] tag `playtest-2026-09-02`, Release istnieje
-- [ ] zip usunięty z drzewa, `CZYTAJ_MNIE.txt` odświeżony
-- [ ] raport w czacie
+- [x] tag `playtest-2026-09-02`, Release istnieje
+- [x] zip usunięty z drzewa, `CZYTAJ_MNIE.txt` odświeżony
+- [x] raport w czacie
