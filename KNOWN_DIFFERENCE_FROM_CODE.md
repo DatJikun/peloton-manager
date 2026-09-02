@@ -135,3 +135,43 @@ Contract: `CAREER_CLUB_CALENDAR_LEADERS_v0.1.md`.
 - Desk **FINANSE · TYDZIEŃ**, view **Finanse**, and squad wage column read `ClubFinanceProjection` / `ClubRoster` (euro). Skład **Negocjuj kontrakt** → D-044 offer commands. Staff/sponsors/scouting/market still look catalog.
 - `OpenSkeleton` remains on `CareerShellHost` for tests; `OpenWorldTour(employerOriginId)` for WT play path.
 - SimRunner `day` accepts optional `--employer organization.wt2026.*`.
+
+## Position and selection (D-054 landed)
+
+Contract: `RACE_FEEL_POSITION_AND_SELECTION_v0.1.md`. `PhysicsContractVersion` is **2**.
+
+Landed in `Peloton.Simulation/Race`:
+
+- **Position drift** after each step (`DriftMps`, `SlotSpacingM`, intent/finale bonuses via `PositionScoreResolver`). **§3.3 amendment:** forward drift (`delta > 0`) only when the rider was not power-limited this step (`realizablePowerW ≥ requiredPowerW` / `realizedSpeed ≥ desiredSpeed`); power-limited riders may drift backward only, and the gap floor clamp does not pull them forward.
+- **Start grid** ordered by `Positioning` in `WorldRaceScenarioAssembler` (WT + skeleton paths; SimRunner `race`/`watch` fixture unchanged).
+- **Pace-setter** in selective zones: max sustainable front speed at shelter 1.0 (`MaxSustainableFrontSpeedMps`), group target `max(BasePace, setterSpeed)`.
+- **Cobble bruk (§5 + §5.1):** shelter `max(1 − (1 − shelter)·(0.25 + 0.75·Handling), 0.85)` on `Cobble`; required-power surge `1 + CobbleSurgeCost·(1 − Handling)`; `EffectiveCrr` cobble delta **0.018** with handling factor `(1.60 − 1.00·Handling)`; sector surges on asphalt↔cobble transitions of each group's pacing reference (`+CobbleSurgeSpeedMps` for `CobbleSurgeSeconds`, path-scanned per step).
+- **CobbleClassic positioning scale** (§33 extension): effective positioning `Positioning · (CobblePositioningBase + CobblePositioningHandlingWeight · Handling)` on `CobbleClassic` stages so low-handling riders lose slots on cobbled races.
+
+Final tuning constants (`RaceTuning`):
+
+| Constant | Value |
+|---|---|
+| `DriftMps` | 0.78 |
+| `SlotSpacingM` | 0.7 |
+| `FinaleM` | 24_000 |
+| `TempoFactorFinale` | 1.00 |
+| `TempoFactorOutsideFinale` | 0.92 |
+| `CobbleSurgeCost` | 0.286 |
+| `CobbleCrrDelta` | 0.018 |
+| `CobbleCrrHandlingIntercept` | 1.60 |
+| `CobbleCrrHandlingSlope` | 1.00 |
+| `CobbleShelterFloor` | 0.85 |
+| `CobbleSurgeSeconds` | 12 |
+| `CobbleSurgeSpeedMps` | 2.5 |
+| Intent bonuses | 0.50 / 0.40 / 0.40 / −0.30 |
+| `SprintFinaleBonus` | 0.25 |
+| `SprintFinaleDistanceM` | 3_000 |
+| `CobblePositioningBase` | 0.21 |
+| `CobblePositioningHandlingWeight` | 0.91 |
+
+Probes at seed `91234`: TdF stage 1 sprint, TDU stage 6 sprinter, Hautacam GC, determinism/spy neutrality, positioning + cobble + drift unit tests pass. **Roubaix engine probe** (`RoubaixCobblesSelectAndVanDerPoelInFrontGroup`) passes: van der Poel ≤ 20th, no sprinter in top 5, top-10 handling ≥ 0.70, winner-to-20th finish-time gap > 0 s. **Strict Roubaix classics probe** (`RoubaixClassicsWinAndVanDerPoelBeatsGcRivals`) is **skipped** pending **D-057** roster calibration — do not tune engine constants to fake a classics winner.
+
+At seed `91234` the strict probe would still fail on roster numbers, not physics: van der Poel `rider.wt2026.alpecin.leader` has CP **430 W**, `lowIntensityDurability` **0.90**, 75 kg, CdA **0.285**; Evenepoel `rider.wt2026.redbull.leader` has CP **425 W**, durability **0.94**, **61 kg**, CdA **0.25**. Over a flat 250 km cobbled classic those inputs favour the light GC rider; engine constants stay at contract baseline (table above). Sim outcome: Evenepoel (super-gc) wins; van der Poel ~13th; GC riders fill the top 10.
+
+Still missing (deferred): crosswind echelons, lead-out trains, incidents/mechanicals, D-032 GC leadership, CdA Road/TT (D-055).

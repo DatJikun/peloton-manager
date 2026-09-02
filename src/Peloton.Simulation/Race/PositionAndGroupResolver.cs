@@ -14,7 +14,7 @@ public sealed record GroupResolutionInput(
 public static class PositionAndGroupResolver
 {
     private const double ApproximateRiderLaneWidthM = 0.8;
-    private const double GroupSplitGapM = 5.0;
+    private const double GroupSplitGapM = RaceTuning.GroupSplitGapM;
     private const double ShelterLossGapM = 2.5;
     private const double StrongCrosswindMps = 6.0;
     private const double BaseShelterMultiplier = 0.62;

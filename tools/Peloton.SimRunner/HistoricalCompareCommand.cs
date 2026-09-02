@@ -159,13 +159,17 @@ public static class HistoricalCompareCommand
             .Take(5)
             .Select(id => Describe(world, id))
             .ToArray();
+        string[] top5Archetypes = result.FinishOrder
+            .Take(5)
+            .Select(id => ArchetypeOf(world, id))
+            .ToArray();
         string winner = Describe(world, result.WinnerId);
         string verdict = Verdict(world, result, comparison);
         string realTop = comparison.RealTop3 is null ? string.Empty : string.Join(",", comparison.RealTop3);
         output.WriteLine(
             string.Create(
                 CultureInfo.InvariantCulture,
-                $"case={comparison.Id} course={course.OriginDefinitionId} classified={course.ClassifiedStageType} fieldSim={result.FinishOrder.Count} fieldExpected={comparison.ExpectedSimFieldRiders} fieldReal={comparison.RealFieldRiders} simWinner={winner} simTop5={string.Join("|", top5)} realWinner={comparison.RealWinner} realTop3={realTop} verdict={verdict}"));
+                $"case={comparison.Id} course={course.OriginDefinitionId} classified={course.ClassifiedStageType} fieldSim={result.FinishOrder.Count} fieldExpected={comparison.ExpectedSimFieldRiders} fieldReal={comparison.RealFieldRiders} simWinner={winner} simTop5={string.Join("|", top5)} simTop5Archetypes={string.Join("|", top5Archetypes)} realWinner={comparison.RealWinner} realTop3={realTop} verdict={verdict}"));
     }
 
     private static string Verdict(WorldState world, RaceResult result, ComparisonCaseDocument comparison)
@@ -242,6 +246,43 @@ public static class HistoricalCompareCommand
 
     private static string OriginOf(WorldState world, WorldEntityId riderId) =>
         world.TryGetRiderCareer(riderId)?.OriginDefinitionId ?? string.Empty;
+
+    private static string ArchetypeOf(WorldState world, WorldEntityId riderId)
+    {
+        string? origin = world.TryGetRiderCareer(riderId)?.OriginDefinitionId;
+        if (origin is null)
+        {
+            return "unknown";
+        }
+
+        return ArchetypesByOrigin.Value.TryGetValue(origin, out string? archetype) ? archetype : "unknown";
+    }
+
+    private static readonly Lazy<Dictionary<string, string>> ArchetypesByOrigin = new(LoadArchetypes);
+
+    private static Dictionary<string, string> LoadArchetypes()
+    {
+        string contentRoot = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "content"));
+        string path = Path.Combine(contentRoot, "peloton.wt-2026", "roster.json");
+        if (!File.Exists(path))
+        {
+            return new Dictionary<string, string>(StringComparer.Ordinal);
+        }
+
+        using JsonDocument document = JsonDocument.Parse(File.ReadAllText(path));
+        Dictionary<string, string> archetypes = new(StringComparer.Ordinal);
+        foreach (JsonElement rider in document.RootElement.GetProperty("riders").EnumerateArray())
+        {
+            string? id = rider.GetProperty("id").GetString();
+            string? archetype = rider.GetProperty("archetype").GetString();
+            if (id is not null && archetype is not null)
+            {
+                archetypes[id] = archetype;
+            }
+        }
+
+        return archetypes;
+    }
 
     private static int PlaceOfOrigin(WorldState world, RaceResult result, string originId)
     {

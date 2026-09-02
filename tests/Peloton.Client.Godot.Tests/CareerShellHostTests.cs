@@ -213,8 +213,8 @@ public sealed class CareerShellHostTests
         Assert.Null(host.Watch);
         RaceResultProjection result = Assert.IsType<RaceResultProjection>(host.Result);
         Assert.Equal("Skeleton race", result.Title);
-        Assert.Equal(BetaLeaderOriginId, result.WinnerLabel);
-        Assert.Equal("Beta Leader", host.RiderDisplayName(result.WinnerId));
+        Assert.Equal(AlphaLeaderOriginId, result.WinnerLabel);
+        Assert.Equal("Alpha Leader", host.RiderDisplayName(result.WinnerId));
         Assert.Equal(3, host.ResultTeams.Count);
         Assert.Contains(
             result.FinishOrder,

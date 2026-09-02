@@ -9,6 +9,7 @@ namespace Peloton.Application.Tests;
 
 internal static class CareerWorldTestSupport
 {
+    public const string AlphaLeaderOriginId = "rider.race-prototype.alpha-leader";
     public const string BetaLeaderOriginId = "rider.race-prototype.beta-leader";
     public const string RedOrganizationOriginId = "organization.skeleton.red";
 
@@ -124,6 +125,9 @@ internal static class CareerWorldTestSupport
             .OrderBy(career => career.Id.Value)
             .Select(career => (career.Form01, career.Freshness01, career.Fatigue01))
             .ToArray();
+
+    public static WorldEntityId AlphaLeaderCareerId(GameApplication application) =>
+        FindRiderCareer(application, AlphaLeaderOriginId).Id;
 
     public static WorldEntityId BetaLeaderCareerId(GameApplication application) =>
         FindRiderCareer(application, BetaLeaderOriginId).Id;

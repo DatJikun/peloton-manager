@@ -31,6 +31,25 @@ public sealed class WorldTourFeelProbeTests
         Assert.True(application.Execute(new CreateWorldCommand(WtScenarioId, GateSeed)).Succeeded);
         WorldState world = application.World!;
 
+        CourseProfile flatStage = world.CourseProfiles
+            .Single(profile => string.Equals(
+                profile.OriginDefinitionId,
+                "course.wt2026.tdf.2026.s1",
+                StringComparison.Ordinal));
+        CourseProfile mountainStage = world.CourseProfiles
+            .Where(profile => profile.ClassifiedStageType is ClassifiedStageType.Mountain or ClassifiedStageType.MountainSummit)
+            .OrderByDescending(profile => profile.ElevationGainM)
+            .First();
+        RiderCareer philipsen = FindByOrigin(world, PhilipsenOriginId);
+        RiderCareer pogacar = FindByOrigin(world, PogacarOriginId);
+
+        RaceResult flatRace = SimulateControlledCourse(world, flatStage);
+        RaceResult mountainRace = SimulateControlledCourse(world, mountainStage);
+        int philFlat = PlaceOf(flatRace, philipsen.Id);
+        int pogaFlat = PlaceOf(flatRace, pogacar.Id);
+        int philMountain = PlaceOf(mountainRace, philipsen.Id);
+        int pogaMountain = PlaceOf(mountainRace, pogacar.Id);
+
         for (int day = 0; day < 19; day++)
         {
             Assert.True(application.Execute(new AdvanceDayCommand()).Succeeded, $"day {day + 1}");
@@ -42,27 +61,8 @@ public sealed class WorldTourFeelProbeTests
 
         RaceResultProjection tduResult = Assert.IsType<RaceResultProjection>(application.RaceResult);
         Assert.Equal(140, tduResult.FinishOrder.Count);
-        RiderCareer pogacar = FindByOrigin(world, PogacarOriginId);
         Assert.Contains(tduResult.FinishOrder, place => place.RiderId == pogacar.Id);
         log.AppendLine(CultureInfo.InvariantCulture, $"TDU starters={tduResult.FinishOrder.Count} pogacar_place={PlaceOf(tduResult, pogacar.Id)}");
-
-        CourseProfile flatStage = world.CourseProfiles
-            .Where(profile => profile.ClassifiedStageType == ClassifiedStageType.Flat)
-            .OrderBy(profile => profile.ElevationGainM)
-            .First();
-        CourseProfile mountainStage = world.CourseProfiles
-            .Where(profile => profile.ClassifiedStageType is ClassifiedStageType.Mountain or ClassifiedStageType.MountainSummit)
-            .OrderByDescending(profile => profile.ElevationGainM)
-            .First();
-
-        RaceResult flatRace = SimulateControlledCourse(world, flatStage);
-        RaceResult mountainRace = SimulateControlledCourse(world, mountainStage);
-        RiderCareer philipsen = FindByOrigin(world, PhilipsenOriginId);
-
-        int philFlat = PlaceOf(flatRace, philipsen.Id);
-        int pogaFlat = PlaceOf(flatRace, pogacar.Id);
-        int philMountain = PlaceOf(mountainRace, philipsen.Id);
-        int pogaMountain = PlaceOf(mountainRace, pogacar.Id);
 
         log.AppendLine(CultureInfo.InvariantCulture,
             $"flat_stage={flatStage.OriginDefinitionId} gain_m={flatStage.ElevationGainM:F0} starters={flatRace.FinishOrder.Count}");
@@ -77,7 +77,7 @@ public sealed class WorldTourFeelProbeTests
 
         Assert.Equal(ClassifiedStageType.Flat, flatStage.ClassifiedStageType);
         Assert.True(flatRace.FinishOrder.Count >= 140);
-        Assert.True(philFlat > 0 && pogaFlat > 0 && philFlat < pogaFlat);
+        Assert.True(philFlat > 0 && pogaFlat > 0 && philFlat < pogaFlat, $"flat_philipsen={philFlat} flat_pogacar={pogaFlat}");
         Assert.True(pogaMountain > 0 && philMountain > 0);
         Assert.True(pogaMountain < philMountain);
     }
