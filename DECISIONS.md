@@ -241,3 +241,12 @@ Owner agreed 2026-09-01 after the repo review showed Roubaix won by GC riders, a
 
 ## D-055 — Two aero numbers: CdA Road and CdA TT
 Owner-ordered next race-engine task (2026-09-01). Each rider stores `CdARoadM2` and `CdATtM2` (SQLite SchemaVersion 10). ITT/TTT stages use the TT value with no bunch shelter in ITT (60 s starts, reverse GC); every other stage uses the road value. The TT rating is derived from TT aero. No mid-stage switching, no descent tuck, no TT pacing optimizer yet. Road results must not change versus D-054. Contract: `RACE_CDA_ROAD_TT_v0.1.md`.
+
+## D-056 — Infinite career: season rollover, aging, neo-pros, AI contract cycle
+Owner 2026-09-01: the game must not end on 31 December 2026. Lock: rollover inside Advance Day once per year (aging tick on physiology only, retirements, neo-pros so the world never shrinks, AI clubs renew/sign by public facts, 2027 courses from the same identity generator, calendar per stage, player's pre-season plan reopens, Polish season summary in the inbox). Ratings remain views; POT is only a brake on growth. No manager sacking, no sponsor market, no transfer fees yet. SchemaVersion 11. Lands after D-054 and D-055 in its own tree. Contract: `CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md`.
+
+## D-057 — Full WorldTour squads in the 2026 pack
+Owner 2026-09-01 (multitask night). Each WorldTour club gets 22 riders from the real 2026 peloton (wildcards stay 8), archetype/wage bands per person (still estimated, D-038), captain-first squad order, wages within `estimatedBudgetEur`, ≤ 512 riders in the catalog. The existing 200 entries keep their numbers (D-054 probes depend on them). Official start lists still take the first 7/8 of squad order; picking the eight for a specific race is a later slice. Content only — no engine, schema, or Godot change.
+
+## D-058 — Rider avatars pipeline in C# (`Peloton.Avatars`)
+Owner 2026-09-01 (multitask night). Port the accepted `poster` avatar experiment to a headless C# library: bit-identical trait generation from `RiderCareer.Id`, manifest validation, layered composer, PNG cache. Art stays placeholder; taste decisions in `.cursor/skills/peloton-avatars/SKILL.md` are closed. Godot wiring is a separate step by the UI agent; the library never references Godot, Application, or the save.
