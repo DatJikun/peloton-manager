@@ -10,13 +10,13 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md` (D-056) **stage 1** landed on SchemaVersion **11**. **D-049–D-052, D-054, D-055 landed.** **Next:** D-056 remaining stages (aging, retirements, neo-pro, AI contracts). Do not close §49.
+`CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md` (D-056) **stages 1–2** landed on SchemaVersion **11**. **Next:** retirements, neo-pro, AI contracts. Do not close §49.
 
 ### Goal
 D-051 landed: desk / Skład / Finanse read `ClubFinanceProjection` (euro) and Skład writes D-044 contract offers. **D-052 landed:** 1 Jan 2026 dates, grouped upcoming races, month calendar, world inbox, employer crest, world market. **D-054 landed:** position is earned, pace comes from riders. **D-055 landed:** two CdA numbers; ITT is solo 60 s starts; TTT times the 4th rider. **Next:** D-056 season rollover. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
 
 ### Status
-Owner (player) directed this on 2026-09-01. **D-049, D-050, D-051, D-052, D-054, D-055, and D-056 stage 1 landed.** Classified Flat is a bunch sprint (sit-in, then last 250 m at peak power). Official WT starts are event-shaped (TDU 140, monuments 175, Grand Tours 176, other WT 154). After a stage the shell/CLI can show GC / points / KOM / youth / team. SimRunner `compare` puts prototype results next to 2025 analogues (not a script). Skeleton soak still uses the short proof circuit. SQLite SchemaVersion **11**. Each rider stores `CdARoadM2` and `CdATtM2`; ITT/TTT stages use the TT value. Advance Day crosses 31 Dec 2026 into season 2027 (new courses + calendar + pre-season; aging/neo/AI contracts still later D-056 stages).
+Owner (player) directed this on 2026-09-01. **D-049, D-050, D-051, D-052, D-054, D-055, and D-056 stages 1–2 landed.** Classified Flat is a bunch sprint (sit-in, then last 250 m at peak power). Official WT starts are event-shaped (TDU 140, monuments 175, Grand Tours 176, other WT 154). After a stage the shell/CLI can show GC / points / KOM / youth / team. SimRunner `compare` puts prototype results next to 2025 analogues (not a script). Skeleton soak still uses the short proof circuit. SQLite SchemaVersion **11**. Each rider stores `CdARoadM2` and `CdATtM2`; ITT/TTT stages use the TT value. Advance Day crosses 31 Dec 2026 into season 2027 (new courses + calendar + pre-season + aging; retirements/neo/AI contracts still later D-056 stages).
 
 Feel probe seed `91234`: Philipsen 1 vs Pogačar 135 on the flattest stored Flat; Pogačar 8 vs Philipsen 133 on the biggest mountain. TDU starts 140. §49 stays open.
 
@@ -45,7 +45,7 @@ Działa:
 - paczka Windows do ręcznego playtestu: GitHub Releases (tag `playtest-*`); nie commituj zipa do repo (D-053).
 
 Właśnie budujemy:
-- D-056 dalsze etapy: starzenie, emerytury, neo-pro, kontrakty AI.
+- D-056 dalsze etapy: emerytury, neo-pro, kontrakty AI.
 
 Jeszcze nie:
 - nie ma Career Hub — usunięty z repozytorium (D-048); biurko to powłoka `CareerShell.tscn`;
@@ -135,11 +135,12 @@ Baza 2026: 18 ekip męskiego WorldTour plus zaproszone ProTeamy / Australia w `s
 - [x] D-054 — position is earned, pace comes from riders (`RACE_FEEL_POSITION_AND_SELECTION_v0.1.md`, PhysicsContractVersion 2)
 - [x] D-055 — CdA road vs TT (`RACE_CDA_ROAD_TT_v0.1.md`, SchemaVersion 10)
 - [x] D-056 stage 1 — New Year rollover, 2027 courses/calendar/pre-season, SchemaVersion 11
+- [x] D-056 stage 2 — yearly aging tick (physiology, talentGate, BirthYear)
 - [ ] Avatar prototype (EXPERIMENT, placeholder art) — czeka na wizualną ocenę właściciela
-- [ ] D-056 remaining — aging, retirements, neo-pro, AI contracts
+- [ ] D-056 remaining — retirements, neo-pro, AI contracts
 
 ## Next task
-**D-056 remaining stages** (aging, retirements, neo-pro, AI contract cycle, `seasons --years 5`). Do not close §49. Do not rebuild Career Hub. Watch film stays off by default.
+**D-056 remaining stages** (retirements, neo-pro, AI contract cycle, `seasons --years 5`). Do not close §49. Do not rebuild Career Hub. Watch film stays off by default.
 
 ## Known blockers
 - None.
@@ -168,7 +169,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
-- `2026-09-02` — **D-057 landed:** 22 riders per WT club (452 total, wildcards stay 8); `wt2026-riders-source.csv` + `tools/build_wt2026_roster.py`; classics-star CP/durability bump (MvdP/Van Aert/Pedersen/Evenepoel); compare seed 91234 sprint/Hautacam winners unchanged. Advance Day crosses 31 Dec → 1 Jan; `SeasonYear` 2027; 2027 courses from the identity generator (2026 profiles kept); calendar per stage; player pre-season reopens; winter form reset. Aging / retirements / neo-pro / AI contracts are later stages. SchemaVersion 11 / checksum v11. Contract: `CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md`.
+- `2026-09-02` — **D-056 stages 1–2 landed:** New Year rollover to 2027 (courses, calendar, pre-season, winter form) plus yearly physiology aging (talentGate, ±0.006 variance). SchemaVersion 11. Retirements / neo-pro / AI contracts later. Contract: `CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md`.
 - `2026-09-02` — **D-055 landed:** `CdARoadM2` / `CdATtM2` on `RiderCareer` and race profiles; SQLite SchemaVersion 10 / checksum v10; ITT 60 s reverse-GC starts with no shelter; TTT times the 4th rider; TT rating uses TT aero. Road probes from D-054 unchanged. Contract: `RACE_CDA_ROAD_TT_v0.1.md`.
 - `2026-09-01` — **D-053: repo hygiene (owner agreed to the review list).** (1) GitHub Actions `gate` runs the HANDOFF gate on every push to `main` / PR; a red `gate` on `main` is a blocker. (2) The Windows playtest zip is **no longer committed**; `playtest-windows` workflow builds it from `tools/pack-windows-playtest.sh` and publishes a GitHub Release when a `playtest-*` tag is pushed. (3) All 12 stale PRs (#13–#16 core loop already on `main`; #20/#26 avatar look proposals — branches kept for the deferred avatar decision; #21 archive; #24/#25/#36 Watch film/radio — D-043; #31 Career Hub zip — D-048; #34 docs already on `main`) were closed without merge. Feel order after hygiene: bruk in the engine → sprint one-team top 5 → CdA Road/TT.
 - `2026-09-01` — **D-052 landed (Composer):** `CareerCalendarDates` (1 Jan 2026 epoch); grouped `SeasonEventProjection` / `UpcomingEvents` / `MarketRiders`; Polish inbox; Godot desk/calendar/rynek/squad crest/dates per `CAREER_SHELL_DATES_AND_LOOK_v0.1.md`.
