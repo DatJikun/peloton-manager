@@ -239,6 +239,8 @@ Owner agreed 2026-09-01 after the repo review showed Roubaix won by GC riders, a
 3. Bruk in the engine = cobble Crr (already) **plus** handling-dependent shelter loss and a surge cost. No `Cobbles = +N` in any winner formula; ratings stay derived views (D-046).
 4. Goldens may move once (`PhysicsContractVersion` 2). §49 stays `NOT VERIFIED`. Contract: `RACE_FEEL_POSITION_AND_SELECTION_v0.1.md`.
 
+Landed 2026-09-01 with two contract amendments (§3.3 drift is never a free tow; §5.1 realistic cobble Crr, shelter floor, sector surges). Roubaix is still won by super-gc at the probe seed because the roster gives the classics stars lower CP and durability than the light GC stars; that is a **content** gap handed to D-057 (classics-star calibration), not an engine lever. No named-rider hacks in the engine — ever.
+
 ## D-055 — Two aero numbers: CdA Road and CdA TT
 Owner-ordered next race-engine task (2026-09-01). Each rider stores `CdARoadM2` and `CdATtM2` (SQLite SchemaVersion 10). ITT/TTT stages use the TT value with no bunch shelter in ITT (60 s starts, reverse GC); every other stage uses the road value. The TT rating is derived from TT aero. No mid-stage switching, no descent tuck, no TT pacing optimizer yet. Road results must not change versus D-054. Contract: `RACE_CDA_ROAD_TT_v0.1.md`.
 
