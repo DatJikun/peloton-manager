@@ -10,10 +10,10 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md` (D-056) **landed** on SchemaVersion **11**. Godot HTML v3 chrome **landed** (`85b4257`). Application UI queries (identity line, course sparkline, result times) **landed**. **Next:** Godot wires those query fields (Antigravity); owner Windows playtest — Release `playtest-2026-09-02` predates the chrome; new `playtest-*` tag if the owner should see it. No new system. Do not close §49.
+`CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md` (D-056) **landed** on SchemaVersion **11**. Godot HTML v3 chrome **landed** (`85b4257`). **D-059 landed:** Godot draws nationality/age, 12-point course sparkline, and result clocks. Application also exposes `IdentityLine` / role / form / 24-point stage `Route` / `TimeLabel`. **Next:** owner Windows playtest — Release `playtest-2026-09-02` predates the chrome; new `playtest-*` tag if the owner should see it. No new system. Do not close §49.
 
 ### Goal
-D-051 landed: desk / Skład / Finanse read `ClubFinanceProjection` (euro) and Skład writes D-044 contract offers. **D-052 landed:** 1 Jan 2026 dates, grouped upcoming races, month calendar, world inbox, employer crest, world market. **D-054 landed:** position is earned, pace comes from riders. **D-055 landed:** two CdA numbers; ITT is solo 60 s starts; TTT times the 4th rider. **D-056 landed:** Advance Day crosses into 2027+ (aging, retirements, neo-pros, AI contracts, season inbox). Godot career shell speaks HTML v3 (`85b4257`). Application queries now expose rider identity, calendar sparklines, and result clocks; Godot does not draw them yet. **Next:** wire those fields in the shell; owner Windows playtest — Release `playtest-2026-09-02` predates the chrome; new `playtest-*` tag if needed. No new system. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
+D-051 landed: desk / Skład / Finanse read `ClubFinanceProjection` (euro) and Skład writes D-044 contract offers. **D-052 landed:** 1 Jan 2026 dates, grouped upcoming races, month calendar, world inbox, employer crest, world market. **D-054 landed:** position is earned, pace comes from riders. **D-055 landed:** two CdA numbers; ITT is solo 60 s starts; TTT times the 4th rider. **D-056 landed:** Advance Day crosses into 2027+ (aging, retirements, neo-pros, AI contracts, season inbox). Godot career shell speaks HTML v3 (`85b4257`). **D-059:** Godot draws nationality/age, 12-point `ElevationSparkline`, and raw finish/gap clocks. Application also has `IdentityLine` / `RoleLabel` / form % / per-stage 24-point `Route` / `TimeLabel` for later shell use. **Next:** owner Windows playtest — Release `playtest-2026-09-02` predates the chrome; new `playtest-*` tag if needed. No new system. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
 
 ### Status
 Owner (player) directed this on 2026-09-01. **D-049, D-050, D-051, D-052, D-054, D-055, D-056, and D-057 landed.** Classified Flat is a bunch sprint (sit-in, then last 250 m at peak power). Official WT starts are event-shaped (TDU 140, monuments 175, Grand Tours 176, other WT 154). After a stage the shell/CLI can show GC / points / KOM / youth / team. SimRunner `compare` puts prototype results next to 2025 analogues (not a script). Skeleton soak still uses the short proof circuit. SQLite SchemaVersion **11**. Each rider stores `CdARoadM2` and `CdATtM2`; ITT/TTT stages use the TT value. Advance Day crosses 31 Dec 2026 into season 2027+ (courses, calendar, pre-season, aging, retirements, neo-pros, AI contract cycle, season inbox).
@@ -41,13 +41,12 @@ Działa:
 - po etapie widać koszulki: GC / punkty / góry / młodzież / drużynowa (tabela, nie polityka DS w trakcie etapu);
 - cienka ekonomia: kasa, sponsor vs płace, notatka o debecie;
 - Godot: powłoka kariery w języku HTML v3 (`85b4257`: szyna z herbem i ikonami, płaskie tabele, karta z paskami); daty od 1 stycznia 2026; herb to wybrany klub; biurko pokazuje max 5 całych wyścigów; kalendarz to siatka miesiąca; inbox ze świata; rynek to kolarze ze świata z filtrem klubu; sztab/sponsorzy/skauting jeszcze nie w świecie; Release `playtest-2026-09-02` jest sprzed chrome v3;
-- Query (Application): skład i rynek mają narodowość / wiek / rolę / formę i `IdentityLine`; kalendarz niesie sparkline z `CourseProfile`; wynik ma czas i stratę z `RiderStageTime`. Godot tych pól jeszcze nie rysuje;
+- Query (Application): skład i rynek mają narodowość / wiek / rolę / formę i `IdentityLine`; kalendarz niesie 12-pkt `ElevationSparkline` plus 24-pkt `Route`; wynik ma czas i stratę z `RiderStageTime`. Godot (D-059) rysuje narodowość/wiek, sparkline 12 pkt i zegar wyniku; `IdentityLine` / rola / forma / 24-pkt Route jeszcze nie;
 - Advance Day przez 31 grudnia otwiera sezon **2027+** (nowe trasy i kalendarz, plan sezonu wraca, starzenie, emerytury, neo-pro, kontrakty AI, inbox sezonu);
 - ITT jedzie się solo (starty co 60 s); TTT liczy czas czwartego kolarza; każdy kolarz ma osobne CdA szosa / deska;
 - paczka Windows do ręcznego playtestu: GitHub Releases (tag `playtest-*`); nie commituj zipa do repo (D-053).
 
 Właśnie budujemy:
-- podpięcie w Godocie pól z query slice (IdentityLine, sparkline trasy, czas/strata) — zapytania już są; UI jeszcze ich nie rysuje;
 - ręczny playtest właściciela paczki Windows; Release `playtest-2026-09-02` jest sprzed chrome HTML v3 — nowy tag `playtest-*` jeśli ma zobaczyć nową powłokę; bez nowego systemu.
 
 Jeszcze nie:
@@ -103,7 +102,7 @@ Baza 2026: 18 ekip męskiego WorldTour plus zaproszone ProTeamy / Australia w `s
 - [x] Godot Watch Race window: Commands + Queries, interpolated icons, decision pause, Results from LastRace
 - [x] Godot career shell: POC v3 chrome; Advance Day / Race next / inbox / calendar / default simulate → result table; look catalog for empty domains
 - [x] Career calendar entries (domain system of record) and inbox query (race-due + race-result); archive cannot dismiss race deadlines
-- [x] Application UI queries: rider `IdentityLine` (nationality / age / role / form), calendar `CourseSparkline` from `CourseProfile`, result time/gap from `RiderStageTime` (Godot not wired yet)
+- [x] Application UI queries: rider nationality/age plus `IdentityLine` / role / form; 12-point `ElevationSparkline` and 24-point stage `Route`; result time/gap from `RiderStageTime`. Godot D-059 draws nationality/age, 12-pt sparkline, and clocks.
 - [x] Headless domain/application/persistence/architecture tests
 
 ## What is currently being changed
@@ -148,7 +147,7 @@ Baza 2026: 18 ekip męskiego WorldTour plus zaproszone ProTeamy / Australia w `s
 - [x] Application UI presentation queries (identity line, course sparkline, result times)
 
 ## Next task
-**Next:** Godot career shell should read the new Application query fields (`IdentityLine`, `CourseSparkline`, `TimeLabel` / `GapLabel`) — that wiring is a separate slice. Owner Windows playtest remains open: Release `playtest-2026-09-02` predates Godot HTML v3 (`85b4257`); push a new `playtest-*` tag if the owner should see the new chrome. No new system. Do not close §49. Do not rebuild Career Hub. Watch film stays off by default.
+**Next:** owner Windows playtest. Release `playtest-2026-09-02` predates Godot HTML v3 (`85b4257`); push a new `playtest-*` tag if the owner should see the new chrome. Godot already draws nationality/age, 12-point sparkline, and result clocks (D-059). `IdentityLine` / role / form / 24-point `Route` stay available on Application if the shell wants them later. No new system. Do not close §49. Do not rebuild Career Hub. Watch film stays off by default.
 
 ## Known blockers
 - None.
@@ -177,7 +176,7 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
-- `2026-09-05` — **UI presentation query slice (Application):** `main` already has nationality/age, 12-point `ElevationSparkline`, and raw finish/gap. This branch keeps that Godot-facing shape and adds Polish `RoleLabel` / form % / `IdentityLine`, per-stage `CourseSparkline` (24 pts), `TimeLabel` / `GapLabel`, and `StagesForEvent`.
+- `2026-09-05` — **UI presentation query slice (Application):** keeps the Godot-facing nationality/age, 12-point `ElevationSparkline`, and raw finish/gap from `bab80b9` / D-059, and adds Polish `RoleLabel` / form % / `IdentityLine`, per-stage `CourseSparkline` (24 pts), `TimeLabel` / `GapLabel`, and `StagesForEvent`.
 - `2026-09-02` — **Godot UI dociągnięte do HTML v3** (agent główny + Composer; `85b4257` na `main`; gate CI zielone). Skala HTML (`stretch=canvas_items`, baza 1600×900), szyna z herbem i ikonami, pigułki, `SectionBar`, płaskie `Table`, karta z paskami i ramką KONTRAKT, Biurko/Finanse/Kalendarz/Wynik. Naprawa: `SimulateRace` na WT używa dzisiejszego wyścigu ze świata, nie id prototypu. Query-gaps nie zmyślono. Plan sezonu / Nowa gra / Ustawienia dziedziczą chrome. Przekazanie: `docs/tasks/2026-09-02-session-handoff-main-agent.md`. Release `playtest-2026-09-02` jest **sprzed** tego merge — nowy tag `playtest-*` jeśli właściciel ma zagrać nowy chrome.
 - `2026-09-02` — After D-056, **Next** is owner Windows playtest (GitHub Release `playtest-2026-09-02`). No new system this slice. D-058 C# avatars stay later. §49 stays `NOT VERIFIED`.
 - `2026-09-02` — **D-056 compile fix:** `RiderCareer.RetiredFromOrganizationId` is captured on `Retire()` (former club, then detach) so the season-summary inbox can count squad retirements. Schema 11 JSON round-trips the id. Five-season soak runs after the parallel test suite (`Category=Soak`); Application tests cap at two threads.

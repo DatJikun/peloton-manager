@@ -2,7 +2,7 @@
 
 **Owner:** Cursor (Application queries). Godot wiring is Antigravity, later.  
 **Branch:** `cursor/ui-query-rider-route-results-aa63`  
-**Status:** landed on branch `cursor/ui-query-rider-route-results-aa63` (Application + tests). Godot wiring is a later slice.
+**Status:** Application extras replayed onto `main` after `bab80b9` + D-059 Godot wiring. Godot already draws nationality/age, 12-pt sparkline, and clocks; this slice adds IdentityLine / role / form / 24-pt Route / time labels.
 
 ```text
 FEATURE: Presentation queries for rider identity, course sparkline, race times
