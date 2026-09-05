@@ -45,7 +45,7 @@ Phase 1 out of scope for Godot: Career Hub UI is deleted (D-048). WT CreateWorld
 - `RiderContract` (wage, start, inclusive end) is the rider–club system of record; not manager `Employment`.
 - `CreateWorld` allocates one contract per `RiderCareer`; expired contracts remain as history.
 - Contract expiry runs after the date increment on `AdvanceOneDay`; unattached riders (`OrganizationId = null`) still receive the rest tick but do not start races.
-- `ClubRosterProjection` exposes employer roster wages, contract end day, and loyalty (headless only).
+- `ClubRosterProjection` exposes employer roster wages, contract end day, loyalty, nationality, age, Polish role label, form %, and `IdentityLine` (headless; Godot does not draw the new fields yet).
 - World checksum label is `peloton-world-checksum-v4`. Schema 3 saves may refuse to load.
 
 ## WorldTour 2026 pack (D-036 phase 5 landed)
@@ -71,7 +71,7 @@ Phase 1 out of scope for Godot: Career Hub UI is deleted (D-048). WT CreateWorld
 
 ## Results filter + thin negotiation (D-043 / D-044 phase 7 landed)
 
-- `RaceResultPlacement` carries `Place`, `OrganizationId`, and organization display name (from rider club at result time).
+- `RaceResultPlacement` carries `Place`, `OrganizationId`, organization display name (from rider club at result time), and optional finish clock/gap from `RiderStageTime` (`TimeLabel` / `GapLabel`). Godot results table is still place + name until the UI slice wires those fields.
 - `GameApplication.RaceResultForOrganization(organizationId)` returns that org's finishers with official place numbers; legal for any organization.
 - SimRunner `day --through-results` prints optional `resultTeam=` line for the player employer.
 - Contract negotiation stays in `Management`: `BeginContractNegotiationCommand`, `SetContractOfferCommand`, `ConfirmContractOfferCommand`, `CancelContractNegotiationCommand`; draft on `GameApplication`; `ContractNegotiationProjection` query.

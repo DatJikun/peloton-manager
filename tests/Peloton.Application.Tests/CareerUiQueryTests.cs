@@ -142,11 +142,7 @@ public sealed class CareerUiQueryTests
         Assert.True(RacePreparationSupport.ConfirmWithDefaultStrategy(application).Succeeded);
         Assert.True(application.Execute(new SimulateRaceCommand(PrototypeRaceScenarioId)).Succeeded);
 
-        if (application.World!.RiderStageTimes.Count == 0)
-        {
-            return;
-        }
-
+        Assert.NotEmpty(application.World!.RiderStageTimes);
         RaceResultProjection result = Assert.IsType<RaceResultProjection>(application.RaceResult);
         Assert.Contains(result.FinishOrder, placement => placement.TimeLabel is not null);
         string table = RaceOutcomeQueries.FormatTable(result, organizationId: null);

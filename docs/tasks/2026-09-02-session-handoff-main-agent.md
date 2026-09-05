@@ -57,11 +57,10 @@ Composer 2.5, trzy przebiegi, weryfikacja zrzutami z **uruchomionego** Godota 4.
 - Plan sezonu / Nowa gra / Ustawienia: **dziedziczą chrome**, bez osobnego
   przebiegu pikseli. Inbox na Biurku jest; osobnego ekranu Inbox nie ma.
 
-Czego Query nie ma, UI **nie zmyśla:** sparkline trasy na kalendarzu, flaga
-monumentu, pilność `InboxItemProjection`, księga finansowa, czas/strata w
-`RaceResultPlacement`, narodowość / wiek / rola / forma / wartość na
-`ClubRosterEntry` i `MarketRiderProjection`. Ranking i notatki sztabu =
-`CareerLookCatalog`.
+Application queries now expose nationality / age / role / form / `IdentityLine`,
+calendar `CourseSparkline`, and result time/gap. Godot still does not draw them.
+UI **nie zmyśla** the rest: monument flag, inbox urgency, finance ledger,
+transfer **wartość**. Ranking i notatki sztabu = `CareerLookCatalog`.
 
 ### 1.5 Release Windows
 Tag `playtest-2026-09-02` i Release istnieją
@@ -73,8 +72,8 @@ Właściciel, który ma zobaczyć nowy chrome, potrzebuje **nowego** tagu `playt
 
 ## 2. Co jest w toku
 
-Nic kodującego na otwartej gałęzi. Drzewo robocze: `main` @ `85b4257`.
-Otwartych PR-ów: **0**.
+Query slice Application: `cursor/ui-query-rider-route-results-aa63` (this session).
+Godot wiring of those fields is still open. Watch Race stays deferred.
 
 Właściciel: ręczny playtest Windows. Fun gate §49 nadal `NOT VERIFIED`.
 
@@ -87,11 +86,11 @@ Agent nocny D-058 (awatary) — trzy podejścia padły; lista zadań nadal aktua
 1. **Nowy tag playtest** (`playtest-2026-09-02-ui` albo data dnia), jeśli
    właściciel ma zagrać chrome HTML v3. Workflow sam buduje zip i Release.
    Nie commituj zipa do repo.
-2. **Query dla UI** (mały slice w `Peloton.Application`, prezentacyjny):
-   narodowość i wiek (`RiderCareer`), etykieta roli/archetypu, profil trasy na
-   wpisach kalendarza, czas/strata w wyniku. Wtedy UI pokaże sparkline,
-   „POL · 27 LAT · PUNCHEUR”, czasy. Osobna gałąź, nie w tym samym drzewie co
-   D-058.
+2. **Query dla UI — Application landed.** `ClubRosterEntry` / `MarketRiderProjection`
+   expose nationality, age, Polish role, form, `IdentityLine`; calendar carries
+   `CourseSparkline` from stored `CourseProfile`; `RaceResultPlacement` has
+   time/gap from `RiderStageTime`. Godot still does not draw those fields —
+   that is the next coding slice (do not invent in UI). Not in the D-058 tree.
 3. **Plan sezonu / Nowa gra / Ustawienia** — tylko jeśli właściciel powie, że
    chrome tam jest za słaby; dziś dziedziczą `LookChrome`.
 4. **Roubaix:** nie ruszaj silnika. Albo dalsza kalibracja treści (nie nazwiska
