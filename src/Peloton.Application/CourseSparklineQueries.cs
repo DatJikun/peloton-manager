@@ -13,7 +13,59 @@ public sealed record CourseSparkline(
 
 public static class CourseSparklineQueries
 {
-    private const int TargetPointCount = 24;
+    public const int PointCount = 12;
+    public const int HeightFloor = 4;
+    public const int HeightCeil = 22;
+    private const int DetailPointCount = 24;
+
+    public static int[] Build(CourseProfile? profile)
+    {
+        if (profile is null || profile.Samples.Count < 2)
+        {
+            return Array.Empty<int>();
+        }
+
+        IReadOnlyList<CourseSampleVertex> samples = profile.Samples;
+        double[] elevations = new double[PointCount];
+        for (int i = 0; i < PointCount; i++)
+        {
+            int index = i * (samples.Count - 1) / (PointCount - 1);
+            elevations[i] = samples[index].ElevationM;
+        }
+
+        double min = elevations[0];
+        double max = elevations[0];
+        for (int i = 1; i < PointCount; i++)
+        {
+            if (elevations[i] < min)
+            {
+                min = elevations[i];
+            }
+
+            if (elevations[i] > max)
+            {
+                max = elevations[i];
+            }
+        }
+
+        int[] sparkline = new int[PointCount];
+        if (Math.Abs(max - min) < double.Epsilon)
+        {
+            int flatHeight = (HeightFloor + HeightCeil) / 2;
+            Array.Fill(sparkline, flatHeight);
+            return sparkline;
+        }
+
+        double scale = (HeightCeil - HeightFloor) / (max - min);
+        for (int i = 0; i < PointCount; i++)
+        {
+            double normalized = HeightFloor + ((elevations[i] - min) * scale);
+            int height = (int)Math.Round(normalized, MidpointRounding.AwayFromZero);
+            sparkline[i] = Math.Clamp(height, HeightFloor, HeightCeil);
+        }
+
+        return sparkline;
+    }
 
     public static CourseSparkline? BuildFromCourseProfile(CourseProfile? profile)
     {
@@ -31,7 +83,7 @@ public static class CourseSparklineQueries
         double min = elevations.Min();
         double max = elevations.Max();
         int[] heights = elevations
-            .Select(elevation => NormalizeElevation(elevation, min, max))
+            .Select(elevation => NormalizeDetailElevation(elevation, min, max))
             .ToArray();
 
         return new CourseSparkline(
@@ -60,10 +112,10 @@ public static class CourseSparklineQueries
             return Array.Empty<double>();
         }
 
-        double[] elevations = new double[TargetPointCount];
-        for (int index = 0; index < TargetPointCount; index++)
+        double[] elevations = new double[DetailPointCount];
+        for (int index = 0; index < DetailPointCount; index++)
         {
-            int sampleIndex = index * (samples.Count - 1) / (TargetPointCount - 1);
+            int sampleIndex = index * (samples.Count - 1) / (DetailPointCount - 1);
             if (sampleIndex % 2 != 0 && sampleIndex > 0 && sampleIndex < samples.Count - 1)
             {
                 sampleIndex--;
@@ -77,7 +129,7 @@ public static class CourseSparklineQueries
         return elevations;
     }
 
-    private static int NormalizeElevation(double elevation, double min, double max)
+    private static int NormalizeDetailElevation(double elevation, double min, double max)
     {
         if (Math.Abs(max - min) < double.Epsilon)
         {

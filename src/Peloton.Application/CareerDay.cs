@@ -30,11 +30,11 @@ public sealed record ClubRosterEntry(
     int Cobbles,
     int Ovr,
     int PotentialOvr,
-    string? Nationality,
-    int? Age,
-    string RoleLabel,
-    int FormPercent,
-    string IdentityLine);
+    string? Nationality = null,
+    int? Age = null,
+    string RoleLabel = "",
+    int FormPercent = 0,
+    string IdentityLine = "");
 
 public sealed record ClubRosterProjection(IReadOnlyList<ClubRosterEntry> Riders);
 

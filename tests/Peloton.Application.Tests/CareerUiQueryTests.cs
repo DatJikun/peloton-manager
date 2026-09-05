@@ -70,6 +70,12 @@ public sealed class CareerUiQueryTests
 
         SeasonEventProjection tdu = application.SeasonEvents.Single(
             item => item.Name.Contains("Tour Down Under", StringComparison.Ordinal));
+        Assert.NotNull(tdu.ElevationSparkline);
+        Assert.Equal(CourseSparklineQueries.PointCount, tdu.ElevationSparkline!.Count);
+        Assert.All(
+            tdu.ElevationSparkline,
+            height => Assert.InRange(height, CourseSparklineQueries.HeightFloor, CourseSparklineQueries.HeightCeil));
+        Assert.True(tdu.LengthKm > 50);
         Assert.NotNull(tdu.Route);
         Assert.InRange(tdu.Route!.DistanceKm, 100, 180);
         Assert.Equal(24, tdu.Route.Heights.Count);
