@@ -58,7 +58,7 @@ Sonda feel seed `91234` (nie jest to „prawda historii”): Philipsen 1. na naj
 
 Świadomie odłożone. Nie kodować w tej rundzie, dopóki właściciel nie wskaże.
 
-1. **Wybór ósemki na konkretny wyścig** — dziś pierwszych 7/8 z kolejności składu.
+1. **Wybór ósemki na konkretny wyścig** — **D-060 wylądowało na `main` podczas tej sesji** (Peloton AI / inny agent): w przygotowaniu do wyścigu wybierasz 7 lub 8 z 22. Nie jest już „później”.
 2. **D-058 awatary C#** — eksperyment Python żyje, pipeline w `Peloton.Avatars` nie wylądował.
 3. **Skauting, rynek sponsorów, AI managerowie** — ekrany są atrapą.
 4. **Watch Race jako gra** — film opcjonalny, wyłączony (D-043 / D-048 / D-059). Starych PR-ów radia nie mergujemy.
@@ -99,21 +99,20 @@ Gate CI na `be52e6b` (D-059) był w toku w chwili audytu. Merge tej poprawki tyl
 
 ## 5. Kolejność dalej (żeby się nie gryźć)
 
-Dat gra zipa. Agenci nie zaczynają nowego systemu równolegle z playtestem.
+Dat gra zipa. D-060 (ósemka) już jest na `main` — nie dublować.
 
 | Kto | Następny mały krok | Nie ruszać |
 |---|---|---|
 | **Właściciel** | Playtest Windows `playtest-2026-09-05` | — |
-| **Cursor (docs / review)** | ten raport, HANDOFF | Godot chrome, Watch, Tauri |
-| **Gemini / Composer (kod)** | B-1 + B-2, testy, gate | D-058, ósemka, skauting, silnik Roubaix |
-| **Peloton AI** | ewentualne dociągnięcie Godota po playteście (odstępy, czytelność) | te same pliki Application co Gemini |
+| **Cursor (docs / review)** | ten raport, HANDOFF | Watch, Tauri |
+| **Kod po audycie** | B-1 + B-2 (koszulka młodzieżowa, godziny w stratach) | D-058, skauting, silnik Roubaix |
+| **Peloton AI** | ewentualne dociągnięcie Godota po playteście | te same pliki Application co ten PR |
 
 Po playteście, **jedna** rzecz na raz (D-035):
 
-1. Feedback właściciela z zipa (czy biurko da się czytać).
-2. Jeśli tak: query roli/formy **albo** wybór 7/8 na wyścig — nie oba w jednym drzewie.
-3. D-058 awatary osobno.
-4. WebView2 tylko jeśli Godot boli (D-059). Nie Tauri.
+1. Feedback właściciela z zipa (czy biurko da się czytać; czy wybór ósemki w prep jest jasny).
+2. Jeśli tak: dociągnięcie `IdentityLine` / roli / formy na kartę **albo** awatary D-058 — nie oba w jednym drzewie.
+3. WebView2 tylko jeśli Godot boli (D-059). Nie Tauri.
 
 ---
 
