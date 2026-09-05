@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Peloton.Domain;
 using Peloton.Simulation.Race;
 
@@ -21,7 +22,11 @@ public sealed record SetRacePreparationStrategyCommand(
     WorldEntityId LeaderId,
     WorldEntityId SupportId,
     RaceObjective Objective,
-    RaceBriefingKind BriefingKind);
+    RaceBriefingKind BriefingKind,
+    IReadOnlyList<WorldEntityId>? SelectedRiderIds = null);
+
+public sealed record SetRacePreparationStartersCommand(
+    IReadOnlyList<WorldEntityId> SelectedRiderIds);
 
 public sealed record BeginPreSeasonPlanningCommand;
 

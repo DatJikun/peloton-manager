@@ -57,6 +57,9 @@ public sealed class GameApplication
                 .ToArray();
             string objective = ResolvePreparationObjective(World, organizationId, racePreparation.RaceScenarioId);
             bool canRun = racePreparation.PlanConfirmed;
+            int requiredStarters = ResolveRequiredStartersCount(racePreparation.RaceScenarioId);
+            IReadOnlyList<WorldEntityId> selectedStarters = racePreparation.SelectedRiderIds ??
+                squad.Take(requiredStarters).ToArray();
             return new RacePreparationProjection(
                 ResolvePreparationTitle(World),
                 objective,
@@ -68,7 +71,9 @@ public sealed class GameApplication
                 racePreparation.StrategySet,
                 racePreparation.PlanConfirmed,
                 canRun,
-                canRun);
+                canRun,
+                requiredStarters,
+                selectedStarters);
         }
     }
 
@@ -640,10 +645,22 @@ public sealed class GameApplication
         }
 
         string raceScenarioId = ResolveCurrentRaceScenarioId();
+        int requiredStarters = ResolveRequiredStartersCount(raceScenarioId);
+        WorldEntityId[] initialStarters = Array.Empty<WorldEntityId>();
+        AccessContext access = GetAccessContext();
+        if (access.CurrentOrganizationId is WorldEntityId organizationId)
+        {
+            initialStarters = World.GetRiderCareersForOrganization(organizationId)
+                .Select(career => career.Id)
+                .Take(requiredStarters)
+                .ToArray();
+        }
+
         State = GameState.RacePreparationFlow;
         racePreparation = new RacePreparationCheckpoint(
             raceScenarioId,
-            PlanConfirmed: false);
+            PlanConfirmed: false,
+            SelectedRiderIds: initialStarters.Length > 0 ? initialStarters : null);
         return CommandResult.Success;
     }
 
@@ -780,6 +797,59 @@ public sealed class GameApplication
         return CommandResult.Success;
     }
 
+    public CommandResult Execute(SetRacePreparationStartersCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.RacePreparationFlow || World is null || racePreparation is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        AccessContext access = GetAccessContext();
+        if (access.CurrentOrganizationId is not WorldEntityId organizationId)
+        {
+            return CommandResult.Reject("EMPLOYER_REQUIRED");
+        }
+
+        int requiredCount = ResolveRequiredStartersCount(racePreparation.RaceScenarioId);
+        if (command.SelectedRiderIds.Count != requiredCount)
+        {
+            return CommandResult.Reject("PREP_STARTERS_COUNT_INVALID");
+        }
+
+        HashSet<WorldEntityId> squad = World.GetRiderCareersForOrganization(organizationId)
+            .Select(career => career.Id)
+            .ToHashSet();
+
+        if (command.SelectedRiderIds.Distinct().Count() != command.SelectedRiderIds.Count ||
+            !command.SelectedRiderIds.All(squad.Contains))
+        {
+            return CommandResult.Reject("PREP_STARTERS_INVALID");
+        }
+
+        WorldEntityId? leaderId = racePreparation.LeaderId;
+        WorldEntityId? supportId = racePreparation.SupportId;
+
+        if (leaderId is not null && !command.SelectedRiderIds.Contains(leaderId.Value))
+        {
+            leaderId = command.SelectedRiderIds[0];
+        }
+
+        if (supportId is not null && !command.SelectedRiderIds.Contains(supportId.Value))
+        {
+            supportId = command.SelectedRiderIds.FirstOrDefault(id => id != leaderId);
+        }
+
+        racePreparation = racePreparation with
+        {
+            SelectedRiderIds = command.SelectedRiderIds.ToArray(),
+            LeaderId = leaderId,
+            SupportId = supportId,
+        };
+
+        return CommandResult.Success;
+    }
+
     public CommandResult Execute(SetRacePreparationStrategyCommand command)
     {
         ArgumentNullException.ThrowIfNull(command);
@@ -807,12 +877,35 @@ public sealed class GameApplication
             return CommandResult.Reject("PREP_STRATEGY_RIDERS_INVALID");
         }
 
+        IReadOnlyList<WorldEntityId>? selectedRiderIds = command.SelectedRiderIds ?? racePreparation.SelectedRiderIds;
+        int requiredCount = ResolveRequiredStartersCount(racePreparation.RaceScenarioId);
+
+        if (selectedRiderIds is not null)
+        {
+            if (selectedRiderIds.Count != requiredCount)
+            {
+                return CommandResult.Reject("PREP_STARTERS_COUNT_INVALID");
+            }
+
+            if (selectedRiderIds.Distinct().Count() != selectedRiderIds.Count ||
+                !selectedRiderIds.All(squad.Contains))
+            {
+                return CommandResult.Reject("PREP_STARTERS_INVALID");
+            }
+
+            if (!selectedRiderIds.Contains(command.LeaderId) || !selectedRiderIds.Contains(command.SupportId))
+            {
+                return CommandResult.Reject("PREP_STRATEGY_RIDERS_INVALID");
+            }
+        }
+
         racePreparation = racePreparation with
         {
             LeaderId = command.LeaderId,
             SupportId = command.SupportId,
             Objective = command.Objective,
             BriefingKind = command.BriefingKind,
+            SelectedRiderIds = selectedRiderIds?.ToArray() ?? racePreparation.SelectedRiderIds,
         };
         return CommandResult.Success;
     }
@@ -841,6 +934,21 @@ public sealed class GameApplication
         if (!racePreparation.StrategySet)
         {
             return CommandResult.Reject("PREP_STRATEGY_INCOMPLETE");
+        }
+
+        if (racePreparation.SelectedRiderIds is { } starters)
+        {
+            int required = ResolveRequiredStartersCount(racePreparation.RaceScenarioId);
+            if (starters.Count != required)
+            {
+                return CommandResult.Reject("PREP_STARTERS_COUNT_INVALID");
+            }
+
+            if (!starters.Contains(racePreparation.LeaderId!.Value) ||
+                !starters.Contains(racePreparation.SupportId!.Value))
+            {
+                return CommandResult.Reject("PREP_STRATEGY_RIDERS_INVALID");
+            }
         }
 
         racePreparation = racePreparation with { PlanConfirmed = true };
@@ -1340,6 +1448,17 @@ public sealed class GameApplication
         }
     }
 
+    private int ResolveRequiredStartersCount(string raceScenarioId)
+    {
+        if (World is null)
+        {
+            return 4;
+        }
+
+        WorldRecipe recipe = scenarioCatalog.Resolve(World.ContentIdentity.ScenarioId);
+        return WorldRaceScenarioAssembler.ResolveStartersPerTeam(recipe, raceScenarioId);
+    }
+
     private string ResolveCurrentRaceScenarioId() =>
         World?.TryGetTodaysRaceContentId() ?? RacePreparationDefaults.PrototypeScenarioId;
 
@@ -1360,7 +1479,8 @@ public sealed class GameApplication
                 racePreparation.LeaderId!.Value,
                 racePreparation.SupportId!.Value,
                 racePreparation.Objective!.Value,
-                racePreparation.BriefingKind!.Value);
+                racePreparation.BriefingKind!.Value,
+                racePreparation.SelectedRiderIds);
         }
 
         CalendarEntry? todayEntry = World.CalendarEntries.FirstOrDefault(

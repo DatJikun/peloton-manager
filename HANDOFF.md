@@ -44,6 +44,7 @@ Działa:
 - Query (Application): skład i rynek mają narodowość / wiek / rolę / formę i `IdentityLine`; kalendarz niesie 12-pkt `ElevationSparkline` plus 24-pkt `Route`; wynik ma czas i stratę z `RiderStageTime`. Godot (D-059) rysuje narodowość/wiek, sparkline 12 pkt i zegar wyniku; `IdentityLine` / rola / forma / 24-pkt Route jeszcze nie;
 - Advance Day przez 31 grudnia otwiera sezon **2027+** (nowe trasy i kalendarz, plan sezonu wraca, starzenie, emerytury, neo-pro, kontrakty AI, inbox sezonu);
 - ITT jedzie się solo (starty co 60 s); TTT liczy czas czwartego kolarza; każdy kolarz ma osobne CdA szosa / deska;
+- wybór składu wyjściowego na wyścig (D-060): gracz decyduje, którzy dokładnie 7 lub 8 kolarzy (z 22-osobowego składu) jedzie w wyścigu; powoływanie rezerwowych i wyznaczanie lidera bezpośrednio w przygotowaniu do wyścigu;
 - paczka Windows do ręcznego playtestu: GitHub Releases (tag `playtest-*`); nie commituj zipa do repo (D-053).
 
 Właśnie budujemy:
@@ -52,7 +53,6 @@ Właśnie budujemy:
 Jeszcze nie:
 - D-058 C# rider avatars (`Peloton.Avatars`) — osobna lista, nie ten slice;
 - nie ma Career Hub — usunięty z repozytorium (D-048); biurko to powłoka `CareerShell.tscn`;
-- wybór ósemki na konkretny wyścig to później (dziś startuje pierwszych 7/8 składu);
 - Watch Race **jest w grze**, ale **domyślnie wyłączony** — FILM: WŁ włącza oglądanie; nie mergujemy starych PR-ów radia/DS;
 - nie ma scoutingu, dynamicznego rynku sponsorów ani AI managerów w świecie (ekrany Godota pokazują tylko katalog wyglądu);
 - §49 nie jest zaliczone — to ręczny playtest właściciela.

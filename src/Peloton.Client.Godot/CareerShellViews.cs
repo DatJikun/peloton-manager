@@ -288,7 +288,7 @@ public sealed partial class CareerShellScreen
         {
             box.AddChild(LookChrome.Kv("Cel", prep.Objective));
             box.AddChild(LookChrome.Body(
-                "Skład klubu. Kliknij kolarza, żeby ustawić lidera. Support idzie z domyślnej strategii.",
+                "Kliknij kolarza, aby powołać lub odwołać ze składu. Przycisk LIDER wyznacza kapitana.",
                 12,
                 LookChrome.Gray));
         }
@@ -306,25 +306,88 @@ public sealed partial class CareerShellScreen
             return box;
         }
 
+        int requiredCount = prep.RequiredStartersCount;
+        IReadOnlyList<WorldEntityId> starters = prep.SelectedRiderIds ??
+            prep.Squad.Take(requiredCount).ToArray();
+        HashSet<WorldEntityId> starterSet = starters.ToHashSet();
+
         box.AddChild(LookChrome.Body(
             string.Create(CultureInfo.InvariantCulture, $"{prep.Title} · {prep.Objective}"),
             13,
             LookChrome.Black,
             bold: true));
-        foreach (WorldEntityId riderId in prep.Squad)
+
+        box.AddChild(LookChrome.Meta(
+            string.Create(CultureInfo.InvariantCulture, $"SKŁAD WYJŚCIOWY ({starters.Count}/{requiredCount}):"),
+            11,
+            LookChrome.Black));
+
+        foreach (WorldEntityId riderId in starters)
         {
             WorldEntityId captured = riderId;
+            HBoxContainer row = new();
+            row.AddThemeConstantOverride("separation", 6);
+
             string role = captured == prep.LeaderId
-                ? "Leader"
+                ? "Lider"
                 : captured == prep.SupportId
-                    ? "Support"
+                    ? "Pomocnik"
                     : "Skład";
-            box.AddChild(LookChrome.Solid(
-                $"{host.RiderDisplayName(captured)} · {role}",
-                () => Apply(host.SetLeader(captured)),
+
+            Button riderBtn = LookChrome.Solid(
+                $"✓ {host.RiderDisplayName(captured)} · {role}",
+                () => Apply(host.ToggleStarter(captured)),
                 LookChrome.Paper,
                 LookChrome.Black,
-                compact: true));
+                compact: true);
+            riderBtn.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+            row.AddChild(riderBtn);
+
+            if (captured == prep.LeaderId)
+            {
+                Button leadBadge = LookChrome.Solid("★ LIDER", () => { }, LookChrome.Team, LookChrome.TeamOn, compact: true);
+                leadBadge.CustomMinimumSize = new Vector2(80, 36);
+                row.AddChild(leadBadge);
+            }
+            else
+            {
+                Button leadBtn = LookChrome.Solid("LIDER", () => Apply(host.SetLeader(captured)), LookChrome.Hair, LookChrome.Black, compact: true);
+                leadBtn.CustomMinimumSize = new Vector2(80, 36);
+                row.AddChild(leadBtn);
+            }
+
+            box.AddChild(row);
+        }
+
+        List<WorldEntityId> reserves = prep.Squad.Where(id => !starterSet.Contains(id)).ToList();
+        if (reserves.Count > 0)
+        {
+            box.AddChild(LookChrome.Meta("REZERWA (KLIKNIJ, ABY POWOŁAĆ):", 11, LookChrome.Gray));
+
+            ScrollContainer scroll = new()
+            {
+                CustomMinimumSize = new Vector2(0, 160),
+                HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled,
+            };
+            VBoxContainer reserveBox = new();
+            reserveBox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+            reserveBox.AddThemeConstantOverride("separation", 4);
+
+            foreach (WorldEntityId riderId in reserves)
+            {
+                WorldEntityId captured = riderId;
+                Button reserveBtn = LookChrome.Solid(
+                    $"+ {host.RiderDisplayName(captured)}",
+                    () => Apply(host.ToggleStarter(captured)),
+                    LookChrome.Hair,
+                    LookChrome.Black,
+                    compact: true);
+                reserveBtn.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+                reserveBox.AddChild(reserveBtn);
+            }
+
+            scroll.AddChild(reserveBox);
+            box.AddChild(scroll);
         }
 
         return box;

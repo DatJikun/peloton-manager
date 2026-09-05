@@ -260,3 +260,10 @@ Owner agreement 2026-09-05:
 3. **Reject Tauri for Peloton Manager.** Tauri introduces Rust and a triple-stack architecture (Rust window host + C# sidecar IPC + JS/HTML frontend), creating severe multi-process failure modes, complex logging, and unnecessary maintenance burden for a C#-first headless architecture.
 4. **Contingency path if Godot proves unergonomic for dense management UI:** If the owner playtest reveals that Godot UI controls (tables, fonts, calendar layout) are painful compared to the HTML prototype, the migration path is **native C# host + WebView2** (HTML/CSS with Svelte or static lab style) with zero Rust.
 
+## D-060 — Race Roster Selection in RacePreparationFlow
+Owner-ordered feature (2026-09-05).
+1. During `RacePreparationFlow`, the player can explicitly select the exact 7 or 8 starters (depending on event shape: 8 for Grand Tours, 7 for standard WT) from their 22-man squad, rather than automatically fielding the first 7/8 in squad order.
+2. Domain adds `SetRacePreparationStartersCommand` and updates `RacePreparationStrategy` / `RacePreparationCheckpoint` to carry `SelectedRiderIds`. `WorldRaceScenarioAssembler` honors player-selected starters for the player organization.
+3. Godot UI in `CareerShellViews` (`BuildPrepSeats`) displays starters (`✓`, solid background, role: Lider/Pomocnik/Skład) and reserves (`+`, soft background) with one-click substitution and leader designation.
+4. Value equality on `RacePreparationCheckpoint` ensures SQLite candidate verification preserves custom starter selections without serialization mismatch.
+

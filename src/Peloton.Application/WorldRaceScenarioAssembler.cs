@@ -196,8 +196,21 @@ public static class WorldRaceScenarioAssembler
                          inviteOriginIds.Contains(organization.OriginDefinitionId))
                      .OrderBy(organization => organization.OriginDefinitionId, StringComparer.Ordinal))
         {
-            selectedCareers.AddRange(
-                world.GetRiderCareersForOrganization(organization.Id).Take(startersPerTeam));
+            IReadOnlyList<RiderCareer> orgRiders = world.GetRiderCareersForOrganization(organization.Id);
+            if (playerOrganizationId is not null &&
+                organization.Id == playerOrganizationId.Value &&
+                playerStrategy?.SelectedRiderIds is { Count: > 0 } selectedIds &&
+                selectedIds.Count == startersPerTeam)
+            {
+                Dictionary<WorldEntityId, RiderCareer> ridersById = orgRiders.ToDictionary(r => r.Id);
+                if (selectedIds.All(ridersById.ContainsKey))
+                {
+                    selectedCareers.AddRange(selectedIds.Select(id => ridersById[id]));
+                    continue;
+                }
+            }
+
+            selectedCareers.AddRange(orgRiders.Take(startersPerTeam));
         }
 
         RiderCareer[] starters = selectedCareers
@@ -317,7 +330,7 @@ public static class WorldRaceScenarioAssembler
         return humanAuthority.Id;
     }
 
-    private static int ResolveStartersPerTeam(WorldRecipe recipe, string raceContentId)
+    public static int ResolveStartersPerTeam(WorldRecipe recipe, string raceContentId)
     {
         RaceIdentityConstraints? identity = recipe.RaceIdentities.FirstOrDefault(
             item => string.Equals(item.RaceContentId, raceContentId, StringComparison.Ordinal));

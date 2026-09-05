@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Peloton.Application;
@@ -274,7 +275,8 @@ public sealed class CareerShellHostTests
 
         AdvanceToRaceDue(reloaded);
         Assert.True(reloaded.FollowPrimary().Succeeded);
-        Assert.True(reloaded.RunRace().Succeeded);
+        CommandResult runResult = reloaded.RunRace();
+        Assert.True(runResult.Succeeded, runResult.ReasonCode);
         Assert.Equal(GameState.RaceLive, reloaded.State);
         Assert.NotNull(reloaded.Watch);
         Assert.Contains(reloaded.Watch!.Interpolated!.Riders, rider => rider.Name == "Alpha Leader");
@@ -295,6 +297,69 @@ public sealed class CareerShellHostTests
         Assert.Equal(GameState.Management, loaded.State);
         Assert.Equal(dayNumber, loaded.Day!.DayNumber);
         Assert.Equal(host.Day.EmployerName, loaded.Day.EmployerName);
+    }
+
+    [Fact]
+    public void PreparationToggleStarterSwapsReserveIntoLineup()
+    {
+        using TemporaryDirectory temp = new();
+        CareerShellHost host = CreateHost(temp.Path);
+        Assert.True(host.OpenWorldTour("organization.wt2026.uae").Succeeded);
+        Assert.True(host.BeginPreSeasonPlanning().Succeeded);
+        Assert.True(host.ConfirmPreSeasonPlan().Succeeded);
+
+        for (int day = 0; day < 40 && host.Day is { RaceDueToday: false }; day++)
+        {
+            Assert.True(host.FollowPrimary().Succeeded);
+        }
+
+        Assert.True(host.Day!.RaceDueToday);
+        Assert.True(host.FollowPrimary().Succeeded);
+        Assert.Equal(GameState.RacePreparationFlow, host.State);
+
+        RacePreparationProjection prep = host.Preparation!;
+        Assert.Equal(7, prep.RequiredStartersCount);
+        IReadOnlyList<WorldEntityId> initialStarters = prep.SelectedRiderIds!;
+        Assert.Equal(7, initialStarters.Count);
+
+        WorldEntityId reserve = prep.Squad.First(id => !initialStarters.Contains(id));
+        Assert.True(host.ToggleStarter(reserve).Succeeded);
+
+        RacePreparationProjection updated = host.Preparation!;
+        Assert.Contains(reserve, updated.SelectedRiderIds!);
+        Assert.Equal(7, updated.SelectedRiderIds!.Count);
+
+        // Now toggle that starter out
+        Assert.True(host.ToggleStarter(reserve).Succeeded);
+        RacePreparationProjection reverted = host.Preparation!;
+        Assert.DoesNotContain(reserve, reverted.SelectedRiderIds!);
+        Assert.Equal(7, reverted.SelectedRiderIds!.Count);
+    }
+
+    [Fact]
+    public void PreparationSetLeaderSetsLeaderAndPromotesReserveIfNecessary()
+    {
+        using TemporaryDirectory temp = new();
+        CareerShellHost host = CreateHost(temp.Path);
+        Assert.True(host.OpenWorldTour("organization.wt2026.uae").Succeeded);
+        Assert.True(host.BeginPreSeasonPlanning().Succeeded);
+        Assert.True(host.ConfirmPreSeasonPlan().Succeeded);
+
+        for (int day = 0; day < 40 && host.Day is { RaceDueToday: false }; day++)
+        {
+            Assert.True(host.FollowPrimary().Succeeded);
+        }
+
+        Assert.True(host.FollowPrimary().Succeeded);
+        Assert.Equal(GameState.RacePreparationFlow, host.State);
+
+        RacePreparationProjection prep = host.Preparation!;
+        WorldEntityId reserve = prep.Squad.First(id => !prep.SelectedRiderIds!.Contains(id));
+
+        Assert.True(host.SetLeader(reserve).Succeeded);
+        RacePreparationProjection updated = host.Preparation!;
+        Assert.Equal(reserve, updated.LeaderId);
+        Assert.Contains(reserve, updated.SelectedRiderIds!);
     }
 
     private static void AdvanceToRaceDue(CareerShellHost host)

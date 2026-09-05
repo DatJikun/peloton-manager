@@ -196,6 +196,56 @@ public sealed class CareerShellHost
         return application.Execute(new ArchiveInboxItemCommand(identity));
     }
 
+    public CommandResult ToggleStarter(WorldEntityId riderId)
+    {
+        if (Preparation is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        List<WorldEntityId> current = (Preparation.SelectedRiderIds ??
+            Preparation.Squad.Take(Preparation.RequiredStartersCount)).ToList();
+
+        if (current.Contains(riderId))
+        {
+            WorldEntityId reserve = Preparation.Squad.FirstOrDefault(id => !current.Contains(id));
+            if (reserve.Value != 0)
+            {
+                int idx = current.IndexOf(riderId);
+                if (idx >= 0)
+                {
+                    current[idx] = reserve;
+                }
+            }
+        }
+        else
+        {
+            if (current.Count >= Preparation.RequiredStartersCount)
+            {
+                int replaceIdx = current.FindLastIndex(id => id != Preparation.LeaderId && id != Preparation.SupportId);
+                if (replaceIdx >= 0)
+                {
+                    current[replaceIdx] = riderId;
+                }
+                else
+                {
+                    current[current.Count - 1] = riderId;
+                }
+            }
+            else
+            {
+                current.Add(riderId);
+            }
+        }
+
+        if (current.Count == Preparation.RequiredStartersCount)
+        {
+            return application.Execute(new SetRacePreparationStartersCommand(current));
+        }
+
+        return CommandResult.Success;
+    }
+
     public CommandResult SetLeader(WorldEntityId riderId)
     {
         if (Preparation is null)
@@ -203,9 +253,26 @@ public sealed class CareerShellHost
             return CommandResult.Reject("GAME_STATE_INVALID");
         }
 
-        WorldEntityId support = Preparation.SupportId is { } current && current != riderId
+        IReadOnlyList<WorldEntityId> starters = Preparation.SelectedRiderIds ??
+            Preparation.Squad.Take(Preparation.RequiredStartersCount).ToArray();
+
+        List<WorldEntityId> newStarters = starters.ToList();
+        if (!newStarters.Contains(riderId))
+        {
+            int replaceIdx = newStarters.FindLastIndex(id => id != Preparation.LeaderId && id != Preparation.SupportId);
+            if (replaceIdx >= 0)
+            {
+                newStarters[replaceIdx] = riderId;
+            }
+            else
+            {
+                newStarters[newStarters.Count - 1] = riderId;
+            }
+        }
+
+        WorldEntityId support = Preparation.SupportId is { } current && current != riderId && newStarters.Contains(current)
             ? current
-            : Preparation.Squad.FirstOrDefault(id => id != riderId);
+            : newStarters.FirstOrDefault(id => id != riderId);
         if (support.Value == 0)
         {
             return CommandResult.Reject("PREP_STRATEGY_RIDERS_INVALID");
@@ -215,7 +282,8 @@ public sealed class CareerShellHost
             riderId,
             support,
             Preparation.ObjectiveKind ?? RaceObjective.StageWin,
-            Preparation.BriefingKind ?? RaceBriefingKind.Chase));
+            Preparation.BriefingKind ?? RaceBriefingKind.Chase,
+            newStarters));
     }
 
     public CommandResult ConfirmPreparation()

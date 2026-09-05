@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Peloton.Domain;
 using Peloton.Simulation.Race;
 
@@ -7,4 +8,5 @@ public sealed record RacePreparationStrategy(
     WorldEntityId LeaderId,
     WorldEntityId SupportId,
     RaceObjective Objective,
-    RaceBriefingKind BriefingKind);
+    RaceBriefingKind BriefingKind,
+    IReadOnlyList<WorldEntityId>? SelectedRiderIds = null);

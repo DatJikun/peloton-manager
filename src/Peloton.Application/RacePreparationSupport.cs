@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Peloton.Domain;
 using Peloton.Simulation.Race;
@@ -43,12 +44,51 @@ public static class RacePreparationSupport
         }
 
         WorldEntityId support = squad.First(id => id != leader);
+        int startersCount = application.RacePreparation?.RequiredStartersCount ?? 4;
+        List<WorldEntityId> defaultStarters = new();
+        if (application.RacePreparation?.SelectedRiderIds is { Count: > 0 } currentSelection &&
+            currentSelection.Count == startersCount &&
+            currentSelection.Contains(leader))
+        {
+            defaultStarters.AddRange(currentSelection);
+            if (!defaultStarters.Contains(support))
+            {
+                support = defaultStarters.First(id => id != leader);
+            }
+        }
+        else
+        {
+            defaultStarters.Add(leader);
+            if (squad.Contains(support) && support != leader)
+            {
+                defaultStarters.Add(support);
+            }
+
+            foreach (WorldEntityId id in squad)
+            {
+                if (defaultStarters.Count >= startersCount)
+                {
+                    break;
+                }
+
+                if (!defaultStarters.Contains(id))
+                {
+                    defaultStarters.Add(id);
+                }
+            }
+
+            if (defaultStarters.Count > 1)
+            {
+                support = defaultStarters.First(id => id != leader);
+            }
+        }
 
         return application.Execute(new SetRacePreparationStrategyCommand(
             leader,
             support,
             RaceObjective.StageWin,
-            RaceBriefingKind.Chase));
+            RaceBriefingKind.Chase,
+            defaultStarters));
     }
 
     public static CommandResult ConfirmWithDefaultStrategy(GameApplication application)
