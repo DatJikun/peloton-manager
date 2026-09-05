@@ -15,7 +15,8 @@ public sealed record CalendarEntryProjection(
     string Title,
     string? OfficialResult,
     string? RaceContentId,
-    int StageIndex);
+    int StageIndex,
+    CourseSparkline? Route);
 
 public sealed record SeasonEventProjection(
     string RaceContentId,
@@ -23,7 +24,8 @@ public sealed record SeasonEventProjection(
     int StartDay,
     int EndDay,
     int StageCount,
-    string Status);
+    string Status,
+    CourseSparkline? Route);
 
 public sealed record MarketRiderProjection(
     WorldEntityId RiderCareerId,
@@ -39,7 +41,12 @@ public sealed record MarketRiderProjection(
     int Sprint,
     int Cobbles,
     int Ovr,
-    int PotentialOvr);
+    int PotentialOvr,
+    string? Nationality,
+    int? Age,
+    string RoleLabel,
+    int FormPercent,
+    string IdentityLine);
 
 public sealed record InboxItemProjection(
     string Identity,
@@ -57,15 +64,20 @@ internal static partial class CareerProjectionQueries
         ArgumentNullException.ThrowIfNull(world);
 
         return world.CalendarEntries
-            .Select(entry => new CalendarEntryProjection(
-                entry.Id,
-                entry.DayNumber,
-                FormatKind(entry.Kind),
-                DeriveStatus(world, entry, access),
-                entry.Title,
-                entry.OfficialResult,
-                entry.RaceContentId,
-                entry.StageIndex))
+            .Select(entry =>
+            {
+                CalendarEntryProjection projection = new(
+                    entry.Id,
+                    entry.DayNumber,
+                    FormatKind(entry.Kind),
+                    DeriveStatus(world, entry, access),
+                    entry.Title,
+                    entry.OfficialResult,
+                    entry.RaceContentId,
+                    entry.StageIndex,
+                    CourseSparklineQueries.BuildFromCalendarEntry(world, entry));
+                return projection;
+            })
             .ToArray();
     }
 
@@ -129,6 +141,7 @@ internal static partial class CareerProjectionQueries
                     : null;
                 RiderContract? contract = world.TryGetActiveContract(career.Id);
                 RiderRatingSet ratings = RiderRatingQueries.FromPhysiology(career, career.PotentialOvr);
+                RiderPresentationFields presentation = RiderPresentationQueries.BuildFields(world, person, career);
                 return new MarketRiderProjection(
                     career.Id,
                     person.Name,
@@ -143,7 +156,12 @@ internal static partial class CareerProjectionQueries
                     ratings.Sprint,
                     ratings.Cobbles,
                     ratings.Ovr,
-                    ratings.PotentialOvr);
+                    ratings.PotentialOvr,
+                    presentation.Nationality,
+                    presentation.Age,
+                    presentation.RoleLabel,
+                    presentation.FormPercent,
+                    presentation.IdentityLine);
             })
             .OrderBy(rider => rider.Name, StringComparer.Ordinal)
             .ToArray();
@@ -244,6 +262,10 @@ internal static partial class CareerProjectionQueries
             .Select(group =>
             {
                 CalendarEntryProjection first = group.OrderBy(entry => entry.DayNumber).First();
+                CalendarEntryProjection? routeStage = group
+                    .OrderBy(entry => entry.DayNumber)
+                    .ThenBy(entry => entry.StageIndex)
+                    .FirstOrDefault(entry => entry.Route is not null);
                 string name = StripStageSuffix(first.Title);
                 string raceContentId = first.RaceContentId ?? first.Title;
                 string status = group.Any(entry => entry.Status == "due")
@@ -257,7 +279,8 @@ internal static partial class CareerProjectionQueries
                     group.Min(entry => entry.DayNumber),
                     group.Max(entry => entry.DayNumber),
                     group.Count(),
-                    status);
+                    status,
+                    routeStage?.Route);
             })
             .OrderBy(item => item.StartDay)
             .ToArray();

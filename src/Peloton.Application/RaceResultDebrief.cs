@@ -13,7 +13,11 @@ public sealed record RaceResultPlacement(
     WorldEntityId RiderId,
     string Label,
     WorldEntityId? OrganizationId,
-    string OrganizationName);
+    string OrganizationName,
+    double? FinishTimeSeconds,
+    double? GapSeconds,
+    string? TimeLabel,
+    string? GapLabel);
 
 public sealed record RaceResultProjection(
     string Title,
@@ -43,8 +47,13 @@ public static class RaceOutcomeQueries
         }
 
         RaceScenario? scenario = TryResolve(racePreparation, raceScenarioCatalog);
+        IReadOnlyDictionary<WorldEntityId, double> finishTimes = RaceTimePresentationQueries.ResolveFinishTimes(world);
+        double? winnerTime = world.LastRace.FinishOrder.Count > 0 &&
+                             finishTimes.TryGetValue(world.LastRace.FinishOrder[0], out double resolvedWinnerTime)
+            ? resolvedWinnerTime
+            : null;
         RaceResultPlacement[] finishOrder = world.LastRace.FinishOrder
-            .Select((id, index) => BuildPlacement(world, scenario, id, index + 1))
+            .Select((id, index) => BuildPlacement(world, scenario, id, index + 1, finishTimes, winnerTime))
             .ToArray();
         return new RaceResultProjection(
             CompletedCalendarTitle(world) ?? RacePreparationDefaults.Title,
@@ -72,9 +81,23 @@ public static class RaceOutcomeQueries
             : result.FinishOrder;
         return string.Join(
             '\n',
-            rows.Select(row => string.Create(
-                CultureInfo.InvariantCulture,
-                $"{row.Place}. {row.Label}  {row.OrganizationName}")));
+            rows.Select(row =>
+            {
+                string line = string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"{row.Place}. {row.Label}  {row.OrganizationName}");
+                if (row.TimeLabel is not null)
+                {
+                    line += string.Create(CultureInfo.InvariantCulture, $"  {row.TimeLabel}");
+                }
+
+                if (row.GapLabel is not null)
+                {
+                    line += string.Create(CultureInfo.InvariantCulture, $"  {row.GapLabel}");
+                }
+
+                return line;
+            }));
     }
 
     public static RaceDebriefProjection BuildDebrief(
@@ -141,7 +164,9 @@ public static class RaceOutcomeQueries
         WorldState world,
         RaceScenario? scenario,
         WorldEntityId riderId,
-        int place)
+        int place,
+        IReadOnlyDictionary<WorldEntityId, double> finishTimes,
+        double? winnerTimeSeconds)
     {
         RiderCareer? career = world.TryGetRiderCareer(riderId);
         WorldEntityId? organizationId = career?.OrganizationId;
@@ -153,12 +178,22 @@ public static class RaceOutcomeQueries
             organizationName = organization?.Name ?? string.Empty;
         }
 
+        double? finishTimeSeconds = finishTimes.TryGetValue(riderId, out double resolvedFinishTime)
+            ? resolvedFinishTime
+            : null;
+        (double? _, double? gapSeconds, string? timeLabel, string? gapLabel) =
+            RaceTimePresentationQueries.BuildPlacementTiming(place, finishTimeSeconds, winnerTimeSeconds);
+
         return new RaceResultPlacement(
             place,
             riderId,
             Label(world, scenario, riderId),
             organizationId,
-            organizationName);
+            organizationName,
+            finishTimeSeconds,
+            gapSeconds,
+            timeLabel,
+            gapLabel);
     }
 
     private static string Label(WorldState world, RaceScenario? scenario, WorldEntityId riderId)

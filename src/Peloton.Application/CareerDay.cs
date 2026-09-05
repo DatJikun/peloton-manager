@@ -29,7 +29,12 @@ public sealed record ClubRosterEntry(
     int Sprint,
     int Cobbles,
     int Ovr,
-    int PotentialOvr);
+    int PotentialOvr,
+    string? Nationality,
+    int? Age,
+    string RoleLabel,
+    int FormPercent,
+    string IdentityLine);
 
 public sealed record ClubRosterProjection(IReadOnlyList<ClubRosterEntry> Riders);
 

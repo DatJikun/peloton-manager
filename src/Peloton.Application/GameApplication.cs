@@ -234,6 +234,7 @@ public sealed class GameApplication
                             $"Rider '{career.Id.Value}' on roster has no active contract.");
                     Person person = personsById[career.PersonId];
                     RiderRatingSet ratings = RiderRatingQueries.FromPhysiology(career, career.PotentialOvr);
+                    RiderPresentationFields presentation = RiderPresentationQueries.BuildFields(World, person, career);
                     return new ClubRosterEntry(
                         career.Id,
                         person.Name,
@@ -248,7 +249,12 @@ public sealed class GameApplication
                         ratings.Sprint,
                         ratings.Cobbles,
                         ratings.Ovr,
-                        ratings.PotentialOvr);
+                        ratings.PotentialOvr,
+                        presentation.Nationality,
+                        presentation.Age,
+                        presentation.RoleLabel,
+                        presentation.FormPercent,
+                        presentation.IdentityLine);
                 })
                 .ToArray();
             return new ClubRosterProjection(riders);
@@ -400,6 +406,11 @@ public sealed class GameApplication
 
     public IReadOnlyList<SeasonEventProjection> UpcomingEvents =>
         World is null ? Array.Empty<SeasonEventProjection>() : CareerProjectionQueries.BuildUpcomingEvents(World, GetAccessContext());
+
+    public IReadOnlyList<CalendarEntryProjection> StagesForEvent(string raceContentId) =>
+        World is null
+            ? Array.Empty<CalendarEntryProjection>()
+            : CareerProjectionQueries.StagesForEvent(World, GetAccessContext(), raceContentId);
 
     public IReadOnlyList<MarketRiderProjection> MarketRiders =>
         World is null ? Array.Empty<MarketRiderProjection>() : CareerProjectionQueries.BuildMarketRiders(World, GetAccessContext());
