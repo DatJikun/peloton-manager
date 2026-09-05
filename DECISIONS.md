@@ -252,3 +252,11 @@ Owner 2026-09-01 (multitask night). Each WorldTour club gets 22 riders from the 
 
 ## D-058 — Rider avatars pipeline in C# (`Peloton.Avatars`)
 Owner 2026-09-01 (multitask night). Port the accepted `poster` avatar experiment to a headless C# library: bit-identical trait generation from `RiderCareer.Id`, manifest validation, layered composer, PNG cache. Art stays placeholder; taste decisions in `.cursor/skills/peloton-avatars/SKILL.md` are closed. Godot wiring is a separate step by the UI agent; the library never references Godot, Application, or the save.
+
+## D-059 — Career UI direction: Godot stays for owner playtest; Tauri rejected; WebView2 contingency
+Owner agreement 2026-09-05:
+1. **Godot career shell (`CareerShell.tscn`) stays the client for the upcoming owner playtest.** The current priority is finding out if the management loop and UI feel are engaging, not rewriting the shell before the owner plays it.
+2. **Watch Race remains deferred / optional film, off by default (D-043 / D-048).** Do not divert effort into 2D/3D race view while core career data readability is being tested.
+3. **Reject Tauri for Peloton Manager.** Tauri introduces Rust and a triple-stack architecture (Rust window host + C# sidecar IPC + JS/HTML frontend), creating severe multi-process failure modes, complex logging, and unnecessary maintenance burden for a C#-first headless architecture.
+4. **Contingency path if Godot proves unergonomic for dense management UI:** If the owner playtest reveals that Godot UI controls (tables, fonts, calendar layout) are painful compared to the HTML prototype, the migration path is **native C# host + WebView2** (HTML/CSS with Svelte or static lab style) with zero Rust.
+
