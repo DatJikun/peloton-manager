@@ -13,7 +13,9 @@ public sealed record RaceResultPlacement(
     WorldEntityId RiderId,
     string Label,
     WorldEntityId? OrganizationId,
-    string OrganizationName);
+    string OrganizationName,
+    double? FinishTimeSeconds = null,
+    double? GapSeconds = null);
 
 public sealed record RaceResultProjection(
     string Title,
@@ -43,8 +45,26 @@ public static class RaceOutcomeQueries
         }
 
         RaceScenario? scenario = TryResolve(racePreparation, raceScenarioCatalog);
+        (string RaceContentId, int StageIndex)? raceContext = TryResolveCompletedRaceContext(world);
+        double? winnerTime = null;
+        if (raceContext is { } resolvedRace &&
+            world.LastRace.FinishOrder.Count > 0)
+        {
+            winnerTime = TryGetFinishTime(
+                world,
+                resolvedRace.RaceContentId,
+                resolvedRace.StageIndex,
+                world.LastRace.FinishOrder[0]);
+        }
+
         RaceResultPlacement[] finishOrder = world.LastRace.FinishOrder
-            .Select((id, index) => BuildPlacement(world, scenario, id, index + 1))
+            .Select((id, index) => BuildPlacement(
+                world,
+                scenario,
+                id,
+                index + 1,
+                raceContext,
+                winnerTime))
             .ToArray();
         return new RaceResultProjection(
             CompletedCalendarTitle(world) ?? RacePreparationDefaults.Title,
@@ -75,6 +95,35 @@ public static class RaceOutcomeQueries
             rows.Select(row => string.Create(
                 CultureInfo.InvariantCulture,
                 $"{row.Place}. {row.Label}  {row.OrganizationName}")));
+    }
+
+    public static string FormatClock(double seconds)
+    {
+        int totalSeconds = (int)Math.Round(seconds, MidpointRounding.AwayFromZero);
+        int hours = totalSeconds / 3600;
+        int minutes = (totalSeconds % 3600) / 60;
+        int secs = totalSeconds % 60;
+        if (hours > 0)
+        {
+            return string.Create(CultureInfo.InvariantCulture, $"{hours}:{minutes:D2}:{secs:D2}");
+        }
+
+        return string.Create(CultureInfo.InvariantCulture, $"{minutes}:{secs:D2}");
+    }
+
+    public static string FormatGap(double? gapSeconds)
+    {
+        if (gapSeconds is not double gap)
+        {
+            return string.Empty;
+        }
+
+        if (gap <= 0)
+        {
+            return "—";
+        }
+
+        return string.Create(CultureInfo.InvariantCulture, $"+{FormatClock(gap)}");
     }
 
     public static RaceDebriefProjection BuildDebrief(
@@ -137,11 +186,39 @@ public static class RaceOutcomeQueries
         }
     }
 
+    private static (string RaceContentId, int StageIndex)? TryResolveCompletedRaceContext(WorldState world)
+    {
+        CalendarEntry? entry = world.CalendarEntries.FirstOrDefault(item =>
+            item.DayNumber == world.LastCompletedRaceDay &&
+            item.Kind == CalendarEntryKind.Race);
+        if (entry is null || string.IsNullOrWhiteSpace(entry.RaceContentId))
+        {
+            return null;
+        }
+
+        return (entry.RaceContentId, entry.StageIndex);
+    }
+
+    private static double? TryGetFinishTime(
+        WorldState world,
+        string raceContentId,
+        int stageIndex,
+        WorldEntityId riderId)
+    {
+        RiderStageTime? stageTime = world.RiderStageTimes.FirstOrDefault(item =>
+            string.Equals(item.RaceContentId, raceContentId, StringComparison.Ordinal) &&
+            item.StageIndex == stageIndex &&
+            item.RiderId == riderId);
+        return stageTime?.FinishTimeSeconds;
+    }
+
     private static RaceResultPlacement BuildPlacement(
         WorldState world,
         RaceScenario? scenario,
         WorldEntityId riderId,
-        int place)
+        int place,
+        (string RaceContentId, int StageIndex)? raceContext,
+        double? winnerTime)
     {
         RiderCareer? career = world.TryGetRiderCareer(riderId);
         WorldEntityId? organizationId = career?.OrganizationId;
@@ -153,12 +230,24 @@ public static class RaceOutcomeQueries
             organizationName = organization?.Name ?? string.Empty;
         }
 
+        double? finishTimeSeconds = null;
+        double? gapSeconds = null;
+        if (raceContext is { } resolvedRace &&
+            winnerTime is double winner &&
+            TryGetFinishTime(world, resolvedRace.RaceContentId, resolvedRace.StageIndex, riderId) is double riderTime)
+        {
+            finishTimeSeconds = riderTime;
+            gapSeconds = riderTime - winner;
+        }
+
         return new RaceResultPlacement(
             place,
             riderId,
             Label(world, scenario, riderId),
             organizationId,
-            organizationName);
+            organizationName,
+            finishTimeSeconds,
+            gapSeconds);
     }
 
     private static string Label(WorldState world, RaceScenario? scenario, WorldEntityId riderId)

@@ -29,7 +29,9 @@ public sealed record ClubRosterEntry(
     int Sprint,
     int Cobbles,
     int Ovr,
-    int PotentialOvr);
+    int PotentialOvr,
+    string? Nationality = null,
+    int? Age = null);
 
 public sealed record ClubRosterProjection(IReadOnlyList<ClubRosterEntry> Riders);
 

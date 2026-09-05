@@ -248,7 +248,9 @@ public sealed class GameApplication
                         ratings.Sprint,
                         ratings.Cobbles,
                         ratings.Ovr,
-                        ratings.PotentialOvr);
+                        ratings.PotentialOvr,
+                        person.Nationality,
+                        person.BirthYear is int birthYear ? World.SeasonYear - birthYear : null);
                 })
                 .ToArray();
             return new ClubRosterProjection(riders);

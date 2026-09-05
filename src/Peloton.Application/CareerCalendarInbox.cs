@@ -23,7 +23,11 @@ public sealed record SeasonEventProjection(
     int StartDay,
     int EndDay,
     int StageCount,
-    string Status);
+    string Status,
+    IReadOnlyList<int>? ElevationSparkline = null,
+    double LengthKm = 0,
+    double ElevationGainM = 0,
+    string ClassifiedStageType = "");
 
 public sealed record MarketRiderProjection(
     WorldEntityId RiderCareerId,
@@ -39,7 +43,9 @@ public sealed record MarketRiderProjection(
     int Sprint,
     int Cobbles,
     int Ovr,
-    int PotentialOvr);
+    int PotentialOvr,
+    string? Nationality = null,
+    int? Age = null);
 
 public sealed record InboxItemProjection(
     string Identity,
@@ -74,7 +80,7 @@ internal static partial class CareerProjectionQueries
         AccessContext access)
     {
         ArgumentNullException.ThrowIfNull(world);
-        return GroupSeasonEvents(BuildCalendar(world, access));
+        return GroupSeasonEvents(world, BuildCalendar(world, access));
     }
 
     public static IReadOnlyList<SeasonEventProjection> BuildUpcomingEvents(
@@ -83,7 +89,7 @@ internal static partial class CareerProjectionQueries
     {
         ArgumentNullException.ThrowIfNull(world);
         int today = world.CurrentDate.DayNumber;
-        return GroupSeasonEvents(BuildCalendar(world, access))
+        return GroupSeasonEvents(world, BuildCalendar(world, access))
             .Where(item => item.EndDay >= today)
             .OrderBy(item => item.StartDay)
             .Take(5)
@@ -143,7 +149,9 @@ internal static partial class CareerProjectionQueries
                     ratings.Sprint,
                     ratings.Cobbles,
                     ratings.Ovr,
-                    ratings.PotentialOvr);
+                    ratings.PotentialOvr,
+                    person.Nationality,
+                    person.BirthYear is int birthYear ? world.SeasonYear - birthYear : null);
             })
             .OrderBy(rider => rider.Name, StringComparer.Ordinal)
             .ToArray();
@@ -232,6 +240,7 @@ internal static partial class CareerProjectionQueries
     }
 
     private static SeasonEventProjection[] GroupSeasonEvents(
+        WorldState world,
         IReadOnlyList<CalendarEntryProjection> calendar)
     {
         return calendar
@@ -251,17 +260,35 @@ internal static partial class CareerProjectionQueries
                     : group.All(entry => entry.Status == "completed")
                         ? "completed"
                         : "scheduled";
+                CourseProfile? profile = PickRepresentativeCourse(world, raceContentId);
+                IReadOnlyList<int> elevationSparkline = CourseSparklineQueries.Build(profile);
+                double lengthKm = profile?.LengthM / 1000.0 ?? 0;
+                double elevationGainM = profile?.ElevationGainM ?? 0;
+                string classifiedStageType = profile?.ClassifiedStageType.ToString() ?? string.Empty;
                 return new SeasonEventProjection(
                     raceContentId,
                     name,
                     group.Min(entry => entry.DayNumber),
                     group.Max(entry => entry.DayNumber),
                     group.Count(),
-                    status);
+                    status,
+                    elevationSparkline,
+                    lengthKm,
+                    elevationGainM,
+                    classifiedStageType);
             })
             .OrderBy(item => item.StartDay)
             .ToArray();
     }
+
+    private static CourseProfile? PickRepresentativeCourse(WorldState world, string raceContentId) =>
+        world.CourseProfiles
+            .Where(profile =>
+                string.Equals(profile.RaceContentId, raceContentId, StringComparison.Ordinal) &&
+                profile.SeasonYear == world.SeasonYear)
+            .OrderByDescending(profile => profile.ElevationGainM)
+            .ThenBy(profile => profile.StageIndex)
+            .FirstOrDefault();
 
     private static string DeriveStatus(WorldState world, CalendarEntry entry, AccessContext access)
     {
