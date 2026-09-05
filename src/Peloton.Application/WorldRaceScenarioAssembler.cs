@@ -365,7 +365,7 @@ public static class WorldRaceScenarioAssembler
                 .Select(rider => rider.RiderId)
                 .Where(id => !inGc.Contains(id))
                 .OrderByDescending(id => id.Value)
-                .Concat(gcOrder.Reverse())
+                .Concat(Enumerable.Reverse(gcOrder))
                 .ToList();
         }
 

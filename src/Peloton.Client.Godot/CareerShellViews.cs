@@ -249,6 +249,33 @@ public sealed partial class CareerShellScreen
         chips.AddThemeConstantOverride("separation", 6);
         chips.AddChild(LookChrome.Chip(LookFormat.EventStatusLabel(item.Status), "inv"));
         box.AddChild(chips);
+        if (item.ElevationSparkline is { Count: >= 2 })
+        {
+            LookSparkline sparkline = new();
+            sparkline.SetHeights(item.ElevationSparkline.ToArray());
+            box.AddChild(sparkline);
+        }
+        if (item.LengthKm > 0 || item.ElevationGainM > 0 || !string.IsNullOrWhiteSpace(item.ClassifiedStageType))
+        {
+            HBoxContainer courseMeta = new();
+            courseMeta.AddThemeConstantOverride("separation", 12);
+            if (item.LengthKm > 0)
+            {
+                courseMeta.AddChild(LookChrome.Meta("DYSTANS", 10, LookChrome.Gray));
+                courseMeta.AddChild(LookChrome.Meta(string.Create(CultureInfo.InvariantCulture, $"{item.LengthKm:F0} KM"), 10, LookChrome.Black));
+            }
+            if (item.ElevationGainM > 0)
+            {
+                courseMeta.AddChild(LookChrome.Meta("PRZEWYŻSZENIE", 10, LookChrome.Gray));
+                courseMeta.AddChild(LookChrome.Meta(string.Create(CultureInfo.InvariantCulture, $"+{item.ElevationGainM:F0} M"), 10, LookChrome.Black));
+            }
+            if (!string.IsNullOrWhiteSpace(item.ClassifiedStageType))
+            {
+                courseMeta.AddChild(LookChrome.Meta("PROFIL", 10, LookChrome.Gray));
+                courseMeta.AddChild(LookChrome.Meta(item.ClassifiedStageType.ToUpperInvariant(), 10, LookChrome.Team));
+            }
+            box.AddChild(courseMeta);
+        }
         box.AddChild(LookChrome.Solid(
             "otwórz wyścig ›",
             () => OpenRaceEvent(backView),
@@ -647,8 +674,10 @@ public sealed partial class CareerShellScreen
         head.AddChild(LookChrome.Avatar(rider.Name));
         VBoxContainer names = new();
         names.AddChild(LookChrome.Title(rider.Name));
+        string natPart = !string.IsNullOrWhiteSpace(rider.Nationality) ? $"{rider.Nationality.ToUpperInvariant()} · " : "";
+        string agePart = rider.Age.HasValue ? $"{rider.Age} LAT · " : "";
         names.AddChild(LookChrome.Body(
-            string.Create(CultureInfo.InvariantCulture, $"OVR {rider.Ovr} · POT {rider.PotentialOvr}"),
+            string.Create(CultureInfo.InvariantCulture, $"{natPart}{agePart}OVR {rider.Ovr} · POT {rider.PotentialOvr}"),
             12,
             LookChrome.Gray,
             bold: true));
@@ -791,9 +820,16 @@ public sealed partial class CareerShellScreen
         List<TableRow> rows = new(sorted.Length);
         foreach (ClubRosterEntry rider in sorted)
         {
+            string natAge = "";
+            if (!string.IsNullOrWhiteSpace(rider.Nationality) || rider.Age.HasValue)
+            {
+                string n = rider.Nationality?.ToUpperInvariant() ?? "";
+                string a = rider.Age.HasValue ? $"{rider.Age}L" : "";
+                natAge = (!string.IsNullOrEmpty(n) && !string.IsNullOrEmpty(a)) ? $"{n} · {a}" : $"{n}{a}";
+            }
             rows.Add(new TableRow(
             [
-                new TableCell(rider.Name),
+                new TableCell(rider.Name, natAge),
                 new TableCell(rider.Ovr.ToString(CultureInfo.InvariantCulture)),
                 new TableCell(rider.PotentialOvr.ToString(CultureInfo.InvariantCulture)),
                 new TableCell(rider.Climb.ToString(CultureInfo.InvariantCulture)),
@@ -1115,14 +1151,41 @@ public sealed partial class CareerShellScreen
         [
             new("#", "place", TableAlign.Center, true, 40, DisplayFont: true),
             new("Zawodnik", "rider", TableAlign.Left, false, 0, true),
+            new("Czas / Strata", "time", TableAlign.Right, false, 110),
         ];
         List<TableRow> rows = new(result.FinishOrder.Count);
         foreach (RaceResultPlacement row in result.FinishOrder)
         {
+            string timeText = "—";
+            if (row.Place == 1 && row.FinishTimeSeconds.HasValue)
+            {
+                TimeSpan t = TimeSpan.FromSeconds(row.FinishTimeSeconds.Value);
+                timeText = t.Hours > 0
+                    ? string.Create(CultureInfo.InvariantCulture, $"{t.Hours}h {t.Minutes:D2}'{t.Seconds:D2}\"")
+                    : string.Create(CultureInfo.InvariantCulture, $"{t.Minutes:D2}'{t.Seconds:D2}\"");
+            }
+            else if (row.GapSeconds.HasValue)
+            {
+                if (row.GapSeconds.Value < 0.001)
+                {
+                    timeText = "m.cz.";
+                }
+                else
+                {
+                    int totalSec = (int)Math.Round(row.GapSeconds.Value);
+                    int min = totalSec / 60;
+                    int sec = totalSec % 60;
+                    timeText = min > 0
+                        ? string.Create(CultureInfo.InvariantCulture, $"+{min}'{sec:D2}\"")
+                        : string.Create(CultureInfo.InvariantCulture, $"+{sec}\"");
+                }
+            }
+
             rows.Add(new TableRow(
             [
                 new TableCell(row.Place.ToString(CultureInfo.InvariantCulture)),
                 new TableCell(host.RiderDisplayName(row.RiderId), row.OrganizationName),
+                new TableCell(timeText),
             ]));
         }
 
@@ -1171,6 +1234,12 @@ public sealed partial class CareerShellScreen
         header.AddThemeConstantOverride("separation", 6);
         header.AddChild(LookChrome.Display(item.Name.ToUpperInvariant(), 28, LookChrome.Black));
         header.AddChild(LookChrome.Body(CareerCalendarDates.FormatRange(item.StartDay, item.EndDay), 14, LookChrome.Gray, bold: true));
+        if (item.ElevationSparkline is { Count: >= 2 })
+        {
+            LookSparkline sparkline = new();
+            sparkline.SetHeights(item.ElevationSparkline.ToArray());
+            header.AddChild(sparkline);
+        }
         content!.AddChild(Panel("WYŚCIG", header));
 
         VBoxContainer stages = new();
@@ -1504,9 +1573,17 @@ public sealed partial class CareerShellScreen
         foreach (MarketRiderProjection row in sorted)
         {
             string club = string.IsNullOrWhiteSpace(row.OrganizationName) ? "—" : row.OrganizationName;
+            string natAge = "";
+            if (!string.IsNullOrWhiteSpace(row.Nationality) || row.Age.HasValue)
+            {
+                string n = row.Nationality?.ToUpperInvariant() ?? "";
+                string a = row.Age.HasValue ? $"{row.Age}L" : "";
+                natAge = (!string.IsNullOrEmpty(n) && !string.IsNullOrEmpty(a)) ? $"{n} · {a}" : $"{n}{a}";
+            }
+            string subtitle = !string.IsNullOrEmpty(natAge) ? $"{club} · {natAge}" : club;
             rows.Add(new TableRow(
             [
-                new TableCell(row.Name, club),
+                new TableCell(row.Name, subtitle),
                 new TableCell(row.Ovr.ToString(CultureInfo.InvariantCulture)),
                 new TableCell(row.PotentialOvr.ToString(CultureInfo.InvariantCulture)),
                 new TableCell(row.Climb.ToString(CultureInfo.InvariantCulture)),
@@ -1572,8 +1649,10 @@ public sealed partial class CareerShellScreen
         head.AddChild(LookChrome.Avatar(row.Name));
         VBoxContainer names = new();
         names.AddChild(LookChrome.Title(row.Name));
+        string natPart = !string.IsNullOrWhiteSpace(row.Nationality) ? $"{row.Nationality.ToUpperInvariant()} · " : "";
+        string agePart = row.Age.HasValue ? $"{row.Age} LAT · " : "";
         names.AddChild(LookChrome.Body(
-            string.Create(CultureInfo.InvariantCulture, $"OVR {row.Ovr} · POT {row.PotentialOvr}"),
+            string.Create(CultureInfo.InvariantCulture, $"{natPart}{agePart}OVR {row.Ovr} · POT {row.PotentialOvr}"),
             12,
             LookChrome.Gray,
             bold: true));
