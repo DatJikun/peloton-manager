@@ -10,10 +10,10 @@
 4. dokumenty z `Relevant docs`
 
 ## Current milestone
-`CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md` (D-056) **landed** on SchemaVersion **11**. Godot HTML v3 chrome **landed** (`85b4257`). **D-059 landed:** Godot draws nationality/age, 12-point course sparkline, and result clocks. Application also exposes `IdentityLine` / role / form / 24-point stage `Route` / `TimeLabel`. **Next:** owner Windows playtest — Release `playtest-2026-09-02` predates the chrome; new `playtest-*` tag if the owner should see it. No new system. Do not close §49.
+Owner **Windows playtest** of Release [`playtest-2026-09-05`](https://github.com/DatJikun/peloton-manager/releases/tag/playtest-2026-09-05) (HTML v3 chrome + rider age/nationality + course sparkline + result times). SchemaVersion **11**. **D-059:** Godot stays the playtest host; Tauri rejected; WebView2 only if the desk hurts after play; Godot draws nationality/age, 12-point sparkline, result clocks; Application also has `IdentityLine` / role / form / 24-point `Route` / `TimeLabel`. **D-060 landed:** player picks the 7/8 starters in RacePreparationFlow. Audit report: `docs/tasks/2026-09-05-owner-status-and-bugs.md`. Do not close §49.
 
 ### Goal
-D-051 landed: desk / Skład / Finanse read `ClubFinanceProjection` (euro) and Skład writes D-044 contract offers. **D-052 landed:** 1 Jan 2026 dates, grouped upcoming races, month calendar, world inbox, employer crest, world market. **D-054 landed:** position is earned, pace comes from riders. **D-055 landed:** two CdA numbers; ITT is solo 60 s starts; TTT times the 4th rider. **D-056 landed:** Advance Day crosses into 2027+ (aging, retirements, neo-pros, AI contracts, season inbox). Godot career shell speaks HTML v3 (`85b4257`). **D-059:** Godot draws nationality/age, 12-point `ElevationSparkline`, and raw finish/gap clocks. Application also has `IdentityLine` / `RoleLabel` / form % / per-stage 24-point `Route` / `TimeLabel` for later shell use. **Next:** owner Windows playtest — Release `playtest-2026-09-02` predates the chrome; new `playtest-*` tag if needed. No new system. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
+D-051–D-057, D-059, and D-060 landed. Desk / Skład / Finanse / Kalendarz / Wynik read world queries. Official path is Simulate then Results. Player can pick the race eight in prep. **Next:** owner plays the 2026-09-05 zip; this session audits backend and fixes youth-jersey year + hour-gap format. Do not close §49. Do not rebuild Career Hub. Watch film stays optional and off by default.
 
 ### Status
 Owner (player) directed this on 2026-09-01. **D-049, D-050, D-051, D-052, D-054, D-055, D-056, and D-057 landed.** Classified Flat is a bunch sprint (sit-in, then last 250 m at peak power). Official WT starts are event-shaped (TDU 140, monuments 175, Grand Tours 176, other WT 154). After a stage the shell/CLI can show GC / points / KOM / youth / team. SimRunner `compare` puts prototype results next to 2025 analogues (not a script). Skeleton soak still uses the short proof circuit. SQLite SchemaVersion **11**. Each rider stores `CdARoadM2` and `CdATtM2`; ITT/TTT stages use the TT value. Advance Day crosses 31 Dec 2026 into season 2027+ (courses, calendar, pre-season, aging, retirements, neo-pros, AI contract cycle, season inbox).
@@ -40,15 +40,15 @@ Działa:
 - na sklasyfikowanym płaskim sprinter może wygrać finisz z peletonu (Philipsen przed Pogačarem w probe `91234`); na górze góral zostaje góralem;
 - po etapie widać koszulki: GC / punkty / góry / młodzież / drużynowa (tabela, nie polityka DS w trakcie etapu);
 - cienka ekonomia: kasa, sponsor vs płace, notatka o debecie;
-- Godot: powłoka kariery w języku HTML v3 (`85b4257`: szyna z herbem i ikonami, płaskie tabele, karta z paskami); daty od 1 stycznia 2026; herb to wybrany klub; biurko pokazuje max 5 całych wyścigów; kalendarz to siatka miesiąca; inbox ze świata; rynek to kolarze ze świata z filtrem klubu; sztab/sponsorzy/skauting jeszcze nie w świecie; Release `playtest-2026-09-02` jest sprzed chrome v3;
-- Query (Application): skład i rynek mają narodowość / wiek / rolę / formę i `IdentityLine`; kalendarz niesie 12-pkt `ElevationSparkline` plus 24-pkt `Route`; wynik ma czas i stratę z `RiderStageTime`. Godot (D-059) rysuje narodowość/wiek, sparkline 12 pkt i zegar wyniku; `IdentityLine` / rola / forma / 24-pkt Route jeszcze nie;
+- Godot: powłoka kariery w języku HTML v3 (`85b4257` + D-059: szyna z herbem i ikonami, płaskie tabele, karta z paskami, wiek/narodowość, sparkline, czasy); daty od 1 stycznia 2026; herb to wybrany klub; biurko pokazuje max 5 całych wyścigów; kalendarz to siatka miesiąca; inbox ze świata; rynek to kolarze ze świata z filtrem klubu; sztab/sponsorzy/skauting jeszcze nie w świecie; Release do klikania: `playtest-2026-09-05`;
+- Query (Application): skład i rynek mają narodowość / wiek / rolę / formę i `IdentityLine`; kalendarz niesie 12-pkt `ElevationSparkline` plus 24-pkt `Route`; wynik ma czas i stratę z `RiderStageTime`. Godot rysuje narodowość/wiek, sparkline 12 pkt i zegar wyniku; `IdentityLine` / rola / forma / 24-pkt Route jeszcze nie;
 - Advance Day przez 31 grudnia otwiera sezon **2027+** (nowe trasy i kalendarz, plan sezonu wraca, starzenie, emerytury, neo-pro, kontrakty AI, inbox sezonu);
 - ITT jedzie się solo (starty co 60 s); TTT liczy czas czwartego kolarza; każdy kolarz ma osobne CdA szosa / deska;
 - wybór składu wyjściowego na wyścig (D-060): gracz decyduje, którzy dokładnie 7 lub 8 kolarzy (z 22-osobowego składu) jedzie w wyścigu; powoływanie rezerwowych i wyznaczanie lidera bezpośrednio w przygotowaniu do wyścigu;
 - paczka Windows do ręcznego playtestu: GitHub Releases (tag `playtest-*`); nie commituj zipa do repo (D-053).
 
 Właśnie budujemy:
-- ręczny playtest właściciela paczki Windows; Release `playtest-2026-09-02` jest sprzed chrome HTML v3 — nowy tag `playtest-*` jeśli ma zobaczyć nową powłokę; bez nowego systemu.
+- ręczny playtest właściciela paczki `playtest-2026-09-05`; sesja 2026-09-05 to audyt backendu + raport (`docs/tasks/2026-09-05-owner-status-and-bugs.md`), nie nowy system.
 
 Jeszcze nie:
 - D-058 C# rider avatars (`Peloton.Avatars`) — osobna lista, nie ten slice;
@@ -147,7 +147,7 @@ Baza 2026: 18 ekip męskiego WorldTour plus zaproszone ProTeamy / Australia w `s
 - [x] Application UI presentation queries (identity line, course sparkline, result times)
 
 ## Next task
-**Next:** owner Windows playtest. Release `playtest-2026-09-02` predates Godot HTML v3 (`85b4257`); push a new `playtest-*` tag if the owner should see the new chrome. Godot already draws nationality/age, 12-point sparkline, and result clocks (D-059). `IdentityLine` / role / form / 24-point `Route` stay available on Application if the shell wants them later. No new system. Do not close §49. Do not rebuild Career Hub. Watch film stays off by default.
+**Next:** owner Windows playtest of [`playtest-2026-09-05`](https://github.com/DatJikun/peloton-manager/releases/tag/playtest-2026-09-05). This session: status report + backend bugs B-1 (youth jersey uses frozen 2026) and B-2 (result gaps drop hours). D-060 starter pick is already on `main`. Do not close §49. Do not rebuild Career Hub. Watch film stays off by default. Do not start WebView2/Tauri.
 
 ## Known blockers
 - None.
@@ -176,8 +176,10 @@ Nie wysyłamy właścicielowi maili o zmianach. Status jest w czacie agenta. Bez
 dostał powiadomienie.
 
 ## Recent owner decisions
+- `2026-09-05` — **Audit session:** Cursor writes `docs/tasks/2026-09-05-owner-status-and-bugs.md` (what is in the game / what is left / bugs). B-1 youth jersey year and B-2 cycling gap hours. Playtest zip is `playtest-2026-09-05`.
+- `2026-09-05` — **D-059 landed** (Godot stays on playtest; Tauri rejected; WebView2 contingency). Query slice: nationality/age, sparkline, times; Application also has `IdentityLine` / role / form / 24-pt `Route` / `TimeLabel` (Godot not fully wired for those extras).
 - `2026-09-05` — **UI presentation query slice (Application):** keeps the Godot-facing nationality/age, 12-point `ElevationSparkline`, and raw finish/gap from `bab80b9` / D-059, and adds Polish `RoleLabel` / form % / `IdentityLine`, per-stage `CourseSparkline` (24 pts), `TimeLabel` / `GapLabel`, and `StagesForEvent`.
-- `2026-09-02` — **Godot UI dociągnięte do HTML v3** (agent główny + Composer; `85b4257` na `main`; gate CI zielone). Skala HTML (`stretch=canvas_items`, baza 1600×900), szyna z herbem i ikonami, pigułki, `SectionBar`, płaskie `Table`, karta z paskami i ramką KONTRAKT, Biurko/Finanse/Kalendarz/Wynik. Naprawa: `SimulateRace` na WT używa dzisiejszego wyścigu ze świata, nie id prototypu. Query-gaps nie zmyślono. Plan sezonu / Nowa gra / Ustawienia dziedziczą chrome. Przekazanie: `docs/tasks/2026-09-02-session-handoff-main-agent.md`. Release `playtest-2026-09-02` jest **sprzed** tego merge — nowy tag `playtest-*` jeśli właściciel ma zagrać nowy chrome.
+- `2026-09-02` — **Godot UI dociągnięte do HTML v3** (agent główny + Composer; `85b4257` na `main`; gate CI zielone). Skala HTML (`stretch=canvas_items`, baza 1600×900), szyna z herbem i ikonami, pigułki, `SectionBar`, płaskie `Table`, karta z paskami i ramką KONTRAKT, Biurko/Finanse/Kalendarz/Wynik. Naprawa: `SimulateRace` na WT używa dzisiejszego wyścigu ze świata, nie id prototypu. Query-gaps nie zmyślono. Plan sezonu / Nowa gra / Ustawienia dziedziczą chrome. Przekazanie: `docs/tasks/2026-09-02-session-handoff-main-agent.md`. Release `playtest-2026-09-02` jest **sprzed** tego merge — superseded by `playtest-2026-09-05`.
 - `2026-09-02` — After D-056, **Next** is owner Windows playtest (GitHub Release `playtest-2026-09-02`). No new system this slice. D-058 C# avatars stay later. §49 stays `NOT VERIFIED`.
 - `2026-09-02` — **D-056 compile fix:** `RiderCareer.RetiredFromOrganizationId` is captured on `Retire()` (former club, then detach) so the season-summary inbox can count squad retirements. Schema 11 JSON round-trips the id. Five-season soak runs after the parallel test suite (`Category=Soak`); Application tests cap at two threads.
 - `2026-09-02` — **D-056 stage 3 landed:** age-40 (and unattached decline) retirements; one neo-pro per retirement from `content/peloton.wt-2026/names.json`; living count does not shrink (cap 512); retired riders never start. Contract: `CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md`.
@@ -297,6 +299,7 @@ RACE_FEEL_POSITION_AND_SELECTION_v0.1.md
 RACE_CDA_ROAD_TT_v0.1.md
 CAREER_SEASON_ROLLOVER_AND_AGING_v0.1.md
 docs/tasks/2026-09-02-session-handoff-main-agent.md
+docs/tasks/2026-09-05-owner-status-and-bugs.md
 ```
 
 ## Commands to run first
@@ -389,6 +392,7 @@ Peloton Manager jest na etapie pre-production. Celem jest modularny, determinist
 - `2026-09-01` — Pętla powłoki kariery (Advance Day / Race next / simulate → tabela wyniku) złącza się na `main` razem z WorldTour. Watch film zostaje opcją, nie ścieżką gry.
 - `2026-09-01` — Właściciel: usuń Career Hub całkowicie. Watch Race zostaje w grze, domyślnie wyłączony (D-048).
 
+- `2026-09-05` — Raport stanu + audyt backendu: `docs/tasks/2026-09-05-owner-status-and-bugs.md`. Właściciel ma grać zip `playtest-2026-09-05`. Watch i Godot-host zostają (D-059).
 - `2026-09-01` — **D-054 landed** (`PhysicsContractVersion = 2`): start grid po `Positioning`, dryf w grupie (bez darmowego holowania — dryf do przodu tylko dla jadących z zapasem mocy), pace-setter w strefach selekcji (bruk / strome / finał), bruk: realny Crr, prawie brak osłony, zrywy na wjeździe/zjeździe z sektora. Sondy: sprinty TdF s1 i TDU s6 → pięciu sprinterów z różnych ekip; Hautacam → super-gc. **Roubaix nadal wygrywa Evenepoel** — to treść, nie silnik (po D-057 4b top 5 przy seed `91234` to `super-gc|super-gc|super-gc|tt|gc`). Ścisła sonda Roubaix zostaje `Skip` (`KNOWN_DIFFERENCE_FROM_CODE.md`).
 - `2026-09-01` — **Listy zadań na noc:** `docs/tasks/2026-09-01-main-agent-godot-ui.md` (agent główny: D-054 + UI Godota do HTML v3 — **zrobione**, na `main`) i `docs/tasks/2026-09-01-night-agent-engine-release.md` (nr 1: D-055, D-056, md, release — zrobione), `docs/tasks/2026-09-01-night-agent-roster-depth.md` (nr 2: D-057 — zrobione, sonda Roubaix nadal Skip), `docs/tasks/2026-09-01-night-agent-avatars-csharp.md` (nr 3: D-058 — **nie wylądowało**); granice plików, żeby agenty się nie gryzły. Przekazanie sesji: `docs/tasks/2026-09-02-session-handoff-main-agent.md`.
 - `2026-09-05` — **D-059 landed** (kierunek UI kariery: Godot zostaje na playtest; Tauri odrzucone; ewentualny WebView2 po playteście). Slice Query w `Peloton.Application` (Cursor `bab80b9`: wiek, narodowość, 12-pkt sparkline, czasy/straty) oraz podpięcie Godota (Antigravity: `CareerShellViews.cs` — narodowość i wiek kolarza w karcie i tabeli, sparkline trasy w panelu wyścigu, czasy i straty `m.cz.` / `+X'YY"` w tabeli wyników).
