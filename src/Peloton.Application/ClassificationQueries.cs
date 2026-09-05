@@ -45,11 +45,13 @@ public static class ClassificationQueries
     public static ClassificationProjection Build(
         WorldState world,
         string raceContentId,
-        int seasonYear = 2026,
+        int seasonYear = 0,
         IReadOnlyList<RiderStageTime>? stageTimes = null)
     {
         ArgumentNullException.ThrowIfNull(world);
         ArgumentException.ThrowIfNullOrWhiteSpace(raceContentId);
+
+        int effectiveSeasonYear = seasonYear > 0 ? seasonYear : world.SeasonYear;
 
         bool isStageRace = world.CalendarEntries.Count(entry =>
             entry.Kind == CalendarEntryKind.Race &&
@@ -85,7 +87,7 @@ public static class ClassificationQueries
                                careers.TryGetValue(riderId, out RiderCareer? career) &&
                                persons.TryGetValue(career.PersonId, out Person? person) &&
                                person.BirthYear is int birthYear &&
-                               seasonYear - birthYear <= 24)
+                               effectiveSeasonYear - birthYear <= 24)
             .Select((standing, index) => standing with { Place = index + 1 })
             .ToList();
         List<ClassificationStanding> team = BuildTeam(times, stages, careers, organizations);

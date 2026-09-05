@@ -342,7 +342,7 @@ public sealed class GameApplication
                 return null;
             }
 
-            return ClassificationQueries.Build(World, raceContentId);
+            return ClassificationQueries.Build(World, raceContentId, World.SeasonYear);
         }
     }
 

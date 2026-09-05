@@ -152,6 +152,49 @@ public static class RaceOutcomeQueries
         return string.Create(CultureInfo.InvariantCulture, $"+{FormatClock(gap)}");
     }
 
+    public static string FormatCyclingClock(double seconds)
+    {
+        int totalSeconds = (int)Math.Round(seconds, MidpointRounding.AwayFromZero);
+        int hours = totalSeconds / 3600;
+        int minutes = (totalSeconds % 3600) / 60;
+        int secs = totalSeconds % 60;
+        if (hours > 0)
+        {
+            return string.Create(CultureInfo.InvariantCulture, $"{hours}h {minutes:D2}'{secs:D2}\"");
+        }
+
+        return string.Create(CultureInfo.InvariantCulture, $"{minutes}'{secs:D2}\"");
+    }
+
+    public static string FormatCyclingGap(double? gapSeconds)
+    {
+        if (gapSeconds is not double gap)
+        {
+            return string.Empty;
+        }
+
+        if (gap <= 0.001)
+        {
+            return "m.cz.";
+        }
+
+        int totalSeconds = (int)Math.Round(gap, MidpointRounding.AwayFromZero);
+        int hours = totalSeconds / 3600;
+        int minutes = (totalSeconds % 3600) / 60;
+        int secs = totalSeconds % 60;
+        if (hours > 0)
+        {
+            return string.Create(CultureInfo.InvariantCulture, $"+{hours}h {minutes:D2}'{secs:D2}\"");
+        }
+
+        if (minutes > 0)
+        {
+            return string.Create(CultureInfo.InvariantCulture, $"+{minutes}'{secs:D2}\"");
+        }
+
+        return string.Create(CultureInfo.InvariantCulture, $"+{secs}\"");
+    }
+
     public static RaceDebriefProjection BuildDebrief(
         WorldState? world,
         RacePreparationCheckpoint? racePreparation,

@@ -141,6 +141,7 @@ public static class HistoricalCompareCommand
         ClassificationProjection jerseys = ClassificationQueries.Build(
             world,
             comparison.SimRaceContentId,
+            world.SeasonYear,
             stageTimes: times);
         output.WriteLine(
             string.Create(

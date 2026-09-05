@@ -29,6 +29,19 @@ public sealed class ClassificationQueriesTests
     }
 
     [Fact]
+    public void YouthJerseyUsesSeasonYearNotFrozenAt2026()
+    {
+        WorldState world = CreateTwoStageWorld();
+        ClassificationProjection in2026 = ClassificationQueries.Build(world, RaceId, seasonYear: 2026);
+        Assert.Equal("Youth Rider", in2026.YouthLeader!.Label);
+
+        WorldState world2027 = CreateTwoStageWorld(seasonYear: 2027);
+        ClassificationProjection in2027 = ClassificationQueries.Build(world2027, RaceId);
+        Assert.Null(in2027.YouthLeader);
+        Assert.Empty(in2027.YouthTop10);
+    }
+
+    [Fact]
     public void OneDayRaceHasNoJerseyTable()
     {
         WorldState world = CreateTwoStageWorld();
@@ -60,7 +73,7 @@ public sealed class ClassificationQueriesTests
         Assert.Null(projection.GcLeader);
     }
 
-    private static WorldState CreateTwoStageWorld()
+    private static WorldState CreateTwoStageWorld(int seasonYear = 2026)
     {
         WorldEntityId orgA = new(10);
         WorldEntityId orgB = new(11);
@@ -112,7 +125,8 @@ public sealed class ClassificationQueriesTests
                 new RiderStageTime(RaceId, 2, helper.Career.Id, 2300),
                 new RiderStageTime(RaceId, 2, helper2.Career.Id, 2400),
             },
-            generatePeriodicRaces: false);
+            generatePeriodicRaces: false,
+            seasonYear: seasonYear);
     }
 
     private static (Person Person, RiderCareer Career) Rider(

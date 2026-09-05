@@ -1222,25 +1222,14 @@ public sealed partial class CareerShellScreen
             string timeText = "—";
             if (row.Place == 1 && row.FinishTimeSeconds.HasValue)
             {
-                TimeSpan t = TimeSpan.FromSeconds(row.FinishTimeSeconds.Value);
-                timeText = t.Hours > 0
-                    ? string.Create(CultureInfo.InvariantCulture, $"{t.Hours}h {t.Minutes:D2}'{t.Seconds:D2}\"")
-                    : string.Create(CultureInfo.InvariantCulture, $"{t.Minutes:D2}'{t.Seconds:D2}\"");
+                timeText = RaceOutcomeQueries.FormatCyclingClock(row.FinishTimeSeconds.Value);
             }
             else if (row.GapSeconds.HasValue)
             {
-                if (row.GapSeconds.Value < 0.001)
+                string gapText = RaceOutcomeQueries.FormatCyclingGap(row.GapSeconds);
+                if (!string.IsNullOrEmpty(gapText))
                 {
-                    timeText = "m.cz.";
-                }
-                else
-                {
-                    int totalSec = (int)Math.Round(row.GapSeconds.Value);
-                    int min = totalSec / 60;
-                    int sec = totalSec % 60;
-                    timeText = min > 0
-                        ? string.Create(CultureInfo.InvariantCulture, $"+{min}'{sec:D2}\"")
-                        : string.Create(CultureInfo.InvariantCulture, $"+{sec}\"");
+                    timeText = gapText;
                 }
             }
 

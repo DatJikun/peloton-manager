@@ -143,6 +143,13 @@ public sealed class CareerDeskQuerySliceTests
         Assert.Equal("+1:01:01", RaceOutcomeQueries.FormatGap(3661));
         Assert.Equal("2:05", RaceOutcomeQueries.FormatClock(125));
         Assert.Equal("1:01:01", RaceOutcomeQueries.FormatClock(3661));
+        Assert.Equal("2'05\"", RaceOutcomeQueries.FormatCyclingClock(125));
+        Assert.Equal("1h 01'01\"", RaceOutcomeQueries.FormatCyclingClock(3661));
+        Assert.Equal("m.cz.", RaceOutcomeQueries.FormatCyclingGap(0));
+        Assert.Equal("+1'05\"", RaceOutcomeQueries.FormatCyclingGap(65));
+        Assert.Equal("+1h 01'01\"", RaceOutcomeQueries.FormatCyclingGap(3661));
+        Assert.Equal(string.Empty, RaceOutcomeQueries.FormatCyclingGap(null));
+        Assert.Equal("+1h 30'00\"", RaceOutcomeQueries.FormatCyclingGap(90 * 60));
     }
 
     private static GameApplication CreateConfirmedWorldTourCareer(string employerOriginId)
