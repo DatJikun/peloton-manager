@@ -627,6 +627,8 @@ public sealed class WorldState
             }
         }
 
+        EvaluateBoardObjectives(raceContentId, starters, placeByRider, result.WinnerId);
+
         string officialResult = string.Create(
             System.Globalization.CultureInfo.InvariantCulture,
             $"Winner {result.WinnerId.Value}");
@@ -650,6 +652,108 @@ public sealed class WorldState
         if (GeneratePeriodicRaces)
         {
             EnsureUpcomingRaceEntry(raceContentId);
+        }
+    }
+
+    private void EvaluateBoardObjectives(
+        string raceContentId,
+        IReadOnlyList<WorldEntityId> starters,
+        IReadOnlyDictionary<WorldEntityId, int> placeByRider,
+        WorldEntityId winnerId)
+    {
+        Dictionary<WorldEntityId, RiderCareer> careersById = riderCareers.ToDictionary(c => c.Id);
+        Dictionary<WorldEntityId, Person> personsById = persons.ToDictionary(p => p.Id);
+
+        RiderCareer? winningCareer = careersById.GetValueOrDefault(winnerId);
+        WorldEntityId? winningOrgId = winningCareer?.OrganizationId;
+
+        bool isMonumentOrClassic = raceContentId.Contains("classic", StringComparison.OrdinalIgnoreCase) ||
+                                  raceContentId.Contains("monument", StringComparison.OrdinalIgnoreCase) ||
+                                  raceContentId.Contains("roubaix", StringComparison.OrdinalIgnoreCase) ||
+                                  raceContentId.Contains("flanders", StringComparison.OrdinalIgnoreCase) ||
+                                  raceContentId.Contains("sanremo", StringComparison.OrdinalIgnoreCase) ||
+                                  raceContentId.Contains("liege", StringComparison.OrdinalIgnoreCase) ||
+                                  raceContentId.Contains("lombardia", StringComparison.OrdinalIgnoreCase);
+
+        foreach (Organization org in organizations)
+        {
+            if (org.SponsorAgreement is not SponsorAgreement sponsorship)
+            {
+                continue;
+            }
+
+            bool wonRace = winningOrgId is not null && winningOrgId == org.Id;
+            bool podiumFinish = false;
+            bool youthFinished = false;
+
+            foreach (WorldEntityId starterId in starters)
+            {
+                if (!careersById.TryGetValue(starterId, out RiderCareer? starterCareer) ||
+                    starterCareer.OrganizationId != org.Id)
+                {
+                    continue;
+                }
+
+                if (placeByRider.TryGetValue(starterId, out int place) && place is >= 1 and <= 3)
+                {
+                    podiumFinish = true;
+                }
+
+                if (personsById.TryGetValue(starterCareer.PersonId, out Person? person) &&
+                    person.BirthYear is int birthYear &&
+                    SeasonYear - birthYear <= 23 &&
+                    placeByRider.ContainsKey(starterId))
+                {
+                    youthFinished = true;
+                }
+            }
+
+            foreach (BoardObjective objective in sponsorship.Objectives)
+            {
+                if (objective.IsCompleted || objective.IsFailed)
+                {
+                    continue;
+                }
+
+                bool completedNow = false;
+                switch (objective.Kind)
+                {
+                    case BoardObjectiveKind.WinRace:
+                        if (wonRace && (objective.TargetRaceContentId is null ||
+                            string.Equals(objective.TargetRaceContentId, raceContentId, StringComparison.Ordinal)))
+                        {
+                            completedNow = objective.AddProgress(1);
+                        }
+                        break;
+
+                    case BoardObjectiveKind.SeasonWinsCount:
+                        if (wonRace)
+                        {
+                            completedNow = objective.AddProgress(1);
+                        }
+                        break;
+
+                    case BoardObjectiveKind.PodiumMonument:
+                        if (isMonumentOrClassic && podiumFinish)
+                        {
+                            completedNow = objective.AddProgress(1);
+                        }
+                        break;
+
+                    case BoardObjectiveKind.YouthDevelopment:
+                        if (youthFinished)
+                        {
+                            completedNow = objective.AddProgress(1);
+                        }
+                        break;
+                }
+
+                if (completedNow)
+                {
+                    org.AddCash(objective.BonusRewardEur);
+                    sponsorship.AdjustTrust(objective.TrustImpactPercent / 100.0);
+                }
+            }
         }
     }
 

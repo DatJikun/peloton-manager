@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Peloton.Domain;
 
@@ -36,7 +37,8 @@ public sealed class Organization
         string groupset = "",
         long estimatedBudgetEur = 0,
         long cashEur = 0,
-        long titleSponsorAnnualFeeEur = 0)
+        long titleSponsorAnnualFeeEur = 0,
+        SponsorAgreement? sponsorAgreement = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(daysSimulated);
         ArgumentOutOfRangeException.ThrowIfNegative(licenceYearsRemaining);
@@ -55,6 +57,7 @@ public sealed class Organization
         EstimatedBudgetEur = estimatedBudgetEur;
         CashEur = cashEur;
         TitleSponsorAnnualFeeEur = titleSponsorAnnualFeeEur;
+        SponsorAgreement = sponsorAgreement ?? CreateDefaultSponsorship(name, titleSponsor, titleSponsorAnnualFeeEur);
     }
 
     public WorldEntityId Id { get; }
@@ -91,14 +94,43 @@ public sealed class Organization
 
     public long TitleSponsorAnnualFeeEur { get; }
 
+    public SponsorAgreement SponsorAgreement { get; private set; }
+
+    public OrganizationScoutingStore ScoutingStore { get; } = new();
+
     public void AdvanceOneDay()
     {
         DaysSimulated = checked(DaysSimulated + 1);
+        ScoutingStore.AdvanceOneDay();
     }
 
     public void ApplyFinanceTick(long dailySponsor, long dailyWages)
     {
         CashEur = checked(CashEur + dailySponsor - dailyWages);
+    }
+
+    public void SetSponsorAgreement(SponsorAgreement agreement)
+    {
+        ArgumentNullException.ThrowIfNull(agreement);
+        SponsorAgreement = agreement;
+    }
+
+    public void AddCash(long amountEur)
+    {
+        CashEur = checked(CashEur + amountEur);
+    }
+
+    private static SponsorAgreement CreateDefaultSponsorship(string teamName, string sponsorName, long fee)
+    {
+        string actualSponsor = string.IsNullOrWhiteSpace(sponsorName) ? $"{teamName} Partner" : sponsorName;
+        long annualFee = fee > 0 ? fee : 4_500_000;
+        List<BoardObjective> objectives =
+        [
+            new BoardObjective("obj.wins", "Zwycięstwa w wyścigach sezonu", BoardObjectiveKind.SeasonWinsCount, 3, bonusRewardEur: 150_000, trustImpactPercent: 20),
+            new BoardObjective("obj.monument", "Podium w prestiżowym wyścigu klasycznym", BoardObjectiveKind.PodiumMonument, 1, bonusRewardEur: 250_000, trustImpactPercent: 25),
+            new BoardObjective("obj.youth", "Ukończenie wyścigów przez młodzieżowców U23", BoardObjectiveKind.YouthDevelopment, 4, bonusRewardEur: 100_000, trustImpactPercent: 15),
+        ];
+        return new SponsorAgreement(actualSponsor, "Sponsor Tytularny", annualFee, 2027, 0.75, objectives);
     }
 }
 

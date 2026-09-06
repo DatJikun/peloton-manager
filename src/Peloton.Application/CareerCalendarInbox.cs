@@ -50,7 +50,15 @@ public sealed record MarketRiderProjection(
     int? Age = null,
     string RoleLabel = "",
     int FormPercent = 0,
-    string IdentityLine = "");
+    string IdentityLine = "",
+    string StyleLabel = "",
+    double Stars = 3.0,
+    string StarsDisplay = "★★★☆☆",
+    string ScoutingLevel = "Nieznany",
+    int SeasonalFatiguePercent = 0,
+    int SeasonRaceDaysCount = 0,
+    bool IsExpiringThisYear = false,
+    bool IsFreeAgent = false);
 
 public sealed record InboxItemProjection(
     string Identity,
@@ -131,6 +139,7 @@ internal static partial class CareerProjectionQueries
             return Array.Empty<MarketRiderProjection>();
         }
 
+        Organization? playerOrg = world.Organizations.FirstOrDefault(o => o.Id == employerId);
         Dictionary<WorldEntityId, Person> personsById = world.Persons.ToDictionary(person => person.Id);
         Dictionary<WorldEntityId, Organization> organizationsById = world.Organizations
             .ToDictionary(organization => organization.Id);
@@ -146,10 +155,39 @@ internal static partial class CareerProjectionQueries
                 RiderContract? contract = world.TryGetActiveContract(career.Id);
                 RiderRatingSet ratings = RiderRatingQueries.FromPhysiology(career, career.PotentialOvr);
                 RiderPresentationFields presentation = RiderPresentationQueries.BuildFields(world, person, career);
+                RiderStarsProfile starsProfile = RiderStyleRatingQueries.ComputeProfile(ratings, career.OriginDefinitionId);
+
+                ScoutingKnowledgeLevel scoutLevel = playerOrg?.ScoutingStore.GetLevel(career.Id) ?? ScoutingKnowledgeLevel.Unknown;
+                string scoutLabel = scoutLevel switch
+                {
+                    ScoutingKnowledgeLevel.Discovered => "Pełny",
+                    ScoutingKnowledgeLevel.Observed => "Obserwowany",
+                    _ => "Nieznany",
+                };
+
+                double displayedStars = starsProfile.PrimaryStars;
+                string displayedStarsText = starsProfile.PrimaryStarsDisplay;
+                if (scoutLevel == ScoutingKnowledgeLevel.Unknown)
+                {
+                    double minStars = Math.Max(1.0, Math.Round(starsProfile.PrimaryStars - 1.0, 1));
+                    double maxStars = Math.Min(5.0, Math.Round(starsProfile.PrimaryStars + 0.5, 1));
+                    displayedStarsText = RiderStyleRatingQueries.FormatFogBandStars(minStars, maxStars);
+                }
+                else if (scoutLevel == ScoutingKnowledgeLevel.Observed)
+                {
+                    double minStars = Math.Max(1.0, Math.Round(starsProfile.PrimaryStars - 0.5, 1));
+                    double maxStars = Math.Min(5.0, Math.Round(starsProfile.PrimaryStars + 0.5, 1));
+                    displayedStarsText = RiderStyleRatingQueries.FormatFogBandStars(minStars, maxStars);
+                }
+
+                bool isExpiringThisYear = contract is not null &&
+                                          contract.EndDate.DayNumber <= world.SeasonStartDayNumber + 365;
+                bool isFreeAgent = organization is null || career.OrganizationId is null;
+
                 return new MarketRiderProjection(
                     career.Id,
                     person.Name,
-                    organization?.Name ?? string.Empty,
+                    organization?.Name ?? "Wolny agent",
                     organization?.OriginDefinitionId ?? string.Empty,
                     contract?.AnnualWage ?? 0,
                     contract?.EndDate.DayNumber ?? 0,
@@ -165,7 +203,15 @@ internal static partial class CareerProjectionQueries
                     presentation.Age,
                     presentation.RoleLabel,
                     presentation.FormPercent,
-                    presentation.IdentityLine);
+                    presentation.IdentityLine,
+                    starsProfile.PrimaryStyleLabel,
+                    displayedStars,
+                    displayedStarsText,
+                    scoutLabel,
+                    presentation.SeasonalFatiguePercent,
+                    presentation.SeasonRaceDaysCount,
+                    isExpiringThisYear,
+                    isFreeAgent);
             })
             .OrderBy(rider => rider.Name, StringComparer.Ordinal)
             .ToArray();

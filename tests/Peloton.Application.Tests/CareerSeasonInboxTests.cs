@@ -31,7 +31,7 @@ public sealed class CareerSeasonInboxTests
         WorldState world = application.World!;
         WorldEntityId playerOrg = application.GetAccessContext().CurrentOrganizationId!.Value;
         RiderCareer rider = world.GetRiderCareersForOrganization(playerOrg)[0];
-        int warningDay = 200;
+        int warningDay = 15;
         int endDay = warningDay + 60;
         world.TryTerminateActiveContract(rider.Id, new WorldDate(0));
         world.AddRiderContract(new RiderContract(

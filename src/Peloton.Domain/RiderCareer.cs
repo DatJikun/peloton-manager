@@ -38,13 +38,18 @@ public sealed class RiderCareer
         IEnumerable<RiderCareerResult>? results = null,
         double? cdATtM2 = null,
         bool isRetired = false,
-        WorldEntityId? retiredFromOrganizationId = null)
+        WorldEntityId? retiredFromOrganizationId = null,
+        double seasonalFatigue01 = 0.0,
+        int seasonRaceDaysCount = 0)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(originDefinitionId);
         RequireUnitInterval(form01, nameof(form01));
         RequireUnitInterval(freshness01, nameof(freshness01));
         RequireUnitInterval(fatigue01, nameof(fatigue01));
         RequireUnitInterval(loyalty01, nameof(loyalty01));
+        RequireUnitInterval(seasonalFatigue01, nameof(seasonalFatigue01));
+        ArgumentOutOfRangeException.ThrowIfNegative(seasonRaceDaysCount);
+
         if (potentialOvr < 1 || potentialOvr > 99)
         {
             throw new ArgumentOutOfRangeException(nameof(potentialOvr));
@@ -78,6 +83,8 @@ public sealed class RiderCareer
         PotentialOvr = potentialOvr;
         IsRetired = isRetired;
         RetiredFromOrganizationId = retiredFromOrganizationId;
+        SeasonalFatigue01 = seasonalFatigue01;
+        SeasonRaceDaysCount = seasonRaceDaysCount;
         this.results = (results ?? Array.Empty<RiderCareerResult>()).ToList();
     }
 
@@ -147,6 +154,10 @@ public sealed class RiderCareer
 
     public double Fatigue01 { get; private set; }
 
+    public double SeasonalFatigue01 { get; private set; }
+
+    public int SeasonRaceDaysCount { get; private set; }
+
     public double Loyalty01 { get; }
 
     public int PotentialOvr { get; private set; }
@@ -166,6 +177,13 @@ public sealed class RiderCareer
     {
         Fatigue01 = Clamp01(Fatigue01 * 0.82);
         Freshness01 = Clamp01(Freshness01 + (0.12 * (1.0 - Freshness01)));
+
+        // When acute fatigue is low, resting rider steadily recovers chronic seasonal fatigue
+        if (Fatigue01 < 0.20 && SeasonalFatigue01 > 0.0)
+        {
+            SeasonalFatigue01 = Clamp01(SeasonalFatigue01 - 0.006);
+        }
+
         Form01 = Clamp01(Form01 + (0.05 * (0.90 - Form01)));
     }
 
@@ -174,6 +192,8 @@ public sealed class RiderCareer
         Form01 = 1.0;
         Freshness01 = 1.0;
         Fatigue01 = 0.0;
+        SeasonalFatigue01 = 0.0;
+        SeasonRaceDaysCount = 0;
     }
 
     public void ApplyAgingPhysiology(
@@ -206,13 +226,24 @@ public sealed class RiderCareer
 
     public void ApplyRaceLoad()
     {
+        SeasonRaceDaysCount = checked(SeasonRaceDaysCount + 1);
         Fatigue01 = Clamp01(Fatigue01 + 0.30);
         Freshness01 = Clamp01(Freshness01 - 0.25);
-        Form01 = Clamp01(Form01 - 0.08);
+
+        // Accumulate seasonal wear; accelerate if heavily raced (>35 days in season)
+        double seasonalDelta = SeasonRaceDaysCount > 35 ? 0.035 : 0.020;
+        SeasonalFatigue01 = Clamp01(SeasonalFatigue01 + seasonalDelta);
+
+        // Acute race load reduces form in the short term, amplified when chronic wear is high
+        double formDrop = 0.08 + (0.02 * SeasonalFatigue01);
+        Form01 = Clamp01(Form01 - formDrop);
     }
 
     public double ComputeReadiness() =>
-        (0.70 + (0.30 * Form01)) * (0.85 + (0.15 * Freshness01)) * (1.0 - (0.25 * Fatigue01));
+        (0.70 + (0.30 * Form01)) *
+        (0.85 + (0.15 * Freshness01)) *
+        (1.0 - (0.25 * Fatigue01)) *
+        (1.0 - (0.35 * SeasonalFatigue01));
 
     private static double Clamp01(double value)
     {

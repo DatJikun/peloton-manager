@@ -73,6 +73,13 @@ public sealed record ConfirmContractOfferCommand;
 
 public sealed record CancelContractNegotiationCommand;
 
+public sealed record StartScoutingMissionCommand(
+    WorldEntityId TargetRiderCareerId,
+    string ScoutName = "Główny Skaut",
+    int DurationDays = 7);
+
+public sealed record ExtendSponsorAgreementCommand(int AdditionalYears = 2);
+
 public sealed record CommandResult(bool Succeeded, string ReasonCode)
 {
     public static CommandResult Success { get; } = new(true, "OK");

@@ -67,6 +67,8 @@ public static class WorldChecksum
                 writer.Write(career.Form01);
                 writer.Write(career.Freshness01);
                 writer.Write(career.Fatigue01);
+                writer.Write(career.SeasonalFatigue01);
+                writer.Write(career.SeasonRaceDaysCount);
                 writer.Write(career.Loyalty01);
                 writer.Write(career.PotentialOvr);
                 writer.Write(career.IsRetired);

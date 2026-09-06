@@ -61,6 +61,9 @@ public static class RiderPresentationQueries
         return parts.Count == 0 ? string.Empty : string.Join(" · ", parts);
     }
 
+    public static int ComputeSeasonalFatiguePercent(double seasonalFatigue01) =>
+        Math.Clamp((int)Math.Round(seasonalFatigue01 * 100.0, MidpointRounding.AwayFromZero), 0, 100);
+
     public static RiderPresentationFields BuildFields(WorldState world, Person person, RiderCareer career)
     {
         ArgumentNullException.ThrowIfNull(world);
@@ -74,7 +77,9 @@ public static class RiderPresentationQueries
             age,
             roleLabel,
             ComputeFormPercent(career.Form01),
-            BuildIdentityLine(person.Nationality, age, roleLabel));
+            BuildIdentityLine(person.Nationality, age, roleLabel),
+            ComputeSeasonalFatiguePercent(career.SeasonalFatigue01),
+            career.SeasonRaceDaysCount);
     }
 }
 
@@ -83,4 +88,6 @@ public sealed record RiderPresentationFields(
     int? Age,
     string RoleLabel,
     int FormPercent,
-    string IdentityLine);
+    string IdentityLine,
+    int SeasonalFatiguePercent = 0,
+    int SeasonRaceDaysCount = 0);

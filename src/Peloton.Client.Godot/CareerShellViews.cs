@@ -744,9 +744,8 @@ public sealed partial class CareerShellScreen
             12,
             LookChrome.Gray,
             bold: true));
-        names.AddChild(LookChrome.Kv("OVR / POT", string.Create(
-            CultureInfo.InvariantCulture,
-            $"{rider.Ovr} / {rider.PotentialOvr}")));
+        names.AddChild(LookChrome.Kv("Styl kolarza", $"{rider.StyleLabel} ({rider.StarsDisplay})"));
+        names.AddChild(LookChrome.Kv("Zmęczenie sezonowe", $"{rider.SeasonalFatiguePercent}% ({rider.SeasonRaceDaysCount} dni startowych)"));
         head.AddChild(names);
         box.AddChild(head);
 
@@ -870,15 +869,16 @@ public sealed partial class CareerShellScreen
         TableColumn[] columns =
         [
             new("Zawodnik", "last", TableAlign.Left, false, 0, true),
-            new("OVR", "ovr", TableAlign.Center, true, 56),
-            new("POT", "pot", TableAlign.Center, false, 56),
-            new("Góry", "climb", TableAlign.Center, false, 56),
-            new("Pagórki", "hills", TableAlign.Center, false, 52),
-            new("Płaskie", "flat", TableAlign.Center, false, 52),
+            new("Styl", "style", TableAlign.Center, false, 74),
+            new("Gwiazdki", "stars", TableAlign.Center, false, 82),
+            new("OVR", "ovr", TableAlign.Center, true, 46),
+            new("POT", "pot", TableAlign.Center, false, 46),
+            new("Zmęcz.", "fatigue", TableAlign.Center, false, 56),
+            new("Dni", "days", TableAlign.Center, false, 42),
+            new("Góry", "climb", TableAlign.Center, false, 46),
+            new("Sprint", "sprint", TableAlign.Center, false, 46),
             new("TT", "tt", TableAlign.Center, false, 44),
-            new("Sprint", "sprint", TableAlign.Center, false, 52),
-            new("Bruk", "cobbles", TableAlign.Center, false, 52),
-            new("Pensja", "wage", TableAlign.Right, false, 92),
+            new("Pensja", "wage", TableAlign.Right, false, 86),
         ];
         List<TableRow> rows = new(sorted.Length);
         foreach (ClubRosterEntry rider in sorted)
@@ -893,14 +893,15 @@ public sealed partial class CareerShellScreen
             rows.Add(new TableRow(
             [
                 new TableCell(rider.Name, natAge),
+                new TableCell(rider.StyleLabel),
+                new TableCell(rider.StarsDisplay),
                 new TableCell(rider.Ovr.ToString(CultureInfo.InvariantCulture)),
                 new TableCell(rider.PotentialOvr.ToString(CultureInfo.InvariantCulture)),
+                new TableCell($"{rider.SeasonalFatiguePercent}%"),
+                new TableCell(rider.SeasonRaceDaysCount.ToString(CultureInfo.InvariantCulture)),
                 new TableCell(rider.Climb.ToString(CultureInfo.InvariantCulture)),
-                new TableCell(rider.Hills.ToString(CultureInfo.InvariantCulture)),
-                new TableCell(rider.Flat.ToString(CultureInfo.InvariantCulture)),
-                new TableCell(rider.TimeTrial.ToString(CultureInfo.InvariantCulture)),
                 new TableCell(rider.Sprint.ToString(CultureInfo.InvariantCulture)),
-                new TableCell(rider.Cobbles.ToString(CultureInfo.InvariantCulture)),
+                new TableCell(rider.TimeTrial.ToString(CultureInfo.InvariantCulture)),
                 new TableCell(CareerLookCatalog.Euro(rider.AnnualWage)),
             ]));
         }
@@ -1325,53 +1326,96 @@ public sealed partial class CareerShellScreen
 
     private void BuildSponsors()
     {
+        SponsorOverviewProjection? sponsor = host!.Sponsors;
         HBoxContainer grid = Row();
-        VBoxContainer list = new();
-        list.AddThemeConstantOverride("separation", 8);
-        foreach (LookSponsor sponsor in CareerLookCatalog.Sponsors)
-        {
-            LookSponsor captured = sponsor;
-            bool selected = captured.Id == selectedSponsorId;
-            Color fg = selected ? LookChrome.Paper : LookChrome.Black;
-            PanelContainer row = LookChrome.ClickRow(selected, () =>
-            {
-                selectedSponsorId = captured.Id;
-                RebuildContent();
-            });
-            VBoxContainer inner = new();
-            inner.AddChild(LookChrome.Body(captured.Name, 15, fg, bold: true));
-            inner.AddChild(LookChrome.Body(captured.Tier + " · " + captured.Value, 12, selected ? LookChrome.Hair : LookChrome.Gray));
-            row.AddChild(inner);
-            list.AddChild(row);
-        }
+        VBoxContainer agreementPanel = new();
+        agreementPanel.AddThemeConstantOverride("separation", 8);
 
-        LookSponsor current = CareerLookCatalog.Sponsor(selectedSponsorId) ?? CareerLookCatalog.Sponsors[0];
-        VBoxContainer detail = new();
-        detail.AddThemeConstantOverride("separation", 8);
-        detail.AddChild(LookChrome.Display(current.Name.ToUpperInvariant(), 22, LookChrome.Black));
-        detail.AddChild(LookChrome.Body(current.Tier, 13, LookChrome.Gray, bold: true));
-        detail.AddChild(LookChrome.Kv("Kwota umowy", current.Value));
-        detail.AddChild(LookChrome.Kv("Do", current.Until));
-        detail.AddChild(LookChrome.Kv("Relacja", current.Mood + "/100"));
-        detail.AddChild(LookChrome.Kv("Status", "aktywny"));
-        detail.AddChild(LookChrome.Solid("Rozmawiaj o przedłużeniu", () => ShowToast(CareerLookCatalog.NotInWorld), LookChrome.Team, LookChrome.TeamOn, compact: true));
+        if (sponsor is not null && !string.IsNullOrWhiteSpace(sponsor.SponsorName))
+        {
+            agreementPanel.AddChild(LookChrome.Display(sponsor.SponsorName.ToUpperInvariant(), 22, LookChrome.Black));
+            agreementPanel.AddChild(LookChrome.Body(sponsor.Tier, 13, LookChrome.Gray, bold: true));
+            agreementPanel.AddChild(LookChrome.Kv("Wkład roczny", CareerLookCatalog.Euro(sponsor.AnnualFeeEur) + " / rok"));
+            agreementPanel.AddChild(LookChrome.Kv("Ważność umowy", $"do końca sezonu {sponsor.EndSeasonYear}"));
+            agreementPanel.AddChild(LookChrome.Hairline());
+
+            Color trustColor = sponsor.TrustPercent >= 70
+                ? LookChrome.Team
+                : (sponsor.TrustPercent >= 40 ? LookChrome.Black : LookChrome.Red);
+            agreementPanel.AddChild(LookChrome.Kv("Zaufanie zarządu", $"{sponsor.TrustPercent}%"));
+            agreementPanel.AddChild(LookChrome.Body(sponsor.TrustDescription, 12, trustColor, bold: true));
+            agreementPanel.AddChild(LookChrome.Hairline());
+
+            agreementPanel.AddChild(LookChrome.Solid("Przedłuż umowę (+2 lata)", () =>
+            {
+                CommandResult res = host.ExtendSponsorAgreement(2);
+                ShowToast(res.Succeeded ? "Przedłużono umowę sponsorską o 2 lata!" : Reason(res.ReasonCode));
+                Refresh();
+            }, LookChrome.Team, LookChrome.TeamOn, compact: true));
+        }
+        else
+        {
+            agreementPanel.AddChild(LookChrome.Body("Brak aktywnego sponsora tytularnego.", 13, LookChrome.Gray));
+        }
 
         VBoxContainer goals = new();
         goals.AddThemeConstantOverride("separation", 8);
-        for (int i = 0; i < current.Goals.Length; i++)
+        goals.AddChild(LookChrome.Body("Cele sezonowe wyznaczone przez zarząd. Realizacja podnosi zaufanie i przynosi premie finansowe.", 11, LookChrome.Gray));
+
+        if (sponsor?.Objectives is { Count: > 0 } objectives)
         {
-            HBoxContainer row = new();
-            Label text = LookChrome.Body(current.Goals[i], 13, LookChrome.Black, bold: true);
-            text.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-            text.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-            row.AddChild(text);
-            row.AddChild(LookChrome.Chip(i == 0 ? "w toku" : "cel", i == 0 ? "ok" : string.Empty));
-            goals.AddChild(row);
+            foreach (BoardObjectiveProjection obj in objectives)
+            {
+                VBoxContainer card = new();
+                card.AddThemeConstantOverride("separation", 4);
+                HBoxContainer row = new();
+                Label title = LookChrome.Body(obj.Title, 13, LookChrome.Black, bold: true);
+                title.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+                title.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+                row.AddChild(title);
+                row.AddChild(LookChrome.Chip(obj.IsCompleted ? "ZREALIZOWANY" : "W TOKU", obj.IsCompleted ? "ok" : string.Empty));
+                card.AddChild(row);
+                card.AddChild(LookChrome.Body(
+                    string.Create(
+                        CultureInfo.InvariantCulture,
+                        $"Postęp: {obj.ProgressDisplay} · Premia: +{CareerLookCatalog.Euro(obj.BonusRewardEur)} · Zaufanie: +{obj.TrustImpactPercent}%"),
+                    11,
+                    obj.IsCompleted ? LookChrome.Team : LookChrome.Gray));
+                goals.AddChild(WrapCard(card));
+            }
+        }
+        else
+        {
+            goals.AddChild(LookChrome.Body("Brak zdefiniowanych celów zarządu na bieżący sezon.", 13, LookChrome.Gray));
         }
 
-        grid.AddChild(Stretch(Panel("PARTNERZY", list), 4));
-        grid.AddChild(Stretch(Panel("UMOWA", detail), 4));
-        grid.AddChild(Stretch(Panel("CELE", goals), 4));
+        VBoxContainer marketPanel = new();
+        marketPanel.AddThemeConstantOverride("separation", 8);
+        marketPanel.AddChild(LookChrome.Body("Oferty sponsorów zainteresowanych wejściem do kolarstwa.", 11, LookChrome.Gray));
+
+        if (sponsor?.MarketOffers is { Count: > 0 } offers)
+        {
+            foreach (SponsorMarketOfferProjection offer in offers)
+            {
+                VBoxContainer card = new();
+                card.AddThemeConstantOverride("separation", 3);
+                card.AddChild(LookChrome.Body(offer.SponsorName, 14, LookChrome.Black, bold: true));
+                card.AddChild(LookChrome.Body($"{offer.Tier} · {CareerLookCatalog.Euro(offer.ProposedFeeEur)} / rok · umowa {offer.ContractYears} lata", 12, LookChrome.Gray));
+                if (offer.ProposedGoals.Count > 0)
+                {
+                    card.AddChild(LookChrome.Body("Wymagania: " + string.Join(", ", offer.ProposedGoals), 11, LookChrome.Gray));
+                }
+                marketPanel.AddChild(WrapCard(card));
+            }
+        }
+        else
+        {
+            marketPanel.AddChild(LookChrome.Body("Brak alternatywnych ofert na rynku sponsorskim.", 13, LookChrome.Gray));
+        }
+
+        grid.AddChild(Stretch(Panel("SPONSOR TYTULARNY", agreementPanel), 4));
+        grid.AddChild(Stretch(Panel("CELE ZARZĄDU", goals), 5));
+        grid.AddChild(Stretch(Panel("RYNEK SPONSORSKI", marketPanel), 3));
         content!.AddChild(grid);
     }
 
@@ -1433,111 +1477,166 @@ public sealed partial class CareerShellScreen
     {
         VBoxContainer form = new();
         form.AddThemeConstantOverride("separation", 8);
+
+        List<MarketRiderProjection> candidates = host!.MarketRiders
+            .Where(r => r.ScoutingLevel != "Pełny")
+            .Take(40)
+            .ToList();
+
+        OptionButton riderSelect = new();
+        if (candidates.Count > 0)
+        {
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                MarketRiderProjection r = candidates[i];
+                riderSelect.AddItem($"{r.Name} ({r.OrganizationName} · {r.StyleLabel})", i);
+            }
+        }
+        else
+        {
+            riderSelect.AddItem("Wszyscy kolarze zbadani", 0);
+        }
+
         OptionButton scout = new();
-        foreach (LookStaff person in CareerLookCatalog.Scouts())
-        {
-            scout.AddItem(person.Name, person.Id);
-        }
+        scout.AddItem("Główny Skaut (ocena 88)", 1);
+        scout.AddItem("Zwiadowca Regionalny (ocena 78)", 2);
+        scout.AddItem("Trener Młodzieży (ocena 72)", 3);
 
-        OptionButton region = Combo(CareerLookCatalog.ScoutRegions);
-        OptionButton focus = Combo(CareerLookCatalog.ScoutFoci);
         OptionButton days = new();
-        foreach (int day in CareerLookCatalog.ScoutDurations)
-        {
-            days.AddItem(day + " dni", day);
-        }
+        days.AddItem("7 dni (zwiad wstępny)", 7);
+        days.AddItem("14 dni (obserwacja głęboka)", 14);
+        days.AddItem("21 dni (pełna analiza)", 21);
+        days.Selected = 0;
 
-        days.Selected = 1;
-        form.AddChild(Labeled("Skaut", scout));
-        form.AddChild(Labeled("Region", region));
-        form.AddChild(Labeled("Profil", focus));
+        form.AddChild(Labeled("Kolarz", riderSelect));
+        form.AddChild(Labeled("Zwiadowca", scout));
         form.AddChild(Labeled("Długość", days));
         form.AddChild(LookChrome.Solid("Wyślij skauta", () =>
         {
-            int scoutId = scout.GetSelectedId();
-            string regionName = region.GetItemText(region.Selected);
-            string focusName = focus.GetItemText(focus.Selected);
-            int length = days.GetSelectedId();
-            scoutMissions.Add(new LookScoutMission(scoutMissions.Count + 10, scoutId, regionName, focusName, length, length, "W toku"));
-            ShowToast(CareerLookCatalog.NotInWorld);
-            RebuildContent();
+            if (candidates.Count == 0)
+            {
+                ShowToast("Brak kolarzy do zbadania.");
+                return;
+            }
+
+            int selectedIdx = riderSelect.Selected;
+            if (selectedIdx >= 0 && selectedIdx < candidates.Count)
+            {
+                MarketRiderProjection target = candidates[selectedIdx];
+                string scoutName = scout.GetItemText(scout.Selected).Split('(')[0].Trim();
+                int dur = days.GetSelectedId();
+                CommandResult res = host.StartScoutingMission(target.RiderCareerId, scoutName, dur);
+                ShowToast(res.Succeeded ? $"Wysłano zwiadowcę ({scoutName}) na kolarza {target.Name}!" : Reason(res.ReasonCode));
+                Refresh();
+            }
         }, LookChrome.Team, LookChrome.TeamOn, compact: true));
 
         VBoxContainer missions = new();
         missions.AddThemeConstantOverride("separation", 8);
-        foreach (LookScoutMission mission in scoutMissions)
+        IReadOnlyList<ScoutMissionProjection>? activeMissions = host.Scouting?.ActiveMissions;
+        if (activeMissions is { Count: > 0 })
         {
-            LookStaff? person = CareerLookCatalog.StaffMember(mission.ScoutId);
-            int done = (int)Math.Round((1 - (mission.DaysLeft / (double)mission.Total)) * 100);
-            VBoxContainer card = new();
-            card.AddChild(LookChrome.Body((person?.Name ?? "?") + " · " + mission.Region, 14, LookChrome.Black, bold: true));
-            card.AddChild(LookChrome.Body(
-                string.Create(CultureInfo.InvariantCulture, $"{mission.Focus} · pozostało {mission.DaysLeft} dni · {done}% raportu"),
-                12,
-                LookChrome.Gray));
-            missions.AddChild(WrapCard(card));
+            foreach (ScoutMissionProjection mission in activeMissions)
+            {
+                int done = (int)Math.Round((1.0 - (mission.DaysRemaining / (double)Math.Max(1, mission.DurationDays))) * 100);
+                VBoxContainer card = new();
+                card.AddChild(LookChrome.Body($"{mission.TargetRiderName} · {mission.ScoutName}", 14, LookChrome.Black, bold: true));
+                card.AddChild(LookChrome.Body(
+                    string.Create(CultureInfo.InvariantCulture, $"Pozostało {mission.DaysRemaining} dni z {mission.DurationDays} ({done}% zaawansowania) · {mission.StatusLabel}"),
+                    12,
+                    LookChrome.Gray));
+                missions.AddChild(WrapCard(card));
+            }
+        }
+        else
+        {
+            missions.AddChild(LookChrome.Body("Brak aktywnych misji skautowych w terenie.", 13, LookChrome.Gray));
         }
 
         VBoxContainer reports = new();
         reports.AddThemeConstantOverride("separation", 8);
-        foreach (LookScoutReport report in CareerLookCatalog.Reports)
+        IReadOnlyList<ScoutingReportProjection>? discovered = host.Scouting?.DiscoveredRiders;
+        if (discovered is { Count: > 0 })
         {
-            LookScoutReport captured = report;
-            bool selected = captured.Id == reportSelected;
-            Color fg = selected ? LookChrome.Paper : LookChrome.Black;
-            PanelContainer row = LookChrome.ClickRow(selected, () =>
+            if (selectedScoutReportRiderId == 0 || discovered.All(r => r.RiderCareerId.Value != selectedScoutReportRiderId))
             {
-                reportSelected = captured.Id;
-                RebuildContent();
-            });
-            VBoxContainer inner = new();
-            inner.AddChild(LookChrome.Body(captured.Mission, 14, fg, bold: true));
-            inner.AddChild(LookChrome.Body(captured.Date + " · " + captured.Prospects.Length + " zawodników", 12, selected ? LookChrome.Hair : LookChrome.Gray));
-            row.AddChild(inner);
-            reports.AddChild(row);
+                selectedScoutReportRiderId = discovered[0].RiderCareerId.Value;
+            }
+
+            foreach (ScoutingReportProjection report in discovered)
+            {
+                ScoutingReportProjection captured = report;
+                bool selected = captured.RiderCareerId.Value == selectedScoutReportRiderId;
+                Color fg = selected ? LookChrome.Paper : LookChrome.Black;
+                PanelContainer row = LookChrome.ClickRow(selected, () =>
+                {
+                    selectedScoutReportRiderId = captured.RiderCareerId.Value;
+                    RebuildContent();
+                });
+                VBoxContainer inner = new();
+                inner.AddChild(LookChrome.Body(captured.RiderName, 14, fg, bold: true));
+                string agePart = captured.Age.HasValue ? $"{captured.Age} lat · " : "";
+                inner.AddChild(LookChrome.Body($"{captured.Country} · {agePart}{captured.Style} ({captured.StarsDisplay})", 12, selected ? LookChrome.Hair : LookChrome.Gray));
+                row.AddChild(inner);
+                reports.AddChild(row);
+            }
+        }
+        else
+        {
+            reports.AddChild(LookChrome.Body("Brak zbadanych zawodników. Wyślij skauta, aby odblokować raporty.", 13, LookChrome.Gray));
         }
 
         HBoxContainer grid = Row();
-        grid.AddChild(Stretch(Panel("NOWA MISJA", form), 7));
-        grid.AddChild(Stretch(Panel("AKTYWNE MISJE", missions), 5));
+        grid.AddChild(Stretch(Panel("NOWA MISJA", form), 6));
+        grid.AddChild(Stretch(Panel("AKTYWNE MISJE SKAUTÓW", missions), 6));
         content!.AddChild(grid);
+
         HBoxContainer lower = Row();
-        lower.AddChild(Stretch(Panel("ZAKOŃCZONE RAPORTY", reports), 4));
-        lower.AddChild(Stretch(Panel("RAPORT", BuildReportDetail()), 8));
+        lower.AddChild(Stretch(Panel("ZBADANI ZAWODNICY", reports), 5));
+        lower.AddChild(Stretch(Panel("SZCZEGÓŁY RAPORTU", BuildReportDetail()), 7));
         content!.AddChild(lower);
     }
 
     private VBoxContainer BuildReportDetail()
     {
-        LookScoutReport? report = CareerLookCatalog.Report(reportSelected);
         VBoxContainer box = new();
         box.AddThemeConstantOverride("separation", 8);
+
+        IReadOnlyList<ScoutingReportProjection>? discovered = host!.Scouting?.DiscoveredRiders;
+        ScoutingReportProjection? report = discovered?.FirstOrDefault(r => r.RiderCareerId.Value == selectedScoutReportRiderId);
         if (report is null)
         {
-            box.AddChild(LookChrome.Body("Brak raportu.", 13, LookChrome.Gray));
+            box.AddChild(LookChrome.Body("Wybierz zbadanego kolarza z listy po lewej.", 13, LookChrome.Gray));
             return box;
         }
 
-        box.AddChild(LookChrome.Display(report.Mission.ToUpperInvariant(), 18, LookChrome.Black));
-        box.AddChild(LookChrome.Body("ukończono " + report.Date, 12, LookChrome.Gray, bold: true));
-        foreach (LookProspect prospect in report.Prospects)
+        box.AddChild(LookChrome.Display(report.RiderName.ToUpperInvariant(), 20, LookChrome.Black));
+        string agePart = report.Age.HasValue ? $"{report.Age} lat · " : "";
+        box.AddChild(LookChrome.Body($"{report.Country} · {agePart}Klub: {report.ClubName}", 12, LookChrome.Gray, bold: true));
+        box.AddChild(LookChrome.Kv("Styl kolarza", report.Style));
+        box.AddChild(LookChrome.Kv("Gwiazdki", report.StarsDisplay));
+        box.AddChild(LookChrome.Kv("Ocena OVR", report.Ovr.ToString(CultureInfo.InvariantCulture)));
+        box.AddChild(LookChrome.Kv("Poziom rozpoznania", report.LevelLabel));
+
+        HBoxContainer actions = new();
+        actions.AddThemeConstantOverride("separation", 8);
+        actions.AddChild(LookChrome.Solid("Zobacz na rynku transferowym", () =>
         {
-            VBoxContainer card = new();
-            card.AddThemeConstantOverride("separation", 4);
-            HBoxContainer head = new();
-            Label name = LookChrome.Body(prospect.Name, 15, LookChrome.Black, bold: true);
-            name.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-            head.AddChild(name);
-            head.AddChild(LookChrome.Chip(prospect.Pot, "inv"));
-            card.AddChild(head);
-            card.AddChild(LookChrome.Body($"{prospect.Nat} · {prospect.Age} lat · {prospect.Type}", 12, LookChrome.Gray));
-            card.AddChild(LookChrome.Kv("Rozpoznanie", prospect.Known + "%"));
-            Label note = LookChrome.Body(prospect.Note, 13, LookChrome.Black);
-            note.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-            card.AddChild(note);
-            box.AddChild(WrapCard(card));
+            selectedMarketRiderId = report.RiderCareerId.Value;
+            Show(View.Market);
+        }, LookChrome.Team, LookChrome.TeamOn, compact: true));
+
+        if (report.LevelLabel != "Pełny")
+        {
+            actions.AddChild(LookChrome.Solid("Pogłęb zwiad (+7 dni)", () =>
+            {
+                CommandResult res = host.StartScoutingMission(report.RiderCareerId, "Główny Skaut", 7);
+                ShowToast(res.Succeeded ? "Wysłano zwiadowcę na pogłębienie obserwacji!" : Reason(res.ReasonCode));
+                Refresh();
+            }, LookChrome.Paper, LookChrome.Black, compact: true));
         }
 
+        box.AddChild(actions);
         return box;
     }
 
@@ -1550,19 +1649,41 @@ public sealed partial class CareerShellScreen
             selectedMarketRiderId = riders.Count > 0 ? riders[0].RiderCareerId.Value : 0;
         }
 
-        List<string> clubs = new() { "Wszystkie" };
+        List<string> clubs = new() { "Wszystkie kluby", "Wolni agenci" };
         clubs.AddRange(host!.MarketRiders
             .Select(rider => rider.OrganizationName)
-            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Where(name => !string.IsNullOrWhiteSpace(name) && !string.Equals(name, "Wolny agent", StringComparison.OrdinalIgnoreCase))
             .Distinct(StringComparer.Ordinal)
             .OrderBy(name => name, StringComparer.Ordinal));
-        int selectedFilterIndex = 0;
+        int selectedClubIndex = 0;
         if (!string.IsNullOrWhiteSpace(marketClubFilter))
         {
-            selectedFilterIndex = clubs.FindIndex(club => string.Equals(club, marketClubFilter, StringComparison.Ordinal));
-            if (selectedFilterIndex < 0)
+            selectedClubIndex = clubs.FindIndex(club => string.Equals(club, marketClubFilter, StringComparison.Ordinal));
+            if (selectedClubIndex < 0)
             {
-                selectedFilterIndex = 0;
+                selectedClubIndex = 0;
+            }
+        }
+
+        List<string> styles = new() { "Wszystkie style", "GÓRY", "SPRINT", "KLASYKI", "CZASOWIEC", "POMOCNIK" };
+        int selectedStyleIndex = 0;
+        if (!string.IsNullOrWhiteSpace(marketStyleFilter))
+        {
+            selectedStyleIndex = styles.FindIndex(s => string.Equals(s, marketStyleFilter, StringComparison.OrdinalIgnoreCase));
+            if (selectedStyleIndex < 0)
+            {
+                selectedStyleIndex = 0;
+            }
+        }
+
+        List<string> contracts = new() { "Wszystkie umowy", "Wygasające", "Wolni agenci" };
+        int selectedContractIndex = 0;
+        if (!string.IsNullOrWhiteSpace(marketContractFilter))
+        {
+            selectedContractIndex = contracts.FindIndex(c => string.Equals(c, marketContractFilter, StringComparison.OrdinalIgnoreCase));
+            if (selectedContractIndex < 0)
+            {
+                selectedContractIndex = 0;
             }
         }
 
@@ -1571,7 +1692,7 @@ public sealed partial class CareerShellScreen
         filterWrap.AddChild(LookChrome.Meta("Klub", 9, LookChrome.TeamOn));
         OptionButton clubFilter = LookChrome.CompactSelect(
             clubs,
-            selectedFilterIndex,
+            selectedClubIndex,
             index =>
             {
                 marketClubFilter = index <= 0 ? string.Empty : clubs[index];
@@ -1579,9 +1700,31 @@ public sealed partial class CareerShellScreen
             });
         filterWrap.AddChild(clubFilter);
 
+        filterWrap.AddChild(LookChrome.Meta("Styl", 9, LookChrome.TeamOn));
+        OptionButton styleFilter = LookChrome.CompactSelect(
+            styles,
+            selectedStyleIndex,
+            index =>
+            {
+                marketStyleFilter = index <= 0 ? string.Empty : styles[index];
+                RebuildContent();
+            });
+        filterWrap.AddChild(styleFilter);
+
+        filterWrap.AddChild(LookChrome.Meta("Umowa", 9, LookChrome.TeamOn));
+        OptionButton contractFilter = LookChrome.CompactSelect(
+            contracts,
+            selectedContractIndex,
+            index =>
+            {
+                marketContractFilter = index <= 0 ? string.Empty : contracts[index];
+                RebuildContent();
+            });
+        filterWrap.AddChild(contractFilter);
+
         HBoxContainer grid = Row();
         grid.SizeFlagsVertical = SizeFlags.ExpandFill;
-        VBoxContainer table = Panel("DOSTĘPNI ZAWODNICY", BuildMarketTable(riders), rightAccessory: filterWrap, expandVertical: true);
+        VBoxContainer table = Panel("RYNEK TRANSFEROWY", BuildMarketTable(riders), rightAccessory: filterWrap, expandVertical: true);
         table.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         table.SizeFlagsStretchRatio = 8;
         VBoxContainer marketCard = Panel("ZAWODNIK", BuildMarketCard());
@@ -1615,35 +1758,39 @@ public sealed partial class CareerShellScreen
         TableColumn[] columns =
         [
             new("Zawodnik", "name", TableAlign.Left, false, 0, true),
-            new("OVR", "ovr", TableAlign.Center, true, 56),
-            new("POT", "pot", TableAlign.Center, false, 56),
-            new("Góry", "climb", TableAlign.Center, false, 56),
-            new("Pensja", "wage", TableAlign.Right, false, 92),
-            new("Koniec", "end", TableAlign.Right, false, 92),
+            new("Kraj", "nat", TableAlign.Center, false, 46),
+            new("Wiek", "age", TableAlign.Center, false, 46),
+            new("Styl", "style", TableAlign.Center, false, 82),
+            new("Gwiazdki", "stars", TableAlign.Center, true, 105),
+            new("OVR", "ovr", TableAlign.Center, false, 46),
+            new("Pensja", "wage", TableAlign.Right, false, 86),
+            new("Koniec", "end", TableAlign.Right, false, 86),
+            new("Skaut", "scout", TableAlign.Center, false, 74),
         ];
         List<TableRow> rows = new(sorted.Length);
         foreach (MarketRiderProjection row in sorted)
         {
-            string club = string.IsNullOrWhiteSpace(row.OrganizationName) ? "—" : row.OrganizationName;
-            string natAge = "";
-            if (!string.IsNullOrWhiteSpace(row.Nationality) || row.Age.HasValue)
-            {
-                string n = row.Nationality?.ToUpperInvariant() ?? "";
-                string a = row.Age.HasValue ? $"{row.Age}L" : "";
-                natAge = (!string.IsNullOrEmpty(n) && !string.IsNullOrEmpty(a)) ? $"{n} · {a}" : $"{n}{a}";
-            }
-            string subtitle = !string.IsNullOrEmpty(natAge) ? $"{club} · {natAge}" : club;
+            string club = string.IsNullOrWhiteSpace(row.OrganizationName) ? "Wolny agent" : row.OrganizationName;
+            string nat = !string.IsNullOrWhiteSpace(row.Nationality) ? row.Nationality.ToUpperInvariant() : "—";
+            string age = row.Age.HasValue ? $"{row.Age}" : "—";
+            string style = !string.IsNullOrWhiteSpace(row.StyleLabel) ? row.StyleLabel : (!string.IsNullOrWhiteSpace(row.RoleLabel) ? row.RoleLabel : "—");
+            string stars = !string.IsNullOrWhiteSpace(row.StarsDisplay) ? row.StarsDisplay : CareerLookCatalog.Stars(3);
+            string ovr = row.ScoutingLevel == "Nieznany" ? "—" : row.Ovr.ToString(CultureInfo.InvariantCulture);
+            string wage = CareerLookCatalog.Euro(row.AnnualWage);
+            string end = row.IsFreeAgent ? "Wolny" : (row.ContractEndDay > 0 ? CareerCalendarDates.FormatLong(row.ContractEndDay) : "—");
+            string scout = !string.IsNullOrWhiteSpace(row.ScoutingLevel) ? row.ScoutingLevel : "Nieznany";
+
             rows.Add(new TableRow(
             [
-                new TableCell(row.Name, subtitle),
-                new TableCell(row.Ovr.ToString(CultureInfo.InvariantCulture)),
-                new TableCell(row.PotentialOvr.ToString(CultureInfo.InvariantCulture)),
-                new TableCell(row.Climb.ToString(CultureInfo.InvariantCulture)),
-                new TableCell(CareerLookCatalog.Euro(row.AnnualWage)),
-                new TableCell(
-                    row.ContractEndDay > 0
-                        ? CareerCalendarDates.FormatLong(row.ContractEndDay)
-                        : "—"),
+                new TableCell(row.Name, club),
+                new TableCell(nat),
+                new TableCell(age),
+                new TableCell(style),
+                new TableCell(stars),
+                new TableCell(ovr),
+                new TableCell(wage),
+                new TableCell(end),
+                new TableCell(scout),
             ]));
         }
 
@@ -1703,36 +1850,48 @@ public sealed partial class CareerShellScreen
         names.AddChild(LookChrome.Title(row.Name));
         string natPart = !string.IsNullOrWhiteSpace(row.Nationality) ? $"{row.Nationality.ToUpperInvariant()} · " : "";
         string agePart = row.Age.HasValue ? $"{row.Age} LAT · " : "";
+        string ovrDisplay = row.ScoutingLevel == "Nieznany" ? "—" : row.Ovr.ToString(CultureInfo.InvariantCulture);
+        string potDisplay = row.ScoutingLevel == "Pełny" ? row.PotentialOvr.ToString(CultureInfo.InvariantCulture) : "—";
         names.AddChild(LookChrome.Body(
-            string.Create(CultureInfo.InvariantCulture, $"{natPart}{agePart}OVR {row.Ovr} · POT {row.PotentialOvr}"),
+            string.Create(CultureInfo.InvariantCulture, $"{natPart}{agePart}OVR {ovrDisplay} · POT {potDisplay}"),
             12,
             LookChrome.Gray,
             bold: true));
-        names.AddChild(LookChrome.Kv("OVR / POT", string.Create(
-            CultureInfo.InvariantCulture,
-            $"{row.Ovr} / {row.PotentialOvr}")));
+        names.AddChild(LookChrome.Kv("Styl / Klasa", $"{row.StyleLabel} ({row.StarsDisplay})"));
+        names.AddChild(LookChrome.Kv("Stan zwiadu", row.ScoutingLevel));
         head.AddChild(names);
         box.AddChild(head);
 
-        GridContainer stats = new() { Columns = 2 };
-        stats.AddThemeConstantOverride("h_separation", 12);
-        stats.AddThemeConstantOverride("v_separation", 7);
-        stats.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-        VBoxContainer leftStats = new();
-        leftStats.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-        leftStats.AddThemeConstantOverride("separation", 7);
-        leftStats.AddChild(LookChrome.Stat("Góry", row.Climb));
-        leftStats.AddChild(LookChrome.Stat("Sprint", row.Sprint));
-        leftStats.AddChild(LookChrome.Stat("Bruk", row.Cobbles));
-        VBoxContainer rightStats = new();
-        rightStats.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-        rightStats.AddThemeConstantOverride("separation", 7);
-        rightStats.AddChild(LookChrome.Stat("Pagórki", row.Hills));
-        rightStats.AddChild(LookChrome.Stat("TT", row.TimeTrial));
-        rightStats.AddChild(LookChrome.Stat("Płaskie", row.Flat));
-        stats.AddChild(leftStats);
-        stats.AddChild(rightStats);
-        box.AddChild(stats);
+        if (row.ScoutingLevel == "Nieznany")
+        {
+            VBoxContainer fogBox = new();
+            fogBox.AddThemeConstantOverride("separation", 4);
+            fogBox.AddChild(LookChrome.Body("Parametry ukryte (mgła wojny).", 12, LookChrome.Black, bold: true));
+            fogBox.AddChild(LookChrome.Body("Wyślij skauta, aby poznać dokładne atrybuty fizjologiczne kolarza.", 11, LookChrome.Gray));
+            box.AddChild(WrapCard(fogBox));
+        }
+        else
+        {
+            GridContainer stats = new() { Columns = 2 };
+            stats.AddThemeConstantOverride("h_separation", 12);
+            stats.AddThemeConstantOverride("v_separation", 7);
+            stats.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+            VBoxContainer leftStats = new();
+            leftStats.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+            leftStats.AddThemeConstantOverride("separation", 7);
+            leftStats.AddChild(LookChrome.Stat("Góry", row.Climb));
+            leftStats.AddChild(LookChrome.Stat("Sprint", row.Sprint));
+            leftStats.AddChild(LookChrome.Stat("Bruk", row.Cobbles));
+            VBoxContainer rightStats = new();
+            rightStats.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+            rightStats.AddThemeConstantOverride("separation", 7);
+            rightStats.AddChild(LookChrome.Stat("Pagórki", row.Hills));
+            rightStats.AddChild(LookChrome.Stat("TT", row.TimeTrial));
+            rightStats.AddChild(LookChrome.Stat("Płaskie", row.Flat));
+            stats.AddChild(leftStats);
+            stats.AddChild(rightStats);
+            box.AddChild(stats);
+        }
 
         VBoxContainer transferBody = new();
         transferBody.AddThemeConstantOverride("separation", 6);
@@ -1742,7 +1901,7 @@ public sealed partial class CareerShellScreen
         transferBody.AddChild(LookChrome.Kv("Pensja / rok", CareerLookCatalog.Euro(row.AnnualWage)));
         transferBody.AddChild(LookChrome.Kv(
             "Koniec kontraktu",
-            row.ContractEndDay > 0 ? CareerCalendarDates.FormatLong(row.ContractEndDay) : "—"));
+            row.ContractEndDay > 0 ? CareerCalendarDates.FormatLong(row.ContractEndDay) : (row.IsFreeAgent ? "Wolny agent" : "—")));
         box.AddChild(LookChrome.ContractFrame("SYTUACJA TRANSFEROWA", transferBody));
 
         if (isNegotiating)
@@ -1785,7 +1944,9 @@ public sealed partial class CareerShellScreen
             }, LookChrome.Team, LookChrome.TeamOn, compact: true));
         }
 
-        box.AddChild(LookChrome.Solid(isNegotiating ? "Anuluj" : "Negocjuj kontrakt", () =>
+        HBoxContainer actions = new();
+        actions.AddThemeConstantOverride("separation", 8);
+        actions.AddChild(LookChrome.Solid(isNegotiating ? "Anuluj" : "Negocjuj kontrakt", () =>
         {
             if (isNegotiating)
             {
@@ -1807,6 +1968,18 @@ public sealed partial class CareerShellScreen
 
             Refresh();
         }, LookChrome.Team, LookChrome.TeamOn, compact: true));
+
+        if (row.ScoutingLevel != "Pełny")
+        {
+            actions.AddChild(LookChrome.Solid("Wyślij skauta (7 dni)", () =>
+            {
+                CommandResult scoutRes = host.StartScoutingMission(row.RiderCareerId, "Główny Skaut", 7);
+                ShowToast(scoutRes.Succeeded ? "Wysłano skauta na zwiad!" : Reason(scoutRes.ReasonCode));
+                Refresh();
+            }, LookChrome.Paper, LookChrome.Black, compact: true));
+        }
+
+        box.AddChild(actions);
         return box;
     }
 
@@ -2005,6 +2178,10 @@ public sealed partial class CareerShellScreen
         {
             "ovr" => roster.OrderBy(rider => rider.Ovr),
             "pot" => roster.OrderBy(rider => rider.PotentialOvr),
+            "style" => roster.OrderBy(rider => rider.StyleLabel, StringComparer.Ordinal),
+            "stars" => roster.OrderBy(rider => rider.Stars),
+            "fatigue" => roster.OrderBy(rider => rider.SeasonalFatiguePercent),
+            "days" => roster.OrderBy(rider => rider.SeasonRaceDaysCount),
             "climb" => roster.OrderBy(rider => rider.Climb),
             "hills" => roster.OrderBy(rider => rider.Hills),
             "flat" => roster.OrderBy(rider => rider.Flat),
@@ -2028,14 +2205,38 @@ public sealed partial class CareerShellScreen
             return Array.Empty<MarketRiderProjection>();
         }
 
-        if (string.IsNullOrWhiteSpace(marketClubFilter))
+        IEnumerable<MarketRiderProjection> query = host.MarketRiders;
+
+        if (!string.IsNullOrWhiteSpace(marketClubFilter))
         {
-            return host.MarketRiders;
+            if (string.Equals(marketClubFilter, "Wolni agenci", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(rider => rider.IsFreeAgent);
+            }
+            else
+            {
+                query = query.Where(rider => string.Equals(rider.OrganizationName, marketClubFilter, StringComparison.Ordinal));
+            }
         }
 
-        return host.MarketRiders
-            .Where(rider => string.Equals(rider.OrganizationName, marketClubFilter, StringComparison.Ordinal))
-            .ToArray();
+        if (!string.IsNullOrWhiteSpace(marketStyleFilter) && !string.Equals(marketStyleFilter, "Wszystkie style", StringComparison.OrdinalIgnoreCase))
+        {
+            query = query.Where(rider => string.Equals(rider.StyleLabel, marketStyleFilter, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(marketContractFilter) && !string.Equals(marketContractFilter, "Wszystkie kontrakty", StringComparison.OrdinalIgnoreCase))
+        {
+            if (string.Equals(marketContractFilter, "Wygasające", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(rider => rider.IsExpiringThisYear);
+            }
+            else if (string.Equals(marketContractFilter, "Wolni agenci", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(rider => rider.IsFreeAgent);
+            }
+        }
+
+        return query.ToArray();
     }
 
     private MarketRiderProjection[] SortMarket(IReadOnlyList<MarketRiderProjection> riders)
@@ -2043,11 +2244,16 @@ public sealed partial class CareerShellScreen
         IEnumerable<MarketRiderProjection> ordered = marketSort.Key switch
         {
             "club" => riders.OrderBy(rider => rider.OrganizationName, StringComparer.Ordinal),
+            "nat" => riders.OrderBy(rider => rider.Nationality ?? string.Empty, StringComparer.Ordinal),
+            "age" => riders.OrderBy(rider => rider.Age ?? 99),
+            "style" => riders.OrderBy(rider => rider.StyleLabel, StringComparer.Ordinal),
+            "stars" => riders.OrderBy(rider => rider.Stars),
             "ovr" => riders.OrderBy(rider => rider.Ovr),
             "pot" => riders.OrderBy(rider => rider.PotentialOvr),
             "climb" => riders.OrderBy(rider => rider.Climb),
             "wage" => riders.OrderBy(rider => rider.AnnualWage),
             "end" => riders.OrderBy(rider => rider.ContractEndDay),
+            "scout" => riders.OrderBy(rider => rider.ScoutingLevel, StringComparer.Ordinal),
             _ => riders.OrderBy(rider => rider.Name, StringComparer.Ordinal),
         };
 

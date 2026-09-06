@@ -85,6 +85,10 @@ public sealed class CareerShellHost
 
     public ContractNegotiationProjection? ContractNegotiation => application.ContractNegotiation;
 
+    public ScoutingOverviewProjection? Scouting => application.ScoutingOverview;
+
+    public SponsorOverviewProjection? Sponsors => application.SponsorOverview;
+
     public bool IsWorldTourWorld =>
         string.Equals(
             application.World?.ContentIdentity.ScenarioId,
@@ -194,6 +198,16 @@ public sealed class CareerShellHost
     public CommandResult ArchiveInbox(string identity)
     {
         return application.Execute(new ArchiveInboxItemCommand(identity));
+    }
+
+    public CommandResult StartScoutingMission(WorldEntityId riderId, string scoutName = "Główny Skaut", int durationDays = 7)
+    {
+        return application.Execute(new StartScoutingMissionCommand(riderId, scoutName, durationDays));
+    }
+
+    public CommandResult ExtendSponsorAgreement(int additionalYears = 2)
+    {
+        return application.Execute(new ExtendSponsorAgreementCommand(additionalYears));
     }
 
     public CommandResult ToggleStarter(WorldEntityId riderId)

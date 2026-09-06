@@ -53,11 +53,14 @@ public sealed partial class CareerShellScreen : Control
     private LookSort marketSort = new("ovr", -1);
     private long selectedMarketRiderId;
     private string marketClubFilter = string.Empty;
+    private string marketStyleFilter = string.Empty;
+    private string marketContractFilter = string.Empty;
     private int calendarYear = 2026;
     private int calendarMonth = 1;
     private int lastCalendarDay = -1;
     private int reportSelected = 1;
     private int selectedSponsorId = 1;
+    private long selectedScoutReportRiderId;
     private readonly List<LookScoutMission> scoutMissions = new(CareerLookCatalog.Missions);
 
     public override void _Ready()

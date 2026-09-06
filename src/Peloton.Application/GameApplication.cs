@@ -240,6 +240,7 @@ public sealed class GameApplication
                     Person person = personsById[career.PersonId];
                     RiderRatingSet ratings = RiderRatingQueries.FromPhysiology(career, career.PotentialOvr);
                     RiderPresentationFields presentation = RiderPresentationQueries.BuildFields(World, person, career);
+                    RiderStarsProfile starsProfile = RiderStyleRatingQueries.ComputeProfile(ratings, career.OriginDefinitionId);
                     return new ClubRosterEntry(
                         career.Id,
                         person.Name,
@@ -259,7 +260,12 @@ public sealed class GameApplication
                         presentation.Age,
                         presentation.RoleLabel,
                         presentation.FormPercent,
-                        presentation.IdentityLine);
+                        presentation.IdentityLine,
+                        presentation.SeasonalFatiguePercent,
+                        presentation.SeasonRaceDaysCount,
+                        starsProfile.PrimaryStyleLabel,
+                        starsProfile.PrimaryStars,
+                        starsProfile.PrimaryStarsDisplay);
                 })
                 .ToArray();
             return new ClubRosterProjection(riders);
@@ -419,6 +425,12 @@ public sealed class GameApplication
 
     public IReadOnlyList<MarketRiderProjection> MarketRiders =>
         World is null ? Array.Empty<MarketRiderProjection>() : CareerProjectionQueries.BuildMarketRiders(World, GetAccessContext());
+
+    public ScoutingOverviewProjection? ScoutingOverview =>
+        World is null ? null : ScoutingQueries.BuildOverview(World, GetAccessContext());
+
+    public SponsorOverviewProjection? SponsorOverview =>
+        World is null ? null : SponsorshipQueries.BuildOverview(World, GetAccessContext());
 
     public string? EmployerName
     {
@@ -1332,6 +1344,85 @@ public sealed class GameApplication
         }
 
         contractNegotiationDraft = null;
+        return CommandResult.Success;
+    }
+
+    public CommandResult Execute(StartScoutingMissionCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.Management || World is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        AccessContext access = GetAccessContext();
+        if (access.CurrentOrganizationId is not WorldEntityId employerId)
+        {
+            return CommandResult.Reject("EMPLOYER_REQUIRED");
+        }
+
+        Organization? org = World.Organizations.FirstOrDefault(o => o.Id == employerId);
+        if (org is null)
+        {
+            return CommandResult.Reject("EMPLOYER_NOT_FOUND");
+        }
+
+        RiderCareer? target = World.TryGetRiderCareer(command.TargetRiderCareerId);
+        if (target is null)
+        {
+            return CommandResult.Reject("RIDER_NOT_FOUND");
+        }
+
+        if (target.OrganizationId == employerId)
+        {
+            return CommandResult.Reject("RIDER_ALREADY_ON_TEAM");
+        }
+
+        if (org.ScoutingStore.Missions.Any(m => !m.IsCompleted && m.TargetRiderCareerId == command.TargetRiderCareerId))
+        {
+            return CommandResult.Reject("MISSION_ALREADY_ACTIVE");
+        }
+
+        int missionId = org.ScoutingStore.Missions.Count + 1;
+        ScoutingMission mission = new(
+            missionId,
+            employerId,
+            command.TargetRiderCareerId,
+            command.ScoutName,
+            command.DurationDays,
+            command.DurationDays);
+
+        org.ScoutingStore.AddMission(mission);
+        org.AddCash(-5_000);
+        return CommandResult.Success;
+    }
+
+    public CommandResult Execute(ExtendSponsorAgreementCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (State != GameState.Management || World is null)
+        {
+            return CommandResult.Reject("GAME_STATE_INVALID");
+        }
+
+        AccessContext access = GetAccessContext();
+        if (access.CurrentOrganizationId is not WorldEntityId employerId)
+        {
+            return CommandResult.Reject("EMPLOYER_REQUIRED");
+        }
+
+        Organization? org = World.Organizations.FirstOrDefault(o => o.Id == employerId);
+        if (org is null || org.SponsorAgreement is null)
+        {
+            return CommandResult.Reject("SPONSOR_NOT_FOUND");
+        }
+
+        if (org.SponsorAgreement.Trust01 < 0.65)
+        {
+            return CommandResult.Reject("SPONSOR_TRUST_TOO_LOW");
+        }
+
+        org.SponsorAgreement.ExtendContract(command.AdditionalYears, 1.15);
         return CommandResult.Success;
     }
 

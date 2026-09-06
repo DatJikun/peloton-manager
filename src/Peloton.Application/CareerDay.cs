@@ -34,7 +34,12 @@ public sealed record ClubRosterEntry(
     int? Age = null,
     string RoleLabel = "",
     int FormPercent = 0,
-    string IdentityLine = "");
+    string IdentityLine = "",
+    int SeasonalFatiguePercent = 0,
+    int SeasonRaceDaysCount = 0,
+    string StyleLabel = "",
+    double Stars = 3.0,
+    string StarsDisplay = "★★★☆☆");
 
 public sealed record ClubRosterProjection(IReadOnlyList<ClubRosterEntry> Riders);
 
